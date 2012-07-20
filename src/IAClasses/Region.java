@@ -1,7 +1,5 @@
 package IAClasses;
 
-import IAClasses.Pixel;
-import IAClasses.DSPProcessor;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
@@ -310,7 +308,7 @@ public class Region {
                 yc, wand.xpoints, wand.ypoints, 1.0);
     }
 
-    public Pixel[] buildVelocityMap(double xc, double yc, ImageStack stack, int frame, double filtRad, double timeRes, double spatialRes) {
+    public Pixel[] buildVelMapCol(double xc, double yc, ImageStack stack, int frame, double filtRad, double timeRes, double spatialRes) {
         ImageProcessor ip = stack.getProcessor(frame);
         ImageProcessor edges = ip.duplicate();
         edges.findEdges();
@@ -346,7 +344,7 @@ public class Region {
         return points;
     }
 
-    public Pixel[] buildStandardMap(double xc, double yc, ImageStack stack, int frame, double filtRad) {
+    public Pixel[] buildStandMapCol(double xc, double yc, ImageStack stack, int frame, double filtRad) {
         ImageProcessor ip = stack.getProcessor(frame);
         Wand wand = new Wand(getMask(ip.getWidth(), ip.getHeight()));
         wand.autoOutline((int) Math.round(xc), (int) Math.round(yc), 0.0,

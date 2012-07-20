@@ -1,6 +1,5 @@
 package IAClasses;
 
-import IAClasses.Pixel;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
@@ -185,6 +184,43 @@ public class Utils {
             }
         }
         return bproc;
+    }
+    
+    public static ArrayList<int[]> findLocalMaxima(int kWidth, int kHeight,
+            ImageProcessor image, double maxThresh, boolean varyBG) {
+        if (image == null) {
+            return null;
+        }
+        int i, j, x, y, width = image.getWidth(), height = image.getHeight();
+        double max, current, min;
+        ArrayList maxima = new ArrayList<int[]>();
+        for (x = kWidth; x < width - kWidth; x++) {
+            for (y = kHeight; y < height - kHeight; y++) {
+                for (min = Double.MAX_VALUE, max = 0.0, i = x - kWidth; i <= x + kWidth; i++) {
+                    for (j = y - kHeight; j <= y + kHeight; j++) {
+                        current = image.getPixelValue(i, j);
+                        if ((current > max) && !((x == i) && (y == j))) {
+                            max = current;
+                        }
+                        if ((current < min) && !((x == i) && (y == j))) {
+                            min = current;
+                        }
+                    }
+                }
+                double pix = image.getPixelValue(x, y);
+                double diff;
+                if (varyBG) {
+                    diff = pix - min;
+                } else {
+                    diff = pix;
+                }
+                if ((pix > max) && (diff > maxThresh)) {
+                    int thismax[] = {x, y};
+                    maxima.add(thismax);
+                }
+            }
+        }
+        return maxima;
     }
 
     /**
