@@ -185,7 +185,7 @@ public class Utils {
         }
         return bproc;
     }
-    
+
     public static ArrayList<int[]> findLocalMaxima(int kWidth, int kHeight,
             ImageProcessor image, double maxThresh, boolean varyBG) {
         if (image == null) {
@@ -480,6 +480,18 @@ public class Utils {
         normalised.multiply(255.0);
         normalised.multiply(1.0 / max);
         normalised.resetMinAndMax();
-        return (ByteProcessor)((new TypeConverter(normalised, true)).convertToByte());
+        return (ByteProcessor) ((new TypeConverter(normalised, true)).convertToByte());
+    }
+
+    /*
+     * Normalise all images in the given stack
+     */
+    public static void normaliseStack(int stackLength, ImageStack stack) {
+        for (int i = 0; i < stackLength; i++) {
+            ImageProcessor cip = stack.getProcessor(1);
+            cip = (ImageProcessor) (Utils.normaliseToByte(cip));
+            stack.deleteSlice(1);
+            stack.addSlice(cip);
+        }
     }
 }

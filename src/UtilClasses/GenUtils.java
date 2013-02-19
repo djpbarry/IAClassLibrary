@@ -38,4 +38,27 @@ public class GenUtils {
         }
         return Integer.parseInt((new String(charBuffer)).substring(0, i));
     }
+    
+    /*
+    * Create new parent output directory - make sure directory name is
+    * unique so old results are not overwritten
+    */
+    public static String openResultsDirectory(String directory, String delimiter){
+        File newDir = new File(directory + "_Output" + delimiter);
+        try {
+            int i = 1;
+            while (newDir.exists()) {
+                newDir = new File(directory + "_Output (" + i + ")" + delimiter);
+                i++;
+            }
+            if (!newDir.mkdir()) {
+                System.err.println("Failed to create output directory.");
+                return null;
+            }
+        } catch (Exception e) {
+            System.err.println(e.toString());
+            return null;
+        }
+        return newDir.getAbsolutePath();
+    }
 }

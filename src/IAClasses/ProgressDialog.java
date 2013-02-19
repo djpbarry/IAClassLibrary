@@ -11,6 +11,9 @@
 
 package IAClasses;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
 /**
  *
  * @author barry05
@@ -24,6 +27,8 @@ public class ProgressDialog extends javax.swing.JDialog {
         this.label = label;
         setAlwaysOnTop(alwaysOnTop);
         initComponents();
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setLocation(dim.width / 2 - this.getWidth() / 2, dim.height / 2 - this.getHeight() / 2);
     }
 
     public void updateProgress(int current, int max){
