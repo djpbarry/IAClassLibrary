@@ -365,17 +365,17 @@ public class Utils {
 
         if (xVal != 0.0) {
             if (xVal > 0.0 && yVal > 0.0) {
-                outVal = 360.0 - Math.atan(xVal / yVal) * 180.0 / Math.PI;
+                outVal = 360.0 - Math.atan(yVal / xVal) * 180.0 / Math.PI;
             } else if (xVal < 0.0 && yVal > 0.0) {
                 xVal *= -1;
-                outVal = Math.atan(xVal / yVal) * 180.0 / Math.PI;
+                outVal = 180.0 + Math.atan(yVal / xVal) * 180.0 / Math.PI;
             } else if (xVal < 0.0 && yVal < 0.0) {
                 xVal *= -1;
                 yVal *= -1;
-                outVal = 180.0 - Math.atan(xVal / yVal) * 180.0 / Math.PI;
+                outVal = 180.0 - Math.atan(yVal / xVal) * 180.0 / Math.PI;
             } else if (xVal > 0.0 && yVal < 0.0) {
                 yVal *= -1;
-                outVal = Math.atan(xVal / yVal) * 180.0 / Math.PI + 180.0;
+                outVal = Math.atan(yVal / xVal) * 180.0 / Math.PI;
             } else if (xVal > 0.0 && yVal == 0.0) {
                 outVal = 0.0;
             } else {

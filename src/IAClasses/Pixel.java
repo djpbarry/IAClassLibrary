@@ -76,6 +76,30 @@ public class Pixel {
     public void setFixed(boolean fixed) {
         this.fixed = fixed;
     }
+
+    public void setAssociations(int associations) {
+        this.associations = associations;
+    }
+
+    public void setPrecX(double precX) {
+        this.precX = precX;
+    }
+
+    public void setPrecY(double precY) {
+        this.precY = precY;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public void setZ(double z) {
+        this.z = z;
+    }
     
     public boolean equals(Object obj) {
         if (obj == null) {
