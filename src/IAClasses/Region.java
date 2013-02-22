@@ -299,13 +299,56 @@ public class Region {
         return mask;
     }
 
+    public Pixel[] getOrderedBoundary(double xc, double yc) {
+        Wand wand = getWand(getMask(), xc, yc);
+        int n = wand.npoints;
+        int xpoints[] = wand.xpoints;
+        int ypoints[] = wand.ypoints;
+        Pixel pix[] = new Pixel[n];
+        for (int i = 0; i < n; i++) {
+            pix[i] = new Pixel(xpoints[i], ypoints[i], 255.0);
+        }
+        return pix;
+    }
+
+    public static double[] calcCurvature(Pixel pix[], int step) {
+        int n = pix.length;
+        double curvature[] = new double[n];
+        for (int j = 0; j < n; j++) {
+            int i = j - step;
+            int k = j + step;
+            if (i < 0) {
+                i += n;
+            }
+            if (k >= n) {
+                k -= n;
+            }
+            double theta1 = Utils.arcTan(pix[j].getX() - pix[i].getX(), pix[j].getY() - pix[i].getY());
+            double theta2 = Utils.arcTan(pix[k].getX() - pix[j].getX(), pix[k].getY() - pix[j].getY());
+            if (theta1 >= 0 && theta1 < 90 && theta2 > 270) {
+                theta2 -= 360.0;
+            }
+            if (theta2 >= 0 && theta2 < 90 && theta1 > 270) {
+                theta1 -= 360.0;
+            }
+            double C = theta2 - theta1;
+            curvature[i] = C;
+        }
+        return curvature;
+    }
+
     public Pixel[] getBoundarySig(double xc, double yc) {
-        Wand wand = new Wand(getMask());
-        wand.autoOutline((int) Math.round(xc - bounds.x), (int) Math.round(yc - bounds.y), 0.0,
-                Wand.EIGHT_CONNECTED);
+        Wand wand = getWand(getMask(), xc, yc);
         int n = wand.npoints;
         return DSPProcessor.getDistanceSignal(n, xc,
                 yc, wand.xpoints, wand.ypoints, 1.0);
+    }
+
+    public Wand getWand(ImageProcessor mask, double xc, double yc) {
+        Wand wand = new Wand(getMask());
+        wand.autoOutline((int) Math.round(xc - bounds.x), (int) Math.round(yc - bounds.y), 0.0,
+                Wand.EIGHT_CONNECTED);
+        return wand;
     }
 
     public Pixel[] buildVelMapCol(double xc, double yc, ImageStack stack, int frame, double timeRes, double spatialRes) {

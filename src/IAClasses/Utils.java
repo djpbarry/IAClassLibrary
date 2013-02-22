@@ -185,7 +185,7 @@ public class Utils {
         }
         return bproc;
     }
-    
+
     public static ArrayList<int[]> findLocalMaxima(int kWidth, int kHeight,
             ImageProcessor image, double maxThresh, boolean varyBG) {
         if (image == null) {
@@ -365,17 +365,17 @@ public class Utils {
 
         if (xVal != 0.0) {
             if (xVal > 0.0 && yVal > 0.0) {
-                outVal = 360.0 - Math.atan(xVal / yVal) * 180.0 / Math.PI;
+                outVal = 360.0 - Math.atan(yVal / xVal) * 180.0 / Math.PI;
             } else if (xVal < 0.0 && yVal > 0.0) {
                 xVal *= -1;
-                outVal = Math.atan(xVal / yVal) * 180.0 / Math.PI;
+                outVal = 180.0 + Math.atan(yVal / xVal) * 180.0 / Math.PI;
             } else if (xVal < 0.0 && yVal < 0.0) {
                 xVal *= -1;
                 yVal *= -1;
-                outVal = 180.0 - Math.atan(xVal / yVal) * 180.0 / Math.PI;
+                outVal = 180.0 - Math.atan(yVal / xVal) * 180.0 / Math.PI;
             } else if (xVal > 0.0 && yVal < 0.0) {
                 yVal *= -1;
-                outVal = Math.atan(xVal / yVal) * 180.0 / Math.PI + 180.0;
+                outVal = Math.atan(yVal / xVal) * 180.0 / Math.PI;
             } else if (xVal > 0.0 && yVal == 0.0) {
                 outVal = 0.0;
             } else {
@@ -480,6 +480,18 @@ public class Utils {
         normalised.multiply(255.0);
         normalised.multiply(1.0 / max);
         normalised.resetMinAndMax();
-        return (ByteProcessor)((new TypeConverter(normalised, true)).convertToByte());
+        return (ByteProcessor) ((new TypeConverter(normalised, true)).convertToByte());
+    }
+
+    /*
+     * Normalise all images in the given stack
+     */
+    public static void normaliseStack(int stackLength, ImageStack stack) {
+        for (int i = 0; i < stackLength; i++) {
+            ImageProcessor cip = stack.getProcessor(1);
+            cip = (ImageProcessor) (Utils.normaliseToByte(cip));
+            stack.deleteSlice(1);
+            stack.addSlice(cip);
+        }
     }
 }
