@@ -311,7 +311,7 @@ public class Region {
         return pix;
     }
 
-    public static double[] calcCurvature(Pixel pix[], int step) {
+    public static double[] calcCurvature(Pixel[] pix, int step) {
         int n = pix.length;
         double curvature[] = new double[n];
         for (int j = 0; j < n; j++) {
@@ -332,7 +332,7 @@ public class Region {
                 theta1 -= 360.0;
             }
             double C = theta2 - theta1;
-            curvature[i] = C;
+            curvature[j] = C;
         }
         return curvature;
     }
