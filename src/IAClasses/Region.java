@@ -332,7 +332,7 @@ public class Region {
                 theta1 -= 360.0;
             }
             double C = theta2 - theta1;
-            curvature[j] = C;
+            curvature[j] = -C;
         }
         return curvature;
     }
