@@ -6,10 +6,11 @@ package IAClasses;
  */
 public class Pixel {
 
-    private int x, y, associations;
+    private int x, y, iD, associations;
     private double z;
     private double precX, precY;
     private boolean fixed;
+    private Pixel link;
 
     public Pixel(int x, int y, double z, int associations) {
         this.precX = Double.NaN;
@@ -19,6 +20,7 @@ public class Pixel {
         this.z = z;
         fixed = false;
         this.associations = associations;
+        this.link = null;
     }
 
     public Pixel(double x, double y, double z, int associations) {
@@ -29,8 +31,9 @@ public class Pixel {
         this.z = z;
         fixed = false;
         this.associations = associations;
+        this.link = null;
     }
-    
+
     public Pixel(double x, double y, double z) {
         this.precX = x;
         this.precY = y;
@@ -39,8 +42,25 @@ public class Pixel {
         this.z = z;
         fixed = false;
         this.associations = 0;
+        this.link = null;
+    }
+    
+    public Pixel(double x, double y, double z, int iD, Pixel newLink) {
+        this.precX = x;
+        this.precY = y;
+        this.x = (int) Math.round(x);
+        this.y = (int) Math.round(y);
+        this.z = z;
+        fixed = false;
+        this.associations = 0;
+        this.link = newLink;
+        this.iD = iD;
     }
 
+    public Pixel getLink(){
+        return link;
+    }
+    
     public int getX() {
         return x;
     }
@@ -100,7 +120,12 @@ public class Pixel {
     public void setZ(double z) {
         this.z = z;
     }
-    
+
+    public int getiD() {
+        return iD;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -115,6 +140,9 @@ public class Pixel {
         if (this.y != other.y) {
             return false;
         }
+        if (this.iD != other.iD) {
+            return false;
+        }
         if (this.associations != other.associations) {
             return false;
         }
@@ -127,9 +155,6 @@ public class Pixel {
         if (Double.doubleToLongBits(this.precY) != Double.doubleToLongBits(other.precY)) {
             return false;
         }
-        if (this.fixed != other.fixed) {
-            return false;
-        }
         return true;
-    }
+    }    
 }
