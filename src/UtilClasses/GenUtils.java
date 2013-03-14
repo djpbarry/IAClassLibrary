@@ -38,12 +38,12 @@ public class GenUtils {
         }
         return Integer.parseInt((new String(charBuffer)).substring(0, i));
     }
-    
+
     /*
-    * Create new parent output directory - make sure directory name is
-    * unique so old results are not overwritten
-    */
-    public static String openResultsDirectory(String directory, String delimiter){
+     * Create new parent output directory - make sure directory name is unique
+     * so old results are not overwritten
+     */
+    public static String openResultsDirectory(String directory, String delimiter) {
         File newDir = new File(directory + "_Output" + delimiter);
         try {
             int i = 1;
@@ -60,5 +60,13 @@ public class GenUtils {
             return null;
         }
         return newDir.getAbsolutePath();
+    }
+
+    public static String getDelimiter() {
+        if (IJ.isMacOSX()) {
+            return "//";
+        } else {
+            return "\\";
+        }
     }
 }
