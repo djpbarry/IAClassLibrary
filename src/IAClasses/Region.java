@@ -96,7 +96,18 @@ public class Region {
             int y = (int) Math.round(precY);
             centroids.add(new Pixel(precX, precY, refImage.getPixelValue(x, y), 2));
         }
-        return;
+    }
+
+    public void calcCentroid() {
+        int bordersize = borderPix.size();
+        double xsum = 0.0, ysum = 0.0;
+        Pixel current;
+        for (int i = 0; i < bordersize; i++) {
+            current = (Pixel) borderPix.get(i);
+            xsum += current.getX();
+            ysum += current.getY();
+        }
+        centroids.add(new Pixel(xsum / (borderPix.size()), ysum / (borderPix.size()), 0.0, 1));
     }
 
     public double getMean() {
