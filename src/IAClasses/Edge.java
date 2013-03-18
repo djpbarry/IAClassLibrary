@@ -2,6 +2,7 @@ package IAClasses;
 
 import ij.process.ImageProcessor;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  *
@@ -59,7 +60,7 @@ public class Edge {
         int ls = startVertex.getBorderPix().size();
         int le = endVertex.getBorderPix().size();
         int l;
-        ArrayList points1, points2;
+        LinkedList points1, points2;
         gradPix = new ArrayList();
         if (le <= ls) {
             l = le;

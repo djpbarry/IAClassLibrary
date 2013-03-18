@@ -10,6 +10,7 @@ import ij.process.ImageProcessor;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 /**
  *
@@ -19,8 +20,8 @@ public class Region {
 
     private ArrayList<Pixel> pixels = new ArrayList<Pixel>();
     private ArrayList<Pixel> seedPix = new ArrayList<Pixel>();
-    private ArrayList<Pixel> borderPix = new ArrayList<Pixel>();
-    private ArrayList<Pixel> expandedBorder = new ArrayList<Pixel>();
+    private LinkedList<Pixel> borderPix = new LinkedList<Pixel>();
+    private LinkedList<Pixel> expandedBorder = new LinkedList<Pixel>();
     private ArrayList<Pixel> centroids = new ArrayList<Pixel>();
     private double min = Double.MAX_VALUE, max = Double.MIN_VALUE, mean, seedMean, sigma;
     private double mfD[];
@@ -156,7 +157,7 @@ public class Region {
         return -1;
     }
 
-    public ArrayList<Pixel> getBorderPix() {
+    public LinkedList<Pixel> getBorderPix() {
         return borderPix;
     }
 
@@ -169,7 +170,7 @@ public class Region {
             return false;
         } else {
             borderPix = expandedBorder;
-            expandedBorder = new ArrayList();
+            expandedBorder = new LinkedList();
             return true;
         }
     }
@@ -179,7 +180,7 @@ public class Region {
         return;
     }
 
-    public ArrayList<Pixel> getExpandedBorder() {
+    public LinkedList<Pixel> getExpandedBorder() {
         return expandedBorder;
     }
 
