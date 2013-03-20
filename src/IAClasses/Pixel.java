@@ -45,6 +45,17 @@ public class Pixel {
         this.link = null;
     }
     
+    public Pixel(int x, int y) {
+        this.precX = x;
+        this.precY = y;
+        this.x = x;
+        this.y = y;
+        this.z = 0.0;
+        fixed = false;
+        this.associations = 0;
+        this.link = null;
+    }
+    
     public Pixel(double x, double y, double z, int iD, Pixel newLink) {
         this.precX = x;
         this.precY = y;

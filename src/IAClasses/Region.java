@@ -20,6 +20,8 @@ public class Region {
 
     private ArrayList<Pixel> pixels = new ArrayList<Pixel>();
     private ArrayList<Pixel> seedPix = new ArrayList<Pixel>();
+    private ArrayList<ArrayList> pixMem = new ArrayList<ArrayList>();
+    private ArrayList<LinkedList> borderPixMem = new ArrayList<LinkedList>();
     private LinkedList<Pixel> borderPix = new LinkedList<Pixel>();
     private LinkedList<Pixel> expandedBorder = new LinkedList<Pixel>();
     private ArrayList<Pixel> centroids = new ArrayList<Pixel>();
@@ -29,6 +31,7 @@ public class Region {
     private boolean edge, active;
     private Rectangle bounds;
     private int[] histogram = new int[256];
+    private final int memSize = 50;
 
     public Region() {
     }
@@ -177,7 +180,6 @@ public class Region {
 
     public void addExpandedBorderPix(Pixel p) {
         expandedBorder.add(p);
-        return;
     }
 
     public LinkedList<Pixel> getExpandedBorder() {
@@ -433,5 +435,35 @@ public class Region {
 
     public void clearBorderPix() {
         borderPix.clear();
+    }
+
+    public void savePixels() {
+        pixMem.add((ArrayList) pixels.clone());
+        borderPixMem.add((LinkedList) borderPix.clone());
+        if (pixMem.size() > memSize) {
+            pixMem.remove(0);
+        }
+        if (borderPixMem.size() > memSize) {
+            borderPixMem.remove(0);
+        }
+    }
+
+    public ArrayList<Pixel> getSavedPix(int index) {
+        if (index >= pixMem.size()) {
+            return null;
+        }
+        return pixMem.get(index);
+    }
+
+    public LinkedList<Pixel> getSavedBorderPix(int index) {
+        if (index >= borderPixMem.size()) {
+            return null;
+        }
+        return borderPixMem.get(index);
+    }
+
+    public void loadPixels(ArrayList<Pixel> pixels, LinkedList<Pixel> borderPix) {
+        this.pixels = pixels;
+        this.borderPix = borderPix;
     }
 }
