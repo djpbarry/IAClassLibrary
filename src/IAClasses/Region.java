@@ -328,25 +328,29 @@ public class Region {
     public static double[] calcCurvature(Pixel[] pix, int step) {
         int n = pix.length;
         double curvature[] = new double[n];
-        for (int j = 0; j < n; j++) {
-            int i = j - step;
-            int k = j + step;
-            if (i < 0) {
-                i += n;
+        if (n < step) {
+            Arrays.fill(curvature, 0.0);
+        } else {
+            for (int j = 0; j < n; j++) {
+                int i = j - step;
+                int k = j + step;
+                if (i < 0) {
+                    i += n;
+                }
+                if (k >= n) {
+                    k -= n;
+                }
+                double theta1 = Utils.arcTan(pix[j].getX() - pix[i].getX(), pix[j].getY() - pix[i].getY());
+                double theta2 = Utils.arcTan(pix[k].getX() - pix[j].getX(), pix[k].getY() - pix[j].getY());
+                if (theta1 >= 0 && theta1 < 90 && theta2 > 270) {
+                    theta2 -= 360.0;
+                }
+                if (theta2 >= 0 && theta2 < 90 && theta1 > 270) {
+                    theta1 -= 360.0;
+                }
+                double C = theta2 - theta1;
+                curvature[j] = -C;
             }
-            if (k >= n) {
-                k -= n;
-            }
-            double theta1 = Utils.arcTan(pix[j].getX() - pix[i].getX(), pix[j].getY() - pix[i].getY());
-            double theta2 = Utils.arcTan(pix[k].getX() - pix[j].getX(), pix[k].getY() - pix[j].getY());
-            if (theta1 >= 0 && theta1 < 90 && theta2 > 270) {
-                theta2 -= 360.0;
-            }
-            if (theta2 >= 0 && theta2 < 90 && theta1 > 270) {
-                theta1 -= 360.0;
-            }
-            double C = theta2 - theta1;
-            curvature[j] = -C;
         }
         return curvature;
     }
@@ -446,6 +450,16 @@ public class Region {
         if (borderPixMem.size() > memSize) {
             borderPixMem.remove(0);
         }
+//        int ps = pixMem.size();
+//        int bs = borderPixMem.size();
+//        for(int p=0;p<ps;p++){
+//            System.out.print(pixMem.get(p).size()+" ");
+//        }
+//        System.out.println();
+//        for(int b=0;b<bs;b++){
+//            System.out.print(pixMem.get(b).size()+" ");
+//        }    
+//        System.out.println();
     }
 
     public ArrayList<Pixel> getSavedPix(int index) {
