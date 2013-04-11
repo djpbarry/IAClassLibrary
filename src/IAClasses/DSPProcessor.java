@@ -187,7 +187,7 @@ public class DSPProcessor {
 
     public static double[] upScale(double[] input) {
         int n = (int) Math.ceil(Math.log(input.length) / NATURAL_LOG_OF_2);
-        return upScale(input, n);
+        return upScale(input, n, true);
     }
 
     /**
@@ -199,19 +199,22 @@ public class DSPProcessor {
      * @return output signal with <i>2<sup>n</sup></i> samples, where <i>n</i>
      * is the smallest integer value that satisfies <i>2<sup>n</sup> > N</i>
      */
-    public static double[] upScale(double[] input, int n) {
+    public static double[] upScale(double[] input, int n, boolean powerOf2) {
         int i, j, k, inputLength = input.length;
+        int outputLength = n;
 
-        int outputLength = (int) Math.pow(2, n);
+        if (powerOf2) {
+            outputLength = (int) Math.pow(2, n);
+        }
 
         double output[] = new double[outputLength];
-        double increment = (double) (inputLength-1.0) / (outputLength-1.0);
-        double interindex=0.0;
+        double increment = (double) (inputLength - 1.0) / (outputLength - 1.0);
+        double interindex = 0.0;
 
         /*
          * The input signal is linearly interpolated to produce the output
          */
-        for (i = 0, j=0; i < outputLength; i++) {
+        for (i = 0, j = 0; i < outputLength; i++) {
             j = (int) Math.floor(interindex);
             if (j < inputLength - 1) {
                 k = j + 1;
@@ -219,7 +222,7 @@ public class DSPProcessor {
                 k = j;
             }
             output[i] = input[j] + (interindex - j) * (input[k] - input[j]);
-            interindex+=increment;
+            interindex += increment;
         }
         return output;
     }
