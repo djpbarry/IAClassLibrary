@@ -5,6 +5,10 @@
 package UtilClasses;
 
 import ij.IJ;
+import ij.gui.Roi;
+import ij.process.ImageProcessor;
+import java.awt.Color;
+import java.awt.Rectangle;
 import java.io.*;
 
 /**
@@ -68,5 +72,13 @@ public class GenUtils {
         } else {
             return "\\";
         }
+    }
+
+    public static void drawRegionWithLabel(ImageProcessor image, Roi velroi, String label, Rectangle bounds, Color drawColor, int lineWidth) {
+        image.setColor(drawColor);
+        image.setLineWidth(lineWidth);
+        image.draw(velroi);
+        image.drawString(label, bounds.x + bounds.width / 2,
+                bounds.y + bounds.height / 2);
     }
 }

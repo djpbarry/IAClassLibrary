@@ -3,6 +3,7 @@ package IAClasses;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.TypeConverter;
 import java.awt.Rectangle;
@@ -493,5 +494,73 @@ public class Utils {
             stack.deleteSlice(1);
             stack.addSlice(cip);
         }
+    }
+
+    public static FloatProcessor gradDirection(ImageProcessor input) {
+        int rx = 1, ry = 1;
+        float[] xKernel = {-1.0f, -2.0f, -1.0f,
+            0.0f, 0.0f, 0.0f,
+            1.0f, 2.0f, 1.0f};
+        float[] yKernel = {-1.0f, 0.0f, 1.0f,
+            -2.0f, 0.0f, 2.0f,
+            -1.0f, 0.0f, 1.0f};
+
+        return getAngle(convolve(input, xKernel, rx, ry), convolve(input, yKernel, rx, ry));
+    }
+
+    public static FloatProcessor convolve(ImageProcessor input, float[] kernel, int rx, int ry) {
+        // TODO There probably exists a method in a package somewhere to do this more efficiently
+        int x, y, i, j, width = input.getWidth(), height = input.getHeight();
+        int yoffset = 2 * rx + 1;
+        float value;
+        FloatProcessor output = new FloatProcessor(width, height);
+
+        for (x = rx; x < width - rx; x++) {
+            for (y = ry; y < height - ry; y++) {
+                for (value = 0.0f, i = x - rx; i <= x + rx; i++) {
+                    for (j = y - ry; j <= y + ry; j++) {
+                        value += input.getPixelValue(i, j) * kernel[(i - x + rx) + (j - y + ry) * yoffset];
+                    }
+                }
+                output.putPixelValue(x, y, value);
+            }
+        }
+        return output;
+    }
+
+    public static FloatProcessor getAngle(ImageProcessor xInput, ImageProcessor yInput) {
+        int x, y, width = xInput.getWidth(), height = xInput.getHeight();
+        FloatProcessor output = new FloatProcessor(width, height);
+        double xVal, yVal, outVal;
+
+        for (x = 0; x < width; x++) {
+            for (y = 0; y < height; y++) {
+                xVal = xInput.getPixelValue(x, y);
+                yVal = yInput.getPixelValue(x, y);
+                outVal = Utils.arcTan(xVal, yVal);
+                output.putPixelValue(x, y, outVal);
+            }
+        }
+        return output;
+    }
+
+    public static double[] getStackMinMax(ImageStack stack) {
+        double[] minMax = new double[2];
+        double max = -Double.MAX_VALUE;
+        double min = Double.MAX_VALUE;
+        int length = stack.getSize();
+        for (int i = 1; i <= length; i++) {
+            double thisMax = stack.getProcessor(i).getStatistics().max;
+            double thisMin = stack.getProcessor(i).getStatistics().min;
+            if (thisMax > max) {
+                max = thisMax;
+            }
+            if (thisMin < min) {
+                min = thisMin;
+            }
+        }
+        minMax[0] = min;
+        minMax[1] = max;
+        return minMax;
     }
 }
