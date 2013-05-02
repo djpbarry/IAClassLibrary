@@ -81,4 +81,19 @@ public class GenUtils {
         image.drawString(label, bounds.x + bounds.width / 2,
                 bounds.y + bounds.height / 2);
     }
+    
+    /*
+     * Returns simple difference estimate of data, approximating first
+     * derivative.
+     */
+    public static double[] differentiate(double[] data) {
+        double derivative[] = new double[data.length];
+        derivative[0] = 0.0;
+        for (int i = 1; i < data.length - 1; i++) {
+            derivative[i] = data[i + 1] - data[i - 1];
+        }
+        derivative[data.length - 1] = 0.0;
+        return derivative;
+    }
+
 }
