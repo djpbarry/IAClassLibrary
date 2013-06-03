@@ -23,7 +23,7 @@ public class DataStatistics {
     private double minValue = Double.POSITIVE_INFINITY;
     private double maxValue = Double.NEGATIVE_INFINITY;
     private final double alpha;
-    private int nans;
+//    private int nans;
     private ArrayList<Integer> zerocrossings = null;
 
     public DataStatistics(double a, double data[][], int n) {
@@ -40,7 +40,7 @@ public class DataStatistics {
         for (int i = 0; i < data.length; i++) {
             System.arraycopy(data[i], 0, newdata, data[i].length * i, data[i].length);
         }
-        nans = 0;
+//        nans = 0;
         Arrays.sort(newdata);
         median = newdata[n / 2];
         int upper99index = (int) Math.round(n * 0.99);
@@ -49,8 +49,8 @@ public class DataStatistics {
         }
         upper99 = newdata[upper99index];
         lower99 = newdata[(int) Math.round(n * 0.01)];
-        calcMean(newdata);
-        calcStdDev(newdata);
+        mean = calcMean(newdata, dataSize);
+        standardDeviation = calcStdDev(newdata, dataSize, mean);
         calcConfInt();
     }
 
@@ -71,10 +71,10 @@ public class DataStatistics {
         if (n < 1) {
             return;
         }
-        nans = 0;
+//        nans = 0;
         calcPercentiles(data, n);
-        calcMean(data);
-        calcStdDev(data);
+        mean = calcMean(data, dataSize);
+        standardDeviation = calcStdDev(data, dataSize, mean);
         calcConfInt();
     }
 
@@ -95,31 +95,32 @@ public class DataStatistics {
         lower99 = newdata[(int) Math.round(n * 0.05)];
     }
 
-    private void calcMean(double data[]) {
+    public static double calcMean(double[] data, int dataSize) {
         int i;
         double sum = 0.0d;
-        zerocrossings = new ArrayList<Integer>();
+//        zerocrossings = new ArrayList<Integer>();
 
         for (i = 0; i < dataSize; i++) {
-            if (!(Double.isInfinite(data[i]) || Double.isNaN(data[i]))) {
-                sum += data[i];
-                if (data[i] > maxValue) {
-                    maxValue = data[i];
-                }
-                if (data[i] < minValue) {
-                    minValue = data[i];
-                }
-                if (i < dataSize - 1 && (data[i] * data[i + 1] <= 0.0)) {
-                    zerocrossings.add(new Integer(i));
-                }
-            } else {
-                nans++;
-            }
+//            if (!(Double.isInfinite(data[i]) || Double.isNaN(data[i]))) {
+            sum += data[i];
+//                if (data[i] > maxValue) {
+//                    maxValue = data[i];
+//                }
+//                if (data[i] < minValue) {
+//                    minValue = data[i];
+//                }
+//                if (i < dataSize - 1 && (data[i] * data[i + 1] <= 0.0)) {
+//                    zerocrossings.add(new Integer(i));
+//                }
+//            } else {
+//                nans++;
+//            }
         }
-        mean = sum / (dataSize - nans);
+//        return sum / (dataSize - nans);
+        return sum / dataSize;
     }
 
-    private void calcStdDev(double data[]) {
+    public static double calcStdDev(double[] data, int dataSize, double mean) {
         int i;
         double sumvar = 0.0d;
 
@@ -129,9 +130,9 @@ public class DataStatistics {
             }
         }
 
-        double variance = sumvar / (dataSize - nans);
+//        double variance = sumvar / (dataSize - nans);
 
-        standardDeviation = Math.sqrt(variance);
+        return Math.sqrt(sumvar / dataSize);
     }
 
     private void calcConfInt() {

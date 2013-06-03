@@ -10,10 +10,9 @@ public class IsoGaussian {
 
     protected double x0, y0, magnitude, xSigma, ySigma, fit;
 
-    public IsoGaussian(){
-        
+    public IsoGaussian() {
     }
-    
+
     public IsoGaussian(double x0, double y0, double a, double xsig, double ysig, double fit) {
         this.x0 = x0;
         this.y0 = y0;
@@ -48,7 +47,7 @@ public class IsoGaussian {
     }
 
     public double evaluate(double x, double y) {
-        double result = magnitude* Math.exp(-(((x - this.x0) * (x - this.x0))
+        double result = magnitude * Math.exp(-(((x - this.x0) * (x - this.x0))
                 + ((y - this.y0) * (y - this.y0))) / (2 * xSigma * xSigma));
         return result;
     }
