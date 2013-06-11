@@ -8,6 +8,7 @@ import ij.IJ;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Rectangle;
 import java.io.*;
 
@@ -74,10 +75,12 @@ public class GenUtils {
         }
     }
 
-    public static void drawRegionWithLabel(ImageProcessor image, Roi velroi, String label, Rectangle bounds, Color drawColor, int lineWidth) {
+    public static void drawRegionWithLabel(ImageProcessor image, Roi velroi, String label,
+            Rectangle bounds, Color drawColor, int lineWidth, Font font) {
         image.setColor(drawColor);
         image.setLineWidth(lineWidth);
         image.draw(velroi);
+        image.setFont(font);
         image.drawString(label, bounds.x + bounds.width / 2,
                 bounds.y + bounds.height / 2);
     }
