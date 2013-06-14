@@ -84,7 +84,7 @@ public class GenUtils {
         image.drawString(label, bounds.x + bounds.width / 2,
                 bounds.y + bounds.height / 2);
     }
-    
+
     /*
      * Returns simple difference estimate of data, approximating first
      * derivative.
@@ -99,4 +99,14 @@ public class GenUtils {
         return derivative;
     }
 
+    public static File createDirectory(String dirName) {
+        File dir = new File(dirName);
+        if (!dir.exists()) {
+            if (!dir.mkdir()) {
+                IJ.error("Failed to create visualisation output directories.");
+                return null;
+            }
+        }
+        return dir;
+    }
 }
