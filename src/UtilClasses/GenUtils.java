@@ -53,7 +53,7 @@ public class GenUtils {
         try {
             int i = 1;
             while (newDir.exists()) {
-                newDir = new File(directory + "_Output (" + i + ")" + delimiter);
+                newDir = new File(directory + "_Output_(" + i + ")" + delimiter);
                 i++;
             }
             if (!newDir.mkdir()) {
@@ -101,11 +101,16 @@ public class GenUtils {
 
     public static File createDirectory(String dirName) {
         File dir = new File(dirName);
-        if (!dir.exists()) {
-            if (!dir.mkdir()) {
-                IJ.error("Failed to create visualisation output directories.");
-                return null;
+        try {
+            if (!dir.exists()) {
+                if (!dir.mkdir()) {
+                    IJ.error("Failed to create directory: " + dirName);
+                    return null;
+                }
             }
+        } catch (Exception e) {
+            System.err.println(e.toString());
+            return null;
         }
         return dir;
     }

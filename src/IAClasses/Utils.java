@@ -563,4 +563,15 @@ public class Utils {
         minMax[1] = max;
         return minMax;
     }
+
+    public static ImageStack convertStackToRGB(ImageStack input) {
+        if (input == null) {
+            return null;
+        }
+        ImageStack output = new ImageStack(input.getWidth(), input.getHeight());
+        for (int i = 1; i <= input.getSize(); i++) {
+            output.addSlice(new TypeConverter(input.getProcessor(i), true).convertToRGB());
+        }
+        return output;
+    }
 }
