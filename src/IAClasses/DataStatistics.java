@@ -23,7 +23,9 @@ public class DataStatistics {
     private double minValue = Double.POSITIVE_INFINITY;
     private double maxValue = Double.NEGATIVE_INFINITY;
     private final double alpha;
-//    private int nans;
+    private int maxIndex = -1;
+    private int minIndex = -1;
+    private int nans = 0;
     private ArrayList<Integer> zerocrossings = null;
 
     public DataStatistics(double a, double data[][], int n) {
@@ -49,7 +51,7 @@ public class DataStatistics {
         }
         upper99 = newdata[upper99index];
         lower99 = newdata[(int) Math.round(n * 0.01)];
-        mean = calcMean(newdata, dataSize);
+        mean = calcMean(newdata);
         standardDeviation = calcStdDev(newdata, dataSize, mean);
         calcConfInt();
     }
@@ -73,9 +75,10 @@ public class DataStatistics {
         }
 //        nans = 0;
         calcPercentiles(data, n);
-        mean = calcMean(data, dataSize);
+        mean = calcMean(data);
         standardDeviation = calcStdDev(data, dataSize, mean);
         calcConfInt();
+        findKeyPoints(data);
     }
 
     public DataStatistics(double a, float data[], int n) {
@@ -95,9 +98,10 @@ public class DataStatistics {
         lower99 = newdata[(int) Math.round(n * 0.05)];
     }
 
-    public static double calcMean(double[] data, int dataSize) {
+    public static double calcMean(double[] data) {
         int i;
         double sum = 0.0d;
+        int dataSize = data.length;
 //        zerocrossings = new ArrayList<Integer>();
 
         for (i = 0; i < dataSize; i++) {
@@ -118,6 +122,28 @@ public class DataStatistics {
         }
 //        return sum / (dataSize - nans);
         return sum / dataSize;
+    }
+
+    private void findKeyPoints(double[] data) {
+        zerocrossings = new ArrayList<Integer>();
+        int length = data.length;
+        for (int i = 0; i < length; i++) {
+            if (!(Double.isInfinite(data[i]) || Double.isNaN(data[i]))) {
+                if (data[i] > maxValue) {
+                    maxValue = data[i];
+                    maxIndex = i;
+                }
+                if (data[i] < minValue) {
+                    minValue = data[i];
+                    minIndex = i;
+                }
+                if (i < length - 1 && (data[i] * data[i + 1] <= 0.0)) {
+                    zerocrossings.add(new Integer(i));
+                }
+            } else {
+                nans++;
+            }
+        }
     }
 
     public static double calcStdDev(double[] data, int dataSize, double mean) {
@@ -170,6 +196,14 @@ public class DataStatistics {
 
     public double getMax() {
         return maxValue;
+    }
+
+    public int getMaxIndex() {
+        return maxIndex;
+    }
+
+    public int getMinindex() {
+        return minIndex;
     }
 
     public ArrayList<Integer> getZerocrossings() {
