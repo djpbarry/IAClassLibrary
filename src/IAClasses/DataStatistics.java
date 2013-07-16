@@ -137,7 +137,7 @@ public class DataStatistics {
                     minValue = data[i];
                     minIndex = i;
                 }
-                if (i < length - 1 && (data[i] * data[i + 1] <= 0.0)) {
+                if (i > 0 && (data[i - 1] * data[i] <= 0.0) && data[i] < 0.0) {
                     zerocrossings.add(new Integer(i));
                 }
             } else {
