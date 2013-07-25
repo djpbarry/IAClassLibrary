@@ -114,4 +114,19 @@ public class GenUtils {
         }
         return dir;
     }
+
+    public static String checkFileSep(String directory, char sub) {
+        String dir;
+        dir = directory.replace('\\', sub);
+        dir = dir.replace('/', sub);
+        dir = dir.replace(':', sub);
+        dir = dir.replace('*', sub);
+        dir = dir.replace('?', sub);
+        dir = dir.replace('"', sub);
+        dir = dir.replace('<', sub);
+        dir = dir.replace('>', sub);
+        dir = dir.replace('|', sub);
+        
+        return dir;
+    }
 }
