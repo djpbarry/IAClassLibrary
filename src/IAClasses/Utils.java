@@ -574,4 +574,42 @@ public class Utils {
         }
         return output;
     }
+
+    /**
+     * Draws a 2D IsoGaussian using the parameters contained in
+     * <code>g</code> over a square region of dimension
+     * <code>2 * radius + 1</code> in
+     * <code>image</code>.
+     */
+    public static boolean draw2DGaussian(ImageProcessor image, IsoGaussian g, double tol,
+            double res, boolean partialDetect) {
+        if (image == null || g == null || (!partialDetect && (g.getFit() < -tol))) {
+            return false;
+        }
+        int x, y, drawRad;
+        double x0 = g.getX() / res;
+        double y0 = g.getY() / res;
+        double xSigma = g.getXSigma();
+        double value;
+        drawRad = (int) Math.round(xSigma * 3.0);
+        if (g.getFit() < -tol) {
+            image.setColor(100);
+            image.drawOval((int) Math.round(x0 - drawRad), (int) Math.round(y0 - drawRad),
+                    2 * drawRad + 1, 2 * drawRad + 1);
+        } else {
+            for (x = (int) Math.floor(x0 - drawRad); x <= x0 + drawRad; x++) {
+                for (y = (int) Math.floor(y0 - drawRad); y <= y0 + drawRad; y++) {
+                    /*
+                     * The current pixel value is added so as not to "overwrite"
+                     * other Gaussians in close proximity:
+                     */
+                    value = g.getMagnitude() * Math.exp(-(((x - x0) * (x - x0))
+                            + ((y - y0) * (y - y0))) / (2 * xSigma * xSigma));
+                    value += image.getPixelValue(x, y);
+                    image.putPixelValue(x, y, value);
+                }
+            }
+        }
+        return true;
+    }
 }

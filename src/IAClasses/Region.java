@@ -371,27 +371,32 @@ public class Region {
 
     public Pixel[] buildVelMapCol(double xc, double yc, ImageStack stack, int frame, double timeRes, double spatialRes) {
         ImageProcessor ip = stack.getProcessor(frame);
+        ImageProcessor ipm1 = null, ipp1 = null;
         ImageProcessor edges = ip.duplicate();
         edges.findEdges();
         Wand wand = new Wand(getMask(ip.getWidth(), ip.getHeight()));
         wand.autoOutline((int) Math.round(xc), (int) Math.round(yc), 0.0,
                 Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
+        int size = stack.getSize();
         int[] xpoints = wand.xpoints;
         int[] ypoints = wand.ypoints;
         Pixel points[] = DSPProcessor.interpolatePoints(n, xpoints, ypoints);
         double t1 = 0, t2 = 0;
-        if (frame > 1 && frame < stack.getSize()) {
-            t1 = stack.getProcessor(frame + 1).getAutoThreshold();
-            t2 = stack.getProcessor(frame - 1).getAutoThreshold();
+        if (frame > 1 && frame < size) {
+            ipm1 = stack.getProcessor(frame - 1);
+            ipp1 = stack.getProcessor(frame + 1);
+        }
+        if (frame > 1 && frame < size) {
+            t1 = ipp1.getAutoThreshold();
+            t2 = ipm1.getAutoThreshold();
         }
         for (int i = 0; i < points.length; i++) {
             int x = points[i].getX();
             int y = points[i].getY();
             double g = 0.0;
-            if (frame > 1 && frame < stack.getSize()) {
-                g = stack.getProcessor(frame + 1).getPixelValue(x, y) - t1
-                        - stack.getProcessor(frame - 1).getPixelValue(x, y) + t2;
+            if (frame > 1 && frame < size) {
+                g = ipp1.getPixelValue(x, y) - t1 - ipm1.getPixelValue(x, y) + t2;
             }
             double delta = edges.getPixelValue(x, y);
             double z;
