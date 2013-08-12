@@ -20,8 +20,8 @@ public class Region {
 
     private ArrayList<Pixel> pixels = new ArrayList<Pixel>();
     private ArrayList<Pixel> seedPix = new ArrayList<Pixel>();
-    private ArrayList<ArrayList> pixMem = new ArrayList<ArrayList>();
-    private ArrayList<LinkedList> borderPixMem = new ArrayList<LinkedList>();
+//    private ArrayList<ArrayList> pixMem = new ArrayList<ArrayList>();
+//    private ArrayList<LinkedList> borderPixMem = new ArrayList<LinkedList>();
     private LinkedList<Pixel> borderPix = new LinkedList<Pixel>();
     private LinkedList<Pixel> expandedBorder = new LinkedList<Pixel>();
     private ArrayList<Pixel> centroids = new ArrayList<Pixel>();
@@ -31,7 +31,25 @@ public class Region {
     private boolean edge, active;
     private Rectangle bounds;
     private int[] histogram = new int[256];
-    private final int memSize = 50;
+//    private final int memSize = 10;
+
+    public Region(ImageProcessor mask, int index, int x, int y) {
+        this(index);
+        int width = mask.getWidth();
+        int height = mask.getHeight();
+        Pixel[] bp = this.getOrderedBoundary(width, height, x, y, mask);
+        for (int i = 0; i < bp.length; i++) {
+            this.addBorderPoint(bp[i]);
+        }
+        mask.erode();
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                if (mask.getPixel(i, j) == StaticConstants.FOREGROUND) {
+                    this.addPoint(new Pixel(i, j, index));
+                }
+            }
+        }
+    }
 
     public Region() {
     }
@@ -313,18 +331,6 @@ public class Region {
         return mask;
     }
 
-    public Pixel[] getOrderedBoundary(double xc, double yc) {
-        Wand wand = getWand(getMask(), xc, yc);
-        int n = wand.npoints;
-        int xpoints[] = wand.xpoints;
-        int ypoints[] = wand.ypoints;
-        Pixel pix[] = new Pixel[n];
-        for (int i = 0; i < n; i++) {
-            pix[i] = new Pixel(xpoints[i], ypoints[i], 255.0);
-        }
-        return pix;
-    }
-
     public static double[] calcCurvature(Pixel[] pix, int step) {
         int n = pix.length;
         double curvature[] = new double[n];
@@ -369,19 +375,27 @@ public class Region {
         return wand;
     }
 
+    public Pixel[] getOrderedBoundary(int width, int height, double xc, double yc) {
+        return getOrderedBoundary(width, height, xc, yc, getMask(width, height));
+    }
+
+    public Pixel[] getOrderedBoundary(int width, int height, double xc, double yc, ImageProcessor mask) {
+        Wand wand = new Wand(mask);
+        wand.autoOutline((int) Math.round(xc), (int) Math.round(yc), 0.0,
+                Wand.EIGHT_CONNECTED);
+        int n = wand.npoints;
+        int[] xpoints = wand.xpoints;
+        int[] ypoints = wand.ypoints;
+        return DSPProcessor.interpolatePoints(n, xpoints, ypoints);
+    }
+
     public Pixel[] buildVelMapCol(double xc, double yc, ImageStack stack, int frame, double timeRes, double spatialRes) {
         ImageProcessor ip = stack.getProcessor(frame);
         ImageProcessor ipm1 = null, ipp1 = null;
         ImageProcessor edges = ip.duplicate();
         edges.findEdges();
-        Wand wand = new Wand(getMask(ip.getWidth(), ip.getHeight()));
-        wand.autoOutline((int) Math.round(xc), (int) Math.round(yc), 0.0,
-                Wand.EIGHT_CONNECTED);
-        int n = wand.npoints;
         int size = stack.getSize();
-        int[] xpoints = wand.xpoints;
-        int[] ypoints = wand.ypoints;
-        Pixel points[] = DSPProcessor.interpolatePoints(n, xpoints, ypoints);
+        Pixel points[] = getOrderedBoundary(ip.getWidth(), ip.getHeight(), xc, yc);
         double t1 = 0, t2 = 0;
         if (frame > 1 && frame < size) {
             ipm1 = stack.getProcessor(frame - 1);
@@ -446,41 +460,41 @@ public class Region {
         borderPix.clear();
     }
 
-    public void savePixels() {
-        pixMem.add((ArrayList) pixels.clone());
-        borderPixMem.add((LinkedList) borderPix.clone());
-        if (pixMem.size() > memSize) {
-            pixMem.remove(0);
-        }
-        if (borderPixMem.size() > memSize) {
-            borderPixMem.remove(0);
-        }
-//        int ps = pixMem.size();
-//        int bs = borderPixMem.size();
-//        for(int p=0;p<ps;p++){
-//            System.out.print(pixMem.get(p).size()+" ");
+//    public void savePixels(int width, int height) {
+//        pixMem.add((ArrayList) pixels.clone());
+//        borderPixMem.add((LinkedList) borderPix.clone());
+//        if (pixMem.size() > memSize) {
+//            pixMem.remove(0);
 //        }
-//        System.out.println();
-//        for(int b=0;b<bs;b++){
-//            System.out.print(pixMem.get(b).size()+" ");
-//        }    
-//        System.out.println();
-    }
-
-    public ArrayList<Pixel> getSavedPix(int index) {
-        if (index >= pixMem.size()) {
-            return null;
-        }
-        return pixMem.get(index);
-    }
-
-    public LinkedList<Pixel> getSavedBorderPix(int index) {
-        if (index >= borderPixMem.size()) {
-            return null;
-        }
-        return borderPixMem.get(index);
-    }
-
+//        if (borderPixMem.size() > memSize) {
+//            borderPixMem.remove(0);
+//        }
+//        Random r = new Random();
+//        ColorProcessor cp = new ColorProcessor(width, height);
+//        for (int i = pixMem.size() - 1; i >= 0; i--) {
+//            ArrayList<Pixel> pix = pixMem.get(i);
+//            cp.setColor(new Color(r.nextInt(256), r.nextInt(256), r.nextInt(256)));
+//            for (int j = 0; j < pix.size(); j++) {
+//                int x = pix.get(j).getX();
+//                int y = pix.get(j).getY();
+//                cp.drawPixel(x, y);
+//            }
+//        }
+//        (new ImagePlus("Pix", cp)).show();
+//    }
+//    public ArrayList<Pixel> getSavedPix(int index) {
+//        if (index >= pixMem.size()) {
+//            return null;
+//        }
+//        return pixMem.get(index);
+//    }
+//
+//    public LinkedList<Pixel> getSavedBorderPix(int index) {
+//        if (index >= borderPixMem.size()) {
+//            return null;
+//        }
+//        return borderPixMem.get(index);
+//    }
     public void loadPixels(ArrayList<Pixel> pixels, LinkedList<Pixel> borderPix) {
         this.pixels = pixels;
         this.borderPix = borderPix;
