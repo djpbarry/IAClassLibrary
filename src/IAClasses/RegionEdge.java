@@ -8,13 +8,13 @@ import java.util.LinkedList;
  *
  * @author barry05
  */
-public class Edge {
+public class RegionEdge {
 
     private Region startVertex, endVertex;
     private double gradient, weight;
     private ArrayList gradPix;
 
-    public Edge(Region start, Region end) {
+    public RegionEdge(Region start, Region end) {
         startVertex = start;
         endVertex = end;
     }
