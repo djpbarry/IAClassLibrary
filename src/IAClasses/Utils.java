@@ -612,4 +612,31 @@ public class Utils {
         }
         return true;
     }
+
+    public static boolean searchNeighbourhood(ImageProcessor image, int x, int y, int val, int radius) {
+        int x0 = x - radius;
+        if (x0 < 0) {
+            x0 = 0;
+        }
+        int x1 = x + radius;
+        if (x1 >= image.getWidth()) {
+            x1 = image.getWidth() - 1;
+        }
+        int y0 = y - radius;
+        if (y0 < 0) {
+            y0 = 0;
+        }
+        int y1 = y + radius;
+        if (y1 >= image.getHeight()) {
+            y1 = image.getHeight() - 1;
+        }
+        for (int i = x0; i <= x1; i++) {
+            for (int j = y0; j <= y1; j++) {
+                if (image.getPixel(i, j) == val) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
