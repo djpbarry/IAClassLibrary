@@ -10,6 +10,7 @@ import ij.process.ImageProcessor;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.io.*;
 
 /**
@@ -126,7 +127,12 @@ public class GenUtils {
         dir = dir.replace('<', sub);
         dir = dir.replace('>', sub);
         dir = dir.replace('|', sub);
-        
+
         return dir;
+    }
+
+    public static void error(String message) {
+        Toolkit.getDefaultToolkit().beep();
+        IJ.error(message);
     }
 }

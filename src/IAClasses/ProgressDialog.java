@@ -31,10 +31,10 @@ public class ProgressDialog extends javax.swing.JDialog {
         this.setLocation(dim.width / 2 - this.getWidth() / 2, dim.height / 2 - this.getHeight() / 2);
     }
 
-    public void updateProgress(int current, int max){
+    public void updateProgress(double current, double max){
         bar.setMinimum(0);
-        bar.setMaximum(max);
-        bar.setValue(current);
+        bar.setMaximum((int)Math.round(max));
+        bar.setValue((int)Math.round(current));
     }
 
     /** This method is called from within the constructor to
