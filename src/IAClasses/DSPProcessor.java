@@ -177,7 +177,7 @@ public class DSPProcessor {
         double output[] = new double[4];
         output[0] = eqCoeffs[0];
         output[1] = eqCoeffs[1];
-        output[2] = eqCoeffs[1];
+        output[2] = eqCoeffs[2];
         output[3] = fitter.getRSquared();
 //        Plot plot3 = new Plot("PS", "log[w]", "log[PS]", logOfFrequency, logOfPower);
 //        plot3.show();
