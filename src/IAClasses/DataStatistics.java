@@ -87,7 +87,7 @@ public class DataStatistics {
 
     private void calcPercentiles(double data[], int n) {
         double newdata[] = new double[n];
-        System.arraycopy(data, 0, newdata, 0, data.length);
+        System.arraycopy(data, 0, newdata, 0, n);
         Arrays.sort(newdata);
         median = newdata[n / 2];
         int upper99index = (int) Math.round(n * 0.99);
