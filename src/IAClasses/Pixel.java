@@ -6,7 +6,7 @@ package IAClasses;
  */
 public class Pixel {
 
-    private int x, y, iD, associations;
+    protected int x, y, iD, associations;
     private double z;
     private double precX, precY;
     private boolean fixed;
@@ -132,7 +132,7 @@ public class Pixel {
         this.z = z;
     }
 
-    public int getiD() {
+    public int getID() {
         return iD;
     }
 
