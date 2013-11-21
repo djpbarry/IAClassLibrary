@@ -135,4 +135,10 @@ public class GenUtils {
         Toolkit.getDefaultToolkit().beep();
         IJ.error(message);
     }
+
+    public static void showDone(Object caller) {
+        if (IJ.getInstance() != null) {
+            IJ.showStatus(caller.getClass().getName() + ": Done.");
+        }
+    }
 }
