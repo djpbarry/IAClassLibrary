@@ -81,7 +81,7 @@ public class GenUtils {
         File dir = new File(dirName);
         try {
             if (!dir.exists()) {
-                if (!dir.mkdir()) {
+                if (!dir.mkdirs()) {
                     IJ.error("Failed to create directory: " + dirName);
                     return null;
                 }

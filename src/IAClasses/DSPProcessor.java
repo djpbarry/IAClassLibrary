@@ -174,11 +174,10 @@ public class DSPProcessor {
         CurveFitter fitter = new CurveFitter(logOfFrequency, logOfPower);
         fitter.doFit(CurveFitter.STRAIGHT_LINE); // The fractal dimension is estimated from a linear regression of a log-log Fourier domain plot
         double eqCoeffs[] = fitter.getParams(); // Coefficents of the equation of the straight line fit (ax + by = c).
-        double output[] = new double[4];
+        double output[] = new double[3];
         output[0] = eqCoeffs[0];
         output[1] = eqCoeffs[1];
-        output[2] = eqCoeffs[2];
-        output[3] = fitter.getRSquared();
+        output[2] = fitter.getRSquared();
 //        Plot plot3 = new Plot("PS", "log[w]", "log[PS]", logOfFrequency, logOfPower);
 //        plot3.show();
 
@@ -214,7 +213,7 @@ public class DSPProcessor {
         /*
          * The input signal is linearly interpolated to produce the output
          */
-        for (i = 0, j = 0; i < outputLength; i++) {
+        for (i = 0; i < outputLength; i++) {
             j = (int) Math.floor(interindex);
             if (j < inputLength - 1) {
                 k = j + 1;
@@ -344,12 +343,12 @@ public class DSPProcessor {
     public static double[] getPowerSpectrum(double[][] fourier, int inputLength) {
         int k;
         double[] powerSpectrum = new double[inputLength];
-        double index[] = new double[inputLength];
+//        double index[] = new double[inputLength];
 
         for (k = 0; k < inputLength; k++) {
             IJ.showStatus("Generating Power Spectrum");
             powerSpectrum[k] = Math.pow(fourier[k][0], 2) + Math.pow(fourier[k][1], 2);
-            index[k] = k;
+//            index[k] = k;
         }
 
 //        Plot plot = new Plot("PowerSpectrum", "i", "K", index, powerSpectrum);
@@ -449,9 +448,10 @@ public class DSPProcessor {
         double X[] = Utils.convolveCurve(gaussian, input);
         //double ddX[] = Utils.convolveCurve(ddgaussian, input);
         double[] output = new double[X.length];
-        for (int i = 0; i < X.length; i++) {
-            output[i] = X[i];// + (ddX[i] - X[i]);
-        }
+        System.arraycopy(X, 0, output, 0, X.length);
+//        for (int i = 0; i < X.length; i++) {
+//            output[i] = X[i];// + (ddX[i] - X[i]);
+//        }
         return output;
     }
 }
