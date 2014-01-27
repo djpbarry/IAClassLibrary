@@ -9,6 +9,7 @@ import ij.gui.Roi;
 import ij.process.ImageProcessor;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.io.*;
@@ -53,14 +54,30 @@ public class GenUtils {
         }
     }
 
-    public static void drawRegionWithLabel(ImageProcessor image, Roi velroi, String label,
-            Rectangle bounds, Color drawColor, int lineWidth, Font font) {
+    public static void drawRegionWithLabel(ImageProcessor image, Roi roi, String label,
+            Rectangle bounds, Color drawColor, int lineWidth, Font font, boolean useIJ) {
         image.setColor(drawColor);
         image.setLineWidth(lineWidth);
-        image.draw(velroi);
+        if (useIJ) {
+            image.draw(roi);
+        } else {
+            Polygon poly = roi.getPolygon();
+            int n = poly.npoints;
+            int xp[] = poly.xpoints;
+            int yp[] = poly.ypoints;
+            int w = image.getWidth();
+            int h = image.getHeight();
+            for (int i = 0; i < n; i++) {
+                image.drawDot(checkRange(xp[i], w), checkRange(yp[i], h));
+            }
+        }
         image.setFont(font);
         image.drawString(label, bounds.x + bounds.width / 2,
                 bounds.y + bounds.height / 2);
+    }
+
+    public static int checkRange(int a, int b) {
+        return a > b ? a - b : a;
     }
 
     /*
