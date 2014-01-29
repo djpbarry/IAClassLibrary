@@ -58,6 +58,8 @@ public class GenUtils {
             Rectangle bounds, Color drawColor, int lineWidth, Font font, boolean useIJ) {
         image.setColor(drawColor);
         image.setLineWidth(lineWidth);
+        int w = image.getWidth();
+        int h = image.getHeight();
         if (useIJ) {
             image.draw(roi);
         } else {
@@ -65,19 +67,17 @@ public class GenUtils {
             int n = poly.npoints;
             int xp[] = poly.xpoints;
             int yp[] = poly.ypoints;
-            int w = image.getWidth();
-            int h = image.getHeight();
             for (int i = 0; i < n; i++) {
                 image.drawDot(checkRange(xp[i], w), checkRange(yp[i], h));
             }
         }
         image.setFont(font);
-        image.drawString(label, bounds.x + bounds.width / 2,
-                bounds.y + bounds.height / 2);
+        image.drawString(label, checkRange(bounds.x + bounds.width / 2, w),
+                checkRange(bounds.y + bounds.height / 2, h));
     }
 
     public static int checkRange(int a, int b) {
-        return a > b ? a - b : a;
+        return a >= b ? a - b : a;
     }
 
     /*
