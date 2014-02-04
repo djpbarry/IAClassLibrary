@@ -45,15 +45,13 @@ public class Utils {
 
     /**
      * Copies pixel values from a square area specified by
-     * <code>(xc - r, yc - r, xc + r, yc + r)</code> from
-     * <code>image</code> into
-     * <code>values</code>.
+     * <code>(xc - r, yc - r, xc + r, yc + r)</code> from <code>image</code>
+     * into <code>values</code>.
      *
      * @param xCoords x-coordinates of the pixels will be copied in here
      * @param yCoords y-coordinates of the pixels will be copied in here
-     * @param values the
-     * <code>2 * r + 1 x 2 * r + 1</code> array into which pixel values will be
-     * copied
+     * @param values the <code>2 * r + 1 x 2 * r + 1</code> array into which
+     * pixel values will be copied
      * @param image the image from which pixel values are extracted
      */
     public static void extractValues(double[] xCoords, double[] yCoords,
@@ -93,19 +91,14 @@ public class Utils {
     }
 
     /**
-     * Searches within
-     * <code>radius</code> pixels of (
-     * <code>x</code>,
-     * <code>y</code>) in
-     * <code>image</code> for a grey level equal to
+     * Searches within <code>radius</code> pixels of ( <code>x</code>,
+     * <code>y</code>) in <code>image</code> for a grey level equal to
      * <code>value</code>. If more than one suitable candidate is identified,
-     * that nearest to
-     * <code>(x, y)</code> is returned.
+     * that nearest to <code>(x, y)</code> is returned.
      *
-     * @return the co-ordinates of the point (in the form
-     * <code>{x, y}</code>) if a pixel of
-     * <code>value</code> was located,
-     * <code>null</code> otherwise.
+     * @return the co-ordinates of the point (in the form <code>{x, y}</code>)
+     * if a pixel of <code>value</code> was located, <code>null</code>
+     * otherwise.
      */
     public static int[][] searchNeighbourhood(int x, int y, int radius, int value,
             ImageProcessor image) {
@@ -225,8 +218,7 @@ public class Utils {
     }
 
     /**
-     * Returns the distance between
-     * <code>{x1, y1}</code> and
+     * Returns the distance between <code>{x1, y1}</code> and
      * <code>{x2, y2}</code>.
      */
     public static double calcDistance(double x1, double y1, double x2, double y2) {
@@ -248,19 +240,12 @@ public class Utils {
     /**
      * Calculates a 2 x 2 covariance matrix.
      *
-     * @param xValues a vector of length
-     * <code>n</code>.
-     * @param yValues a vector of length
-     * <code>m</code>.
-     * @param xSum the sum of all entries in
-     * <code>xValues</code>.
-     * @param ySum the sum of all entries in
-     * <code>yValues</code>.
-     * @return the covariance matrix for
-     * <code>xValues</code> and
-     * <code>yValues</code>, or
-     * <code>null</code> if
-     * <code>m != n</code>.
+     * @param xValues a vector of length <code>n</code>.
+     * @param yValues a vector of length <code>m</code>.
+     * @param xSum the sum of all entries in <code>xValues</code>.
+     * @param ySum the sum of all entries in <code>yValues</code>.
+     * @return the covariance matrix for <code>xValues</code> and
+     * <code>yValues</code>, or <code>null</code> if <code>m != n</code>.
      */
     public static double[][] covarianceMatrix(double[] xValues, double[] yValues, double xSum, double ySum) {
         if (xValues == null || yValues == null || (xValues.length != yValues.length)) {
@@ -283,18 +268,12 @@ public class Utils {
     /**
      * Calculates the covariance of two variables.
      *
-     * @param variable1 a vector of length
-     * <code>n</code>.
-     * @param variable2 a vector of length
-     * <code>m</code>.
-     * @param mean1 the mean of the elements of
-     * <code>variable1</code>.
-     * @param mean2 the mean of the elements of
-     * <code>variable2</code>.
-     * @return the covariance of
-     * <code>variable1</code> and
-     * <code>variable2</code>, or
-     * <code>Double.Nan</code> if
+     * @param variable1 a vector of length <code>n</code>.
+     * @param variable2 a vector of length <code>m</code>.
+     * @param mean1 the mean of the elements of <code>variable1</code>.
+     * @param mean2 the mean of the elements of <code>variable2</code>.
+     * @return the covariance of <code>variable1</code> and
+     * <code>variable2</code>, or <code>Double.Nan</code> if
      * <code>m != n</code>.
      */
     public static double calcCovariance(double[] variable1, double[] variable2, double mean1, double mean2) {
@@ -317,8 +296,8 @@ public class Utils {
      * Calculates the eigenvalues of a 2 x 2 matrix.
      *
      * @param matrix a 2 x 2 matrix.
-     * @return the eigenvalues of
-     * <code>matrix</code> in the form of an array with two elements.
+     * @return the eigenvalues of <code>matrix</code> in the form of an array
+     * with two elements.
      */
     public static double[] calcEigenvalues(double[][] matrix) {
         if (matrix == null || matrix.length != 2 || matrix[0].length != 2) {
@@ -339,14 +318,10 @@ public class Utils {
     }
 
     /**
-     * Converts each entry in a
-     * <code>byte</code> array to a
-     * <code>float</code>.
+     * Converts each entry in a <code>byte</code> array to a <code>float</code>.
      *
-     * @param array an array of
-     * <code>byte</code>s.
-     * @return an array of
-     * <code>float</code>s.
+     * @param array an array of <code>byte</code>s.
+     * @return an array of <code>float</code>s.
      */
     public static float[] byteArrayToFloat(byte[] array) {
         if (array == null) {
@@ -576,14 +551,13 @@ public class Utils {
     }
 
     /**
-     * Draws a 2D IsoGaussian using the parameters contained in
-     * <code>g</code> over a square region of dimension
-     * <code>2 * radius + 1</code> in
+     * Draws a 2D IsoGaussian using the parameters contained in <code>g</code>
+     * over a square region of dimension <code>2 * radius + 1</code> in
      * <code>image</code>.
      */
     public static boolean draw2DGaussian(ImageProcessor image, IsoGaussian g, double tol,
             double res, boolean partialDetect) {
-        if (image == null || g == null || (!partialDetect && (g.getFit() < -tol))) {
+        if (image == null || g == null || (!partialDetect && (g.getFit() >= tol))) {
             return false;
         }
         int x, y, drawRad;
@@ -592,7 +566,7 @@ public class Utils {
         double xSigma = g.getXSigma();
         double value;
         drawRad = (int) Math.round(xSigma * 3.0);
-        if (g.getFit() < -tol) {
+        if (g.getFit() >= tol) {
             image.setColor(100);
             image.drawOval((int) Math.round(x0 - drawRad), (int) Math.round(y0 - drawRad),
                     2 * drawRad + 1, 2 * drawRad + 1);
@@ -605,6 +579,9 @@ public class Utils {
                      */
                     value = g.getMagnitude() * Math.exp(-(((x - x0) * (x - x0))
                             + ((y - y0) * (y - y0))) / (2 * xSigma * xSigma));
+                    if (value < 0.0) {
+                        value = 0.0;
+                    }
                     value += image.getPixelValue(x, y);
                     image.putPixelValue(x, y, value);
                 }

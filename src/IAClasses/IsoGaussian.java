@@ -20,9 +20,6 @@ public class IsoGaussian {
         this.xSigma = xsig;
         this.ySigma = ysig;
         this.fit = fit;
-        if (this.fit < 0.0) {
-            this.fit = 0.0;
-        }
     }
 
     public double getMagnitude() {
