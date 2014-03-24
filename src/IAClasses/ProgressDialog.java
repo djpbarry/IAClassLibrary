@@ -22,8 +22,8 @@ public class ProgressDialog extends javax.swing.JDialog {
     private String label;
 
     /** Creates new form ProgressDialog */
-    public ProgressDialog(java.awt.Frame parent, String label, boolean modal, boolean alwaysOnTop) {
-        super(parent, modal);
+    public ProgressDialog(java.awt.Frame parent, String label, boolean modal, boolean alwaysOnTop, String title) {
+        super(parent, title, modal);
         this.label = label;
         setAlwaysOnTop(alwaysOnTop);
         initComponents();
