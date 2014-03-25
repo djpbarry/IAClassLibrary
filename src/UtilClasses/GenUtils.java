@@ -22,6 +22,10 @@ public class GenUtils {
 
     public static int maxline = 200;
     public static String hgTagDir = ".hg/cache/tags";
+    /**
+     * Greek letter 'mu'
+     */
+    public static final char mu = '\u03BC';
 
     /*
      * Create new parent output directory - make sure directory name is unique
