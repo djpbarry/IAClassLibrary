@@ -1,5 +1,6 @@
 package IAClasses;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
@@ -615,5 +616,13 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    public static void saveStackAsSeries(ImageStack stack, String directory, String filename, String format) {
+        int size = stack.getSize();
+        for (int s = 0; s < size; s++) {
+            IJ.saveAs(new ImagePlus("", stack.getProcessor(s + 1)),
+                    format, directory + filename + "_" + s + "." + format);
+        }
     }
 }
