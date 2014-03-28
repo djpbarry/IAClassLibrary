@@ -25,7 +25,7 @@ public class GenUtils {
     /**
      * Greek letter 'mu'
      */
-    public static final char mu = '\u03BC';
+    public static final char mu = '\u00b5';
 
     /*
      * Create new parent output directory - make sure directory name is unique
