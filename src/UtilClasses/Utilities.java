@@ -15,6 +15,9 @@ import ij.process.ImageProcessor;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.JFileChooser;
 
 /**
@@ -160,5 +163,11 @@ public class Utilities {
             newNo -= upperBound;
         }
         return newNo;
+    }
+
+    public static String getDate(String format) {
+        Date current = new Date();
+        DateFormat dateFormat = new SimpleDateFormat(format);
+        return dateFormat.format(current);
     }
 }

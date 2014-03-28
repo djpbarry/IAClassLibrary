@@ -9,6 +9,7 @@ import ij.process.ImageProcessor;
 import ij.process.TypeConverter;
 import java.awt.Rectangle;
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class Utils {
@@ -618,11 +619,11 @@ public class Utils {
         return false;
     }
 
-    public static void saveStackAsSeries(ImageStack stack, String directory, String filename, String format) {
+    public static void saveStackAsSeries(ImageStack stack, String directory, String format, DecimalFormat numFormat) {
         int size = stack.getSize();
         for (int s = 0; s < size; s++) {
             IJ.saveAs(new ImagePlus("", stack.getProcessor(s + 1)),
-                    format, directory + filename + "_" + s + "." + format);
+                    format, directory + numFormat.format(s));
         }
     }
 }
