@@ -389,7 +389,7 @@ public class Region {
         return DSPProcessor.interpolatePoints(n, xpoints, ypoints);
     }
 
-    public Pixel[] buildVelMapCol(double xc, double yc, ImageStack stack, int frame, double timeRes, double spatialRes, double[] thresholds) {
+    public Pixel[] buildVelMapCol(double xc, double yc, ImageStack stack, int frame, double timeRes, double spatialRes, int[] thresholds) {
         ImageProcessor ip = stack.getProcessor(frame);
         ImageProcessor ipm1 = null, ipp1 = null;
         ImageProcessor edges = ip.duplicate();
