@@ -313,10 +313,10 @@ public class Region {
     public ImageProcessor getMask() {
         Rectangle roi = getBounds();
         int w = roi.width, h = roi.height;
-        return getMask(w, h);
+        return getMask(w, h, w/2, h/2);
     }
 
-    public ImageProcessor getMask(int width, int height) {
+    public ImageProcessor getMask(int width, int height, double xc, double yc) {
         ImageProcessor mask = new ByteProcessor(width, height);
         mask.setColor(255);
         mask.fill();
@@ -327,7 +327,7 @@ public class Region {
             mask.drawPixel(current.getX(), current.getY());
         }
         FloodFiller ff = new FloodFiller(mask);
-        ff.fill8(width / 2, height / 2);
+        ff.fill8((int)Math.round(xc), (int)Math.round(yc));
         return mask;
     }
 
@@ -376,7 +376,7 @@ public class Region {
     }
 
     public Pixel[] getOrderedBoundary(int width, int height, double xc, double yc) {
-        return getOrderedBoundary(width, height, xc, yc, getMask(width, height));
+        return getOrderedBoundary(width, height, xc, yc, getMask(width, height, xc, yc));
     }
 
     public Pixel[] getOrderedBoundary(int width, int height, double xc, double yc, ImageProcessor mask) {
@@ -426,7 +426,7 @@ public class Region {
 
     public Pixel[] buildStandMapCol(double xc, double yc, ImageStack stack, int frame) {
         ImageProcessor ip = stack.getProcessor(frame);
-        Wand wand = new Wand(getMask(ip.getWidth(), ip.getHeight()));
+        Wand wand = new Wand(getMask(ip.getWidth(), ip.getHeight(), xc, yc));
         wand.autoOutline((int) Math.round(xc), (int) Math.round(yc), 0.0,
                 Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
