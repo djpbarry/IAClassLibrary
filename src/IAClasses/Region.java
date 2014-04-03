@@ -389,7 +389,7 @@ public class Region {
         return DSPProcessor.interpolatePoints(n, xpoints, ypoints);
     }
 
-    public Pixel[] buildVelMapCol(double xc, double yc, ImageStack stack, int frame, double timeRes, double spatialRes) {
+    public Pixel[] buildVelMapCol(double xc, double yc, ImageStack stack, int frame, double timeRes, double spatialRes, double[] thresholds) {
         ImageProcessor ip = stack.getProcessor(frame);
         ImageProcessor ipm1 = null, ipp1 = null;
         ImageProcessor edges = ip.duplicate();
@@ -402,8 +402,8 @@ public class Region {
             ipp1 = stack.getProcessor(frame + 1);
         }
         if (frame > 1 && frame < size) {
-            t1 = ipp1.getAutoThreshold();
-            t2 = ipm1.getAutoThreshold();
+            t1 = thresholds[frame - 2];
+            t2 = thresholds[frame];
         }
         for (int i = 0; i < points.length; i++) {
             int x = points[i].getX();
