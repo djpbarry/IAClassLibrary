@@ -19,6 +19,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.JFileChooser;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  *
@@ -169,5 +170,18 @@ public class Utilities {
         Date current = new Date();
         DateFormat dateFormat = new SimpleDateFormat(format);
         return dateFormat.format(current);
+    }
+    
+     public static void setLookAndFeel(Class c) {
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(c.getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
     }
 }
