@@ -4,6 +4,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.TypeConverter;
@@ -625,5 +626,12 @@ public class Utils {
             IJ.saveAs(new ImagePlus("", stack.getProcessor(s + 1)),
                     format, directory + numFormat.format(s));
         }
+    }
+
+    public static byte[] getPixels(ColorProcessor image, int channel) {
+        int size = image.getWidth() * image.getHeight();
+        byte[][] tempPix = new byte[3][size];
+        image.getRGB(tempPix[0], tempPix[1], tempPix[2]);
+        return tempPix[channel];
     }
 }
