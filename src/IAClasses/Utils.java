@@ -560,7 +560,7 @@ public class Utils {
      */
     public static boolean draw2DGaussian(ImageProcessor image, IsoGaussian g, double tol,
             double res, boolean partialDetect) {
-        if (image == null || g == null || (!partialDetect && (g.getFit() >= tol))) {
+        if (image == null || g == null || (!partialDetect && (g.getFit() < tol))) {
             return false;
         }
         int x, y, drawRad;
@@ -569,7 +569,7 @@ public class Utils {
         double xSigma = g.getXSigma();
         double value;
         drawRad = (int) Math.round(xSigma * 3.0);
-        if (g.getFit() >= tol) {
+        if (g.getFit() < tol) {
             image.setColor(100);
             image.drawOval((int) Math.round(x0 - drawRad), (int) Math.round(y0 - drawRad),
                     2 * drawRad + 1, 2 * drawRad + 1);
