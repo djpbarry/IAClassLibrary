@@ -558,8 +558,7 @@ public class Utils {
      * over a square region of dimension <code>2 * radius + 1</code> in
      * <code>image</code>.
      */
-    public static boolean draw2DGaussian(ImageProcessor image, IsoGaussian g, double tol,
-            double res, boolean partialDetect) {
+    public static boolean draw2DGaussian(ImageProcessor image, IsoGaussian g, double tol, double res, boolean partialDetect, boolean invert) {
         if (image == null || g == null || (!partialDetect && (g.getFit() < tol))) {
             return false;
         }
@@ -580,13 +579,18 @@ public class Utils {
                      * The current pixel value is added so as not to "overwrite"
                      * other Gaussians in close proximity:
                      */
+                    double pval = image.getPixelValue(x, y);
                     value = g.getMagnitude() * Math.exp(-(((x - x0) * (x - x0))
                             + ((y - y0) * (y - y0))) / (2 * xSigma * xSigma));
-                    if (value < 0.0) {
-                        value = 0.0;
+                    if (invert) {
+                        pval -= value;
+                    } else {
+                        pval += value;
                     }
-                    value += image.getPixelValue(x, y);
-                    image.putPixelValue(x, y, value);
+                    if (pval < 0.0) {
+                        pval = 0.0;
+                    }
+                    image.putPixelValue(x, y, pval);
                 }
             }
         }
