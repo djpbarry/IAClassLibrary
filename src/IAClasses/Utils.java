@@ -597,6 +597,12 @@ public class Utils {
         return true;
     }
 
+    public static void drawCross(ImageProcessor image, int x, int y, int size) {
+        int radius = (int) Math.ceil(size / 2.0);
+        image.drawLine(x - radius, y, x + radius, y);
+        image.drawLine(x, y - radius, x, y + radius);
+    }
+
     public static boolean searchNeighbourhood(ImageProcessor image, int x, int y, int val, int radius) {
         int x0 = x - radius;
         if (x0 < 0) {

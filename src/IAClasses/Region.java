@@ -246,7 +246,7 @@ public class Region {
         seedMean = mean;
         mean = 0.0;
         seedPix = (ArrayList) pixels.clone();
-        pixels.clear();
+//        pixels.clear();
     }
 
     public Rectangle getBounds() {
@@ -496,7 +496,8 @@ public class Region {
 //        return borderPixMem.get(index);
 //    }
     public void loadPixels(ArrayList<Pixel> pixels, LinkedList<Pixel> borderPix) {
-        this.pixels = pixels;
-        this.borderPix = borderPix;
+        this.pixels = (ArrayList)pixels.clone();
+        this.borderPix = (LinkedList)borderPix.clone();
+        setSeedPix();
     }
 }
