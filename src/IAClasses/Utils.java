@@ -647,6 +647,9 @@ public class Utils {
     }
 
     public static double getPercentileThresh(FloatProcessor image, double thresh) {
+        if (image == null) {
+            return 0.0;
+        }
         FloatStatistics stats = new FloatStatistics(image);
         long histogram[] = stats.getHistogram();
         int l = histogram.length;
