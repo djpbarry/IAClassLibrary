@@ -6,6 +6,7 @@ import ij.ImageStack;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
+import ij.process.FloatStatistics;
 import ij.process.ImageProcessor;
 import ij.process.TypeConverter;
 import java.awt.Rectangle;
@@ -643,5 +644,19 @@ public class Utils {
         byte[][] tempPix = new byte[3][size];
         image.getRGB(tempPix[0], tempPix[1], tempPix[2]);
         return tempPix[channel];
+    }
+
+    public static double getPercentileThresh(FloatProcessor image, double thresh) {
+        FloatStatistics stats = new FloatStatistics(image);
+        long histogram[] = stats.getHistogram();
+        int l = histogram.length;
+        int total = image.getWidth() * image.getHeight();
+        double sum = 0.0;
+        int i = 0;
+        while (sum / total < thresh && i < l) {
+            sum += histogram[i];
+            i++;
+        }
+        return stats.histMin + i * stats.binSize;
     }
 }
