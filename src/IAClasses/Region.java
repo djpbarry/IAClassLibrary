@@ -1,9 +1,11 @@
 package IAClasses;
 
+import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Wand;
+import ij.plugin.Straightener;
 import ij.process.ByteProcessor;
 import ij.process.FloodFiller;
 import ij.process.ImageProcessor;
@@ -313,7 +315,7 @@ public class Region {
     public ImageProcessor getMask() {
         Rectangle roi = getBounds();
         int w = roi.width, h = roi.height;
-        return getMask(w, h, w/2, h/2);
+        return getMask(w, h, w / 2, h / 2);
     }
 
     public ImageProcessor getMask(int width, int height, double xc, double yc) {
@@ -327,7 +329,7 @@ public class Region {
             mask.drawPixel(current.getX(), current.getY());
         }
         FloodFiller ff = new FloodFiller(mask);
-        ff.fill8((int)Math.round(xc), (int)Math.round(yc));
+        ff.fill8((int) Math.round(xc), (int) Math.round(yc));
         return mask;
     }
 
@@ -424,7 +426,7 @@ public class Region {
         return points;
     }
 
-    public Pixel[] buildStandMapCol(double xc, double yc, ImageStack stack, int frame) {
+    public Pixel[] buildStandMapCol(double xc, double yc, ImageStack stack, int frame, int finalWidth, int depth) {
         ImageProcessor ip = stack.getProcessor(frame);
         Wand wand = new Wand(getMask(ip.getWidth(), ip.getHeight(), xc, yc));
         wand.autoOutline((int) Math.round(xc), (int) Math.round(yc), 0.0,
@@ -432,11 +434,21 @@ public class Region {
         int n = wand.npoints;
         int[] xpoints = wand.xpoints;
         int[] ypoints = wand.ypoints;
-        Pixel points[] = DSPProcessor.interpolatePoints(n, xpoints, ypoints);
-        for (int i = 0; i < points.length; i++) {
-            int x = points[i].getX();
-            int y = points[i].getY();
-            points[i] = new Pixel(x, y, stack.getProcessor(frame).getPixelValue(x, y), 1);
+        PolygonRoi proi = new PolygonRoi(xpoints, ypoints, n, Roi.POLYLINE);
+        Straightener straightener = new Straightener();
+        ImagePlus sigImp = new ImagePlus("", ip);
+        sigImp.setRoi(proi);
+        ImageProcessor sig = straightener.straighten(sigImp, proi, depth);
+        sig.setInterpolate(true);
+        sig.setInterpolationMethod(ImageProcessor.BILINEAR);
+        ImageProcessor sig2 = sig.resize(finalWidth, depth);
+        Pixel points[] = new Pixel[finalWidth];
+        for (int x = 0; x < finalWidth; x++) {
+            double sum = 0.0;
+            for (int y = 0; y < sig2.getHeight(); y++) {
+                sum += sig2.getPixelValue(x, y);
+            }
+            points[x] = new Pixel(0, 0, sum, 1);
         }
         return points;
     }
@@ -496,8 +508,8 @@ public class Region {
 //        return borderPixMem.get(index);
 //    }
     public void loadPixels(ArrayList<Pixel> pixels, LinkedList<Pixel> borderPix) {
-        this.pixels = (ArrayList)pixels.clone();
-        this.borderPix = (LinkedList)borderPix.clone();
+        this.pixels = (ArrayList) pixels.clone();
+        this.borderPix = (LinkedList) borderPix.clone();
         setSeedPix();
     }
 }
