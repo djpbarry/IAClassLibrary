@@ -34,6 +34,7 @@ public class Region {
     private Rectangle bounds;
     private int[] histogram = new int[256];
     private int initX, initY;
+    private final int FOREGROUND = 0, BACKGROUND = 255;
 //    private final int memSize = 10;
 
     public Region(ImageProcessor mask, int index, int x, int y) {
@@ -83,13 +84,13 @@ public class Region {
         ImageProcessor mask = getMask();
         int width = mask.getWidth();
         int height = mask.getHeight();
-        int size = mask.getStatistics().histogram[0];
+        int size = mask.getStatistics().histogram[FOREGROUND];
         int bordersize = borderPix.size();
         double xsum = 0.0, ysum = 0.0, valSum = 0.0, varSum = 0.0, pix;
         if (size > 0) {
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
-                    if (mask.getPixel(i, j) == 0) {
+                    if (mask.getPixel(i, j) == FOREGROUND) {
                         xsum += i;
                         ysum += j;
                         pix = refImage.getPixelValue(i, j);
@@ -112,7 +113,7 @@ public class Region {
             mean = valSum / (size);
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
-                    if (mask.getPixel(i, j) == 0) {
+                    if (mask.getPixel(i, j) == FOREGROUND) {
                         varSum += Math.pow(mean - refImage.getPixelValue(i, j), 2);
                     }
                 }
@@ -326,9 +327,9 @@ public class Region {
 
     public ImageProcessor getMask(int width, int height, double xc, double yc) {
         ImageProcessor mask = new ByteProcessor(width, height);
-        mask.setColor(255);
+        mask.setColor(BACKGROUND);
         mask.fill();
-        mask.setColor(0);
+        mask.setColor(FOREGROUND);
         int m = borderPix.size();
         for (int i = 0; i < m; i++) {
             Pixel current = (Pixel) borderPix.get(i);
