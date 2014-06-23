@@ -20,7 +20,7 @@ import java.util.LinkedList;
  */
 public class Region {
 
-    private ArrayList<Pixel> pixels = new ArrayList<Pixel>();
+//    private ArrayList<Pixel> pixels = new ArrayList<Pixel>();
     private ArrayList<Pixel> seedPix = new ArrayList<Pixel>();
 //    private ArrayList<ArrayList> pixMem = new ArrayList<ArrayList>();
 //    private ArrayList<LinkedList> borderPixMem = new ArrayList<LinkedList>();
@@ -33,6 +33,7 @@ public class Region {
     private boolean edge, active;
     private Rectangle bounds;
     private int[] histogram = new int[256];
+    private int initX, initY;
 //    private final int memSize = 10;
 
     public Region(ImageProcessor mask, int index, int x, int y) {
@@ -43,14 +44,16 @@ public class Region {
         for (int i = 0; i < bp.length; i++) {
             this.addBorderPoint(bp[i]);
         }
-        mask.erode();
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                if (mask.getPixel(i, j) == StaticConstants.FOREGROUND) {
-                    this.addPoint(new Pixel(i, j, index));
-                }
-            }
-        }
+        this.initX=x;
+        this.initY=y;
+//        mask.erode();
+//        for (int i = 0; i < width; i++) {
+//            for (int j = 0; j < height; j++) {
+//                if (mask.getPixel(i, j) == StaticConstants.FOREGROUND) {
+//                    this.addPoint(new Pixel(i, j, index));
+//                }
+//            }
+//        }
     }
 
     public Region() {
@@ -64,10 +67,9 @@ public class Region {
         seedMean = mean = 0.0;
     }
 
-    public void addPoint(Pixel point) {
-        pixels.add(point);
-    }
-
+//    public void addPoint(Pixel point) {
+//        pixels.add(point);
+//    }
     public void addBorderPoint(Pixel point) {
         borderPix.add(point);
     }
@@ -77,40 +79,48 @@ public class Region {
             return;
         }
         Arrays.fill(histogram, 0);
-        int size = pixels.size();
+//        int size = pixels.size();
+        ImageProcessor mask = getMask();
+        int width = mask.getWidth();
+        int height = mask.getHeight();
+        int size = mask.getStatistics().histogram[0];
         int bordersize = borderPix.size();
-        int i;
         double xsum = 0.0, ysum = 0.0, valSum = 0.0, varSum = 0.0, pix;
-        Pixel current;
         if (size > 0) {
-            for (i = 0; i < size; i++) {
-                current = (Pixel) pixels.get(i);
-                xsum += current.getX();
-                ysum += current.getY();
-                pix = refImage.getPixelValue(current.getX(), current.getY());
-                if (pix < min) {
-                    min = pix;
-                } else if (pix > max) {
-                    max = pix;
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    if (mask.getPixel(i, j) == 0) {
+                        xsum += i;
+                        ysum += j;
+                        pix = refImage.getPixelValue(i, j);
+                        if (pix < min) {
+                            min = pix;
+                        } else if (pix > max) {
+                            max = pix;
+                        }
+                        valSum += pix;
+                        int bin = (int) Math.floor(pix);
+                        histogram[bin]++;
+                    }
                 }
-                valSum += pix;
-                int bin = (int) Math.floor(pix * 255.0);
-                histogram[bin]++;
             }
-            double precX = xsum / (pixels.size());
-            double precY = ysum / (pixels.size());
+            double precX = xsum / (size);
+            double precY = ysum / (size);
             int x = (int) Math.round(precX);
             int y = (int) Math.round(precY);
             centroids.add(new Pixel(precX, precY, refImage.getPixelValue(x, y), 2));
             mean = valSum / (size);
-            for (i = 0; i < size; i++) {
-                current = (Pixel) pixels.get(i);
-                varSum += Math.pow(mean - refImage.getPixelValue(current.getX(), current.getY()), 2);
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    if (mask.getPixel(i, j) == 0) {
+                        varSum += Math.pow(mean - refImage.getPixelValue(i, j), 2);
+                    }
+                }
             }
             sigma = Math.sqrt(varSum) / size;
         } else if (bordersize > 0) {
-            for (i = 0; i < bordersize; i++) {
-                current = (Pixel) borderPix.get(i);
+            for (int i = 0; i < bordersize; i++) {
+                Pixel current = (Pixel) borderPix.get(i);
                 xsum += current.getX();
                 ysum += current.getY();
             }
@@ -154,10 +164,9 @@ public class Region {
         return min;
     }
 
-    public ArrayList<Pixel> getPixels() {
-        return pixels;
-    }
-
+//    public ArrayList<Pixel> getPixels() {
+//        return pixels;
+//    }
     public int borderContains(int x, int y) {
         int i;
         for (i = 0; i < borderPix.size(); i++) {
@@ -169,17 +178,16 @@ public class Region {
         return -1;
     }
 
-    public int contains(int x, int y) {
-        int i;
-        for (i = 0; i < pixels.size(); i++) {
-            Pixel p = (Pixel) pixels.get(i);
-            if ((p.getX() == x) && (p.getY() == y)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
+//    public int contains(int x, int y) {
+//        int i;
+//        for (i = 0; i < pixels.size(); i++) {
+//            Pixel p = (Pixel) pixels.get(i);
+//            if ((p.getX() == x) && (p.getY() == y)) {
+//                return i;
+//            }
+//        }
+//        return -1;
+//    }
     public LinkedList<Pixel> getBorderPix() {
         return borderPix;
     }
@@ -244,13 +252,12 @@ public class Region {
         return seedPix;
     }
 
-    public void setSeedPix() {
-        seedMean = mean;
-        mean = 0.0;
-        seedPix = (ArrayList) pixels.clone();
-//        pixels.clear();
-    }
-
+//    public void setSeedPix() {
+//        seedMean = mean;
+//        mean = 0.0;
+////        seedPix = (ArrayList) pixels.clone();
+////        pixels.clear();
+//    }
     public Rectangle getBounds() {
         Pixel pixel = (Pixel) borderPix.get(0);
         int x = pixel.getX();
@@ -274,16 +281,15 @@ public class Region {
         return bounds;
     }
 
-    public double[][] getDataArray() {
+    public double[][] getDataArray(ImageProcessor refImage) {
         double data[][] = new double[bounds.width + 1][bounds.height + 1];
         for (int i = 0; i < bounds.width; i++) {
             Arrays.fill(data[i], Double.NaN);
         }
-        for (int i = 0; i < pixels.size(); i++) {
-            Pixel pix = (Pixel) pixels.get(i);
-            int x = pix.getX() - bounds.x;
-            int y = pix.getY() - bounds.y;
-            data[x][y] = pix.getZ();
+        for (int i = 0; i < bounds.width; i++) {
+            for (int j = 0; j < bounds.height; j++) {
+                data[i][j] = refImage.getPixelValue(i, j);
+            }
         }
         return data;
     }
@@ -464,10 +470,9 @@ public class Region {
         return roi;
     }
 
-    public void clearPixels() {
-        pixels.clear();
-    }
-
+//    public void clearPixels() {
+//        pixels.clear();
+//    }
     public void clearBorderPix() {
         borderPix.clear();
     }
@@ -507,9 +512,18 @@ public class Region {
 //        }
 //        return borderPixMem.get(index);
 //    }
-    public void loadPixels(ArrayList<Pixel> pixels, LinkedList<Pixel> borderPix) {
-        this.pixels = (ArrayList) pixels.clone();
+    public void loadPixels(LinkedList<Pixel> borderPix) {
+//        this.pixels = (ArrayList) pixels.clone();
         this.borderPix = (LinkedList) borderPix.clone();
-        setSeedPix();
+//        setSeedPix();
     }
+
+    public int getInitX() {
+        return initX;
+    }
+
+    public int getInitY() {
+        return initY;
+    }
+    
 }

@@ -103,7 +103,7 @@ public class FractalEstimator {
         return true;
     }
 
-    public static double[] doSurfaceEstimate(Region region) {
+    public static double[] doSurfaceEstimate(Region region, ImageProcessor refImage) {
         Rectangle r = region.getBounds();
         int width = r.width, height = r.height;
         double D[] = new double[3];
@@ -124,7 +124,7 @@ public class FractalEstimator {
                 G++;
             }
         }
-        double data[][] = region.getDataArray();
+        double data[][] = region.getDataArray(refImage);
         for (int epsilon = epsilonMin; epsilon <= epsilonMax; epsilon++) {
             double h = (imageMax - imageMin) / (G * epsilon / maxDim);
             int i0 = (int) Math.round((2.0 * xCentre - epsilon) / 2.0);
