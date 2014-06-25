@@ -33,7 +33,7 @@ public class Region {
     private boolean edge, active;
     private Rectangle bounds;
     private int[] histogram = new int[256];
-    private int initX, initY;
+//    private int initX, initY;
     private final int FOREGROUND = 0, BACKGROUND = 255;
 //    private final int memSize = 10;
 
@@ -45,8 +45,6 @@ public class Region {
         for (int i = 0; i < bp.length; i++) {
             this.addBorderPoint(bp[i]);
         }
-        this.initX=x;
-        this.initY=y;
 //        mask.erode();
 //        for (int i = 0; i < width; i++) {
 //            for (int j = 0; j < height; j++) {
@@ -519,12 +517,12 @@ public class Region {
 //        setSeedPix();
     }
 
-    public int getInitX() {
-        return initX;
-    }
+//    public int getInitX() {
+//        return initX;
+//    }
+//
+//    public int getInitY() {
+//        return initY;
+//    }
 
-    public int getInitY() {
-        return initY;
-    }
-    
 }
