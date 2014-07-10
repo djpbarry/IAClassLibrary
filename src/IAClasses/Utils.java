@@ -663,7 +663,7 @@ public class Utils {
         return stats.histMin + i * stats.binSize;
     }
 
-    public static boolean isEdgePixel(int x, int y, int width, int height) {
-        return (x <= 0) || (x >= width - 1) || (y <= 0) || (y >= height - 1);
+    public static boolean isEdgePixel(int x, int y, int width, int height, int margin) {
+        return (x <= margin) || (x >= width - 1 - margin) || (y <= margin) || (y >= height - 1 - margin);
     }
 }

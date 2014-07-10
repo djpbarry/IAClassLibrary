@@ -220,7 +220,7 @@ public class DSPProcessor {
             } else {
                 k = j;
             }
-            output[i] = input[j] + (interindex - j) * (input[k] - input[j]);
+                output[i] = input[j] + (interindex - j) * (input[k] - input[j]);
             interindex += increment;
         }
         return output;
@@ -230,7 +230,8 @@ public class DSPProcessor {
      * Implementation of the Fast Fourier Transform based on the Radix-2
      * Cooley-Tukey Algorithm. The method is called recursively to divide the
      * input into a series of FFT's with just one term in each. The input signal
-     * must be <i>2<sup>n</sup></i> in length, where <i>n</i> is an integer.
+     * must be <i>2<sup>n</sup></i> in length, where <i>n</i>
+     * is an integer.
      *
      * @param input time/space domain signal
      * @return Fourier-domain signal
@@ -353,7 +354,6 @@ public class DSPProcessor {
 
 //        Plot plot = new Plot("PowerSpectrum", "i", "K", index, powerSpectrum);
 //        plot.show();
-
         return powerSpectrum;
     }
 
