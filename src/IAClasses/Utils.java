@@ -114,7 +114,7 @@ public class Utils {
 
         for (int i = x - radius; i <= x + radius; i++) {
             for (int j = y - radius; j <= y + radius; j++) {
-                if (image.getPixel(i, j) == value) {
+                if (image.getPixelValue(i, j) >= value) {
                     currentDist = calcDistance(i, j, x, y);
                     if (currentDist < minDist) {
                         Pixel p = new Pixel(i, j, currentDist, 0);
