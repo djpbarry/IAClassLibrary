@@ -13,6 +13,7 @@ import java.awt.Rectangle;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import org.apache.commons.io.FilenameUtils;
 
 public class Utils {
 
@@ -22,7 +23,7 @@ public class Utils {
      *
      * @return the constructed {@link ImageStack}.
      */
-    public static ImageStack buildStack(File directory) {
+    public static ImagePlus buildStack(File directory) {
         if (directory == null) {
             return null;
         }
@@ -33,18 +34,27 @@ public class Utils {
          */
         ImagePlus currentImage;
         ImageProcessor processor;
+        String ext = null;
         ImageStack output = new ImageStack();
         for (i = 0; i < noOfImages; i++) {
+            String thisext = FilenameUtils.getExtension(images[i].getName());
             currentImage = new ImagePlus(images[i].getPath());
             processor = currentImage.getProcessor();
             if (processor != null) {
+                if (ext != null) {
+                    if (!ext.matches(thisext)) {
+                        return null;
+                    }
+                } else {
+                    ext = thisext;
+                }
                 if (output.getSize() < 1) {
                     output = new ImageStack(processor.getWidth(), processor.getHeight());
                 }
                 output.addSlice("" + i, processor);
             }
         }
-        return output;
+        return new ImagePlus("."+ext, output);
     }
 
     /**

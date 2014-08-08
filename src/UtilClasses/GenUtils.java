@@ -13,6 +13,9 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Scanner;
 
 /**
  *
@@ -138,5 +141,30 @@ public class GenUtils {
         if (IJ.getInstance() != null) {
             IJ.showStatus(caller.getClass().getName() + ": Done.");
         }
+    }
+
+    public static double[][][] readData(int rows, int cols, File[] input, String delimiter) {
+        int numOfFiles = input.length;
+        double[][][] output = new double[numOfFiles][rows][cols];
+        for (int i = 0; i < numOfFiles; i++) {
+            int rowindex = 0;
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(input[i])))) {
+                String line = br.readLine();
+                while (line != null) {
+                    int colindex = 0;
+                    Scanner scan = new Scanner(line).useDelimiter(delimiter);
+                    while (scan.hasNextDouble()) {
+                        output[i][rowindex][colindex] = scan.nextDouble();
+                        colindex++;
+                    }
+                    line = br.readLine();
+                    rowindex++;
+                }
+                br.close();
+            } catch (Exception e) {
+                IJ.error(e.toString());
+            }
+        }
+        return output;
     }
 }
