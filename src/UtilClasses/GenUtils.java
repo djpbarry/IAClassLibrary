@@ -143,22 +143,22 @@ public class GenUtils {
         }
     }
 
-    public static double[][][] readData(int rows, int cols, File[] input, String delimiter) {
+    public static ArrayList<double[]>[] readData(int cols, File[] input, String delimiter) {
         int numOfFiles = input.length;
-        double[][][] output = new double[numOfFiles][rows][cols];
+        ArrayList<double[]>[] output = new ArrayList[numOfFiles];
         for (int i = 0; i < numOfFiles; i++) {
-            int rowindex = 0;
+            output[i] = new ArrayList();
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(input[i])))) {
                 String line = br.readLine();
                 while (line != null) {
+                    output[i].add(new double[cols]);
                     int colindex = 0;
-                    Scanner scan = new Scanner(line).useDelimiter(delimiter);
+                    Scanner scan = new Scanner(line);
                     while (scan.hasNextDouble()) {
-                        output[i][rowindex][colindex] = scan.nextDouble();
+                        (output[i].get(output[i].size() - 1))[colindex] = scan.nextDouble();
                         colindex++;
                     }
                     line = br.readLine();
-                    rowindex++;
                 }
                 br.close();
             } catch (Exception e) {

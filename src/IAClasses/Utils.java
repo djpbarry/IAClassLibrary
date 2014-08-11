@@ -54,7 +54,7 @@ public class Utils {
                 output.addSlice("" + i, processor);
             }
         }
-        return new ImagePlus("."+ext, output);
+        return new ImagePlus("." + ext, output);
     }
 
     /**
