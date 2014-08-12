@@ -3,6 +3,7 @@ package IAClasses;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.plugin.RGBStackMerge;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
@@ -675,5 +676,11 @@ public class Utils {
 
     public static boolean isEdgePixel(int x, int y, int width, int height, int margin) {
         return (x <= margin) || (x >= width - 1 - margin) || (y <= margin) || (y >= height - 1 - margin);
+    }
+    
+    public static ImageProcessor updateImage(ImageStack channel1, ImageStack channel2, int slice) {
+        ImageStack red = (new ImagePlus("", channel1.getProcessor(slice).duplicate())).getImageStack();
+        ImageStack green = (channel2 == null) ? null : (new ImagePlus("", channel2.getProcessor(slice).duplicate())).getImageStack();
+        return (RGBStackMerge.mergeStacks(red, green, null, false)).getProcessor(1);
     }
 }
