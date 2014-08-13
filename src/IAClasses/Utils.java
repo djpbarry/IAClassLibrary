@@ -3,6 +3,7 @@ package IAClasses;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.VirtualStack;
 import ij.plugin.RGBStackMerge;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
@@ -36,7 +37,7 @@ public class Utils {
         ImagePlus currentImage;
         ImageProcessor processor;
         String ext = null;
-        ImageStack output = new ImageStack();
+        VirtualStack output = new VirtualStack();
         for (i = 0; i < noOfImages; i++) {
             String thisext = FilenameUtils.getExtension(images[i].getName());
             currentImage = new ImagePlus(images[i].getPath());
@@ -50,9 +51,9 @@ public class Utils {
                     ext = thisext;
                 }
                 if (output.getSize() < 1) {
-                    output = new ImageStack(processor.getWidth(), processor.getHeight());
+                    output = new VirtualStack(processor.getWidth(), processor.getHeight(), null, directory.getAbsolutePath());
                 }
-                output.addSlice("" + i, processor);
+                output.addSlice(images[i].getName());
             }
         }
         return new ImagePlus("." + ext, output);
