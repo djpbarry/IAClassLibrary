@@ -4,7 +4,10 @@
  */
 package UtilClasses;
 
+import UIClasses.SpecifyInputsDialog;
 import ij.IJ;
+import ij.ImagePlus;
+import ij.WindowManager;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 import java.awt.Color;
@@ -14,7 +17,6 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -166,5 +168,32 @@ public class GenUtils {
             }
         }
         return output;
+    }
+    
+    public static ImagePlus[] specifyInputs(String[] labels) {
+        ImagePlus outputs[] = new ImagePlus[2];
+        int windIDs[] = WindowManager.getIDList();
+        String winTitles[] = new String[windIDs.length + 1];
+        for (int i = 0; i < windIDs.length; i++) {
+            winTitles[i] = WindowManager.getImage(windIDs[i]).getTitle();
+        }
+        winTitles[windIDs.length] = "None";
+        SpecifyInputsDialog sid = new SpecifyInputsDialog(null, true, winTitles, labels);
+        sid.setVisible(true);
+        if (!(sid.getReturnStatus() == SpecifyInputsDialog.RET_OK)) {
+            return null;
+        }
+        if (!(sid.getCytoIndex() > -1 && sid.getCytoIndex() < windIDs.length)) {
+            Toolkit.getDefaultToolkit().beep();
+            IJ.error("Channel 1 not specified!");
+            return null;
+        }
+        outputs[0] = WindowManager.getImage(windIDs[sid.getCytoIndex()]);
+        if (sid.getSigIndex() > -1 && sid.getSigIndex() < windIDs.length) {
+            outputs[1] = WindowManager.getImage(windIDs[sid.getSigIndex()]);
+        } else {
+            outputs[1] = null;
+        }
+        return outputs;
     }
 }
