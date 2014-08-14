@@ -37,7 +37,7 @@ public class Utils {
         ImagePlus currentImage;
         ImageProcessor processor;
         String ext = null;
-        VirtualStack output = new VirtualStack();
+        ImageStack output = null;
         for (i = 0; i < noOfImages; i++) {
             String thisext = FilenameUtils.getExtension(images[i].getName());
             currentImage = new ImagePlus(images[i].getPath());
@@ -50,10 +50,10 @@ public class Utils {
                 } else {
                     ext = thisext;
                 }
-                if (output.getSize() < 1) {
-                    output = new VirtualStack(processor.getWidth(), processor.getHeight(), null, directory.getAbsolutePath());
+                if (output==null) {
+                    output = new ImageStack(processor.getWidth(), processor.getHeight());
                 }
-                output.addSlice(images[i].getName());
+                output.addSlice(IJ.openImage(images[i].getAbsolutePath()).getProcessor());
             }
         }
         return new ImagePlus("." + ext, output);
@@ -658,11 +658,11 @@ public class Utils {
         return tempPix[channel];
     }
 
-    public static double getPercentileThresh(FloatProcessor image, double thresh) {
+    public static double getPercentileThresh(ImageProcessor image, double thresh) {
         if (image == null) {
             return 0.0;
         }
-        FloatStatistics stats = new FloatStatistics(image);
+        FloatStatistics stats = new FloatStatistics(new TypeConverter(image,false).convertToFloat(null));
         long histogram[] = stats.getHistogram();
         int l = histogram.length;
         int total = image.getWidth() * image.getHeight();
@@ -678,7 +678,7 @@ public class Utils {
     public static boolean isEdgePixel(int x, int y, int width, int height, int margin) {
         return (x <= margin) || (x >= width - 1 - margin) || (y <= margin) || (y >= height - 1 - margin);
     }
-    
+
     public static ImageProcessor updateImage(ImageStack channel1, ImageStack channel2, int slice) {
         ImageStack red = (new ImagePlus("", channel1.getProcessor(slice).duplicate())).getImageStack();
         ImageStack green = (channel2 == null) ? null : (new ImagePlus("", channel2.getProcessor(slice).duplicate())).getImageStack();
