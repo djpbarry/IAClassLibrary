@@ -27,6 +27,7 @@ public class Region {
     private LinkedList<Pixel> borderPix = new LinkedList<Pixel>();
     private LinkedList<Pixel> expandedBorder = new LinkedList<Pixel>();
     private ArrayList<Pixel> centroids = new ArrayList<Pixel>();
+    private ArrayList<Pixel> geoMedians = new ArrayList<Pixel>();
     private double min = Double.MAX_VALUE, max = Double.MIN_VALUE, mean, seedMean, sigma;
     private double mfD[];
     private int index;
@@ -34,14 +35,14 @@ public class Region {
     private Rectangle bounds;
     private int[] histogram = new int[256];
 //    private int initX, initY;
-    private final int FOREGROUND = 0, BACKGROUND = 255;
+    public final static int FOREGROUND = 0, BACKGROUND = 255;
 //    private final int memSize = 10;
 
-    public Region(ImageProcessor mask, int index, int x, int y) {
+    public Region(ImageProcessor mask, int index) {
         this(index);
         int width = mask.getWidth();
         int height = mask.getHeight();
-        Pixel[] bp = this.getOrderedBoundary(width, height, x, y, mask);
+        Pixel[] bp = this.getOrderedBoundary(width, height, mask);
         for (int i = 0; i < bp.length; i++) {
             this.addBorderPoint(bp[i]);
         }
@@ -141,6 +142,81 @@ public class Region {
             ysum += current.getY();
         }
         centroids.add(new Pixel(xsum / (borderPix.size()), ysum / (borderPix.size()), 0.0, 1));
+    }
+
+    public void calcGeoMedian(ImageProcessor mask) {
+        ArrayList<Pixel> pixels = new ArrayList();
+        int height = mask.getHeight();
+        int width = mask.getWidth();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (mask.getPixel(x, y) < BACKGROUND) {
+                    pixels.add(new Pixel(x, y, 0));
+                }
+            }
+        }
+        double minDist = Double.MAX_VALUE;
+        int xm = -1;
+        int ym = -1;
+        int size = pixels.size();
+        for (int p1 = 0; p1 < size; p1++) {
+            double dist = 0.0;
+            for (int p2 = 0; p2 < size; p2++) {
+                Pixel pix1 = pixels.get(p1);
+                Pixel pix2 = pixels.get(p2);
+                dist += Math.abs(pix2.getX() - pix1.getX()) + Math.abs(pix2.getY() - pix1.getY());
+            }
+            if (dist < minDist) {
+                minDist = dist;
+                xm = pixels.get(p1).getX();
+                ym = pixels.get(p1).getY();
+            }
+        }
+        if (xm >= 0 && ym >= 0) {
+            geoMedians.add(new Pixel(xm, ym, 0.0, 1));
+        }
+    }
+
+    public void calcGeoMedian(LinkedList<Pixel> borderPix) {
+        int bordersize = borderPix.size();
+        if (bordersize < 3) {
+            Pixel pix = borderPix.get(0);
+            geoMedians.add(new Pixel(pix.getX(), pix.getY(), 0.0, 1));
+            return;
+        }
+        double minDist = Double.MAX_VALUE;
+        int xm = -1;
+        int ym = -1;
+        bounds = getBounds();
+        PolygonRoi proi = getPolygonRoi();
+        for (int y = bounds.y; y < bounds.height + bounds.y; y++) {
+            for (int x = bounds.x; x < bounds.width + bounds.x; x++) {
+                double dist = 0.0;
+                for (int b = 0; b < bordersize; b++) {
+                    Pixel pix = borderPix.get(b);
+                    dist += Math.abs(pix.getX() - x) + Math.abs(pix.getY() - y);
+                }
+                if (dist < minDist && proi.contains(x, y)) {
+                    minDist = dist;
+                    xm = x;
+                    ym = y;
+                }
+            }
+        }
+        if (xm >= 0 && ym >= 0) {
+            geoMedians.add(new Pixel(xm, ym, 0.0, 1));
+        }
+    }
+
+    PolygonRoi getPolygonRoi() {
+        int bordersize = borderPix.size();
+        int xpoints[] = new int[bordersize];
+        int ypoints[] = new int[bordersize];
+        for (int i = 0; i < bordersize; i++) {
+            xpoints[i] = borderPix.get(i).getX();
+            ypoints[i] = borderPix.get(i).getY();
+        }
+        return new PolygonRoi(xpoints, ypoints, bordersize, Roi.POLYGON);
     }
 
     public double getMean() {
@@ -320,21 +396,24 @@ public class Region {
     public ImageProcessor getMask() {
         Rectangle roi = getBounds();
         int w = roi.width, h = roi.height;
-        return getMask(w, h, w / 2, h / 2);
+        return getMask(w, h);
     }
 
-    public ImageProcessor getMask(int width, int height, double xc, double yc) {
+    public ImageProcessor getMask(int width, int height) {
         ImageProcessor mask = new ByteProcessor(width, height);
         mask.setColor(BACKGROUND);
         mask.fill();
         mask.setColor(FOREGROUND);
         int m = borderPix.size();
+        Pixel median = geoMedians.get(geoMedians.size() - 1);
+        int xc = median.getX();
+        int yc = median.getY();
         for (int i = 0; i < m; i++) {
             Pixel current = (Pixel) borderPix.get(i);
             mask.drawPixel(current.getX(), current.getY());
         }
         FloodFiller ff = new FloodFiller(mask);
-        ff.fill8((int) Math.round(xc), (int) Math.round(yc));
+        ff.fill8(xc, yc);
         return mask;
     }
 
@@ -383,12 +462,15 @@ public class Region {
     }
 
     public Pixel[] getOrderedBoundary(int width, int height, double xc, double yc) {
-        return getOrderedBoundary(width, height, xc, yc, getMask(width, height, xc, yc));
+        return getOrderedBoundary(width, height, getMask(width, height));
     }
 
-    public Pixel[] getOrderedBoundary(int width, int height, double xc, double yc, ImageProcessor mask) {
+    public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask) {
+        calcGeoMedian(mask);
+        ArrayList<Pixel> medians = getGeoMedians();
+        Pixel median = medians.get(medians.size() - 1);
         Wand wand = new Wand(mask);
-        wand.autoOutline((int) Math.round(xc), (int) Math.round(yc), 0.0,
+        wand.autoOutline(median.getX(), median.getY(), 0.0,
                 Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
         int[] xpoints = wand.xpoints;
@@ -433,7 +515,7 @@ public class Region {
 
     public Pixel[] buildStandMapCol(double xc, double yc, ImageStack stack, int frame, int finalWidth, int depth) {
         ImageProcessor ip = stack.getProcessor(frame);
-        Wand wand = new Wand(getMask(ip.getWidth(), ip.getHeight(), xc, yc));
+        Wand wand = new Wand(getMask(ip.getWidth(), ip.getHeight()));
         wand.autoOutline((int) Math.round(xc), (int) Math.round(yc), 0.0,
                 Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
@@ -524,5 +606,8 @@ public class Region {
 //    public int getInitY() {
 //        return initY;
 //    }
+    public ArrayList<Pixel> getGeoMedians() {
+        return geoMedians;
+    }
 
 }
