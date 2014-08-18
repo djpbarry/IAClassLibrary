@@ -1,5 +1,6 @@
 package IAClasses;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -43,8 +44,10 @@ public class Region {
         int width = mask.getWidth();
         int height = mask.getHeight();
         Pixel[] bp = this.getOrderedBoundary(width, height, mask);
-        for (int i = 0; i < bp.length; i++) {
-            this.addBorderPoint(bp[i]);
+        if (bp != null) {
+            for (int i = 0; i < bp.length; i++) {
+                this.addBorderPoint(bp[i]);
+            }
         }
 //        mask.erode();
 //        for (int i = 0; i < width; i++) {
@@ -468,6 +471,9 @@ public class Region {
     public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask) {
         calcGeoMedian(mask);
         ArrayList<Pixel> medians = getGeoMedians();
+        if (medians.size() < 1) {
+            return null;
+        }
         Pixel median = medians.get(medians.size() - 1);
         Wand wand = new Wand(mask);
         wand.autoOutline(median.getX(), median.getY(), 0.0,
