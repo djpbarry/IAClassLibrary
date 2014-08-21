@@ -31,7 +31,6 @@ public class Region {
     private ArrayList<Pixel> geoMedians = new ArrayList<Pixel>();
     private double min = Double.MAX_VALUE, max = Double.MIN_VALUE, mean, seedMean, sigma;
     private double mfD[];
-    private int index;
     private boolean edge, active;
     private Rectangle bounds;
     private int[] histogram = new int[256];
@@ -39,10 +38,12 @@ public class Region {
     public final static int FOREGROUND = 0, BACKGROUND = 255;
 //    private final int memSize = 10;
 
-    public Region(ImageProcessor mask, int index) {
-        this(index);
+    public Region(ImageProcessor mask, Pixel centre) {
         int width = mask.getWidth();
         int height = mask.getHeight();
+        if (centre != null) {
+            this.geoMedians.add(centre);
+        }
         Pixel[] bp = this.getOrderedBoundary(width, height, mask);
         if (bp != null) {
             for (int i = 0; i < bp.length; i++) {
@@ -60,10 +61,6 @@ public class Region {
     }
 
     public Region() {
-    }
-
-    public Region(int index) {
-        this.index = index;
         this.bounds = null;
         edge = false;
         active = true;
@@ -230,10 +227,6 @@ public class Region {
         return sigma;
     }
 
-    public int getIndex() {
-        return index;
-    }
-
     public double getMax() {
         return max;
     }
@@ -310,9 +303,6 @@ public class Region {
             return false;
         }
         if (Double.doubleToLongBits(this.sigma) != Double.doubleToLongBits(other.sigma)) {
-            return false;
-        }
-        if (this.index != other.index) {
             return false;
         }
         return true;
@@ -469,15 +459,13 @@ public class Region {
     }
 
     public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask) {
-        calcGeoMedian(mask);
-        ArrayList<Pixel> medians = getGeoMedians();
-        if (medians.size() < 1) {
-            return null;
+        if (geoMedians.size() < 1) {
+            calcGeoMedian(mask);
         }
-        Pixel median = medians.get(medians.size() - 1);
+        ArrayList<Pixel> medians = getGeoMedians();
+        Pixel seed = medians.get(medians.size() - 1);
         Wand wand = new Wand(mask);
-        wand.autoOutline(median.getX(), median.getY(), 0.0,
-                Wand.EIGHT_CONNECTED);
+        wand.autoOutline(seed.getX(), seed.getY(), 0.0, Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
         int[] xpoints = wand.xpoints;
         int[] ypoints = wand.ypoints;
