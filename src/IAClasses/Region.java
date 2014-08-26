@@ -27,8 +27,9 @@ public class Region {
 //    private ArrayList<LinkedList> borderPixMem = new ArrayList<LinkedList>();
     private LinkedList<Pixel> borderPix = new LinkedList<Pixel>();
     private LinkedList<Pixel> expandedBorder = new LinkedList<Pixel>();
-    private ArrayList<Pixel> centroids = new ArrayList<Pixel>();
-    private ArrayList<Pixel> geoMedians = new ArrayList<Pixel>();
+//    private ArrayList<Pixel> centroids = new ArrayList<Pixel>();
+//    private ArrayList<Pixel> geoMedians = new ArrayList<Pixel>();
+    private ArrayList<Pixel> centres = new ArrayList<Pixel>();
     private double min = Double.MAX_VALUE, max = Double.MIN_VALUE, mean, seedMean, sigma;
     private double mfD[];
     private boolean edge, active;
@@ -42,7 +43,7 @@ public class Region {
         int width = mask.getWidth();
         int height = mask.getHeight();
         if (centre != null) {
-            this.geoMedians.add(centre);
+            this.centres.add(centre);
         }
         Pixel[] bp = this.getOrderedBoundary(width, height, mask);
         if (bp != null) {
@@ -84,14 +85,11 @@ public class Region {
         int width = mask.getWidth();
         int height = mask.getHeight();
         int size = mask.getStatistics().histogram[FOREGROUND];
-        int bordersize = borderPix.size();
-        double xsum = 0.0, ysum = 0.0, valSum = 0.0, varSum = 0.0, pix;
+        double valSum = 0.0, varSum = 0.0, pix;
         if (size > 0) {
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
                     if (mask.getPixel(i, j) == FOREGROUND) {
-                        xsum += i;
-                        ysum += j;
                         pix = refImage.getPixelValue(i, j);
                         if (pix < min) {
                             min = pix;
@@ -104,11 +102,6 @@ public class Region {
                     }
                 }
             }
-            double precX = xsum / (size);
-            double precY = ysum / (size);
-            int x = (int) Math.round(precX);
-            int y = (int) Math.round(precY);
-            centroids.add(new Pixel(precX, precY, refImage.getPixelValue(x, y), 2));
             mean = valSum / (size);
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
@@ -118,21 +111,10 @@ public class Region {
                 }
             }
             sigma = Math.sqrt(varSum) / size;
-        } else if (bordersize > 0) {
-            for (int i = 0; i < bordersize; i++) {
-                Pixel current = (Pixel) borderPix.get(i);
-                xsum += current.getX();
-                ysum += current.getY();
-            }
-            double precX = xsum / (borderPix.size());
-            double precY = ysum / (borderPix.size());
-            int x = (int) Math.round(precX);
-            int y = (int) Math.round(precY);
-            centroids.add(new Pixel(precX, precY, refImage.getPixelValue(x, y), 2));
         }
     }
 
-    public void calcCentroid() {
+    private boolean calcCentroid(LinkedList<Pixel> borderPix) {
         int bordersize = borderPix.size();
         double xsum = 0.0, ysum = 0.0;
         Pixel current;
@@ -141,10 +123,42 @@ public class Region {
             xsum += current.getX();
             ysum += current.getY();
         }
-        centroids.add(new Pixel(xsum / (borderPix.size()), ysum / (borderPix.size()), 0.0, 1));
+        PolygonRoi proi = getPolygonRoi();
+        double x = xsum / (borderPix.size());
+        double y = ysum / (borderPix.size());
+        if (proi.contains((int) Math.round(x), (int) Math.round(y))) {
+            centres.add(new Pixel(x, y, 0.0, 1));
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public void calcGeoMedian(ImageProcessor mask) {
+    private boolean calcCentroid(ImageProcessor mask) {
+        int width = mask.getWidth();
+        int height = mask.getHeight();
+        int count = 0;
+        double xsum = 0.0, ysum = 0.0;
+        for (int j = 0; j < height; j++) {
+            for (int i = 0; i < width; i++) {
+                if (mask.getPixel(i, j) < Region.BACKGROUND) {
+                    xsum += i;
+                    ysum += j;
+                    count++;
+                }
+            }
+        }
+        double x = xsum / count;
+        double y = ysum / count;
+        if (mask.getPixel((int) Math.round(x), (int) Math.round(y)) < Region.BACKGROUND) {
+            centres.add(new Pixel(xsum / count, ysum / count, 0.0, 1));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean calcGeoMedian(ImageProcessor mask) {
         ArrayList<Pixel> pixels = new ArrayList();
         int height = mask.getHeight();
         int width = mask.getWidth();
@@ -173,16 +187,19 @@ public class Region {
             }
         }
         if (xm >= 0 && ym >= 0) {
-            geoMedians.add(new Pixel(xm, ym, 0.0, 1));
+            centres.add(new Pixel(xm, ym, 0.0, 1));
+            return true;
+        } else {
+            return false;
         }
     }
 
-    public void calcGeoMedian(LinkedList<Pixel> borderPix) {
+    private boolean calcGeoMedian(LinkedList<Pixel> borderPix) {
         int bordersize = borderPix.size();
         if (bordersize < 3) {
             Pixel pix = borderPix.get(0);
-            geoMedians.add(new Pixel(pix.getX(), pix.getY(), 0.0, 1));
-            return;
+            centres.add(new Pixel(pix.getX(), pix.getY(), 0.0, 1));
+            return true;
         }
         double minDist = Double.MAX_VALUE;
         int xm = -1;
@@ -204,7 +221,10 @@ public class Region {
             }
         }
         if (xm >= 0 && ym >= 0) {
-            geoMedians.add(new Pixel(xm, ym, 0.0, 1));
+            centres.add(new Pixel(xm, ym, 0.0, 1));
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -378,10 +398,6 @@ public class Region {
         this.active = active;
     }
 
-    public ArrayList<Pixel> getCentroids() {
-        return centroids;
-    }
-
     public double getSeedMean() {
         return seedMean;
     }
@@ -398,9 +414,9 @@ public class Region {
         mask.fill();
         mask.setColor(FOREGROUND);
         int m = borderPix.size();
-        Pixel median = geoMedians.get(geoMedians.size() - 1);
-        int xc = median.getX();
-        int yc = median.getY();
+        Pixel centre = centres.get(centres.size() - 1);
+        int xc = centre.getX();
+        int yc = centre.getY();
         for (int i = 0; i < m; i++) {
             Pixel current = (Pixel) borderPix.get(i);
             mask.drawPixel(current.getX(), current.getY());
@@ -459,11 +475,11 @@ public class Region {
     }
 
     public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask) {
-        if (geoMedians.size() < 1) {
-            calcGeoMedian(mask);
+        if (centres.size() < 1) {
+            calcCentre(mask);
         }
-        ArrayList<Pixel> medians = getGeoMedians();
-        Pixel seed = medians.get(medians.size() - 1);
+        ArrayList<Pixel> centres = getCentres();
+        Pixel seed = centres.get(centres.size() - 1);
         Wand wand = new Wand(mask);
         wand.autoOutline(seed.getX(), seed.getY(), 0.0, Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
@@ -593,15 +609,26 @@ public class Region {
 //        setSeedPix();
     }
 
-//    public int getInitX() {
-//        return initX;
-//    }
-//
-//    public int getInitY() {
-//        return initY;
-//    }
-    public ArrayList<Pixel> getGeoMedians() {
-        return geoMedians;
+    public boolean calcCentre(ImageProcessor mask) {
+        if (calcCentroid(mask)) {
+            return true;
+        } else if (calcGeoMedian(mask)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean calcCentre(LinkedList<Pixel> border) {
+        if (calcCentroid(border)) {
+            return true;
+        } else if (calcGeoMedian(border)) {
+            return true;
+        }
+        return false;
+    }
+
+    public ArrayList<Pixel> getCentres() {
+        return centres;
     }
 
 }
