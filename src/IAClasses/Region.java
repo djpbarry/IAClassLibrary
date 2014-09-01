@@ -1,6 +1,5 @@
 package IAClasses;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -37,15 +36,16 @@ public class Region {
     private int[] histogram = new int[256];
 //    private int initX, initY;
     public final static int FOREGROUND = 0, BACKGROUND = 255;
+    private int imageWidth, imageHeight;
 //    private final int memSize = 10;
 
     public Region(ImageProcessor mask, Pixel centre) {
-        int width = mask.getWidth();
-        int height = mask.getHeight();
+        this.imageWidth = mask.getWidth();
+        this.imageHeight = mask.getHeight();
         if (centre != null) {
             this.centres.add(centre);
         }
-        Pixel[] bp = this.getOrderedBoundary(width, height, mask);
+        Pixel[] bp = this.getOrderedBoundary(imageWidth, imageHeight, mask);
         if (bp != null) {
             for (int i = 0; i < bp.length; i++) {
                 this.addBorderPoint(bp[i]);
@@ -61,7 +61,9 @@ public class Region {
 //        }
     }
 
-    public Region() {
+    public Region(int width, int height) {
+        this.imageWidth = width;
+        this.imageHeight = height;
         this.bounds = null;
         edge = false;
         active = true;
@@ -230,13 +232,22 @@ public class Region {
 
     PolygonRoi getPolygonRoi() {
         int bordersize = borderPix.size();
-        int xpoints[] = new int[bordersize];
-        int ypoints[] = new int[bordersize];
+        ByteProcessor tempImage = new ByteProcessor(imageWidth, imageHeight);
+        tempImage.setValue(BACKGROUND);
+        tempImage.fill();
+        tempImage.setValue(FOREGROUND);
+//        Polygon poly = new Polygon();
         for (int i = 0; i < bordersize; i++) {
-            xpoints[i] = borderPix.get(i).getX();
-            ypoints[i] = borderPix.get(i).getY();
+            tempImage.drawPixel(borderPix.get(i).getX(), borderPix.get(i).getY());
+//            poly.addPoint(borderPix.get(i).getX(), borderPix.get(i).getY());
         }
-        return new PolygonRoi(xpoints, ypoints, bordersize, Roi.POLYGON);
+        Wand wand = new Wand(tempImage);
+        wand.autoOutline(borderPix.get(0).getX(), borderPix.get(0).getY(), FOREGROUND, FOREGROUND);
+        int xpix[] =new int[wand.npoints];
+        int ypix[] =new int[wand.npoints];
+        System.arraycopy(wand.xpoints, 0, xpix, 0, wand.npoints);
+        System.arraycopy(wand.ypoints, 0, ypix, 0, wand.npoints);
+        return new PolygonRoi(xpix, ypix, wand.npoints, Roi.POLYGON);
     }
 
     public double getMean() {
@@ -611,17 +622,69 @@ public class Region {
 
     public boolean calcCentre(ImageProcessor mask) {
         if (calcCentroid(mask)) {
+            nudgeCentreFromEdge(mask);
             return true;
         } else if (calcGeoMedian(mask)) {
+            nudgeCentreFromEdge(mask);
             return true;
         }
         return false;
     }
 
+    void nudgeCentreFromEdge(ImageProcessor mask) {
+        PolygonRoi proi = getPolygonRoi();
+        Pixel centre = centres.get(centres.size() - 1);
+        int x = centre.getX();
+        int y = centre.getY();
+        double xsum = 0.0;
+        double ysum = 0.0;
+//        Rectangle box = proi.getBounds();
+//        ByteProcessor proiImage = new ByteProcessor(130, 144);
+//        proiImage.setValue(255);
+//        proiImage.fill();
+//        proiImage.setValue(0);
+//        int N = proi.getNCoordinates();
+//        int proix[] = proi.getXCoordinates();
+//        int proiy[] = proi.getYCoordinates();
+//        for (int n = 0; n < N; n++) {
+//            proiImage.drawPixel(proix[n] + box.x, proiy[n] + box.y);
+//        }
+//        IJ.saveAs((new ImagePlus("", proiImage)), "PNG", "C:/users/barry05/desktop/proiImage.png");
+        for (int j = y - 1; j <= y + 1; j++) {
+            for (int i = x - 1; i <= x + 1; i++) {
+                if (mask != null) {
+                    if (mask.getPixel(i, j) < BACKGROUND) {
+                        xsum += i - x;
+                        ysum += j - y;
+                    }
+                } else {
+                    if (proi.contains(i, j)) {
+                        xsum += i - x;
+                        ysum += j - y;
+                    }
+                }
+            }
+        }
+        int xDiff = 0, yDiff = 0;
+        if (xsum < 0.0) {
+            xDiff--;
+        } else if (xsum > 0.0) {
+            xDiff++;
+        }
+        if (ysum < 0.0) {
+            yDiff--;
+        } else if (ysum > 0.0) {
+            yDiff++;
+        }
+        centres.add(new Pixel(x + xDiff, y + yDiff, 0.0, 1));
+    }
+
     public boolean calcCentre(LinkedList<Pixel> border) {
         if (calcCentroid(border)) {
+            nudgeCentreFromEdge(null);
             return true;
         } else if (calcGeoMedian(border)) {
+            nudgeCentreFromEdge(null);
             return true;
         }
         return false;
