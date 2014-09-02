@@ -243,7 +243,7 @@ public class Region {
 //            poly.addPoint(borderPix.get(i).getX(), borderPix.get(i).getY());
         }
         fill(tempImage, FOREGROUND, BACKGROUND);
-        IJ.saveAs((new ImagePlus("", tempImage)), "PNG", "C:/users/barry05/desktop/tempImage.png");
+//        IJ.saveAs((new ImagePlus("", tempImage)), "PNG", "C:/users/barry05/desktop/tempImage.png");
         Wand wand = new Wand(tempImage);
         wand.autoOutline(borderPix.get(0).getX(), borderPix.get(0).getY(), FOREGROUND, FOREGROUND);
         int xpix[] = new int[wand.npoints];
