@@ -579,13 +579,7 @@ public class Region {
 
     public Pixel[] buildStandMapCol(double xc, double yc, ImageStack stack, int frame, int finalWidth, int depth) {
         ImageProcessor ip = stack.getProcessor(frame);
-        Wand wand = new Wand(getMask(ip.getWidth(), ip.getHeight()));
-        wand.autoOutline((int) Math.round(xc), (int) Math.round(yc), 0.0,
-                Wand.EIGHT_CONNECTED);
-        int n = wand.npoints;
-        int[] xpoints = wand.xpoints;
-        int[] ypoints = wand.ypoints;
-        PolygonRoi proi = new PolygonRoi(xpoints, ypoints, n, Roi.POLYLINE);
+        PolygonRoi proi = getPolygonRoi();
         Straightener straightener = new Straightener();
         ImagePlus sigImp = new ImagePlus("", ip);
         sigImp.setRoi(proi);
