@@ -3,7 +3,6 @@ package IAClasses;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.VirtualStack;
 import ij.plugin.RGBStackMerge;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
@@ -682,6 +681,8 @@ public class Utils {
     public static ImageProcessor updateImage(ImageStack channel1, ImageStack channel2, int slice) {
         ImageStack red = (new ImagePlus("", channel1.getProcessor(slice).duplicate())).getImageStack();
         ImageStack green = (channel2 == null) ? null : (new ImagePlus("", channel2.getProcessor(slice).duplicate())).getImageStack();
-        return (RGBStackMerge.mergeStacks(red, green, null, false)).getProcessor(1);
+        return ((new RGBStackMerge()).mergeStacks(channel1.getWidth(),channel1.getHeight(),1,red, green, null, false)).getProcessor(1);
     }
+    
+    
 }

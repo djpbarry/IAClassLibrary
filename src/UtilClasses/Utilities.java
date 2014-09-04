@@ -180,7 +180,7 @@ public class Utilities {
                     break;
                 }
             }
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+        } catch (Exception ex) {
             java.util.logging.Logger.getLogger(c.getClass().getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
     }

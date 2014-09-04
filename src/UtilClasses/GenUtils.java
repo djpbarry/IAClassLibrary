@@ -150,7 +150,8 @@ public class GenUtils {
         ArrayList<double[]>[] output = new ArrayList[numOfFiles];
         for (int i = 0; i < numOfFiles; i++) {
             output[i] = new ArrayList();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(input[i])))) {
+            try {
+                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(input[i])));
                 String line = br.readLine();
                 while (line != null) {
                     output[i].add(new double[cols]);
@@ -163,13 +164,13 @@ public class GenUtils {
                     line = br.readLine();
                 }
                 br.close();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 IJ.error(e.toString());
             }
         }
         return output;
     }
-    
+
     public static ImagePlus[] specifyInputs(String[] labels) {
         ImagePlus outputs[] = new ImagePlus[2];
         int windIDs[] = WindowManager.getIDList();

@@ -1,6 +1,5 @@
 package IAClasses;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -8,6 +7,7 @@ import ij.gui.Roi;
 import ij.gui.Wand;
 import ij.plugin.Straightener;
 import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
 import ij.process.FloodFiller;
 import ij.process.ImageProcessor;
 import java.awt.Rectangle;
@@ -577,8 +577,44 @@ public class Region {
         return points;
     }
 
-    public Pixel[] buildStandMapCol(double xc, double yc, ImageStack stack, int frame, int finalWidth, int depth) {
+    public ImageProcessor buildVelImage(ImageStack stack, int frame, double timeRes, double spatialRes, int[] thresholds) {
         ImageProcessor ip = stack.getProcessor(frame);
+        int width = ip.getWidth();
+        int height = ip.getHeight();
+        FloatProcessor output = new FloatProcessor(width, height);
+        ImageProcessor ipm1 = null, ipp1 = null;
+        ImageProcessor edges = ip.duplicate();
+        edges.findEdges();
+        int size = stack.getSize();
+        double t1 = 0, t2 = 0;
+        if (frame > 1 && frame < size) {
+            ipm1 = stack.getProcessor(frame - 1);
+            ipp1 = stack.getProcessor(frame + 1);
+        }
+        if (frame > 1 && frame < size) {
+            t1 = thresholds[frame - 2];
+            t2 = thresholds[frame];
+        }
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                double g = 0.0;
+                if (frame > 1 && frame < size) {
+                    g = ipp1.getPixelValue(i, j) - t1 - ipm1.getPixelValue(i, j) + t2;
+                }
+                double delta = edges.getPixelValue(i, j);
+                double z;
+                if (delta == 0.0) {
+                    z = 0.0;
+                } else {
+                    z = g / delta;
+                }
+                output.putPixelValue(i, j, z * spatialRes * timeRes);
+            }
+        }
+        return output;
+    }
+
+    public Pixel[] buildMapCol(ImageProcessor ip, int finalWidth, int depth) {
         PolygonRoi proi = getPolygonRoi();
         Straightener straightener = new Straightener();
         ImagePlus sigImp = new ImagePlus("", ip);
@@ -593,7 +629,7 @@ public class Region {
             for (int y = 0; y < sig2.getHeight(); y++) {
                 sum += sig2.getPixelValue(x, y);
             }
-            points[x] = new Pixel(0, 0, sum, 1);
+            points[x] = new Pixel(0, 0, sum / depth, 1);
         }
         return points;
     }
