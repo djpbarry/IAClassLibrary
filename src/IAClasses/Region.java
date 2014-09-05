@@ -615,6 +615,9 @@ public class Region {
     }
 
     public Pixel[] buildMapCol(ImageProcessor ip, int finalWidth, int depth) {
+        if (depth < 3) {
+            depth = 3;
+        }
         PolygonRoi proi = getPolygonRoi();
         Straightener straightener = new Straightener();
         ImagePlus sigImp = new ImagePlus("", ip);
