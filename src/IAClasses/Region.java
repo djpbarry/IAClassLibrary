@@ -1,5 +1,6 @@
 package IAClasses;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -497,14 +498,13 @@ public class Region {
                 }
                 double theta1 = Utils.arcTan(pix[j].getX() - pix[i].getX(), pix[j].getY() - pix[i].getY());
                 double theta2 = Utils.arcTan(pix[k].getX() - pix[j].getX(), pix[k].getY() - pix[j].getY());
-                if (theta1 >= 0 && theta1 < 90 && theta2 > 270) {
+                if (theta1 >= 0 && theta1 < 180 && theta2 >= 270) {
                     theta2 -= 360.0;
                 }
-                if (theta2 >= 0 && theta2 < 90 && theta1 > 270) {
+                if (theta2 >= 0 && theta2 < 180 && theta1 >= 270) {
                     theta1 -= 360.0;
                 }
-                double C = theta2 - theta1;
-                curvature[j] = -C;
+                curvature[j] = theta1 - theta2;
             }
         }
         return curvature;
