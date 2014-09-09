@@ -377,7 +377,7 @@ public class Utils {
         } else if (yVal < 0.0) {
             outVal = 90.0;
         } else {
-            outVal = Double.NaN;
+            outVal = 0.0;
         }
 
         return outVal;
