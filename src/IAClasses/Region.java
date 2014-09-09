@@ -498,11 +498,12 @@ public class Region {
                 }
                 double theta1 = Utils.arcTan(pix[j].getX() - pix[i].getX(), pix[j].getY() - pix[i].getY());
                 double theta2 = Utils.arcTan(pix[k].getX() - pix[j].getX(), pix[k].getY() - pix[j].getY());
-                if (theta1 >= 0 && theta1 < 180 && theta2 >= 270) {
-                    theta2 -= 360.0;
-                }
-                if (theta2 >= 0 && theta2 < 180 && theta1 >= 270) {
-                    theta1 -= 360.0;
+                if (Math.abs(theta1 - theta2) >= 180.0) {
+                    if (theta2 > theta1) {
+                        theta2 -= 360.0;
+                    } else {
+                        theta1 -= 360.0;
+                    }
                 }
                 curvature[j] = theta1 - theta2;
             }
