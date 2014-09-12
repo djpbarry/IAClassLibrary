@@ -49,7 +49,7 @@ public class Utils {
                 } else {
                     ext = thisext;
                 }
-                if (output==null) {
+                if (output == null) {
                     output = new ImageStack(processor.getWidth(), processor.getHeight());
                 }
                 output.addSlice(IJ.openImage(images[i].getAbsolutePath()).getProcessor());
@@ -195,8 +195,7 @@ public class Utils {
         return bproc;
     }
 
-    public static ArrayList<int[]> findLocalMaxima(int kWidth, int kHeight,
-            ImageProcessor image, double maxThresh, boolean varyBG) {
+    public static ArrayList<int[]> findLocalMaxima(int kWidth, int kHeight, ImageProcessor image, double maxThresh, boolean varyBG, boolean absolute) {
         if (image == null) {
             return null;
         }
@@ -223,13 +222,40 @@ public class Utils {
                 } else {
                     diff = pix;
                 }
-                if ((pix > max) && (diff > maxThresh)) {
+                boolean pixmax;
+                if (absolute) {
+                    pixmax = pix > max;
+                } else {
+                    pixmax = pix >= max;
+                }
+                if (pixmax && (diff > maxThresh)) {
                     int thismax[] = {x, y};
                     maxima.add(thismax);
                 }
             }
         }
         return maxima;
+    }
+
+    public static int[] findImageMaxima(ImageProcessor image) {
+        if (image == null) {
+            return null;
+        }
+        int thismax[] = {-1,-1};
+//        double max = image.getStatistics().max;
+        double max = 0.0;
+        int width = image.getWidth(), height = image.getHeight();
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                double pix = image.getPixelValue(x, y);
+                if (pix > max) {
+                    thismax[0] = x;
+                    thismax[1] = y;
+                    max = pix;
+                }
+            }
+        }
+        return thismax;
     }
 
     /**
@@ -661,7 +687,7 @@ public class Utils {
         if (image == null) {
             return 0.0;
         }
-        FloatStatistics stats = new FloatStatistics(new TypeConverter(image,false).convertToFloat(null));
+        FloatStatistics stats = new FloatStatistics(new TypeConverter(image, false).convertToFloat(null));
         long histogram[] = stats.getHistogram();
         int l = histogram.length;
         int total = image.getWidth() * image.getHeight();
@@ -681,8 +707,7 @@ public class Utils {
     public static ImageProcessor updateImage(ImageStack channel1, ImageStack channel2, int slice) {
         ImageStack red = (new ImagePlus("", channel1.getProcessor(slice).duplicate())).getImageStack();
         ImageStack green = (channel2 == null) ? null : (new ImagePlus("", channel2.getProcessor(slice).duplicate())).getImageStack();
-        return ((new RGBStackMerge()).mergeStacks(channel1.getWidth(),channel1.getHeight(),1,red, green, null, false)).getProcessor(1);
+        return ((new RGBStackMerge()).mergeStacks(channel1.getWidth(), channel1.getHeight(), 1, red, green, null, false)).getProcessor(1);
     }
-    
-    
+
 }

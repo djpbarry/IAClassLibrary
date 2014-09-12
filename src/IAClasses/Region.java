@@ -7,6 +7,7 @@ import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.gui.Wand;
 import ij.plugin.Straightener;
+import ij.plugin.filter.EDM;
 import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
 import ij.process.FloodFiller;
@@ -47,7 +48,7 @@ public class Region {
         if (centre != null) {
             this.centres.add(centre);
         }
-        Pixel[] bp = this.getOrderedBoundary(imageWidth, imageHeight, mask);
+        Pixel[] bp = this.getOrderedBoundary(imageWidth, imageHeight, mask, centre);
         if (bp != null) {
             for (int i = 0; i < bp.length; i++) {
                 this.addBorderPoint(bp[i]);
@@ -63,9 +64,11 @@ public class Region {
 //        }
     }
 
-    public Region(int width, int height) {
+    public Region(int width, int height, Pixel centre) {
         this.imageWidth = width;
         this.imageHeight = height;
+        this.centres.add(centre);
+        this.borderPix.add(centre);
         this.bounds = null;
         edge = false;
         active = true;
@@ -138,7 +141,7 @@ public class Region {
         }
     }
 
-    private boolean calcCentroid(ImageProcessor mask) {
+    public void calcCentroid(ImageProcessor mask) {
         int width = mask.getWidth();
         int height = mask.getHeight();
         int count = 0;
@@ -152,14 +155,14 @@ public class Region {
                 }
             }
         }
-        double x = xsum / count;
-        double y = ysum / count;
-        if (mask.getPixel((int) Math.round(x), (int) Math.round(y)) < Region.BACKGROUND) {
-            centres.add(new Pixel(xsum / count, ysum / count, 0.0, 1));
-            return true;
-        } else {
-            return false;
-        }
+//        double x = xsum / count;
+//        double y = ysum / count;
+//        if (mask.getPixel((int) Math.round(x), (int) Math.round(y)) < Region.BACKGROUND) {
+        centres.add(new Pixel(xsum / count, ysum / count, 0.0, 1));
+//            return true;
+//        } else {
+//            return false;
+//        }
     }
 
     private boolean calcGeoMedian(ImageProcessor mask) {
@@ -402,6 +405,9 @@ public class Region {
 ////        pixels.clear();
 //    }
     public Rectangle getBounds() {
+        if (borderPix.size() < 1) {
+            return new Rectangle(0, 0, imageWidth, imageHeight);
+        }
         Pixel pixel = (Pixel) borderPix.get(0);
         int x = pixel.getX();
         int y = pixel.getY();
@@ -525,18 +531,25 @@ public class Region {
         return wand;
     }
 
-    public Pixel[] getOrderedBoundary(int width, int height, double xc, double yc) {
-        return getOrderedBoundary(width, height, getMask(width, height));
-    }
-
-    public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask) {
-        if (centres.size() < 1) {
-            calcCentre(mask);
+//    public Pixel[] getOrderedBoundary(int width, int height, double xc, double yc) {
+//        return getOrderedBoundary(width, height, getMask(width, height));
+//    }
+    public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask, Pixel centre) {
+        if (centre == null) {
+            Pixel seed = findSeed(mask);
+            if (seed == null) {
+                return null;
+            } else {
+                centre = seed;
+            }
         }
-        ArrayList<Pixel> centres = getCentres();
-        Pixel seed = centres.get(centres.size() - 1);
+//        if (centres.size() < 1) {
+//            calcCentre(mask);
+//        }
+//        ArrayList<Pixel> centres = getCentres();
+//        Pixel seed = centres.get(centres.size() - 1);
         Wand wand = new Wand(mask);
-        wand.autoOutline(seed.getX(), seed.getY(), 0.0, Wand.EIGHT_CONNECTED);
+        wand.autoOutline(centre.getX(), centre.getY(), 0.0, Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
         int[] xpoints = wand.xpoints;
         int[] ypoints = wand.ypoints;
@@ -549,7 +562,8 @@ public class Region {
         ImageProcessor edges = ip.duplicate();
         edges.findEdges();
         int size = stack.getSize();
-        Pixel points[] = getOrderedBoundary(ip.getWidth(), ip.getHeight(), xc, yc);
+        Pixel points[] = getOrderedBoundary(ip.getWidth(), ip.getHeight(),
+                getMask(ip.getWidth(), ip.getHeight()), new Pixel(xc, yc, 0.0));
         double t1 = 0, t2 = 0;
         if (frame > 1 && frame < size) {
             ipm1 = stack.getProcessor(frame - 1);
@@ -624,8 +638,8 @@ public class Region {
         ImagePlus sigImp = new ImagePlus("", ip);
         sigImp.setRoi(proi);
         ImageProcessor sig = straightener.straighten(sigImp, proi, depth);
-        sig.setInterpolate(true);
-        sig.setInterpolationMethod(ImageProcessor.BILINEAR);
+            sig.setInterpolate(true);
+            sig.setInterpolationMethod(ImageProcessor.BILINEAR);
         ImageProcessor sig2 = sig.resize(finalWidth, depth);
         Pixel points[] = new Pixel[finalWidth];
         for (int x = 0; x < finalWidth; x++) {
@@ -697,78 +711,89 @@ public class Region {
 //        setSeedPix();
     }
 
-    public boolean calcCentre(ImageProcessor mask) {
-        if (calcCentroid(mask)) {
-            nudgeCentreFromEdge(mask);
-            return true;
-        } else if (calcGeoMedian(mask)) {
-            nudgeCentreFromEdge(mask);
-            return true;
-        }
-        return false;
-    }
-
-    void nudgeCentreFromEdge(ImageProcessor mask) {
-        PolygonRoi proi = getPolygonRoi();
-        Pixel centre = centres.get(centres.size() - 1);
-        int x = centre.getX();
-        int y = centre.getY();
-        double xsum = 0.0;
-        double ysum = 0.0;
-//        Rectangle box = proi.getBounds();
-//        ByteProcessor proiImage = new ByteProcessor(130, 144);
-//        proiImage.setValue(255);
-//        proiImage.fill();
-//        proiImage.setValue(0);
-//        int N = proi.getNCoordinates();
-//        int proix[] = proi.getXCoordinates();
-//        int proiy[] = proi.getYCoordinates();
-//        for (int n = 0; n < N; n++) {
-//            proiImage.drawPixel(proix[n] + box.x, proiy[n] + box.y);
+//    public boolean calcCentre(ImageProcessor mask) {
+//        if (calcCentroid(mask)) {
+//            nudgeCentreFromEdge(mask);
+//            return true;
 //        }
-//        IJ.saveAs((new ImagePlus("", proiImage)), "PNG", "C:/users/barry05/desktop/proiImage.png");
-        for (int j = y - 1; j <= y + 1; j++) {
-            for (int i = x - 1; i <= x + 1; i++) {
-                if (mask != null) {
-                    if (mask.getPixel(i, j) < BACKGROUND) {
-                        xsum += i - x;
-                        ysum += j - y;
-                    }
-                } else {
-                    if (proi.contains(i, j)) {
-                        xsum += i - x;
-                        ysum += j - y;
-                    }
-                }
-            }
-        }
-        int xDiff = 0, yDiff = 0;
-        if (xsum < 0.0) {
-            xDiff--;
-        } else if (xsum > 0.0) {
-            xDiff++;
-        }
-        if (ysum < 0.0) {
-            yDiff--;
-        } else if (ysum > 0.0) {
-            yDiff++;
-        }
-        centres.add(new Pixel(x + xDiff, y + yDiff, 0.0, 1));
-    }
-
-    public boolean calcCentre(LinkedList<Pixel> border) {
-        if (calcCentroid(border)) {
-            nudgeCentreFromEdge(null);
-            return true;
-        } else if (calcGeoMedian(border)) {
-            nudgeCentreFromEdge(null);
-            return true;
-        }
-        return false;
-    }
-
+//        } else if (calcGeoMedian(mask)) {
+//            nudgeCentreFromEdge(mask);
+//            return true;
+//        }
+//        return false;
+//    }
+//    void nudgeCentreFromEdge(ImageProcessor mask) {
+//        PolygonRoi proi = getPolygonRoi();
+//        Pixel centre = centres.get(centres.size() - 1);
+//        int x = centre.getX();
+//        int y = centre.getY();
+//        double xsum = 0.0;
+//        double ysum = 0.0;
+////        Rectangle box = proi.getBounds();
+////        ByteProcessor proiImage = new ByteProcessor(130, 144);
+////        proiImage.setValue(255);
+////        proiImage.fill();
+////        proiImage.setValue(0);
+////        int N = proi.getNCoordinates();
+////        int proix[] = proi.getXCoordinates();
+////        int proiy[] = proi.getYCoordinates();
+////        for (int n = 0; n < N; n++) {
+////            proiImage.drawPixel(proix[n] + box.x, proiy[n] + box.y);
+////        }
+////        IJ.saveAs((new ImagePlus("", proiImage)), "PNG", "C:/users/barry05/desktop/proiImage.png");
+//        for (int j = y - 1; j <= y + 1; j++) {
+//            for (int i = x - 1; i <= x + 1; i++) {
+//                if (mask != null) {
+//                    if (mask.getPixel(i, j) < BACKGROUND) {
+//                        xsum += i - x;
+//                        ysum += j - y;
+//                    }
+//                } else {
+//                    if (proi.contains(i, j)) {
+//                        xsum += i - x;
+//                        ysum += j - y;
+//                    }
+//                }
+//            }
+//        }
+//        int xDiff = 0, yDiff = 0;
+//        if (xsum < 0.0) {
+//            xDiff--;
+//        } else if (xsum > 0.0) {
+//            xDiff++;
+//        }
+//        if (ysum < 0.0) {
+//            yDiff--;
+//        } else if (ysum > 0.0) {
+//            yDiff++;
+//        }
+//        centres.add(new Pixel(x + xDiff, y + yDiff, 0.0, 1));
+//    }
+//    public boolean calcCentre(LinkedList<Pixel> border) {
+//        if (calcCentroid(border)) {
+//            nudgeCentreFromEdge(null);
+//            return true;
+//        } else if (calcGeoMedian(border)) {
+//            nudgeCentreFromEdge(null);
+//            return true;
+//        }
+//        return false;
+//    }
     public ArrayList<Pixel> getCentres() {
         return centres;
     }
 
+    public Pixel findSeed(ImageProcessor input) {
+        ImageProcessor mask = input.duplicate();
+        mask.invert();
+        EDM edm = new EDM();
+        edm.toEDM(mask);
+        int[] max = Utils.findImageMaxima(mask);
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/adapt_test_data/masks/edm.png");
+        if (!(max[0] < 0.0 || max[1] < 0.0)) {
+            return new Pixel(max[0], max[1]);
+        } else {
+            return null;
+        }
+    }
 }
