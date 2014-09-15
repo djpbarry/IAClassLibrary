@@ -241,7 +241,7 @@ public class Utils {
         if (image == null) {
             return null;
         }
-        int thismax[] = {-1,-1};
+        int thismax[] = {-1, -1};
 //        double max = image.getStatistics().max;
         double max = 0.0;
         int width = image.getWidth(), height = image.getHeight();
@@ -256,6 +256,24 @@ public class Utils {
             }
         }
         return thismax;
+    }
+
+    public static int[] searchImage(ByteProcessor image, int searchVal) {
+        if (image == null) {
+            return null;
+        }
+        int pix[] = {-1, -1};
+        int width = image.getWidth(), height = image.getHeight();
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (image.getPixel(x, y) == searchVal) {
+                    pix[0] = x;
+                    pix[1] = y;
+                    return pix;
+                }
+            }
+        }
+        return pix;
     }
 
     /**
