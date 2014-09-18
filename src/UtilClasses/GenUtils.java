@@ -44,7 +44,7 @@ public class GenUtils {
                 newDir = new File(directory + "_Output_(" + i + ")" + delimiter);
                 i++;
             }
-            if (!newDir.mkdir()) {
+            if (!newDir.mkdirs()) {
                 System.err.println("Failed to create output directory.");
                 return null;
             }
