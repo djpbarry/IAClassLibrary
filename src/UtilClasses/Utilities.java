@@ -64,7 +64,7 @@ public class Utilities {
      *
      * @return the directory in which the images to be analysed are located
      */
-    public static File getFolder(File currentDirectory, String title) {
+    public static File getFolder(File currentDirectory, String title, boolean addExitOption) {
         boolean validDirectory = false;
         File newDirectory = null;
         if (title == null) {
@@ -84,7 +84,8 @@ public class Utilities {
             int result = fileChooser.showOpenDialog(null);
             if (result == JFileChooser.CANCEL_OPTION) {
                 Toolkit.getDefaultToolkit().beep();
-                if (IJ.showMessageWithCancel("Exit", "Do you wish to exit?")) {
+                boolean exit = addExitOption ? IJ.showMessageWithCancel("Exit", "Do you wish to exit?") : true;
+                if (exit) {
                     return null;
                 }
             } else {
@@ -171,8 +172,8 @@ public class Utilities {
         DateFormat dateFormat = new SimpleDateFormat(format);
         return dateFormat.format(current);
     }
-    
-     public static void setLookAndFeel(Class c) {
+
+    public static void setLookAndFeel(Class c) {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
