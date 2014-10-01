@@ -86,7 +86,13 @@ public class GenUtils {
     }
 
     public static int checkRange(int a, int b) {
-        return a >= b ? a - b : a;
+        if (a < 0) {
+            return a + b;
+        } else if (a >= b) {
+            return a - b;
+        } else {
+            return a;
+        }
     }
 
     /*
