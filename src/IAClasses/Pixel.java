@@ -44,7 +44,7 @@ public class Pixel {
         this.associations = 0;
         this.link = null;
     }
-    
+
     public Pixel(int x, int y) {
         this.precX = x;
         this.precY = y;
@@ -55,23 +55,33 @@ public class Pixel {
         this.associations = 0;
         this.link = null;
     }
-    
-    public Pixel(double x, double y, double z, int iD, Pixel newLink) {
+
+    public Pixel(double x, double y) {
         this.precX = x;
         this.precY = y;
         this.x = (int) Math.round(x);
         this.y = (int) Math.round(y);
-        this.z = z;
+        this.z = 0.0;
         fixed = false;
         this.associations = 0;
-        this.link = newLink;
-        this.iD = iD;
+        this.link = null;
     }
 
-    public Pixel getLink(){
+//    public Pixel(double x, double y, double z, int iD, Pixel newLink) {
+//        this.precX = x;
+//        this.precY = y;
+//        this.x = (int) Math.round(x);
+//        this.y = (int) Math.round(y);
+//        this.z = z;
+//        fixed = false;
+//        this.associations = 0;
+//        this.link = newLink;
+//        this.iD = iD;
+//    }
+    public Pixel getLink() {
         return link;
     }
-    
+
     public int getX() {
         return x;
     }
@@ -167,5 +177,5 @@ public class Pixel {
             return false;
         }
         return true;
-    }    
+    }
 }

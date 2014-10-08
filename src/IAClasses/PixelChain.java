@@ -18,14 +18,14 @@ public class PixelChain {
         size = 0;
     }
 
-    public boolean addPixel(int x, int y, int z, int iD) {
-        end = new Pixel(x, y, z, iD, end);
-        if (end == null) {
-            return false;
-        }
-        size++;
-        return true;
-    }
+//    public boolean addPixel(int x, int y, int z, int iD) {
+//        end = new Pixel(x, y, z, iD, end);
+//        if (end == null) {
+//            return false;
+//        }
+//        size++;
+//        return true;
+//    }
     
     public boolean addPixel(Pixel newPixel) {
         end = newPixel;

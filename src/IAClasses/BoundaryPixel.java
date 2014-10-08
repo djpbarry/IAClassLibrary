@@ -18,6 +18,13 @@ public class BoundaryPixel extends Pixel implements Comparable {
         this.iD = iD;
         this.time = t;
     }
+    
+    public BoundaryPixel(double x, double y, int pos, int iD, int t) {
+        super(x, y);
+        this.pos = pos;
+        this.iD = iD;
+        this.time = t;
+    }
 
     public int getPos() {
         return pos;
