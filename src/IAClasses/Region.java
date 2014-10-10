@@ -1,5 +1,6 @@
 package IAClasses;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -475,15 +476,11 @@ public class Region {
         mask.fill();
         mask.setColor(FOREGROUND);
         int m = borderPix.size();
-        Pixel centre = centres.get(centres.size() - 1);
-        int xc = centre.getX();
-        int yc = centre.getY();
         for (int i = 0; i < m; i++) {
             Pixel current = (Pixel) borderPix.get(i);
             mask.drawPixel(current.getX(), current.getY());
         }
-        FloodFiller ff = new FloodFiller(mask);
-        ff.fill8(xc, yc);
+        fill(mask, FOREGROUND, BACKGROUND);
         return mask;
     }
 

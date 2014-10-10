@@ -220,7 +220,7 @@ public class DSPProcessor {
             } else {
                 k = j;
             }
-                output[i] = input[j] + (interindex - j) * (input[k] - input[j]);
+            output[i] = input[j] + (interindex - j) * (input[k] - input[j]);
             interindex += increment;
         }
         return output;
