@@ -1,6 +1,5 @@
 package IAClasses;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -9,6 +8,7 @@ import ij.gui.Wand;
 import ij.plugin.Straightener;
 import ij.plugin.filter.EDM;
 import ij.process.ByteProcessor;
+import ij.process.FloatPolygon;
 import ij.process.FloatProcessor;
 import ij.process.FloodFiller;
 import ij.process.ImageProcessor;
@@ -637,16 +637,31 @@ public class Region {
         ImagePlus sigImp = new ImagePlus("", ip);
         sigImp.setRoi(proi);
         ImageProcessor sig = straightener.straighten(sigImp, proi, depth);
+        FloatPolygon fPoly = proi.getFloatPolygon();
+        FloatProcessor xp = new FloatProcessor(fPoly.npoints, depth);
+        FloatProcessor yp = new FloatProcessor(fPoly.npoints, depth);
+        for (int x = 0; x < fPoly.npoints; x++) {
+            for (int y = 0; y < depth; y++) {
+                xp.putPixelValue(x, y, fPoly.xpoints[x]);
+                yp.putPixelValue(x, y, fPoly.ypoints[x]);
+            }
+        }
+        xp.setInterpolate(true);
+        xp.setInterpolationMethod(ImageProcessor.BILINEAR);
+        yp.setInterpolate(true);
+        yp.setInterpolationMethod(ImageProcessor.BILINEAR);
         sig.setInterpolate(true);
         sig.setInterpolationMethod(ImageProcessor.BILINEAR);
         ImageProcessor sig2 = sig.resize(finalWidth, depth);
+        ImageProcessor xp2 = xp.resize(finalWidth, depth);
+        ImageProcessor yp2 = yp.resize(finalWidth, depth);
         Pixel points[] = new Pixel[finalWidth];
         for (int x = 0; x < finalWidth; x++) {
             double sum = 0.0;
             for (int y = 0; y < sig2.getHeight(); y++) {
                 sum += sig2.getPixelValue(x, y);
             }
-            points[x] = new Pixel(0, 0, sum / depth, 1);
+            points[x] = new Pixel(xp2.getPixelValue(x, 0), yp2.getPixelValue(x, 0), sum / depth, 1);
         }
         return points;
     }
