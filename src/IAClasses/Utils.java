@@ -509,22 +509,22 @@ public class Utils {
         return sum / (array.length * array[0].length);
     }
 
-    public static ByteProcessor normaliseToByte(ImageProcessor original) {
+    public static ImageProcessor normalise(ImageProcessor original, double norm) {
         ImageProcessor normalised = (new TypeConverter(original, true)).convertToFloat(null);
         double max = normalised.getMax();
-        normalised.multiply(255.0);
-        normalised.multiply(1.0 / max);
+        normalised.multiply(norm / max);
         normalised.resetMinAndMax();
-        return (ByteProcessor) ((new TypeConverter(normalised, true)).convertToByte());
+        return normalised;
     }
 
     /*
      * Normalise all images in the given stack
      */
-    public static void normaliseStack(int stackLength, ImageStack stack) {
+    public static void normaliseStack(ImageStack stack, double norm) {
+        int stackLength = stack.getSize();
         for (int i = 0; i < stackLength; i++) {
             ImageProcessor cip = stack.getProcessor(1);
-            cip = (ImageProcessor) (Utils.normaliseToByte(cip));
+            cip = Utils.normalise(cip, norm);
             stack.deleteSlice(1);
             stack.addSlice(cip);
         }
