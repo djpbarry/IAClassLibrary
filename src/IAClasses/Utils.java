@@ -115,8 +115,7 @@ public class Utils {
      * if a pixel of <code>value</code> was located, <code>null</code>
      * otherwise.
      */
-    public static int[][] searchNeighbourhood(int x, int y, int radius, int value,
-            ImageProcessor image) {
+    public static int[][] searchNeighbourhood(int x, int y, int radius, double value, ImageProcessor image) {
         if (image == null || x < 0 || x >= image.getWidth() || y < 0 || y >= image.getHeight()) {
             return null;
         }
@@ -512,7 +511,9 @@ public class Utils {
     public static ImageProcessor normalise(ImageProcessor original, double norm) {
         ImageProcessor normalised = (new TypeConverter(original, true)).convertToFloat(null);
         double max = normalised.getMax();
-        normalised.multiply(norm / max);
+        double min = normalised.getMin();
+        normalised.subtract(min);
+        normalised.multiply(norm / (max - min));
         normalised.resetMinAndMax();
         return normalised;
     }
@@ -723,8 +724,8 @@ public class Utils {
     }
 
     public static ImageProcessor updateImage(ImageStack channel1, ImageStack channel2, int slice) {
-        ImageStack red = (new ImagePlus("", channel1.getProcessor(slice).duplicate())).getImageStack();
-        ImageStack green = (channel2 == null) ? null : (new ImagePlus("", channel2.getProcessor(slice).duplicate())).getImageStack();
+        ImageStack red = (new ImagePlus("", (new TypeConverter(channel1.getProcessor(slice).duplicate(), true)).convertToByte())).getImageStack();
+        ImageStack green = (channel2 == null) ? null : (new ImagePlus("", (new TypeConverter(channel2.getProcessor(slice).duplicate(), true)).convertToByte())).getImageStack();
         return ((new RGBStackMerge()).mergeStacks(channel1.getWidth(), channel1.getHeight(), 1, red, green, null, false)).getProcessor(1);
     }
 
