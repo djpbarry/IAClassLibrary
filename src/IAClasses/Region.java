@@ -1,5 +1,6 @@
 package IAClasses;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -21,7 +22,7 @@ import java.util.LinkedList;
  *
  * @author barry05
  */
-public class Region {
+public class Region implements Cloneable {
 
 //    private ArrayList<Pixel> pixels = new ArrayList<Pixel>();
     private ArrayList<Pixel> seedPix = new ArrayList<Pixel>();
@@ -41,6 +42,11 @@ public class Region {
     public final static int FOREGROUND = 0, BACKGROUND = 255;
     private int imageWidth, imageHeight;
 //    private final int memSize = 10;
+    private ImageProcessor mask;
+
+    public Region() {
+
+    }
 
     public Region(ImageProcessor mask, Pixel centre) {
         this.imageWidth = mask.getWidth();
@@ -49,7 +55,7 @@ public class Region {
             this.centres.add(centre);
         }
         this.newBounds(centre);
-        Pixel[] bp = this.getOrderedBoundary(imageWidth, imageHeight, mask, centre);
+        Pixel[] bp = this.getOrderedBoundary(imageWidth, imageHeight, mask, centre, true);
         if (bp != null) {
             for (int i = 0; i < bp.length; i++) {
                 this.addBorderPoint(bp[i]);
@@ -420,6 +426,10 @@ public class Region {
         }
         int x = pixel.getX();
         int y = pixel.getY();
+        if (bounds == null) {
+            bounds = new Rectangle(x - 1, y - 1, 3, 3);
+            return;
+        }
         if (x < bounds.x) {
             bounds.x = x - 1;
         } else if (x > bounds.x + bounds.width) {
@@ -477,15 +487,27 @@ public class Region {
         mask.setColor(FOREGROUND);
         int m = borderPix.size();
         for (int i = 0; i < m; i++) {
+            int j = i - 1;
+            if (j < 0) {
+                j += m;
+            }
+            if (j >= m) {
+                j -= m;
+            }
             Pixel current = (Pixel) borderPix.get(i);
-            mask.drawPixel(current.getX(), current.getY());
+            Pixel last = (Pixel) borderPix.get(j);
+            mask.drawLine(current.getX(), current.getY(), last.getX(), last.getY());
         }
         fill(mask, FOREGROUND, BACKGROUND);
         return mask;
     }
 
     public ImageProcessor getMask() {
-        return drawMask(imageWidth, imageHeight);
+        if (mask != null) {
+            return mask;
+        } else {
+            return drawMask(imageWidth, imageHeight);
+        }
     }
 
     public static double[] calcCurvature(Pixel[] pix, int step) {
@@ -533,7 +555,7 @@ public class Region {
 //    public Pixel[] getOrderedBoundary(int width, int height, double xc, double yc) {
 //        return getOrderedBoundary(width, height, getMask(width, height));
 //    }
-    public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask, Pixel centre) {
+    public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask, Pixel centre, boolean interpolate) {
         if (centre == null) {
             Pixel seed = findSeed(mask);
             if (seed == null) {
@@ -542,17 +564,20 @@ public class Region {
                 centre = seed;
             }
         }
-//        if (centres.size() < 1) {
-//            calcCentre(mask);
-//        }
-//        ArrayList<Pixel> centres = getCentres();
-//        Pixel seed = centres.get(centres.size() - 1);
         Wand wand = new Wand(mask);
         wand.autoOutline(centre.getX(), centre.getY(), 0.0, Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
         int[] xpoints = wand.xpoints;
         int[] ypoints = wand.ypoints;
-        return DSPProcessor.interpolatePoints(n, xpoints, ypoints);
+        if (interpolate) {
+            return DSPProcessor.interpolatePoints(n, xpoints, ypoints);
+        } else {
+            Pixel[] pix = new Pixel[n];
+            for (int i = 0; i < n; i++) {
+                pix[i] = new Pixel(xpoints[i], ypoints[i], 1.0, 1);
+            }
+            return pix;
+        }
     }
 
     public Pixel[] buildVelMapCol(double xc, double yc, ImageStack stack, int frame, double timeRes, double spatialRes, int[] thresholds) {
@@ -562,7 +587,7 @@ public class Region {
         edges.findEdges();
         int size = stack.getSize();
         Pixel points[] = getOrderedBoundary(ip.getWidth(), ip.getHeight(),
-                drawMask(ip.getWidth(), ip.getHeight()), new Pixel(xc, yc, 0.0));
+                drawMask(ip.getWidth(), ip.getHeight()), new Pixel(xc, yc, 0.0), true);
         double t1 = 0, t2 = 0;
         if (frame > 1 && frame < size) {
             ipm1 = stack.getProcessor(frame - 1);
@@ -797,17 +822,67 @@ public class Region {
     }
 
     public Pixel findSeed(ImageProcessor input) {
-        input.setRoi(bounds);
+        int bx = 0, by = 0;
+        if (bounds != null) {
+            input.setRoi(bounds);
+            bx = bounds.x;
+            by = bounds.y;
+        }
         ImageProcessor mask = input.crop();
         mask.invert();
         EDM edm = new EDM();
         edm.toEDM(mask);
         int[] max = Utils.findImageMaxima(mask);
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/adapt_test_data/masks/edm.png");
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/edm.png");
         if (!(max[0] < 0.0 || max[1] < 0.0)) {
-            return new Pixel(max[0] + bounds.x, max[1] + bounds.y);
+            return new Pixel(max[0] + bx, max[1] + by);
         } else {
             return null;
         }
+    }
+
+    public boolean shrink(int iterations, boolean interpolate, int index) {
+        ImageProcessor currentMask = getMask().duplicate();
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_b" + index + ".png");
+        for (int i = 0; i < iterations; i++) {
+            currentMask.erode();
+        }
+        this.mask = currentMask;
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_a" + index + ".png");
+        Pixel[] newBorder = getOrderedBoundary(currentMask.getWidth(), currentMask.getHeight(), currentMask, null, interpolate);
+        if (newBorder == null) {
+            return false;
+        }
+        borderPix = new LinkedList();
+        for (int j = 0; j < newBorder.length; j++) {
+            borderPix.add(newBorder[j]);
+        }
+        return true;
+    }
+
+    public Object clone() {
+        try {
+            super.clone();
+        } catch (Exception e) {
+            return null;
+        }
+        Region clone = new Region();
+        clone.seedPix = (ArrayList) seedPix.clone();
+        clone.borderPix = (LinkedList) borderPix.clone();
+        clone.expandedBorder = (LinkedList) expandedBorder.clone();
+        clone.centres = (ArrayList) centres.clone();
+        clone.min = min;
+        clone.max = max;
+        clone.mean = mean;
+        clone.seedMean = seedMean;
+        clone.sigma = sigma;
+        clone.mfD = mfD;
+        clone.edge = edge;
+        clone.active = active;
+        clone.bounds = (Rectangle) bounds.clone();
+        clone.histogram = (int[]) histogram.clone();
+        clone.imageHeight = imageHeight;
+        clone.imageWidth = imageWidth;
+        return clone;
     }
 }
