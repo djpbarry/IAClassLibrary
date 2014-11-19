@@ -55,7 +55,7 @@ public class Region implements Cloneable {
             this.centres.add(centre);
         }
         this.newBounds(centre);
-        Pixel[] bp = this.getOrderedBoundary(imageWidth, imageHeight, mask, centre, true);
+        Pixel[] bp = this.getOrderedBoundary(imageWidth, imageHeight, mask, centre);
         if (bp != null) {
             for (int i = 0; i < bp.length; i++) {
                 this.addBorderPoint(bp[i]);
@@ -487,16 +487,17 @@ public class Region implements Cloneable {
         mask.setColor(FOREGROUND);
         int m = borderPix.size();
         for (int i = 0; i < m; i++) {
-            int j = i - 1;
-            if (j < 0) {
-                j += m;
-            }
-            if (j >= m) {
-                j -= m;
-            }
+//            int j = i - 1;
+//            if (j < 0) {
+//                j += m;
+//            }
+//            if (j >= m) {
+//                j -= m;
+//            }
             Pixel current = (Pixel) borderPix.get(i);
-            Pixel last = (Pixel) borderPix.get(j);
-            mask.drawLine(current.getX(), current.getY(), last.getX(), last.getY());
+//            Pixel last = (Pixel) borderPix.get(j);
+//            mask.drawLine(current.getX(), current.getY(), last.getX(), last.getY());
+            mask.drawPixel(current.getX(), current.getY());
         }
         fill(mask, FOREGROUND, BACKGROUND);
         return mask;
@@ -555,7 +556,7 @@ public class Region implements Cloneable {
 //    public Pixel[] getOrderedBoundary(int width, int height, double xc, double yc) {
 //        return getOrderedBoundary(width, height, getMask(width, height));
 //    }
-    public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask, Pixel centre, boolean interpolate) {
+    public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask, Pixel centre) {
         if (centre == null) {
             Pixel seed = findSeed(mask);
             if (seed == null) {
@@ -569,15 +570,15 @@ public class Region implements Cloneable {
         int n = wand.npoints;
         int[] xpoints = wand.xpoints;
         int[] ypoints = wand.ypoints;
-        if (interpolate) {
+//        if (interpolate) {
             return DSPProcessor.interpolatePoints(n, xpoints, ypoints);
-        } else {
-            Pixel[] pix = new Pixel[n];
-            for (int i = 0; i < n; i++) {
-                pix[i] = new Pixel(xpoints[i], ypoints[i], 1.0, 1);
-            }
-            return pix;
-        }
+//        } else {
+//            Pixel[] pix = new Pixel[n];
+//            for (int i = 0; i < n; i++) {
+//                pix[i] = new Pixel(xpoints[i], ypoints[i], 1.0, 1);
+//            }
+//            return pix;
+//        }
     }
 
     public Pixel[] buildVelMapCol(double xc, double yc, ImageStack stack, int frame, double timeRes, double spatialRes, int[] thresholds) {
@@ -587,7 +588,7 @@ public class Region implements Cloneable {
         edges.findEdges();
         int size = stack.getSize();
         Pixel points[] = getOrderedBoundary(ip.getWidth(), ip.getHeight(),
-                drawMask(ip.getWidth(), ip.getHeight()), new Pixel(xc, yc, 0.0), true);
+                drawMask(ip.getWidth(), ip.getHeight()), new Pixel(xc, yc, 0.0));
         double t1 = 0, t2 = 0;
         if (frame > 1 && frame < size) {
             ipm1 = stack.getProcessor(frame - 1);
@@ -849,7 +850,7 @@ public class Region implements Cloneable {
         }
         this.mask = currentMask;
 //        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_a" + index + ".png");
-        Pixel[] newBorder = getOrderedBoundary(currentMask.getWidth(), currentMask.getHeight(), currentMask, null, interpolate);
+        Pixel[] newBorder = getOrderedBoundary(currentMask.getWidth(), currentMask.getHeight(), currentMask, null);
         if (newBorder == null) {
             return false;
         }
