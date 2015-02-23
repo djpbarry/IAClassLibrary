@@ -623,6 +623,9 @@ public class Utils {
         double x0 = g.getX() / res;
         double y0 = g.getY() / res;
         double xSigma = g.getXSigma();
+        double xSigma2 = 2.0 * xSigma * xSigma;
+        double ySigma = g.getYSigma();
+        double ySigma2 = 2.0 * ySigma * ySigma;
         double value;
         drawRad = (int) Math.round(xSigma * 3.0);
         if (g.getFit() < tol) {
@@ -637,8 +640,8 @@ public class Utils {
                      * other Gaussians in close proximity:
                      */
                     double pval = image.getPixelValue(x, y);
-                    value = g.getMagnitude() * Math.exp(-(((x - x0) * (x - x0))
-                            + ((y - y0) * (y - y0))) / (2 * xSigma * xSigma));
+                    value = g.getMagnitude() * Math.exp(-(((x - x0) * (x - x0)) / xSigma2
+                            + ((y - y0) * (y - y0)) / ySigma2));
                     if (invert) {
                         pval -= value;
                     } else {
