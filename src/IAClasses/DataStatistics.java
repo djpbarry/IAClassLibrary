@@ -16,7 +16,7 @@ public class DataStatistics {
     private final int dataSize;
     private double mean = 0.0;
     private double median = 0.0;
-    private double confidenceInterval = 0.0;
+//    private double confidenceInterval = 0.0;
     private double standardDeviation = 0.0;
     private double upper99 = 0.0;
     private double lower99 = 0.0;
@@ -53,7 +53,7 @@ public class DataStatistics {
         lower99 = newdata[(int) Math.round(n * 0.01)];
         mean = calcMean(newdata);
         standardDeviation = calcStdDev(newdata, dataSize, mean);
-        calcConfInt();
+//        calcConfInt();
     }
 
     /**
@@ -77,7 +77,7 @@ public class DataStatistics {
         calcPercentiles(data, n);
         mean = calcMean(data);
         standardDeviation = calcStdDev(data, dataSize, mean);
-        calcConfInt();
+//        calcConfInt();
         findKeyPoints(data);
     }
 
@@ -161,10 +161,10 @@ public class DataStatistics {
         return Math.sqrt(sumvar / dataSize);
     }
 
-    private void calcConfInt() {
-        confidenceInterval = ErrorFunction.phiInverse(1.0 - alpha / 2.0)
-                * standardDeviation / Math.sqrt(dataSize);
-    }
+//    private void calcConfInt() {
+//        confidenceInterval = ErrorFunction.phiInverse(1.0 - alpha / 2.0)
+//                * standardDeviation / Math.sqrt(dataSize);
+//    }
 
     public double getMean() {
         return mean;
@@ -186,9 +186,9 @@ public class DataStatistics {
         return standardDeviation;
     }
 
-    public double getConfidenceInterval() {
-        return confidenceInterval;
-    }
+//    public double getConfidenceInterval() {
+//        return confidenceInterval;
+//    }
 
     public double getMin() {
         return minValue;

@@ -182,6 +182,10 @@ public class GenUtils {
     public static ImagePlus[] specifyInputs(String[] labels) {
         ImagePlus outputs[] = new ImagePlus[2];
         int windIDs[] = WindowManager.getIDList();
+        if (windIDs == null) {
+            error("No images open.");
+            return null;
+        }
         String winTitles[] = new String[windIDs.length + 1];
         for (int i = 0; i < windIDs.length; i++) {
             winTitles[i] = WindowManager.getImage(windIDs[i]).getTitle();
@@ -194,7 +198,7 @@ public class GenUtils {
         }
         if (!(sid.getCytoIndex() > -1 && sid.getCytoIndex() < windIDs.length)) {
             Toolkit.getDefaultToolkit().beep();
-            IJ.error("Channel 1 not specified!");
+            error("Channel 1 not specified!");
             return null;
         }
         outputs[0] = WindowManager.getImage(windIDs[sid.getCytoIndex()]);
