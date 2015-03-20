@@ -4,6 +4,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.RGBStackMerge;
+import ij.plugin.filter.EDM;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
@@ -164,8 +165,8 @@ public class Utils {
         }
         int i, j, x, y, width = image.getWidth(), height = image.getHeight();
         double max, current, min;
-        ByteProcessor bproc = new ByteProcessor(width, height);
-        bproc.setValue(drawValue);
+        ByteProcessor bProc = new ByteProcessor(width, height);
+        bProc.setValue(drawValue);
         for (x = kWidth; x < width - kWidth; x++) {
             for (y = kHeight; y < height - kHeight; y++) {
                 for (min = Double.MAX_VALUE, max = 0.0, i = x - kWidth; i <= x + kWidth; i++) {
@@ -186,12 +187,18 @@ public class Utils {
                 } else {
                     diff = pix;
                 }
-                if ((pix > max) && (diff > maxThresh)) {
-                    bproc.drawPixel(x, y);
+                if ((pix >= max) && (diff > maxThresh)) {
+                    bProc.drawPixel(x, y);
                 }
             }
         }
-        return bproc;
+        EDM edm = new EDM();
+        ByteProcessor bProc2 = (ByteProcessor)bProc.duplicate();
+        bProc2.invert();
+        edm.setup("points", new ImagePlus("",bProc2));
+        edm.run(bProc2);
+        bProc2.multiply(drawValue);
+        return bProc2;
     }
 
     public static ArrayList<int[]> findLocalMaxima(int kWidth, int kHeight, ImageProcessor image, double maxThresh, boolean varyBG, boolean absolute) {
