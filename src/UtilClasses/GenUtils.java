@@ -58,10 +58,10 @@ public class GenUtils {
     }
 
     public static String getDelimiter() {
-        if (IJ.isMacOSX()) {
-            return "//";
-        } else {
+        if (IJ.isWindows()) {
             return "\\";
+        } else {
+            return "/";
         }
     }
 
