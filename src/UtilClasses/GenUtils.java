@@ -12,6 +12,7 @@ import ij.WindowManager;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 import ij.process.StackConverter;
+import ij.process.TypeConverter;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Polygon;
@@ -213,12 +214,19 @@ public class GenUtils {
     public static ImageStack convertStackTo8Bit(ImageStack stack) {
         ImageStack tempStack = new ImageStack(stack.getWidth(), stack.getHeight());
         int size = stack.getSize();
-        for (int i = 1; i <= size; i++) {
-            tempStack.addSlice(stack.getProcessor(i).duplicate());
+        if (size > 1) {
+            for (int i = 1; i <= size; i++) {
+                tempStack.addSlice(stack.getProcessor(i).duplicate());
+            }
+            ImagePlus tempCytoImp = new ImagePlus("", tempStack);
+            StackConverter sc = new StackConverter(tempCytoImp);
+            sc.convertToGray8();
+            return tempCytoImp.getImageStack();
+        } else {
+            ImageProcessor tempIP = (new TypeConverter(stack.getProcessor(1).duplicate(), true)).convertToByte();
+            ImageStack output = new ImageStack(tempIP.getWidth(), tempIP.getHeight());
+            output.addSlice(tempIP);
+            return output;
         }
-        ImagePlus tempCytoImp = new ImagePlus("", tempStack);
-        StackConverter sc = new StackConverter(tempCytoImp);
-        sc.convertToGray8();
-        return tempCytoImp.getImageStack();
     }
 }

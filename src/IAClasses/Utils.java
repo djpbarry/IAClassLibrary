@@ -193,9 +193,9 @@ public class Utils {
             }
         }
         EDM edm = new EDM();
-        ByteProcessor bProc2 = (ByteProcessor)bProc.duplicate();
+        ByteProcessor bProc2 = (ByteProcessor) bProc.duplicate();
         bProc2.invert();
-        edm.setup("points", new ImagePlus("",bProc2));
+        edm.setup("points", new ImagePlus("", bProc2));
         edm.run(bProc2);
         bProc2.multiply(drawValue);
         return bProc2;
@@ -431,6 +431,13 @@ public class Utils {
         }
 
         return outVal;
+    }
+
+    public static double angleBetweenTwoLines(double vector1[], double vector2[]) {
+        double m1 = vector1[1] / vector1[0];
+        double m2 = vector2[1] / vector2[0];
+
+        return Math.atan(Math.abs((m1 - m2) / (1.0 + m1 * m2)));
     }
 
     public static double[] convolve(double vector1[], double vector2[]) {
