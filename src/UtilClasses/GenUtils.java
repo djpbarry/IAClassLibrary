@@ -112,10 +112,10 @@ public class GenUtils {
         return derivative;
     }
 
-    public static File createDirectory(String dirName) {
+    public static File createDirectory(String dirName, boolean deleteIfExists) {
         File dir = new File(dirName);
         try {
-            if (!dir.exists()) {
+            if (!dir.exists() || (dir.exists() && deleteIfExists)) {
                 if (!dir.mkdirs()) {
                     IJ.error("Failed to create directory: " + dirName);
                     return null;

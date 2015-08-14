@@ -741,9 +741,16 @@ public class Utils {
     }
 
     public static ImageProcessor updateImage(ImageStack channel1, ImageStack channel2, int slice) {
-        ImageStack red = (new ImagePlus("", (new TypeConverter(channel1.getProcessor(slice).duplicate(), true)).convertToByte())).getImageStack();
-        ImageStack green = (channel2 == null) ? null : (new ImagePlus("", (new TypeConverter(channel2.getProcessor(slice).duplicate(), true)).convertToByte())).getImageStack();
+        ImageProcessor redIP = channel1.getProcessor(slice).duplicate();
+        redIP.resetMinAndMax();
+        ImageStack red = (new ImagePlus("", (new TypeConverter(redIP, true)).convertToByte())).getImageStack();
+        ImageProcessor greenIP = null;
+        ImageStack green = null;
+        if (channel2 != null) {
+            greenIP = channel2.getProcessor(slice).duplicate();
+            greenIP.resetMinAndMax();
+            green = (new ImagePlus("", (new TypeConverter(greenIP, true)).convertToByte())).getImageStack();
+        }
         return ((new RGBStackMerge()).mergeStacks(channel1.getWidth(), channel1.getHeight(), 1, red, green, null, false)).getProcessor(1);
     }
-
 }
