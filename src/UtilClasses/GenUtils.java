@@ -18,9 +18,14 @@ import java.awt.Font;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Scanner;
+import org.apache.commons.io.FileUtils;
 
 /**
  *
@@ -115,7 +120,10 @@ public class GenUtils {
     public static File createDirectory(String dirName, boolean deleteIfExists) {
         File dir = new File(dirName);
         try {
-            if (!dir.exists() || (dir.exists() && deleteIfExists)) {
+            if ((dir.exists() && deleteIfExists)) {
+                FileUtils.deleteDirectory(dir);
+            }
+            if (!dir.exists()) {
                 if (!dir.mkdirs()) {
                     IJ.error("Failed to create directory: " + dirName);
                     return null;
