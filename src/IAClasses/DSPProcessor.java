@@ -74,7 +74,7 @@ public class DSPProcessor {
                 xD = xCentre - x1;
                 yD = yCentre - y1;
                 current = resolution * Math.sqrt((xD * xD) + (yD * yD));
-                dist.add(new Pixel(x1, y1, current, 1));
+                dist.add(new Pixel(x1, y1, current));
                 x1 += xInc;
                 y1 += yInc;
                 i++;
@@ -391,7 +391,7 @@ public class DSPProcessor {
             }
 
             do {
-                interList.add(new Pixel(x1, y1, 1.0, 1));
+                interList.add(new Pixel(x1, y1, 1.0));
                 x1 += xInc;
                 y1 += yInc;
                 i++;

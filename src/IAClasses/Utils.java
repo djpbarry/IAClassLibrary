@@ -128,7 +128,7 @@ public class Utils {
                 if (image.getPixelValue(i, j) >= value) {
                     currentDist = calcDistance(i, j, x, y);
                     if (currentDist < minDist) {
-                        Pixel p = new Pixel(i, j, currentDist, 0);
+                        Pixel p = new Pixel(i, j, currentDist);
                         pixels.add(p);
                         minDist = currentDist;
                     }

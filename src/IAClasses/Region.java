@@ -171,7 +171,7 @@ public class Region implements Cloneable {
 //        double x = xsum / count;
 //        double y = ysum / count;
 //        if (mask.getPixel((int) Math.round(x), (int) Math.round(y)) < Region.BACKGROUND) {
-        centres.add(new Pixel(xsum / count, ysum / count, 0.0, 1));
+        centres.add(new Pixel(xsum / count, ysum / count, 0.0));
 //            return true;
 //        } else {
 //            return false;
@@ -612,7 +612,7 @@ public class Region implements Cloneable {
             } else {
                 z = g / delta;
             }
-            points[i] = new Pixel(x, y, z * spatialRes * timeRes, 1);
+            points[i] = new Pixel(x, y, z * spatialRes * timeRes);
         }
         return points;
     }
@@ -687,7 +687,7 @@ public class Region implements Cloneable {
             for (int y = 0; y < sig2.getHeight(); y++) {
                 sum += sig2.getPixelValue(x, y);
             }
-            points[x] = new Pixel(xp2.getPixelValue(x, 0), yp2.getPixelValue(x, 0), sum / depth, 1);
+            points[x] = new Pixel(xp2.getPixelValue(x, 0), yp2.getPixelValue(x, 0), sum / depth);
         }
         return points;
     }

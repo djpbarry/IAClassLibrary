@@ -77,7 +77,7 @@ public class RegionEdge {
                 int x = pix.getX();
                 int y = pix.getY();
                 double z = gradImage.getPixelValue(x, y);
-                gradPix.add(new Pixel(x, y, z, 2));
+                gradPix.add(new Pixel(x, y, z));
             }
         }
     }
