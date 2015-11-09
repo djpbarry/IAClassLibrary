@@ -15,7 +15,7 @@ import ij.process.ImageProcessor;
  */
 public class CrossCorrelation {
 
-    private static double correlation2D(ImageProcessor map1, ImageProcessor map2, int t, int s, double mean1, double mean2) {
+    public static double crossCorrelation(ImageProcessor map1, ImageProcessor map2, int t, int s, double mean1, double mean2) {
         double sum = 0.0;
         int count = 0;
         int w = map1.getWidth();
@@ -57,7 +57,7 @@ public class CrossCorrelation {
         crossCorrelation.putPixelValue(midX, midY, 1.0);
         for (int x = 0; x < T; x++) {
             for (int y = 0; y < S; y++) {
-                double c = correlation2D(map1, map2, x - midX, y - midY, mean1, mean2) / sd2;
+                double c = crossCorrelation(map1, map2, x - midX, y - midY, mean1, mean2) / sd2;
                 crossCorrelation.putPixelValue(x, y, c);
             }
         }
