@@ -61,14 +61,6 @@ public class Region implements Cloneable {
                 this.addBorderPoint(bp[i]);
             }
         }
-//        mask.erode();
-//        for (int i = 0; i < width; i++) {
-//            for (int j = 0; j < height; j++) {
-//                if (mask.getPixel(i, j) == StaticConstants.FOREGROUND) {
-//                    this.addPoint(new Pixel(i, j, index));
-//                }
-//            }
-//        }
     }
 
     public Region(int width, int height, Pixel centre) {
@@ -87,9 +79,6 @@ public class Region implements Cloneable {
             bounds = new Rectangle(point.getX(), point.getY(), 1, 1);
         }
     }
-//    public void addPoint(Pixel point) {
-//        pixels.add(point);
-//    }
 
     public void addBorderPoint(Pixel point) {
         borderPix.add(point);
@@ -135,25 +124,6 @@ public class Region implements Cloneable {
         }
     }
 
-//    private boolean calcCentroid(LinkedList<Pixel> borderPix) {
-//        int bordersize = borderPix.size();
-//        double xsum = 0.0, ysum = 0.0;
-//        Pixel current;
-//        for (int i = 0; i < bordersize; i++) {
-//            current = (Pixel) borderPix.get(i);
-//            xsum += current.getX();
-//            ysum += current.getY();
-//        }
-//        PolygonRoi proi = getPolygonRoi();
-//        double x = xsum / (borderPix.size());
-//        double y = ysum / (borderPix.size());
-//        if (proi.contains((int) Math.round(x), (int) Math.round(y))) {
-//            centres.add(new Pixel(x, y, 0.0, 1));
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    }
     public void calcCentroid(ImageProcessor mask) {
         int width = mask.getWidth();
         int height = mask.getHeight();
@@ -178,74 +148,6 @@ public class Region implements Cloneable {
 //        }
     }
 
-//    private boolean calcGeoMedian(ImageProcessor mask) {
-//        ArrayList<Pixel> pixels = new ArrayList();
-//        int height = mask.getHeight();
-//        int width = mask.getWidth();
-//        for (int y = 0; y < height; y++) {
-//            for (int x = 0; x < width; x++) {
-//                if (mask.getPixel(x, y) < BACKGROUND) {
-//                    pixels.add(new Pixel(x, y, 0));
-//                }
-//            }
-//        }
-//        double minDist = Double.MAX_VALUE;
-//        int xm = -1;
-//        int ym = -1;
-//        int size = pixels.size();
-//        for (int p1 = 0; p1 < size; p1++) {
-//            double dist = 0.0;
-//            for (int p2 = 0; p2 < size; p2++) {
-//                Pixel pix1 = pixels.get(p1);
-//                Pixel pix2 = pixels.get(p2);
-//                dist += Math.abs(pix2.getX() - pix1.getX()) + Math.abs(pix2.getY() - pix1.getY());
-//            }
-//            if (dist < minDist) {
-//                minDist = dist;
-//                xm = pixels.get(p1).getX();
-//                ym = pixels.get(p1).getY();
-//            }
-//        }
-//        if (xm >= 0 && ym >= 0) {
-//            centres.add(new Pixel(xm, ym, 0.0, 1));
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    }
-//    private boolean calcGeoMedian(LinkedList<Pixel> borderPix) {
-//        int bordersize = borderPix.size();
-//        if (bordersize < 3) {
-//            Pixel pix = borderPix.get(0);
-//            centres.add(new Pixel(pix.getX(), pix.getY(), 0.0, 1));
-//            return true;
-//        }
-//        double minDist = Double.MAX_VALUE;
-//        int xm = -1;
-//        int ym = -1;
-//        bounds = getBounds();
-//        PolygonRoi proi = getPolygonRoi();
-//        for (int y = bounds.y; y < bounds.height + bounds.y; y++) {
-//            for (int x = bounds.x; x < bounds.width + bounds.x; x++) {
-//                double dist = 0.0;
-//                for (int b = 0; b < bordersize; b++) {
-//                    Pixel pix = borderPix.get(b);
-//                    dist += Math.abs(pix.getX() - x) + Math.abs(pix.getY() - y);
-//                }
-//                if (dist < minDist && proi.contains(x, y)) {
-//                    minDist = dist;
-//                    xm = x;
-//                    ym = y;
-//                }
-//            }
-//        }
-//        if (xm >= 0 && ym >= 0) {
-//            centres.add(new Pixel(xm, ym, 0.0, 1));
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    }
     PolygonRoi getPolygonRoi() {
         int bordersize = borderPix.size();
         ByteProcessor tempImage = new ByteProcessor(imageWidth, imageHeight);
@@ -338,16 +240,6 @@ public class Region implements Cloneable {
         return -1;
     }
 
-//    public int contains(int x, int y) {
-//        int i;
-//        for (i = 0; i < pixels.size(); i++) {
-//            Pixel p = (Pixel) pixels.get(i);
-//            if ((p.getX() == x) && (p.getY() == y)) {
-//                return i;
-//            }
-//        }
-//        return -1;
-//    }
     public LinkedList<Pixel> getBorderPix() {
         return borderPix;
     }
@@ -410,12 +302,6 @@ public class Region implements Cloneable {
         return seedPix;
     }
 
-//    public void setSeedPix() {
-//        seedMean = mean;
-//        mean = 0.0;
-////        seedPix = (ArrayList) pixels.clone();
-////        pixels.clear();
-//    }
     public Rectangle getBounds() {
         return bounds;
     }
@@ -475,11 +361,6 @@ public class Region implements Cloneable {
         return seedMean;
     }
 
-//    public ImageProcessor getMask() {
-//        Rectangle roi = getBounds();
-//        int w = roi.width, h = roi.height;
-//        return getMask(w, h);
-//    }
     ImageProcessor drawMask(int width, int height) {
         ImageProcessor mask = new ByteProcessor(width, height);
         mask.setColor(BACKGROUND);
@@ -541,21 +422,6 @@ public class Region implements Cloneable {
         return curvature;
     }
 
-//    public Pixel[] getBoundarySig(double xc, double yc) {
-//        Wand wand = getWand(getMask(), xc, yc);
-//        int n = wand.npoints;
-//        return DSPProcessor.getDistanceSignal(n, xc,
-//                yc, wand.xpoints, wand.ypoints, 1.0);
-//    }
-//    public Wand getWand(ImageProcessor mask, double xc, double yc) {
-//        Wand wand = new Wand(getMask());
-//        wand.autoOutline((int) Math.round(xc - bounds.x), (int) Math.round(yc - bounds.y), 0.0,
-//                Wand.EIGHT_CONNECTED);
-//        return wand;
-//    }
-//    public Pixel[] getOrderedBoundary(int width, int height, double xc, double yc) {
-//        return getOrderedBoundary(width, height, getMask(width, height));
-//    }
     public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask, Pixel centre) {
         if (centre == null) {
             Pixel seed = findSeed(mask);
@@ -692,132 +558,16 @@ public class Region implements Cloneable {
         return points;
     }
 
-//    public Roi getRoi() {
-//        ImageProcessor mask = getMask();
-//        Wand wand = new Wand(mask);
-//        wand.autoOutline((int) Math.round(mask.getWidth() / 2), (int) Math.round(mask.getHeight() / 2), 0.0,
-//                Wand.EIGHT_CONNECTED);
-//        PolygonRoi roi = new PolygonRoi(wand.xpoints, wand.ypoints, wand.npoints, Roi.POLYGON);
-//        roi.setLocation(bounds.x + 1, bounds.y + 1);
-//
-//        return roi;
-//    }
-//    public void clearPixels() {
-//        pixels.clear();
-//    }
     public void clearBorderPix() {
         borderPix.clear();
     }
 
-//    public void savePixels(int width, int height) {
-//        pixMem.add((ArrayList) pixels.clone());
-//        borderPixMem.add((LinkedList) borderPix.clone());
-//        if (pixMem.size() > memSize) {
-//            pixMem.remove(0);
-//        }
-//        if (borderPixMem.size() > memSize) {
-//            borderPixMem.remove(0);
-//        }
-//        Random r = new Random();
-//        ColorProcessor cp = new ColorProcessor(width, height);
-//        for (int i = pixMem.size() - 1; i >= 0; i--) {
-//            ArrayList<Pixel> pix = pixMem.get(i);
-//            cp.setColor(new Color(r.nextInt(256), r.nextInt(256), r.nextInt(256)));
-//            for (int j = 0; j < pix.size(); j++) {
-//                int x = pix.get(j).getX();
-//                int y = pix.get(j).getY();
-//                cp.drawPixel(x, y);
-//            }
-//        }
-//        (new ImagePlus("Pix", cp)).show();
-//    }
-//    public ArrayList<Pixel> getSavedPix(int index) {
-//        if (index >= pixMem.size()) {
-//            return null;
-//        }
-//        return pixMem.get(index);
-//    }
-//
-//    public LinkedList<Pixel> getSavedBorderPix(int index) {
-//        if (index >= borderPixMem.size()) {
-//            return null;
-//        }
-//        return borderPixMem.get(index);
-//    }
     public void loadPixels(LinkedList<Pixel> borderPix) {
 //        this.pixels = (ArrayList) pixels.clone();
         this.borderPix = (LinkedList) borderPix.clone();
 //        setSeedPix();
     }
 
-//    public boolean calcCentre(ImageProcessor mask) {
-//        if (calcCentroid(mask)) {
-//            nudgeCentreFromEdge(mask);
-//            return true;
-//        }
-//        } else if (calcGeoMedian(mask)) {
-//            nudgeCentreFromEdge(mask);
-//            return true;
-//        }
-//        return false;
-//    }
-//    void nudgeCentreFromEdge(ImageProcessor mask) {
-//        PolygonRoi proi = getPolygonRoi();
-//        Pixel centre = centres.get(centres.size() - 1);
-//        int x = centre.getX();
-//        int y = centre.getY();
-//        double xsum = 0.0;
-//        double ysum = 0.0;
-////        Rectangle box = proi.getBounds();
-////        ByteProcessor proiImage = new ByteProcessor(130, 144);
-////        proiImage.setValue(255);
-////        proiImage.fill();
-////        proiImage.setValue(0);
-////        int N = proi.getNCoordinates();
-////        int proix[] = proi.getXCoordinates();
-////        int proiy[] = proi.getYCoordinates();
-////        for (int n = 0; n < N; n++) {
-////            proiImage.drawPixel(proix[n] + box.x, proiy[n] + box.y);
-////        }
-////        IJ.saveAs((new ImagePlus("", proiImage)), "PNG", "C:/users/barry05/desktop/proiImage.png");
-//        for (int j = y - 1; j <= y + 1; j++) {
-//            for (int i = x - 1; i <= x + 1; i++) {
-//                if (mask != null) {
-//                    if (mask.getPixel(i, j) < BACKGROUND) {
-//                        xsum += i - x;
-//                        ysum += j - y;
-//                    }
-//                } else {
-//                    if (proi.contains(i, j)) {
-//                        xsum += i - x;
-//                        ysum += j - y;
-//                    }
-//                }
-//            }
-//        }
-//        int xDiff = 0, yDiff = 0;
-//        if (xsum < 0.0) {
-//            xDiff--;
-//        } else if (xsum > 0.0) {
-//            xDiff++;
-//        }
-//        if (ysum < 0.0) {
-//            yDiff--;
-//        } else if (ysum > 0.0) {
-//            yDiff++;
-//        }
-//        centres.add(new Pixel(x + xDiff, y + yDiff, 0.0, 1));
-//    }
-//    public boolean calcCentre(LinkedList<Pixel> border) {
-//        if (calcCentroid(border)) {
-//            nudgeCentreFromEdge(null);
-//            return true;
-//        } else if (calcGeoMedian(border)) {
-//            nudgeCentreFromEdge(null);
-//            return true;
-//        }
-//        return false;
-//    }
     public ArrayList<Pixel> getCentres() {
         return centres;
     }
