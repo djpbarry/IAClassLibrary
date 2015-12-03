@@ -432,6 +432,10 @@ public class Region implements Cloneable {
         int n = wand.npoints;
         int[] xpoints = wand.xpoints;
         int[] ypoints = wand.ypoints;
+        Rectangle r = (new PolygonRoi(xpoints, ypoints, n, Roi.POLYGON)).getBounds();
+        mask.setValue(BACKGROUND);
+        mask.fillOutside(new Roi(r));
+        mask.setValue(FOREGROUND);
 //        if (interpolate) {
         return DSPProcessor.interpolatePoints(n, xpoints, ypoints);
 //        } else {
@@ -572,6 +576,7 @@ public class Region implements Cloneable {
     public Pixel findSeed(ImageProcessor input) {
         int bx = 0, by = 0;
         if (bounds != null) {
+            checkBounds();
             input.setRoi(bounds);
             bx = bounds.x;
             by = bounds.y;
@@ -586,6 +591,15 @@ public class Region implements Cloneable {
             return new Pixel(max[0] + bx, max[1] + by);
         } else {
             return null;
+        }
+    }
+
+    void checkBounds() {
+        if (bounds.x < 0) {
+            bounds.x = 0;
+        }
+        if (bounds.y < 0) {
+            bounds.y = 0;
         }
     }
 
