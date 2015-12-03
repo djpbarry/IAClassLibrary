@@ -15,14 +15,18 @@ import ij.process.ImageProcessor;
  */
 public class CrossCorrelation {
 
-    public static double crossCorrelation(ImageProcessor map1, ImageProcessor map2, int t, int s, double mean1, double mean2) {
+    public static double crossCorrelation(float map1[], float map2[], int t, int s, double mean1, double mean2, int w, int h) {
         double sum = 0.0;
         int count = 0;
-        int w = map1.getWidth();
-        int h = map1.getHeight();
-        for (int i = (t < 0) ? -t : 0; i + t < w; i++) {
-            for (int j = (s < 0) ? -s : 0; j + s < h; j++) {
-                sum += (map1.getPixelValue(i + t, j + s) - mean1) * (map2.getPixelValue(i, j) - mean2);
+        int y1 = s < 0 ? -s : 0;
+        int y2 = s > 0 ? h - s : h;
+        int x1 = t < 0 ? -t : 0;
+        int x2 = t > 0 ? w - t : w;
+        for (int j = y1; j < y2; j++) {
+            int offset1 = j * w;
+            int offset2 = (j + s) * w;
+            for (int i = x1; i < x2; i++) {
+                sum += (map1[i + t + offset2] - mean1) * (map2[i + offset1] - mean2);
                 count++;
             }
         }
@@ -53,11 +57,13 @@ public class CrossCorrelation {
         int midY = S / 2;
         double mean1 = map1.getStatistics().mean;
         double mean2 = map2.getStatistics().mean;
+        float map1Pix[] = (float[]) map1.getPixels();
+        float map2Pix[] = (float[]) map2.getPixels();
         FloatProcessor crossCorrelation = new FloatProcessor(T, S);
         crossCorrelation.putPixelValue(midX, midY, 1.0);
-        for (int x = 0; x < T; x++) {
-            for (int y = 0; y < S; y++) {
-                double c = crossCorrelation(map1, map2, x - midX, y - midY, mean1, mean2) / sd2;
+        for (int y = 0; y < S; y++) {
+            for (int x = 0; x < T; x++) {
+                double c = crossCorrelation(map1Pix, map2Pix, x - midX, y - midY, mean1, mean2, w, h) / sd2;
                 crossCorrelation.putPixelValue(x, y, c);
             }
         }
