@@ -154,23 +154,29 @@ public class Region implements Cloneable {
 
     PolygonRoi getPolygonRoi() {
         int bordersize = borderPix.size();
-        ByteProcessor tempImage = new ByteProcessor(imageWidth, imageHeight);
+        Rectangle r = getBounds();
+        ByteProcessor tempImage = new ByteProcessor(r.width, r.height);
         tempImage.setValue(BACKGROUND);
         tempImage.fill();
         tempImage.setValue(FOREGROUND);
 //        Polygon poly = new Polygon();
         for (int i = 0; i < bordersize; i++) {
-            tempImage.drawPixel(borderPix.get(i).getX(), borderPix.get(i).getY());
+            tempImage.drawPixel(borderPix.get(i).getX() - r.x, borderPix.get(i).getY() - r.y);
 //            poly.addPoint(borderPix.get(i).getX(), borderPix.get(i).getY());
         }
         fill(tempImage, FOREGROUND, BACKGROUND);
 //        IJ.saveAs((new ImagePlus("", tempImage)), "PNG", "C:/users/barry05/desktop/tempImage.png");
         Wand wand = new Wand(tempImage);
-        wand.autoOutline(borderPix.get(0).getX(), borderPix.get(0).getY(), FOREGROUND, FOREGROUND);
-        int xpix[] = new int[wand.npoints];
-        int ypix[] = new int[wand.npoints];
+        wand.autoOutline(borderPix.get(0).getX() - r.x, borderPix.get(0).getY() - r.y, FOREGROUND, FOREGROUND);
+        int n = wand.npoints;
+        int xpix[] = new int[n];
+        int ypix[] = new int[n];
         System.arraycopy(wand.xpoints, 0, xpix, 0, wand.npoints);
         System.arraycopy(wand.ypoints, 0, ypix, 0, wand.npoints);
+        for (int j = 0; j < n; j++) {
+            xpix[j] = wand.xpoints[j] + r.x;
+            ypix[j] = wand.ypoints[j] + r.y;
+        }
         return new PolygonRoi(xpix, ypix, wand.npoints, Roi.POLYGON);
     }
 
@@ -496,14 +502,14 @@ public class Region implements Cloneable {
         float edgePix[] = (float[]) edges.getPixels();
         int size = stack.getSize();
         float t1 = 0, t2 = 0;
-        float spatTimeRes = (float)(spatialRes * timeRes);
+        float spatTimeRes = (float) (spatialRes * timeRes);
         if (frame > 1 && frame < size) {
             ipm1 = (short[]) ((new TypeConverter(stack.getProcessor(frame - 1), false)).convertToShort()).getPixels();
             ipp1 = (short[]) ((new TypeConverter(stack.getProcessor(frame + 1), false)).convertToShort()).getPixels();
         }
         if (frame > 1 && frame < size) {
-            t1 = (float)(thresholds[frame - 2]);
-            t2 = (float)(thresholds[frame]);
+            t1 = (float) (thresholds[frame - 2]);
+            t2 = (float) (thresholds[frame]);
         }
         for (int j = 0; j < height; j++) {
             int offset = j * width;
