@@ -1,6 +1,5 @@
 package IAClasses;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -13,6 +12,7 @@ import ij.process.FloatPolygon;
 import ij.process.FloatProcessor;
 import ij.process.FloodFiller;
 import ij.process.ImageProcessor;
+import ij.process.TypeConverter;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -489,35 +489,40 @@ public class Region implements Cloneable {
         int width = ip.getWidth();
         int height = ip.getHeight();
         FloatProcessor output = new FloatProcessor(width, height);
-        ImageProcessor ipm1 = null, ipp1 = null;
-        ImageProcessor edges = ip.duplicate();
+        float outPix[] = (float[]) output.getPixels();
+        short ipm1[] = null, ipp1[] = null;
+        FloatProcessor edges = (FloatProcessor) (new TypeConverter(ip.duplicate(), false)).convertToFloat(null);
         edges.findEdges();
+        float edgePix[] = (float[]) edges.getPixels();
         int size = stack.getSize();
-        double t1 = 0, t2 = 0;
+        float t1 = 0, t2 = 0;
+        float spatTimeRes = (float)(spatialRes * timeRes);
         if (frame > 1 && frame < size) {
-            ipm1 = stack.getProcessor(frame - 1);
-            ipp1 = stack.getProcessor(frame + 1);
+            ipm1 = (short[]) ((new TypeConverter(stack.getProcessor(frame - 1), false)).convertToShort()).getPixels();
+            ipp1 = (short[]) ((new TypeConverter(stack.getProcessor(frame + 1), false)).convertToShort()).getPixels();
         }
         if (frame > 1 && frame < size) {
-            t1 = thresholds[frame - 2];
-            t2 = thresholds[frame];
+            t1 = (float)(thresholds[frame - 2]);
+            t2 = (float)(thresholds[frame]);
         }
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                double g = 0.0;
+        for (int j = 0; j < height; j++) {
+            int offset = j * width;
+            for (int i = 0; i < width; i++) {
+                float g = 0;
                 if (frame > 1 && frame < size) {
-                    g = ipp1.getPixelValue(i, j) - t1 - ipm1.getPixelValue(i, j) + t2;
+                    g = ipp1[i + offset] - t1 - ipm1[i + offset] + t2;
                 }
-                double delta = edges.getPixelValue(i, j);
-                double z;
+                float delta = edgePix[i + offset];
+                float z;
                 if (delta == 0.0) {
-                    z = 0.0;
+                    z = 0.0f;
                 } else {
                     z = g / delta;
                 }
-                output.putPixelValue(i, j, z * spatialRes * timeRes);
+                outPix[i + offset] = z * spatTimeRes;
             }
         }
+        output.setPixels(outPix);
         return output;
     }
 
