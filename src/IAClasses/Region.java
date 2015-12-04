@@ -153,20 +153,22 @@ public class Region implements Cloneable {
     }
 
     PolygonRoi getPolygonRoi() {
-        int bordersize = borderPix.size();
+//        int bordersize = borderPix.size();
         Rectangle r = getBounds();
-        ByteProcessor tempImage = new ByteProcessor(r.width, r.height);
-        tempImage.setValue(BACKGROUND);
-        tempImage.fill();
-        tempImage.setValue(FOREGROUND);
+        ImageProcessor mask = getMask().duplicate();
+        mask.setRoi(r);
+        mask = mask.crop();
+//        tempImage.setValue(BACKGROUND);
+//        tempImage.fill();
+//        tempImage.setValue(FOREGROUND);
 //        Polygon poly = new Polygon();
-        for (int i = 0; i < bordersize; i++) {
-            tempImage.drawPixel(borderPix.get(i).getX() - r.x, borderPix.get(i).getY() - r.y);
-//            poly.addPoint(borderPix.get(i).getX(), borderPix.get(i).getY());
-        }
-        fill(tempImage, FOREGROUND, BACKGROUND);
+//        for (int i = 0; i < bordersize; i++) {
+//            tempImage.drawPixel(borderPix.get(i).getX() - r.x, borderPix.get(i).getY() - r.y);
+////            poly.addPoint(borderPix.get(i).getX(), borderPix.get(i).getY());
+//        }
+//        fill(tempImage, FOREGROUND, BACKGROUND);
 //        IJ.saveAs((new ImagePlus("", tempImage)), "PNG", "C:/users/barry05/desktop/tempImage.png");
-        Wand wand = new Wand(tempImage);
+        Wand wand = new Wand(mask);
         wand.autoOutline(borderPix.get(0).getX() - r.x, borderPix.get(0).getY() - r.y, FOREGROUND, FOREGROUND);
         int n = wand.npoints;
         int xpix[] = new int[n];
