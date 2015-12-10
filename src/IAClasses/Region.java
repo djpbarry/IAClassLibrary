@@ -427,7 +427,7 @@ public class Region implements Cloneable {
     }
 
     public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask, Pixel centre) {
-        if (centre == null) {
+        if (centre == null || mask.getPixel(centre.getX(), centre.getY()) != FOREGROUND) {
             Pixel seed = findSeed(mask);
             if (seed == null) {
                 return null;
