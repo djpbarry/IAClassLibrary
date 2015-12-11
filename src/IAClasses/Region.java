@@ -49,6 +49,7 @@ public class Region implements Cloneable {
     }
 
     public Region(ImageProcessor mask, Pixel centre) {
+        this.active = true;
         this.imageWidth = mask.getWidth();
         this.imageHeight = mask.getHeight();
         if (centre != null) {
@@ -589,7 +590,7 @@ public class Region implements Cloneable {
     public Pixel findSeed(ImageProcessor input) {
         int bx = 0, by = 0;
         if (bounds != null) {
-            checkBounds();
+            bounds = checkBounds(bounds);
             input.setRoi(bounds);
             bx = bounds.x;
             by = bounds.y;
@@ -607,13 +608,20 @@ public class Region implements Cloneable {
         }
     }
 
-    void checkBounds() {
+    public Rectangle checkBounds(Rectangle bounds) {
         if (bounds.x < 0) {
             bounds.x = 0;
         }
         if (bounds.y < 0) {
             bounds.y = 0;
         }
+        if (bounds.x + bounds.width > imageWidth) {
+            bounds.width = imageWidth - bounds.x;
+        }
+        if (bounds.y + bounds.height > imageHeight) {
+            bounds.height = imageHeight - bounds.y;
+        }
+        return bounds;
     }
 
     public boolean shrink(int iterations, boolean interpolate, int index) {
