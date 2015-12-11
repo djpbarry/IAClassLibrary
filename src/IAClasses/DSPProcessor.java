@@ -357,11 +357,11 @@ public class DSPProcessor {
         return powerSpectrum;
     }
 
-    public static Pixel[] interpolatePoints(int n, int[] xPoints, int[] yPoints) {
-        int i, j, k, x1, y1, x2, y2, xdif, ydif, xInc, yInc;
-        ArrayList interList = new ArrayList();
+    public static short[][] interpolatePoints(int n, int[] xPoints, int[] yPoints) {
+        int k, x1, y1, x2, y2, xdif, ydif, xInc, yInc;
+        ArrayList<short[]> interList = new ArrayList();
 
-        for (i = 0, j = 0; j < n; j++) {
+        for (int j = 0; j < n; j++) {
             x1 = xPoints[j];
             y1 = yPoints[j];
             if (j < (n - 1)) {
@@ -391,16 +391,14 @@ public class DSPProcessor {
             }
 
             do {
-                interList.add(new Pixel(x1, y1, 1.0));
+                interList.add(new short[]{(short)x1, (short)y1});
                 x1 += xInc;
                 y1 += yInc;
-                i++;
             } while ((x1 != x2) || (y1 != y2));
         }
-        Pixel interArray[] = new Pixel[interList.size()];
+        short interArray[][] = new short[interList.size()][2];
         for (int l = 0; l < interList.size(); l++) {
-            interArray[l] = ((Pixel) interList.get(l));
-
+            interArray[l] = interList.get(l);
         }
         return interArray;
     }
