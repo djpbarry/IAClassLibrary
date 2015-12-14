@@ -7,6 +7,7 @@ import ij.gui.Roi;
 import ij.gui.Wand;
 import ij.plugin.Straightener;
 import ij.plugin.filter.EDM;
+import ij.process.Blitter;
 import ij.process.ByteProcessor;
 import ij.process.FloatPolygon;
 import ij.process.FloatProcessor;
@@ -93,8 +94,6 @@ public class Region implements Cloneable {
             return;
         }
         Arrays.fill(histogram, 0);
-//        int size = pixels.size();
-        ImageProcessor mask = getMask();
         int width = mask.getWidth();
         int height = mask.getHeight();
         int size = mask.getStatistics().histogram[FOREGROUND];
@@ -393,6 +392,8 @@ public class Region implements Cloneable {
     public ImageProcessor getMask() {
         if (mask == null) {
             drawMask(imageWidth, imageHeight);
+        } else if (mask.getWidth() != imageWidth || mask.getHeight() != imageHeight) {
+            return constructFullSizeMask(imageWidth, imageHeight);
         }
         return mask.duplicate();
     }
@@ -569,7 +570,7 @@ public class Region implements Cloneable {
             for (int y = 0; y < sig2.getHeight(); y++) {
                 sum += sig2.getPixelValue(x, y);
             }
-            points[x] = new float[]{(float)xp2.getPixelValue(x, 0), (float)yp2.getPixelValue(x, 0), (float)(sum / depth)};
+            points[x] = new float[]{(float) xp2.getPixelValue(x, 0), (float) yp2.getPixelValue(x, 0), (float) (sum / depth)};
         }
         return points;
     }
@@ -626,14 +627,12 @@ public class Region implements Cloneable {
     }
 
     public boolean shrink(int iterations, boolean interpolate, int index) {
-        ImageProcessor currentMask = getMask();
 //        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_b" + index + ".png");
         for (int i = 0; i < iterations; i++) {
-            currentMask.erode();
+            mask.erode();
         }
-        this.mask = currentMask;
 //        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_a" + index + ".png");
-        short[][] newBorder = getOrderedBoundary(currentMask.getWidth(), currentMask.getHeight(), currentMask, null);
+        short[][] newBorder = getOrderedBoundary(mask.getWidth(), mask.getHeight(), mask, null);
         if (newBorder == null) {
             return false;
         }
@@ -642,6 +641,19 @@ public class Region implements Cloneable {
             addBorderPoint(newBorder[j]);
         }
         return true;
+    }
+
+    public void setFinalMask() {
+        mask.setRoi(bounds);
+        mask = mask.crop();
+    }
+
+    ImageProcessor constructFullSizeMask(int width, int height) {
+        ByteProcessor m = new ByteProcessor(width, height);
+        m.setColor(Region.BACKGROUND);
+        m.fill();
+        m.copyBits(mask, bounds.x, bounds.y, Blitter.AND);
+        return m;
     }
 
     public Object clone() {
