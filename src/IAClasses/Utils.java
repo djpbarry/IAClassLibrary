@@ -629,8 +629,8 @@ public class Utils {
      * over a square region of dimension <code>2 * radius + 1</code> in
      * <code>image</code>.
      */
-    public static boolean draw2DGaussian(ImageProcessor image, IsoGaussian g, double tol, double res, boolean partialDetect, boolean invert) {
-        if (image == null || g == null || (!partialDetect && (g.getFit() < tol))) {
+    public static boolean draw2DGaussian(ImageProcessor image, IsoGaussian g, double tol, double res, boolean invert) {
+        if (image == null || g == null || g.getFit() < tol) {
             return false;
         }
         int x, y, drawRad;
@@ -642,30 +642,24 @@ public class Utils {
         double ySigma2 = 2.0 * ySigma * ySigma;
         double value;
         drawRad = (int) Math.round(xSigma * 3.0);
-        if (g.getFit() < tol) {
-            image.setColor(100);
-            image.drawOval((int) Math.round(x0 - drawRad), (int) Math.round(y0 - drawRad),
-                    2 * drawRad + 1, 2 * drawRad + 1);
-        } else {
-            for (x = (int) Math.floor(x0 - drawRad); x <= x0 + drawRad; x++) {
-                for (y = (int) Math.floor(y0 - drawRad); y <= y0 + drawRad; y++) {
-                    /*
-                     * The current pixel value is added so as not to "overwrite"
-                     * other Gaussians in close proximity:
-                     */
-                    double pval = image.getPixelValue(x, y);
-                    value = g.getMagnitude() * Math.exp(-(((x - x0) * (x - x0)) / xSigma2
-                            + ((y - y0) * (y - y0)) / ySigma2));
-                    if (invert) {
-                        pval -= value;
-                    } else {
-                        pval += value;
-                    }
-                    if (pval < 0.0) {
-                        pval = 0.0;
-                    }
-                    image.putPixelValue(x, y, pval);
+        for (x = (int) Math.floor(x0 - drawRad); x <= x0 + drawRad; x++) {
+            for (y = (int) Math.floor(y0 - drawRad); y <= y0 + drawRad; y++) {
+                /*
+                 * The current pixel value is added so as not to "overwrite"
+                 * other Gaussians in close proximity:
+                 */
+                double pval = image.getPixelValue(x, y);
+                value = g.getMagnitude() * Math.exp(-(((x - x0) * (x - x0)) / xSigma2
+                        + ((y - y0) * (y - y0)) / ySigma2));
+                if (invert) {
+                    pval -= value;
+                } else {
+                    pval += value;
                 }
+                if (pval < 0.0) {
+                    pval = 0.0;
+                }
+                image.putPixelValue(x, y, pval);
             }
         }
         return true;
