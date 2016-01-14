@@ -3,6 +3,7 @@ package IAClasses;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.Prefs;
 import ij.plugin.RGBStackMerge;
 import ij.plugin.filter.EDM;
 import ij.process.ByteProcessor;
@@ -191,6 +192,9 @@ public class Utils {
                     bProc.drawPixel(x, y);
                 }
             }
+        }
+        if (drawValue > 0.0) {
+            Prefs.blackBackground = false;
         }
         EDM edm = new EDM();
         ByteProcessor bProc2 = (ByteProcessor) bProc.duplicate();
