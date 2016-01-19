@@ -1,5 +1,6 @@
 package IAClasses;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -628,6 +629,9 @@ public class Region implements Cloneable {
 
     public boolean shrink(int iterations, boolean interpolate, int index) {
 //        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_b" + index + ".png");
+        if (mask == null) {
+            mask = getMask();
+        }
         for (int i = 0; i < iterations; i++) {
             mask.erode();
         }
