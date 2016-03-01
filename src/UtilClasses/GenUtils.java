@@ -219,22 +219,19 @@ public class GenUtils {
         return outputs;
     }
 
-    public static ImageStack convertStackTo8Bit(ImageStack stack) {
-        ImageStack tempStack = new ImageStack(stack.getWidth(), stack.getHeight());
-        int size = stack.getSize();
-        if (size > 1) {
-            for (int i = 1; i <= size; i++) {
-                tempStack.addSlice(stack.getProcessor(i).duplicate());
-            }
-            ImagePlus tempCytoImp = new ImagePlus("", tempStack);
-            StackConverter sc = new StackConverter(tempCytoImp);
-            sc.convertToGray8();
-            return tempCytoImp.getImageStack();
-        } else {
-            ImageProcessor tempIP = (new TypeConverter(stack.getProcessor(1).duplicate(), true)).convertToByte();
-            ImageStack output = new ImageStack(tempIP.getWidth(), tempIP.getHeight());
-            output.addSlice(tempIP);
-            return output;
+    public static ImagePlus convertStackTo8Bit(ImagePlus input) {
+        ImageStack inputStack = input.getImageStack();
+        ImageStack tempStack = new ImageStack(input.getWidth(), input.getHeight());
+        int nFrames = input.getNFrames();
+        int nSlices = input.getNSlices();
+        int N = nFrames * nSlices;
+        for (int i = 1; i <= N; i++) {
+            tempStack.addSlice(inputStack.getProcessor(i).duplicate());
         }
+        ImagePlus tempCytoImp = new ImagePlus("", tempStack);
+        StackConverter sc = new StackConverter(tempCytoImp);
+        sc.convertToGray8();
+        tempCytoImp.setDimensions(input.getNChannels(), nSlices, nFrames);
+        return tempCytoImp;
     }
 }
