@@ -9,7 +9,9 @@ import ij.plugin.filter.EDM;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
+import ij.process.FloatStatistics;
 import ij.process.ImageProcessor;
+import ij.process.ImageStatistics;
 import ij.process.StackConverter;
 import ij.process.StackStatistics;
 import ij.process.TypeConverter;
@@ -728,10 +730,14 @@ public class Utils {
         if (image == null) {
             return 0.0;
         }
-        ImagePlus imp = new ImagePlus("", image.duplicate());
-        (new StackConverter(imp)).convertToGray32();
-        StackStatistics stats = new StackStatistics(imp);
-//        FloatStatistics stats = new FloatStatistics(new TypeConverter(image, false).convertToFloat(null));
+        ImageStatistics stats;
+        if (image.getSize() > 1) {
+            ImagePlus imp = new ImagePlus("", image.duplicate());
+            (new StackConverter(imp)).convertToGray32();
+            stats = new StackStatistics(imp);
+        } else {
+            stats = new FloatStatistics(new TypeConverter(image.getProcessor(1), false).convertToFloat(null));
+        }
         long histogram[] = stats.getHistogram();
         int l = histogram.length;
         int total = image.getWidth() * image.getHeight();
