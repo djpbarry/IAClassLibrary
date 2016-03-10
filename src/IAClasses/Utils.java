@@ -9,8 +9,9 @@ import ij.plugin.filter.EDM;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
-import ij.process.FloatStatistics;
 import ij.process.ImageProcessor;
+import ij.process.StackConverter;
+import ij.process.StackStatistics;
 import ij.process.TypeConverter;
 import java.awt.Rectangle;
 import java.io.File;
@@ -718,10 +719,19 @@ public class Utils {
     }
 
     public static double getPercentileThresh(ImageProcessor image, double thresh) {
+        ImageStack stack = new ImageStack(image.getWidth(), image.getHeight());
+        stack.addSlice(image);
+        return getPercentileThresh(stack, thresh);
+    }
+
+    public static double getPercentileThresh(ImageStack image, double thresh) {
         if (image == null) {
             return 0.0;
         }
-        FloatStatistics stats = new FloatStatistics(new TypeConverter(image, false).convertToFloat(null));
+        ImagePlus imp = new ImagePlus("", image.duplicate());
+        (new StackConverter(imp)).convertToGray32();
+        StackStatistics stats = new StackStatistics(imp);
+//        FloatStatistics stats = new FloatStatistics(new TypeConverter(image, false).convertToFloat(null));
         long histogram[] = stats.getHistogram();
         int l = histogram.length;
         int total = image.getWidth() * image.getHeight();

@@ -219,6 +219,10 @@ public class GenUtils {
         return outputs;
     }
 
+    public static ImageStack convertStackTo8Bit(ImageStack input) {
+        return convertStackTo8Bit(new ImagePlus("", input)).getImageStack();
+    }
+
     public static ImagePlus convertStackTo8Bit(ImagePlus input) {
         ImageStack inputStack = input.getImageStack();
         ImageStack tempStack = new ImageStack(input.getWidth(), input.getHeight());
