@@ -166,7 +166,7 @@ public class GenUtils {
         int numOfFiles = input.length;
         ArrayList<double[]>[] output = new ArrayList[numOfFiles];
         for (int i = 0; i < numOfFiles; i++) {
-            output[i] = new ArrayList();
+            output[i] = new ArrayList<double[]>();
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(input[i])));
                 String line = br.readLine();

@@ -12,7 +12,7 @@ public class RegionEdge {
 
     private Region startVertex, endVertex;
     private double gradient, weight;
-    private ArrayList gradPix;
+    private ArrayList<Pixel> gradPix;
 
     public RegionEdge(Region start, Region end) {
         startVertex = start;
@@ -61,7 +61,7 @@ public class RegionEdge {
         int le = endVertex.getBorderPix().size();
         int l;
         LinkedList points1, points2;
-        gradPix = new ArrayList();
+        gradPix = new ArrayList<Pixel>();
         if (le <= ls) {
             l = le;
             points1 = endVertex.getBorderPix();

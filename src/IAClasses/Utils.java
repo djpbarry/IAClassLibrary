@@ -124,7 +124,7 @@ public class Utils {
         if (image == null || x < 0 || x >= image.getWidth() || y < 0 || y >= image.getHeight()) {
             return null;
         }
-        ArrayList pixels = new ArrayList();
+        ArrayList<Pixel> pixels = new ArrayList<Pixel>();
         double currentDist, minDist = Double.MAX_VALUE;
 
         for (int i = x - radius; i <= x + radius; i++) {
@@ -214,7 +214,7 @@ public class Utils {
         }
         int i, j, x, y, width = image.getWidth(), height = image.getHeight();
         double max, current, min;
-        ArrayList maxima = new ArrayList<int[]>();
+        ArrayList<int[]> maxima = new ArrayList<int[]>();
         for (x = kWidth; x < width - kWidth; x++) {
             for (y = kHeight; y < height - kHeight; y++) {
                 for (min = Double.MAX_VALUE, max = 0.0, i = x - kWidth; i <= x + kWidth; i++) {

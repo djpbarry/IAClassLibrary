@@ -266,7 +266,7 @@ public class Region implements Cloneable {
             return false;
         } else {
             borderPix = expandedBorder;
-            expandedBorder = new LinkedList();
+            expandedBorder = new LinkedList<short[]>();
             return true;
         }
     }
@@ -579,9 +579,9 @@ public class Region implements Cloneable {
         borderPix.clear();
     }
 
-    public void loadPixels(LinkedList<Pixel> borderPix) {
+    public void loadPixels(LinkedList<short[]> borderPix) {
 //        this.pixels = (ArrayList) pixels.clone();
-        this.borderPix = (LinkedList) borderPix.clone();
+        this.borderPix = (LinkedList<short[]>) borderPix.clone();
 //        setSeedPix();
     }
 
@@ -639,7 +639,7 @@ public class Region implements Cloneable {
         if (newBorder == null) {
             return false;
         }
-        borderPix = new LinkedList();
+        borderPix = new LinkedList<short[]>();
         for (int j = 0; j < newBorder.length; j++) {
             addBorderPoint(newBorder[j]);
         }
@@ -666,10 +666,10 @@ public class Region implements Cloneable {
             return null;
         }
         Region clone = new Region();
-        clone.seedPix = (ArrayList) seedPix.clone();
-        clone.borderPix = (LinkedList) borderPix.clone();
-        clone.expandedBorder = (LinkedList) expandedBorder.clone();
-        clone.centres = (ArrayList) centres.clone();
+        clone.seedPix = (ArrayList<short[]>) seedPix.clone();
+        clone.borderPix = (LinkedList<short[]>) borderPix.clone();
+        clone.expandedBorder = (LinkedList<short[]>) expandedBorder.clone();
+        clone.centres = (ArrayList<float[]>) centres.clone();
         clone.min = min;
         clone.max = max;
         clone.mean = mean;

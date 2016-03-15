@@ -39,7 +39,7 @@ public class DSPProcessor {
             double yCentre, int[] xPoints, int[] yPoints, double resolution) {
         int i, j, k, x1, y1, x2, y2, xdif, ydif, xInc, yInc;
         double xD, yD, current;
-        ArrayList dist = new ArrayList();
+        ArrayList<Pixel> dist = new ArrayList<Pixel>();
 
         for (i = 0, j = 0; j < n; j++) {
             x1 = xPoints[j];
@@ -159,8 +159,8 @@ public class DSPProcessor {
         /*
          * Upscale signal to ensure length is a power of 2
          */
-        ArrayList lof = new ArrayList();
-        ArrayList lop = new ArrayList();
+        ArrayList<Double> lof = new ArrayList<Double>();
+        ArrayList<Double> lop = new ArrayList<Double>();
         for (k = 1; (k < n) && (w = k * sampleRate / n) < cutoff; k++) {
             lof.add(new Double(Math.log(w)));
             lop.add(new Double(Math.log(inputSignal[k])));
@@ -359,7 +359,7 @@ public class DSPProcessor {
 
     public static short[][] interpolatePoints(int n, int[] xPoints, int[] yPoints) {
         int k, x1, y1, x2, y2, xdif, ydif, xInc, yInc;
-        ArrayList<short[]> interList = new ArrayList();
+        ArrayList<short[]> interList = new ArrayList<short[]>();
 
         for (int j = 0; j < n; j++) {
             x1 = xPoints[j];
