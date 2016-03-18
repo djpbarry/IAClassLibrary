@@ -25,24 +25,17 @@ import java.util.LinkedList;
  */
 public class Region implements Cloneable {
 
-//    private ArrayList<Pixel> pixels = new ArrayList<Pixel>();
-    private ArrayList<short[]> seedPix = new ArrayList<short[]>();
-//    private ArrayList<ArrayList> pixMem = new ArrayList<ArrayList>();
-//    private ArrayList<LinkedList> borderPixMem = new ArrayList<LinkedList>();
-    private LinkedList<short[]> borderPix = new LinkedList<short[]>();
-    private LinkedList<short[]> expandedBorder = new LinkedList<short[]>();
-//    private ArrayList<Pixel> centroids = new ArrayList<Pixel>();
-//    private ArrayList<Pixel> geoMedians = new ArrayList<Pixel>();
-    private ArrayList<float[]> centres = new ArrayList<float[]>();
+    protected ArrayList<short[]> seedPix = new ArrayList<short[]>();
+    protected LinkedList<short[]> borderPix = new LinkedList<short[]>();
+    protected LinkedList<short[]> expandedBorder = new LinkedList<short[]>();
+    protected ArrayList<float[]> centres = new ArrayList<float[]>();
     private double min = Double.MAX_VALUE, max = Double.MIN_VALUE, mean, seedMean, sigma;
     private double mfD[];
-    private boolean edge, active;
+    protected boolean edge, active;
     private Rectangle bounds;
     private int[] histogram = new int[256];
-//    private int initX, initY;
     public final static short FOREGROUND = 0, BACKGROUND = 255;
-    private int imageWidth, imageHeight;
-//    private final int memSize = 10;
+    protected int imageWidth, imageHeight;
     private ImageProcessor mask;
 
     public Region() {
@@ -61,7 +54,7 @@ public class Region implements Cloneable {
         short[][] bp = this.getOrderedBoundary(imageWidth, imageHeight, mask, centre);
         if (bp != null) {
             for (int i = 0; i < bp.length; i++) {
-                this.addBorderPoint(bp[i]);
+                this.addBorderPoint(bp[i], mask);
             }
         }
     }
@@ -71,7 +64,7 @@ public class Region implements Cloneable {
         this.imageHeight = height;
         this.centres.add(new float[]{centre[0], centre[1]});
         this.newBounds(centre);
-        this.addBorderPoint(centre);
+        this.addBorderPoint(centre, mask);
         edge = false;
         active = true;
         seedMean = mean = 0.0;
@@ -83,7 +76,7 @@ public class Region implements Cloneable {
         }
     }
 
-    public void addBorderPoint(short[] point) {
+    public final void addBorderPoint(short[] point, ImageProcessor mask) {
         borderPix.add(point);
         updateBounds(point);
         mask.drawPixel(point[0], point[1]);
@@ -442,19 +435,7 @@ public class Region implements Cloneable {
         int n = wand.npoints;
         int[] xpoints = wand.xpoints;
         int[] ypoints = wand.ypoints;
-        Rectangle r = (new PolygonRoi(xpoints, ypoints, n, Roi.POLYGON)).getBounds();
-        mask.setValue(BACKGROUND);
-        mask.fillOutside(new Roi(r));
-        mask.setValue(FOREGROUND);
-//        if (interpolate) {
         return DSPProcessor.interpolatePoints(n, xpoints, ypoints);
-//        } else {
-//            Pixel[] pix = new Pixel[n];
-//            for (int i = 0; i < n; i++) {
-//                pix[i] = new Pixel(xpoints[i], ypoints[i], 1.0, 1);
-//            }
-//            return pix;
-//        }
     }
 
     public float[][] buildVelMapCol(short xc, short yc, ImageStack stack, int frame, double timeRes, double spatialRes, int[] thresholds) {
@@ -641,7 +622,7 @@ public class Region implements Cloneable {
         }
         borderPix = new LinkedList<short[]>();
         for (int j = 0; j < newBorder.length; j++) {
-            addBorderPoint(newBorder[j]);
+            addBorderPoint(newBorder[j], mask);
         }
         return true;
     }
