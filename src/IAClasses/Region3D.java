@@ -41,8 +41,9 @@ public class Region3D extends Region {
             this.centres.add(new float[]{centre[2], centre[0], centre[1]});
         }
         this.maskStack = maskStack;
+        this.bounds = new Rectangle[imageDepth];
         this.newBounds(centre);
-        this.addBorderPoint(centre, maskStack.getProcessor(centre[2]));
+        this.addBorderPoint(centre, maskStack.getProcessor(centre[2] + 1));
     }
 
     @Override
@@ -94,10 +95,10 @@ public class Region3D extends Region {
         int m = borderPix.size();
         for (int i = 0; i < m; i++) {
             short[] current = borderPix.get(i);
-            maskStack.getProcessor(current[2]).drawPixel(current[0], current[1]);
+            maskStack.getProcessor(current[2] + 1).drawPixel(current[0], current[1]);
         }
-        for (int i = 0; i < imageDepth; i++) {
-            fill(maskStack.getProcessor(i + 1), FOREGROUND, BACKGROUND);
+        for (int i = 1; i <= imageDepth; i++) {
+            fill(maskStack.getProcessor(i), FOREGROUND, BACKGROUND);
         }
         this.maskStack = maskStack;
     }
@@ -146,4 +147,4 @@ public class Region3D extends Region {
         }
     }
 
-}
+    }
