@@ -753,7 +753,7 @@ public class Utils {
     public static boolean isEdgePixel(int x, int y, int width, int height, int margin) {
         return (x <= margin) || (x >= width - 1 - margin) || (y <= margin) || (y >= height - 1 - margin);
     }
-
+    
     public static ImageProcessor updateImage(ImageStack channel1, ImageStack channel2, int slice) {
         ImageProcessor redIP = channel1.getProcessor(slice).duplicate();
         redIP.resetMinAndMax();

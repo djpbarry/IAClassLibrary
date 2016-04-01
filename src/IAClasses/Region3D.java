@@ -8,7 +8,10 @@ package IAClasses;
 import static IAClasses.Region.BACKGROUND;
 import static IAClasses.Region.FOREGROUND;
 import ij.ImageStack;
+import ij.gui.Wand;
 import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
+import ij.process.StackProcessor;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import mcib3d.geom.Voxel3D;
@@ -43,7 +46,23 @@ public class Region3D extends Region {
         this.maskStack = maskStack;
         this.bounds = new Rectangle[imageDepth];
         this.newBounds(centre);
-        this.addBorderPoint(centre, maskStack.getProcessor(centre[2] + 1));
+//        this.addBorderPoint(centre, maskStack.getProcessor(centre[2] + 1));
+        updateBoundary(this.imageWidth, this.imageHeight, this.maskStack, centre);
+    }
+
+    final void updateBoundary(int imageWidth, int imageHeight, ImageStack maskStack, short[] centre) {
+        short[][] bp = getOrderedBoundary(imageWidth, imageHeight, maskStack, centre);
+        if (bp != null) {
+            for (int i = 0; i < bp.length; i++) {
+                addBorderPoint(bp[i], maskStack);
+            }
+        }
+    }
+
+    public void addBorderPoint(short[] point, ImageStack mask) {
+        borderPix.add(point);
+        updateBounds(point);
+        mask.getProcessor(point[2] + 1).drawPixel(point[0], point[1]);
     }
 
     @Override
@@ -127,6 +146,10 @@ public class Region3D extends Region {
     }
 
     public short[] findSeed(ImageStack input) {
+        if (input.getSize() < 2) {
+            short[] seed = findSeed(input.getProcessor(1));
+            return new short[]{seed[0], seed[1], 0};
+        }
 //        int bx = 0, by = 0;
 //        if (bounds != null) {
 //            bounds = checkBounds(bounds);
@@ -136,9 +159,12 @@ public class Region3D extends Region {
 //        }
 //        ImageProcessor mask = input.crop();
 //        mask.invert();
+        StackProcessor sp = new StackProcessor(input);
+        sp.invert();
         ImageFloat edm = EDT.run(new ImageByte(input), BACKGROUND, false, 0);
         MaximaFinder ma = new MaximaFinder(edm, (float) (0.9 * edm.getMax()));
         ArrayList<Voxel3D> maxima = ma.getListPeaks();
+        sp.invert();
 //        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/edm.png");
         if (!(maxima.isEmpty())) {
             return new short[]{(short) Math.round(maxima.get(0).x), (short) Math.round(maxima.get(0).y)};
@@ -147,4 +173,44 @@ public class Region3D extends Region {
         }
     }
 
+    @Override
+    public void addExpandedBorderPix(short[] p) {
+        expandedBorder.add(p);
+        updateBounds(p);
+        maskStack.getProcessor(p[2] + 1).drawPixel(p[0], p[1]);
     }
+
+    public short[][] getOrderedBoundary(int width, int height, ImageStack mask, short[] centre) {
+        if (centre == null || mask.getProcessor(centre[2] + 1).getPixel(centre[0], centre[1]) != FOREGROUND) {
+            short[] seed = findSeed(mask);
+            if (seed == null) {
+                return null;
+            } else {
+                centre = seed;
+            }
+        }
+        int size = mask.getSize();
+        short[][][] boundary = new short[size][][];
+        int count = 0;
+        for (int i = 1; i <= size; i++) {
+            ImageProcessor maskSlice = mask.getProcessor(i);
+            Wand wand = new Wand(maskSlice);
+            wand.autoOutline(centre[0], centre[1], 0.0, Wand.EIGHT_CONNECTED);
+            int n = wand.npoints;
+            int[] xpoints = wand.xpoints;
+            int[] ypoints = wand.ypoints;
+            boundary[i - 1] = DSPProcessor.interpolatePoints(n, xpoints, ypoints);
+            count += boundary[i - 1].length;
+        }
+        short[][] output = new short[count][];
+        int index = 0;
+        for (int j = 0; j < size; j++) {
+            int l = boundary[j].length;
+            for (int k = 0; k < l; k++) {
+                output[index + k] = new short[]{boundary[j][k][0], boundary[j][k][1], (short) j};
+            }
+            index += l;
+        }
+        return output;
+    }
+}

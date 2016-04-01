@@ -583,7 +583,7 @@ public class Region implements Cloneable {
         EDM edm = new EDM();
         edm.toEDM(mask);
         int[] max = Utils.findImageMaxima(mask);
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/edm.png");
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/adapt_debug/edm.png");
         if (!(max[0] < 0.0 || max[1] < 0.0)) {
             return new short[]{(short) (max[0] + bx), (short) (max[1] + by)};
         } else {
