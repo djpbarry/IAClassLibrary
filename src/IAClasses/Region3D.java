@@ -8,9 +8,7 @@ package IAClasses;
 import static IAClasses.Region.BACKGROUND;
 import static IAClasses.Region.FOREGROUND;
 import ij.ImageStack;
-import ij.gui.Wand;
 import ij.process.ByteProcessor;
-import ij.process.ImageProcessor;
 import ij.process.StackProcessor;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -189,27 +187,11 @@ public class Region3D extends Region {
                 centre = seed;
             }
         }
-        int size = mask.getSize();
-        short[][][] boundary = new short[size][][];
-        int count = 0;
-        for (int i = 1; i <= size; i++) {
-            ImageProcessor maskSlice = mask.getProcessor(i);
-            Wand wand = new Wand(maskSlice);
-            wand.autoOutline(centre[0], centre[1], 0.0, Wand.EIGHT_CONNECTED);
-            int n = wand.npoints;
-            int[] xpoints = wand.xpoints;
-            int[] ypoints = wand.ypoints;
-            boundary[i - 1] = DSPProcessor.interpolatePoints(n, xpoints, ypoints);
-            count += boundary[i - 1].length;
-        }
-        short[][] output = new short[count][];
-        int index = 0;
-        for (int j = 0; j < size; j++) {
-            int l = boundary[j].length;
-            for (int k = 0; k < l; k++) {
-                output[index + k] = new short[]{boundary[j][k][0], boundary[j][k][1], (short) j};
-            }
-            index += l;
+        short[][] boundary = getOrderedBoundary(width, height, mask.getProcessor(centre[2] + 1), centre);
+        int l = boundary.length;
+        short[][] output = new short[l][];
+        for (int j = 0; j < l; j++) {
+            output[j] = new short[]{boundary[j][0], boundary[j][1], centre[2]};
         }
         return output;
     }
