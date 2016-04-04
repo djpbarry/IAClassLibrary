@@ -27,6 +27,7 @@ public class Region3D extends Region {
     private ImageStack maskStack;
     private Rectangle[] bounds;
     private int imageDepth;
+    private Object[] maskPix;
 
     public Region3D() {
         super();
@@ -42,6 +43,7 @@ public class Region3D extends Region {
             this.centres.add(new float[]{centre[2], centre[0], centre[1]});
         }
         this.maskStack = maskStack;
+        this.maskPix = this.maskStack.getImageArray();
         this.bounds = new Rectangle[imageDepth];
         this.newBounds(centre);
 //        this.addBorderPoint(centre, maskStack.getProcessor(centre[2] + 1));
@@ -175,7 +177,7 @@ public class Region3D extends Region {
     public void addExpandedBorderPix(short[] p) {
         expandedBorder.add(p);
         updateBounds(p);
-        maskStack.getProcessor(p[2] + 1).drawPixel(p[0], p[1]);
+        ((byte[]) maskPix[p[2]])[p[0] + p[1] * imageWidth] = FOREGROUND;
     }
 
     public short[][] getOrderedBoundary(int width, int height, ImageStack mask, short[] centre) {
@@ -195,4 +197,10 @@ public class Region3D extends Region {
         }
         return output;
     }
+
+    public int getImageDepth() {
+        return imageDepth;
+    }
+    
+    
 }
