@@ -9,7 +9,6 @@ import static IAClasses.Region.BACKGROUND;
 import static IAClasses.Region.FOREGROUND;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
-import ij.process.StackProcessor;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import mcib3d.geom.Voxel3D;
@@ -159,15 +158,16 @@ public class Region3D extends Region {
 //        }
 //        ImageProcessor mask = input.crop();
 //        mask.invert();
-        StackProcessor sp = new StackProcessor(input);
-        sp.invert();
-        ImageFloat edm = EDT.run(new ImageByte(input), BACKGROUND, false, 0);
+//        StackProcessor sp = new StackProcessor(input);
+//        sp.invert();
+        ImageFloat edm = EDT.run(new ImageByte(input), FOREGROUND, true, 0);
+//        IJ.saveAs(edm.getImagePlus(), "TIF", "c:/users/barry05/adapt_debug/edm.tif");
         MaximaFinder ma = new MaximaFinder(edm, (float) (0.9 * edm.getMax()));
         ArrayList<Voxel3D> maxima = ma.getListPeaks();
-        sp.invert();
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/edm.png");
+//        sp.invert();
         if (!(maxima.isEmpty())) {
-            return new short[]{(short) Math.round(maxima.get(0).x), (short) Math.round(maxima.get(0).y)};
+            return new short[]{(short) Math.round(maxima.get(0).x), (short) Math.round(maxima.get(0).y),
+            (short) Math.round(maxima.get(0).z)};
         } else {
             return null;
         }
