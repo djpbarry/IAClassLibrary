@@ -145,12 +145,15 @@ public class Region implements Cloneable {
 //        }
     }
 
-    PolygonRoi getPolygonRoi() {
+    PolygonRoi getPolygonRoi(Rectangle r, ImageProcessor mask) {
 //        int bordersize = borderPix.size();
-        Rectangle r = getBounds();
-        ImageProcessor mask = getMask().duplicate();
         mask.setRoi(r);
         mask = mask.crop();
+        int rx = 0, ry = 0;
+        if (r != null) {
+            rx = r.x;
+            ry = r.y;
+        }
 //        tempImage.setValue(BACKGROUND);
 //        tempImage.fill();
 //        tempImage.setValue(FOREGROUND);
@@ -160,17 +163,20 @@ public class Region implements Cloneable {
 ////            poly.addPoint(borderPix.get(i).getX(), borderPix.get(i).getY());
 //        }
 //        fill(tempImage, FOREGROUND, BACKGROUND);
-//        IJ.saveAs((new ImagePlus("", tempImage)), "PNG", "C:/users/barry05/desktop/tempImage.png");
+        ArrayList<float[]> centres = getCentres();
+        float[] centre = centres.get(centres.size() - 1);
+        int xc = (int) Math.round(centre[0] - rx);
+        int yc = (int) Math.round(centre[1] - ry);
         Wand wand = new Wand(mask);
-        wand.autoOutline(borderPix.get(0)[0] - r.x, borderPix.get(0)[1] - r.y, FOREGROUND, FOREGROUND);
+        wand.autoOutline(xc, yc, FOREGROUND, FOREGROUND);
         int n = wand.npoints;
         int xpix[] = new int[n];
         int ypix[] = new int[n];
         System.arraycopy(wand.xpoints, 0, xpix, 0, wand.npoints);
         System.arraycopy(wand.ypoints, 0, ypix, 0, wand.npoints);
         for (int j = 0; j < n; j++) {
-            xpix[j] = wand.xpoints[j] + r.x;
-            ypix[j] = wand.ypoints[j] + r.y;
+            xpix[j] = wand.xpoints[j] + rx;
+            ypix[j] = wand.ypoints[j] + ry;
         }
         return new PolygonRoi(xpix, ypix, wand.npoints, Roi.POLYGON);
     }
@@ -522,7 +528,7 @@ public class Region implements Cloneable {
         if (depth < 3) {
             depth = 3;
         }
-        PolygonRoi proi = getPolygonRoi();
+        PolygonRoi proi = getPolygonRoi(getBounds(), getMask());
         Straightener straightener = new Straightener();
         ImagePlus sigImp = new ImagePlus("", ip);
         sigImp.setRoi(proi);

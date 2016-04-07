@@ -7,7 +7,9 @@ package IAClasses;
 
 import static IAClasses.Region.BACKGROUND;
 import static IAClasses.Region.FOREGROUND;
+import ij.ImagePlus;
 import ij.ImageStack;
+import ij.gui.PolygonRoi;
 import ij.process.ByteProcessor;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ public class Region3D extends Region {
     private Rectangle[] bounds;
     private int imageDepth;
     private Object[] maskPix;
+    private int[] maxLengths;
 
     public Region3D() {
         super();
@@ -44,6 +47,7 @@ public class Region3D extends Region {
         this.maskStack = maskStack;
         this.maskPix = this.maskStack.getImageArray();
         this.bounds = new Rectangle[imageDepth];
+        this.maxLengths = new int[imageDepth];
         this.newBounds(centre);
 //        this.addBorderPoint(centre, maskStack.getProcessor(centre[2] + 1));
         updateBoundary(this.imageWidth, this.imageHeight, this.maskStack, centre);
@@ -167,7 +171,7 @@ public class Region3D extends Region {
 //        sp.invert();
         if (!(maxima.isEmpty())) {
             return new short[]{(short) Math.round(maxima.get(0).x), (short) Math.round(maxima.get(0).y),
-            (short) Math.round(maxima.get(0).z)};
+                (short) Math.round(maxima.get(0).z)};
         } else {
             return null;
         }
@@ -178,6 +182,14 @@ public class Region3D extends Region {
         expandedBorder.add(p);
         updateBounds(p);
         ((byte[]) maskPix[p[2]])[p[0] + p[1] * imageWidth] = FOREGROUND;
+    }
+
+    public short[][] getOrderedBoundary() {
+        float[] centre = centres.get(centres.size() - 1);
+        short[] scentre = new short[]{(short) Math.round(centre[0]),
+            (short) Math.round(centre[1]),
+            (short) Math.round(centre[2])};
+        return getOrderedBoundary(imageWidth, imageHeight, maskStack, scentre);
     }
 
     public short[][] getOrderedBoundary(int width, int height, ImageStack mask, short[] centre) {
@@ -194,6 +206,7 @@ public class Region3D extends Region {
         short[][] output = new short[l][];
         for (int j = 0; j < l; j++) {
             output[j] = new short[]{boundary[j][0], boundary[j][1], centre[2]};
+            maxLengths[centre[2]]++;
         }
         return output;
     }
@@ -201,6 +214,39 @@ public class Region3D extends Region {
     public int getImageDepth() {
         return imageDepth;
     }
-    
-    
+
+    public int getMaxLength() {
+        int max = 0;
+        for (int i = 0; i < imageDepth; i++) {
+            if (maxLengths[i] > max) {
+                max = maxLengths[i];
+            }
+        }
+        return max;
+    }
+
+    public Rectangle getBounds(int zIndex) {
+        return bounds[zIndex];
+    }
+
+    public PolygonRoi getPolygonRoi(int zIndex) {
+        return getPolygonRoi(getBounds(zIndex), getMaskStack().getProcessor(zIndex + 1));
+    }
+
+    public ImageStack buildVelImageStack(ImagePlus input, int frame, double timeRes, double spatialRes, int[] thresholds) {
+        int width = input.getWidth();
+        int height = input.getHeight();
+        int nSlices = input.getNSlices();
+        int nFrames = input.getNFrames();
+        ImageStack inputStack = input.getImageStack();
+        ImageStack output = new ImageStack(width, height);
+        for (int i = 1; i <= nSlices; i++) {
+            ImageStack subStack = new ImageStack(width, height);
+            for (int j = 0; j < nFrames; j++) {
+                subStack.addSlice(inputStack.getProcessor(j * nSlices + i));
+            }
+            output.addSlice(buildVelImage(subStack, frame + 1, timeRes, spatialRes, thresholds));
+        }
+        return output;
+    }
 }
