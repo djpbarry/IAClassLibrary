@@ -208,42 +208,62 @@ public class Utils {
         return bProc2;
     }
 
-    public static ArrayList<int[]> findLocalMaxima(int kWidth, int kHeight, ImageProcessor image, double maxThresh, boolean varyBG, boolean absolute) {
-        if (image == null) {
+    public static ArrayList<int[]> findLocalMaxima(int kWidth, ImageProcessor image, double maxThresh, boolean varyBG, boolean absolute) {
+        ImageStack stack = new ImageStack(image.getWidth(), image.getHeight());
+        stack.addSlice(image);
+        return findLocalMaxima(kWidth, stack, maxThresh, varyBG, absolute);
+    }
+
+    public static ArrayList<int[]> findLocalMaxima(int radius, ImageStack stack, double maxThresh, boolean varyBG, boolean absolute) {
+        if (stack == null) {
             return null;
         }
-        int i, j, x, y, width = image.getWidth(), height = image.getHeight();
+        int i, j, k, x, y, z, width = stack.getWidth(), height = stack.getHeight(), depth = stack.getSize();
         double max, current, min;
         ArrayList<int[]> maxima = new ArrayList<int[]>();
-        for (x = kWidth; x < width - kWidth; x++) {
-            for (y = kHeight; y < height - kHeight; y++) {
-                for (min = Double.MAX_VALUE, max = 0.0, i = x - kWidth; i <= x + kWidth; i++) {
-                    for (j = y - kHeight; j <= y + kHeight; j++) {
-                        current = image.getPixelValue(i, j);
-                        if ((current > max) && !((x == i) && (y == j))) {
-                            max = current;
+        Object[] stackPix = stack.getImageArray();
+        for (z = 0; z < depth; z++) {
+            for (x = 0; x < width; x++) {
+                for (y = 0; y < height; y++) {
+                    for (min = Double.MAX_VALUE, max = 0.0, j = y - radius; j <= y + radius; j++) {
+                        if (j < 0 || j >= height) {
+                            continue;
                         }
-                        if ((current < min) && !((x == i) && (y == j))) {
-                            min = current;
+                        int jOffset = j * width;
+                        for (k = z - radius; k <= z + radius; k++) {
+                            if (k < 0 || k >= depth) {
+                                continue;
+                            }
+                            for (i = x - radius; i <= x + radius; i++) {
+                                if (i < 0 || i >= width) {
+                                    continue;
+                                }
+                                current = ((float[]) stackPix[k])[i + jOffset];
+                                if ((current > max) && !((x == i) && (y == j))) {
+                                    max = current;
+                                }
+                                if ((current < min) && !((x == i) && (y == j))) {
+                                    min = current;
+                                }
+                            }
                         }
                     }
-                }
-                double pix = image.getPixelValue(x, y);
-                double diff;
-                if (varyBG) {
-                    diff = pix - min;
-                } else {
-                    diff = pix;
-                }
-                boolean pixmax;
-                if (absolute) {
-                    pixmax = pix > max;
-                } else {
-                    pixmax = pix >= max;
-                }
-                if (pixmax && (diff > maxThresh)) {
-                    int thismax[] = {x, y};
-                    maxima.add(thismax);
+                    double pix = ((float[]) stackPix[z])[x + y * width];
+                    double diff;
+                    if (varyBG) {
+                        diff = pix - min;
+                    } else {
+                        diff = pix;
+                    }
+                    boolean pixmax;
+                    if (absolute) {
+                        pixmax = pix > max;
+                    } else {
+                        pixmax = pix >= max;
+                    }
+                    if (pixmax && (diff > maxThresh)) {
+                        maxima.add(new int[]{x, y, z});
+                    }
                 }
             }
         }
@@ -753,7 +773,7 @@ public class Utils {
     public static boolean isEdgePixel(int x, int y, int width, int height, int margin) {
         return (x <= margin) || (x >= width - 1 - margin) || (y <= margin) || (y >= height - 1 - margin);
     }
-    
+
     public static ImageProcessor updateImage(ImageStack channel1, ImageStack channel2, int slice) {
         ImageProcessor redIP = channel1.getProcessor(slice).duplicate();
         redIP.resetMinAndMax();

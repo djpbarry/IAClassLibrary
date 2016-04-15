@@ -147,13 +147,13 @@ public class Region implements Cloneable {
 
     PolygonRoi getPolygonRoi(Rectangle r, ImageProcessor mask) {
 //        int bordersize = borderPix.size();
-        mask.setRoi(r);
-        mask = mask.crop();
-        int rx = 0, ry = 0;
-        if (r != null) {
-            rx = r.x;
-            ry = r.y;
-        }
+//        mask.setRoi(r);
+//        mask = mask.crop();
+//        int rx = 0, ry = 0;
+//        if (r != null) {
+//            rx = r.x;
+//            ry = r.y;
+//        }
 //        tempImage.setValue(BACKGROUND);
 //        tempImage.fill();
 //        tempImage.setValue(FOREGROUND);
@@ -163,22 +163,23 @@ public class Region implements Cloneable {
 ////            poly.addPoint(borderPix.get(i).getX(), borderPix.get(i).getY());
 //        }
 //        fill(tempImage, FOREGROUND, BACKGROUND);
+//        IJ.saveAs(new ImagePlus("", mask), "PNG", "c:/users/barry05/adapt_debug/mask");
         ArrayList<float[]> centres = getCentres();
         float[] centre = centres.get(centres.size() - 1);
-        int xc = (int) Math.round(centre[0] - rx);
-        int yc = (int) Math.round(centre[1] - ry);
-        Wand wand = new Wand(mask);
-        wand.autoOutline(xc, yc, FOREGROUND, FOREGROUND);
-        int n = wand.npoints;
-        int xpix[] = new int[n];
-        int ypix[] = new int[n];
-        System.arraycopy(wand.xpoints, 0, xpix, 0, wand.npoints);
-        System.arraycopy(wand.ypoints, 0, ypix, 0, wand.npoints);
-        for (int j = 0; j < n; j++) {
-            xpix[j] = wand.xpoints[j] + rx;
-            ypix[j] = wand.ypoints[j] + ry;
+//        short xc = (short) Math.round(centre[0] - rx);
+//        short yc = (short) Math.round(centre[1] - ry);
+        short xc = (short) Math.round(centre[0]);
+        short yc = (short) Math.round(centre[1]);
+        int[][] pix = getMaskOutline(new short[]{xc, yc}, mask);
+//        for (int j = 0; j < n; j++) {
+//            pix[0][j] += rx;
+//            pix[1][j] += ry;
+//        }
+        if (pix != null) {
+            return new PolygonRoi(pix[0], pix[1], pix[0].length, Roi.POLYGON);
+        } else {
+            return null;
         }
-        return new PolygonRoi(xpix, ypix, wand.npoints, Roi.POLYGON);
     }
 
     /**
@@ -428,6 +429,11 @@ public class Region implements Cloneable {
     }
 
     public short[][] getOrderedBoundary(int width, int height, ImageProcessor mask, short[] centre) {
+        int[][] pix = getMaskOutline(centre, mask);
+        return DSPProcessor.interpolatePoints(pix[0].length, pix[0], pix[1]);
+    }
+
+    int[][] getMaskOutline(short[] centre, ImageProcessor mask) {
         if (centre == null || mask.getPixel(centre[0], centre[1]) != FOREGROUND) {
             short[] seed = findSeed(mask);
             if (seed == null) {
@@ -439,9 +445,15 @@ public class Region implements Cloneable {
         Wand wand = new Wand(mask);
         wand.autoOutline(centre[0], centre[1], 0.0, Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
-        int[] xpoints = wand.xpoints;
-        int[] ypoints = wand.ypoints;
-        return DSPProcessor.interpolatePoints(n, xpoints, ypoints);
+        int[] xpix = new int[n];
+        int[] ypix = new int[n];
+        System.arraycopy(wand.xpoints, 0, xpix, 0, wand.npoints);
+        System.arraycopy(wand.ypoints, 0, ypix, 0, wand.npoints);
+        for (int j = 0; j < n; j++) {
+            xpix[j] = wand.xpoints[j];
+            ypix[j] = wand.ypoints[j];
+        }
+        return new int[][]{xpix, ypix};
     }
 
     public float[][] buildVelMapCol(short xc, short yc, ImageStack stack, int frame, double timeRes, double spatialRes, int[] thresholds) {

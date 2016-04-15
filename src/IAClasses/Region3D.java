@@ -11,13 +11,12 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
 import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.distanceMap3d.EDT;
-import mcib3d.image3d.processing.MaximaFinder;
 
 /**
  *
@@ -148,11 +147,17 @@ public class Region3D extends Region {
         centres.add(new float[]{xsum / count, ysum / count, zsum / count});
     }
 
+    public short[] findSeed(ImageProcessor input) {
+        ImageStack stack = new ImageStack(input.getWidth(), input.getHeight());
+        stack.addSlice(input);
+        return findSeed(stack);
+    }
+
     public short[] findSeed(ImageStack input) {
-        if (input.getSize() < 2) {
-            short[] seed = findSeed(input.getProcessor(1));
-            return new short[]{seed[0], seed[1], 0};
-        }
+//        if (input.getSize() < 2) {
+//            short[] seed = findSeed(input.getProcessor(1));
+//            return new short[]{seed[0], seed[1], 0};
+//        }
 //        int bx = 0, by = 0;
 //        if (bounds != null) {
 //            bounds = checkBounds(bounds);
@@ -166,12 +171,11 @@ public class Region3D extends Region {
 //        sp.invert();
         ImageFloat edm = EDT.run(new ImageByte(input), FOREGROUND, true, 0);
 //        IJ.saveAs(edm.getImagePlus(), "TIF", "c:/users/barry05/adapt_debug/edm.tif");
-        MaximaFinder ma = new MaximaFinder(edm, (float) (0.9 * edm.getMax()));
-        ArrayList<Voxel3D> maxima = ma.getListPeaks();
+        ArrayList<int[]> max = Utils.findLocalMaxima(1, edm.getImageStack(), 0.9 * edm.getMax(), false, false);
 //        sp.invert();
-        if (!(maxima.isEmpty())) {
-            return new short[]{(short) Math.round(maxima.get(0).x), (short) Math.round(maxima.get(0).y),
-                (short) Math.round(maxima.get(0).z)};
+        if (!(max.isEmpty())) {
+            return new short[]{(short) Math.round(max.get(0)[0]), (short) Math.round(max.get(0)[1]),
+                (short) Math.round(max.get(0)[2])};
         } else {
             return null;
         }
