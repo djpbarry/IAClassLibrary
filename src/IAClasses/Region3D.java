@@ -14,6 +14,7 @@ import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.distanceMap3d.EDT;
@@ -46,7 +47,6 @@ public class Region3D extends Region {
         this.maskStack = maskStack;
         this.maskPix = this.maskStack.getImageArray();
         this.bounds = new Rectangle[imageDepth];
-        this.maxLengths = new int[imageDepth];
         this.newBounds(centre);
 //        this.addBorderPoint(centre, maskStack.getProcessor(centre[2] + 1));
         updateBoundary(this.imageWidth, this.imageHeight, this.maskStack, centre);
@@ -210,7 +210,6 @@ public class Region3D extends Region {
         short[][] output = new short[l][];
         for (int j = 0; j < l; j++) {
             output[j] = new short[]{boundary[j][0], boundary[j][1], centre[2]};
-            maxLengths[centre[2]]++;
         }
         return output;
     }
@@ -220,6 +219,9 @@ public class Region3D extends Region {
     }
 
     public int getMaxLength() {
+        if (maxLengths == null) {
+            sumLengths();
+        }
         int max = 0;
         for (int i = 0; i < imageDepth; i++) {
             if (maxLengths[i] > max) {
@@ -227,6 +229,18 @@ public class Region3D extends Region {
             }
         }
         return max;
+    }
+
+    private void sumLengths() {
+        maxLengths = new int[imageDepth];
+        short[][] boundary = getOrderedBoundary();
+        int l = boundary.length;
+        short[][] output = new short[l][];
+        Arrays.fill(maxLengths, 0, maxLengths.length - 1, 0);
+        for (int j = 0; j < l; j++) {
+            output[j] = new short[]{boundary[j][0], boundary[j][1], boundary[j][2]};
+            maxLengths[boundary[j][2]]++;
+        }
     }
 
     public Rectangle getBounds(int zIndex) {
