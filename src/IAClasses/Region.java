@@ -163,7 +163,6 @@ public class Region implements Cloneable {
 ////            poly.addPoint(borderPix.get(i).getX(), borderPix.get(i).getY());
 //        }
 //        fill(tempImage, FOREGROUND, BACKGROUND);
-//        IJ.saveAs(new ImagePlus("", mask), "PNG", "c:/users/barry05/adapt_debug/mask");
         ArrayList<float[]> centres = getCentres();
         float[] centre = centres.get(centres.size() - 1);
 //        short xc = (short) Math.round(centre[0] - rx);
@@ -171,10 +170,6 @@ public class Region implements Cloneable {
         short xc = (short) Math.round(centre[0]);
         short yc = (short) Math.round(centre[1]);
         int[][] pix = getMaskOutline(new short[]{xc, yc}, mask);
-//        for (int j = 0; j < n; j++) {
-//            pix[0][j] += rx;
-//            pix[1][j] += ry;
-//        }
         if (pix != null) {
             return new PolygonRoi(pix[0], pix[1], pix[0].length, Roi.POLYGON);
         } else {
@@ -452,6 +447,12 @@ public class Region implements Cloneable {
         for (int j = 0; j < n; j++) {
             xpix[j] = wand.xpoints[j];
             ypix[j] = wand.ypoints[j];
+            if (xpix[j] >= imageWidth) {
+                xpix[j] = imageWidth - 1;
+            }
+            if (ypix[j] >= imageHeight) {
+                ypix[j] = imageHeight - 1;
+            }
         }
         return new int[][]{xpix, ypix};
     }
