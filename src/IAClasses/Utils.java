@@ -787,4 +787,30 @@ public class Utils {
         }
         return ((new RGBStackMerge()).mergeStacks(channel1.getWidth(), channel1.getHeight(), 1, red, green, null, false)).getProcessor(1);
     }
+
+    public static short[][] convertPixToShort(Object[] pix) {
+        int n = pix.length;
+        short[][] output = new short[n][];
+        for (int i = 0; i < n; i++) {
+            output[i] = (short[]) pix[i];
+        }
+        return output;
+    }
+
+    public static int[][] convertPixToInt(Object[] pix) {
+        int n = pix.length;
+        int[][] output = new int[n][];
+        for (int i = 0; i < n; i++) {
+            if (pix[i] == null) {
+                continue;
+            }
+            byte[] current = (byte[]) pix[i];
+            int l = current.length;
+            output[i] = new int[l];
+            for (int j = 0; j < l; j++) {
+                output[i][j] = current[j] & 0xFF;
+            }
+        }
+        return output;
+    }
 }

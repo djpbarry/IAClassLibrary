@@ -1,5 +1,6 @@
 package IAClasses;
 
+import ij.ImageStack;
 import ij.measure.CurveFitter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
@@ -15,11 +16,12 @@ public class FractalEstimator {
     }
 
     public double[] do2DEstimate(ImageProcessor image) {
-        int epsilonMin = 2, step = 1;
+        int epsilonMin = 2;
         int width = image.getWidth();
         int height = image.getHeight();
         int epsilonMax = (int) Math.round(Math.max(width, height) / 4.5);
-        int points = epsilonMax - epsilonMin + 1;
+        int step = (int) Math.round((epsilonMax - epsilonMin + 1) / 10.0);
+        int points = (int) Math.ceil((epsilonMax - epsilonMin) / (step - 1));
         if (points < 3) {
             return null;
         }
@@ -30,7 +32,9 @@ public class FractalEstimator {
         double dbmCounts2D[] = new double[points];
         double dbsCounts2D[] = new double[points];
         double logE[] = new double[points];
-
+        ImageStack stack = new ImageStack(width, height);
+        stack.addSlice(image);
+        int[] inputPix = Utils.convertPixToInt(stack.getImageArray())[0];
         if (image.isInvertedLut()) {
             foreground = 255;
             background = 0;
@@ -38,9 +42,9 @@ public class FractalEstimator {
             foreground = 0;
             background = 255;
         }
-
         for (epsilon = epsilonMin; epsilon <= epsilonMax; epsilon += step) {
             j0 = (int) Math.round((2.0 * xCentre - epsilon) / 2.0);
+            int index = (epsilon - epsilonMin) / step;
             while (j0 > 0) {
                 j0 -= epsilon;
             }
@@ -48,14 +52,15 @@ public class FractalEstimator {
             while (k0 > 0) {
                 k0 -= epsilon;
             }
-            logE[epsilon - epsilonMin] = Math.log(epsilon);
+            logE[index] = Math.log(epsilon);
             for (j = j0, massCount = 0, surfaceCount = 0; j < width - j0; j += epsilon) {
                 for (k = k0; k < height - k0; k += epsilon) {
-                    for (x = j, mass = false, surface = false; x < j + epsilon; x++) {
-                        for (y = k; y < k + epsilon; y++) {
-                            if (y >= 0 && y < height && x >= 0 && x < width && image.getPixel(x, y) == foreground) {
+                    for (y = k < 0 ? 0 : k, mass = false, surface = false; y < k + epsilon && y < height; y++) {
+                        int offset = y * width;
+                        for (x = j < 0 ? 0 : j; x < j + epsilon && x < width; x++) {
+                            if (inputPix[offset + x] == foreground) {
                                 mass = true;
-                                if (edge(x, y, image)) {
+                                if (!surface && edge(x, y, height, width, inputPix)) {
                                     surface = true;
                                 }
                             }
@@ -69,8 +74,8 @@ public class FractalEstimator {
                     }
                 }
             }
-            dbmCounts2D[epsilon - epsilonMin] = Math.log(massCount);
-            dbsCounts2D[epsilon - epsilonMin] = Math.log(surfaceCount);
+            dbmCounts2D[index] = Math.log(massCount);
+            dbsCounts2D[index] = Math.log(surfaceCount);
         }
         double dims[] = new double[2];
         CurveFitter fitter = new CurveFitter(logE, dbmCounts2D);
@@ -178,12 +183,11 @@ public class FractalEstimator {
         return D;
     }
 
-    boolean edge(int x, int y, ImageProcessor image) {
-        int i, j;
-
-        for (i = x - 1; i <= x + 1; i++) {
-            for (j = y - 1; j <= y + 1; j++) {
-                if (image.getPixel(i, j) == background) {
+    boolean edge(int x, int y, int height, int width, int[] imagePix) {
+        for (int j = y - 1 < 0 ? 0 : y - 1; j <= y + 1 && j < height; j++) {
+            int offset = j * width;
+            for (int i = x - 1 < 0 ? 0 : x - 1; i <= x + 1 && i < width; i++) {
+                if (imagePix[offset + i] == background) {
                     return true;
                 }
             }
