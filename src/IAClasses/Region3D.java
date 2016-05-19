@@ -42,7 +42,7 @@ public class Region3D extends Region {
         this.imageHeight = maskStack.getHeight();
         this.imageDepth = maskStack.getSize();
         if (centre != null) {
-            this.centres.add(new float[]{centre[2], centre[0], centre[1]});
+            this.centres.add(new float[]{centre[0], centre[1], centre[2]});
         }
         this.maskStack = maskStack;
         this.maskPix = this.maskStack.getImageArray();
