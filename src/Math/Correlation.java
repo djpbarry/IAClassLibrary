@@ -14,10 +14,13 @@ import org.apache.commons.math3.stat.descriptive.rank.Percentile;
  */
 public class Correlation {
 
-    public static void spearman(double[] array1, double[] array2, int N) {
-        int m = array1.length, n = array2.length;
+    public static double spearman(double[] array1, double[] array2) {
+        return (new SpearmansCorrelation()).correlation(array1, array2);
+    }
+
+    public static double[] randSpearman(double[] array1, double[] array2, double lp, double up, int N) {
         SpearmansCorrelation spearman = new SpearmansCorrelation();
-        double coef = spearman.correlation(array1, array2);
+        int m = array1.length, n = array2.length;
         double[] array3 = new double[m];
         double[] array4 = new double[n];
         System.arraycopy(array1, 0, array3, 0, m);
@@ -28,13 +31,6 @@ public class Correlation {
             randCoeffs[i] = spearman.correlation(array3, array4);
         }
         Percentile p = new Percentile();
-//        NaturalRanking nr = new NaturalRanking();
-//        double[] rank1 = nr.rank(array1);
-//        double[] rank2 = nr.rank(array2);
-//        Plot plot = new Plot("Ranking Correlation", "Velocity", "Change in Fluorescence", rank2, rank1);
-//        plot.show();
-        System.out.println(" Spearman: " + String.valueOf(coef)
-                + " (" + String.valueOf(p.evaluate(randCoeffs, 0.5))
-                + " - " + String.valueOf(p.evaluate(randCoeffs, 99.5)) + ")");
+        return new double[]{p.evaluate(randCoeffs, lp), p.evaluate(randCoeffs, up)};
     }
 }
