@@ -32,7 +32,7 @@ public class Region implements Cloneable {
     private double min = Double.MAX_VALUE, max = Double.MIN_VALUE, mean, seedMean, sigma;
     private double mfD[];
     protected boolean edge, active;
-    private Rectangle bounds;
+    protected Rectangle bounds;
     private int[] histogram = new int[256];
     public final static short FOREGROUND = 0, BACKGROUND = 255;
     protected int imageWidth, imageHeight;
@@ -322,18 +322,22 @@ public class Region implements Cloneable {
         int x = pixel[0];
         int y = pixel[1];
         if (bounds == null) {
-            bounds = new Rectangle(x - 1, y - 1, 3, 3);
+            bounds = new Rectangle(x, y, 1, 1);
             return;
         }
         if (x < bounds.x) {
-            bounds.x = x - 1;
+            int inc = bounds.x - x;
+            bounds.x -= inc;
+            bounds.width += inc;
         } else if (x > bounds.x + bounds.width) {
-            bounds.width = x + 1 - bounds.x;
+            bounds.width = x - bounds.x;
         }
         if (y < bounds.y) {
-            bounds.y = y - 1;
+            int inc = bounds.y - y;
+            bounds.y -= inc;
+            bounds.height += inc;
         } else if (y > bounds.y + bounds.height) {
-            bounds.height = y + 1 - bounds.y;
+            bounds.height = y - bounds.y;
         }
     }
 
