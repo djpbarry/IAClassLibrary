@@ -180,14 +180,29 @@ public class Region3D extends Region {
     }
 
     public short[] findSeed(ImageProcessor input) {
-        ImageStack stack = getMaskImage(cropMask());
+        if (input != null) {
+            ImageStack stack = new ImageStack(input.getWidth(), input.getHeight());
+            stack.addSlice(input);
+            return findSeed3D(stack);
+        } else {
+            return findSeed3D(null);
+        }
+    }
+
+    public short[] findSeed3D(ImageStack stack) {
+        int bx = 0, by = 0;
+        if (stack == null) {
+            stack = getMaskImage(cropMask());
+            bx = bounds.x;
+            by = bounds.y;
+        }
         ImageFloat edm = EDT.run(new ImageByte(stack), FOREGROUND, true, 0);
 //        IJ.saveAs(edm.getImagePlus(), "TIF", "c:/users/barry05/adapt_debug/edm.tif");
         ArrayList<int[]> max = Utils.findLocalMaxima(1, edm.getImageStack(), 0.9 * edm.getMax(), false, false);
 //        sp.invert();
         if (!(max.isEmpty())) {
-            return new short[]{(short) Math.round(max.get(0)[0] + bounds.x),
-                (short) Math.round(max.get(0)[1] + bounds.y),
+            return new short[]{(short) Math.round(max.get(0)[0] + bx),
+                (short) Math.round(max.get(0)[1] + by),
                 (short) Math.round(max.get(0)[2])};
         } else {
             return null;
