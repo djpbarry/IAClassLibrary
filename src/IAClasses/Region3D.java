@@ -95,8 +95,10 @@ public class Region3D extends Region {
         return output;
     }
 
-    public ImageStack getMaskImage() {
-        byte[][][] mask = getMaskStack();
+    public ImageStack getMaskImage(byte[][][] mask) {
+        if (mask == null) {
+            mask = getMaskStack();
+        }
         int width = mask[0].length;
         int height = mask[0][0].length;
         ImageStack output = new ImageStack(width, height);
@@ -112,7 +114,7 @@ public class Region3D extends Region {
         return output;
     }
 
-    byte[][][] duplicateMask() {
+    public byte[][][] duplicateMask() {
         int d = maskStack.length;
         int w = maskStack[0].length;
         int h = maskStack[0][0].length;
@@ -177,14 +179,15 @@ public class Region3D extends Region {
         centres.add(new float[]{xsum / count, ysum / count, zsum / count});
     }
 
-    public short[] findSeed() {
-        ImageStack stack = getMaskImage();
+    public short[] findSeed(ImageProcessor input) {
+        ImageStack stack = getMaskImage(cropMask());
         ImageFloat edm = EDT.run(new ImageByte(stack), FOREGROUND, true, 0);
 //        IJ.saveAs(edm.getImagePlus(), "TIF", "c:/users/barry05/adapt_debug/edm.tif");
         ArrayList<int[]> max = Utils.findLocalMaxima(1, edm.getImageStack(), 0.9 * edm.getMax(), false, false);
 //        sp.invert();
         if (!(max.isEmpty())) {
-            return new short[]{(short) Math.round(max.get(0)[0]), (short) Math.round(max.get(0)[1]),
+            return new short[]{(short) Math.round(max.get(0)[0] + bounds.x),
+                (short) Math.round(max.get(0)[1] + bounds.y),
                 (short) Math.round(max.get(0)[2])};
         } else {
             return null;
@@ -207,9 +210,9 @@ public class Region3D extends Region {
     }
 
     public short[][] getOrderedBoundary(int width, int height, short[] centre) {
-        ImageProcessor maskSlice = getMaskImage().getProcessor(centre[2] + 1);
+        ImageProcessor maskSlice = getMaskImage(null).getProcessor(centre[2] + 1);
         if (centre == null || maskSlice.getPixel(centre[0], centre[1]) != FOREGROUND) {
-            short[] seed = findSeed();
+            short[] seed = findSeed(null);
             if (seed == null) {
                 return null;
             } else {
@@ -259,7 +262,7 @@ public class Region3D extends Region {
 //    }
     public PolygonRoi getPolygonRoi(int zIndex) {
 //        (new ImagePlus("",slice)).show();
-        return getPolygonRoi(getBounds(), getMaskImage().getProcessor(zIndex + 1));
+        return getPolygonRoi(getBounds(), getMaskImage(null).getProcessor(zIndex + 1));
     }
 
     public ImageStack buildVelImageStack(ImagePlus input, int frame, double timeRes, double spatialRes, int[] thresholds) {
@@ -280,13 +283,20 @@ public class Region3D extends Region {
     }
 
     public void setFinalMask() {
+        maskStack = cropMask();
+    }
+
+    public byte[][][] cropMask() {
+        if (maskStack[0].length < imageWidth || maskStack[0][0].length < imageHeight) {
+            return maskStack;
+        }
         byte[][][] finalMask = new byte[imageDepth][bounds.width][bounds.height];
         for (int z = 0; z < imageDepth; z++) {
             for (int x = bounds.x; x < bounds.x + bounds.width; x++) {
                 System.arraycopy(maskStack[z][x], bounds.y, finalMask[z][x - bounds.x], 0, bounds.height);
             }
         }
-        maskStack = finalMask;
+        return finalMask;
     }
 
     byte[][][] constructFullSizeMaskStack(int width, int height) {
