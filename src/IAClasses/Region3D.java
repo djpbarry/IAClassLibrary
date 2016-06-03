@@ -12,6 +12,8 @@ import ij.ImageStack;
 import ij.gui.PolygonRoi;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
+import ij.process.StackProcessor;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import mcib3d.image3d.ImageByte;
@@ -183,16 +185,20 @@ public class Region3D extends Region {
         if (input != null) {
             ImageStack stack = new ImageStack(input.getWidth(), input.getHeight());
             stack.addSlice(input);
-            return findSeed3D(stack);
+            return findSeed3D(stack, bounds, true);
         } else {
-            return findSeed3D(null);
+            return findSeed3D(null, bounds, true);
         }
     }
 
-    public short[] findSeed3D(ImageStack stack) {
+    public short[] findSeed3D(ImageStack input, Rectangle bounds, boolean crop) {
         int bx = 0, by = 0;
-        if (stack == null) {
-            stack = getMaskImage(cropMask());
+        ImageStack stack = input;
+        if (input == null) {
+            stack = getMaskImage(getMaskStack());
+        }
+        if (crop) {
+            stack = (new StackProcessor(stack.duplicate())).crop(bounds.x, bounds.y, bounds.width, bounds.height);
             bx = bounds.x;
             by = bounds.y;
         }
@@ -298,17 +304,17 @@ public class Region3D extends Region {
     }
 
     public void setFinalMask() {
-        maskStack = cropMask();
+        maskStack = cropMask(bounds, maskStack);
     }
 
-    public byte[][][] cropMask() {
-        if (maskStack[0].length < imageWidth || maskStack[0][0].length < imageHeight) {
-            return maskStack;
+    public byte[][][] cropMask(Rectangle bounds, byte[][][] mask) {
+        if (mask[0].length < imageWidth || mask[0][0].length < imageHeight) {
+            return mask;
         }
         byte[][][] finalMask = new byte[imageDepth][bounds.width][bounds.height];
         for (int z = 0; z < imageDepth; z++) {
             for (int x = bounds.x; x < bounds.x + bounds.width; x++) {
-                System.arraycopy(maskStack[z][x], bounds.y, finalMask[z][x - bounds.x], 0, bounds.height);
+                System.arraycopy(mask[z][x], bounds.y, finalMask[z][x - bounds.x], 0, bounds.height);
             }
         }
         return finalMask;
