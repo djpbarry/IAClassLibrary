@@ -1,16 +1,17 @@
 package IAClasses;
 
+import ij.IJ;
 import ij.ImageStack;
 import ij.measure.CurveFitter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import java.awt.Color;
-import java.awt.Rectangle;
 
 public class FractalEstimator {
 
     private int foreground, background;
     private double threeDF;
+    private static final double MAX_GREY = 255.0;
 
     public FractalEstimator() {
     }
@@ -108,37 +109,33 @@ public class FractalEstimator {
         return true;
     }
 
-    public static double[] doSurfaceEstimate(Region region, ImageProcessor refImage) {
-        Rectangle r = region.getBounds();
-        int width = r.width, height = r.height;
-        double D[] = new double[3];
+    public static double doSurfaceEstimate(Region region, ImageProcessor image, String plotTitle) {
+        int width = image.getWidth(), height = image.getHeight();
         int epsilonMin = 2;
         int maxDim = Math.max(width, height);
-        double imageMax = region.getMax();
-        double imageMin = region.getMin();
-        int epsilonMax = 11;
+        int epsilonMax = (int) Math.round(Math.max(width, height) / 4.5);
+        int step = (int) Math.round((epsilonMax - epsilonMin + 1) / 10.0);
+        int points = (int) Math.ceil((epsilonMax - epsilonMin) / (step - 1));
+        if (points < 3) {
+            return Double.NaN;
+        }
+//        ImageStatistics stats = image.getStatistics();
+//        double imageMax = stats.max;
+//        double imageMin = stats.min;
         double xCentre = width / 2.0;
         double yCentre = height / 2.0;
         int l = epsilonMax - epsilonMin + 1;
         double logE[] = new double[l];
         double boxCounts[] = new double[l];
-        int histogram[] = region.getHistogram();
-        int G = 0;
-        for (int g = 1; g < 256; g++) {
-            if (histogram[g] > 0) {
-                G++;
-            }
-        }
-        double data[][] = region.getDataArray(refImage);
         for (int epsilon = epsilonMin; epsilon <= epsilonMax; epsilon++) {
-            double h = (imageMax - imageMin) / (G * epsilon / maxDim);
+            double h = MAX_GREY * epsilon / maxDim;
             int i0 = (int) Math.round((2.0 * xCentre - epsilon) / 2.0);
             while (i0 > 0) {
-                i0 = i0 - epsilon;
+                i0 -= epsilon;
             }
             int j0 = (int) Math.round((2.0 * yCentre - epsilon) / 2.0);
             while (j0 > 0) {
-                j0 = j0 - epsilon;
+                j0 -= epsilon;
             }
             logE[epsilon - epsilonMin] = Math.log(epsilon);
             double massCount = 0.0;
@@ -146,17 +143,14 @@ public class FractalEstimator {
                 for (int j = j0; j <= height - j0; j += epsilon) {
                     double min = Double.MAX_VALUE;
                     double max = Double.MIN_VALUE;
-                    int x = (i < 0) ? 0 : i;
-                    for (; x <= i + epsilon && x < width; x++) {
-                        int y = (j < 0) ? 0 : j;
-                        for (; y <= j + epsilon && y < height; y++) {
-                            if (data[x][y] != Double.NaN) {
-                                if (data[x][y] < min) {
-                                    min = data[x][y];
-                                }
-                                if (data[x][y] > max) {
-                                    max = data[x][y];
-                                }
+                    for (int x = (i < 0) ? 0 : i; x <= i + epsilon && x < width; x++) {
+                        for (int y = (j < 0) ? 0 : j; y <= j + epsilon && y < height; y++) {
+                            double pix = image.getPixelValue(x, y);
+                            if (pix < min) {
+                                min = pix;
+                            }
+                            if (pix > max) {
+                                max = pix;
                             }
                         }
                     }
@@ -169,17 +163,10 @@ public class FractalEstimator {
         }
         CurveFitter fitter = new CurveFitter(logE, boxCounts);
         fitter.doFit(CurveFitter.STRAIGHT_LINE);
-        D[2] = -(fitter.getParams()[1]);
-        double lowCounts[] = {boxCounts[0], boxCounts[1], boxCounts[2]};
-        double lowLogE[] = {logE[0], logE[1], logE[2]};
-        double midCounts[] = {boxCounts[2], boxCounts[3], boxCounts[4], boxCounts[5]};
-        double midlogE[] = {logE[2], logE[3], logE[4], logE[5]};
-        fitter = new CurveFitter(midlogE, midCounts);
-        fitter.doFit(CurveFitter.STRAIGHT_LINE);
-        D[1] = -(fitter.getParams()[1]);
-        fitter = new CurveFitter(lowLogE, lowCounts);
-        fitter.doFit(CurveFitter.STRAIGHT_LINE);
-        D[0] = -(fitter.getParams()[1]);
+        double D = -(fitter.getParams()[1]);
+        IJ.log(plotTitle + " D: " + D);
+//        Plot plot = new Plot(plotTitle, "log[Epsilon]", "log[Box Counts]", logE, boxCounts);
+//        plot.show();
         return D;
     }
 

@@ -145,7 +145,7 @@ public class Region implements Cloneable {
 //        }
     }
 
-    PolygonRoi getPolygonRoi(Rectangle r, ImageProcessor mask) {
+    PolygonRoi getPolygonRoi(ImageProcessor mask) {
 //        int bordersize = borderPix.size();
 //        mask.setRoi(r);
 //        mask = mask.crop();
@@ -429,7 +429,11 @@ public class Region implements Cloneable {
 
     public short[][] getOrderedBoundary(int width, int height, ImageProcessor mask, short[] centre) {
         int[][] pix = getMaskOutline(centre, mask);
-        return DSPProcessor.interpolatePoints(pix[0].length, pix[0], pix[1]);
+        if (pix == null) {
+            return null;
+        } else {
+            return DSPProcessor.interpolatePoints(pix[0].length, pix[0], pix[1]);
+        }
     }
 
     int[][] getMaskOutline(short[] centre, ImageProcessor mask) {
@@ -545,7 +549,7 @@ public class Region implements Cloneable {
         if (depth < 3) {
             depth = 3;
         }
-        PolygonRoi proi = getPolygonRoi(getBounds(), getMask());
+        PolygonRoi proi = getPolygonRoi(getMask());
         Straightener straightener = new Straightener();
         ImagePlus sigImp = new ImagePlus("", ip);
         sigImp.setRoi(proi);

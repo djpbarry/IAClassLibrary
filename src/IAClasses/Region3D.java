@@ -27,6 +27,7 @@ import mcib3d.image3d.distanceMap3d.EDT;
 public class Region3D extends Region {
 
     private byte[][][] maskStack;
+//    private byte[][][] finalMaskStack;
     private int imageDepth;
     private int[] maxLengths;
 
@@ -58,10 +59,13 @@ public class Region3D extends Region {
     }
 
     final void updateBoundary(int imageWidth, int imageHeight, byte[][][] maskStack, short[] centre) {
-        short[][] bp = getOrderedBoundary(imageWidth, imageHeight, centre);
-        if (bp != null) {
-            for (int i = 0; i < bp.length; i++) {
-                addBorderPoint(bp[i], maskStack);
+        short[][][] bp = new short[imageDepth][][];
+        for (int z = 0; z < imageDepth; z++) {
+            bp[z] = getOrderedBoundary(imageWidth, imageHeight, centre, z);
+            if (bp[z] != null) {
+                for (int i = 0; i < bp[z].length; i++) {
+                    addBorderPoint(bp[z][i], maskStack);
+                }
             }
         }
     }
@@ -227,11 +231,11 @@ public class Region3D extends Region {
         short[] scentre = new short[]{(short) Math.round(centre[0]),
             (short) Math.round(centre[1]),
             (short) Math.round(centre[2])};
-        return getOrderedBoundary(imageWidth, imageHeight, scentre);
+        return getOrderedBoundary(imageWidth, imageHeight, scentre, scentre[2]);
     }
 
-    public short[][] getOrderedBoundary(int width, int height, short[] centre) {
-        ImageProcessor maskSlice = getMaskImage(null).getProcessor(centre[2] + 1);
+    public short[][] getOrderedBoundary(int width, int height, short[] centre, int z) {
+        ImageProcessor maskSlice = getMaskImage(null).getProcessor(z + 1);
         if (centre == null || maskSlice.getPixel(centre[0], centre[1]) != FOREGROUND) {
             short[] seed = findSeed(null);
             if (seed == null) {
@@ -241,6 +245,9 @@ public class Region3D extends Region {
             }
         }
         short[][] boundary = getOrderedBoundary(width, height, maskSlice, centre);
+        if (boundary == null) {
+            return null;
+        }
         int l = boundary.length;
         short[][] output = new short[l][];
         for (int j = 0; j < l; j++) {
@@ -283,7 +290,7 @@ public class Region3D extends Region {
 //    }
     public PolygonRoi getPolygonRoi(int zIndex) {
 //        (new ImagePlus("",slice)).show();
-        return getPolygonRoi(getBounds(), getMaskImage(null).getProcessor(zIndex + 1));
+        return getPolygonRoi(getMaskImage(null).getProcessor(zIndex + 1));
     }
 
     public ImageStack buildVelImageStack(ImagePlus input, int frame, double timeRes, double spatialRes, int[] thresholds) {
@@ -307,10 +314,17 @@ public class Region3D extends Region {
         maskStack = cropMask(bounds, maskStack);
     }
 
+//    public byte[][][] getFinalMaskStack() {
+//        return finalMaskStack;
+//    }
+//
+//    public ImageStack getFinalMaskImage() {
+//        return getMaskImage(finalMaskStack);
+//    }
     public byte[][][] cropMask(Rectangle bounds, byte[][][] mask) {
-        if (mask[0].length < imageWidth || mask[0][0].length < imageHeight) {
-            return mask;
-        }
+//        if (mask[0].length < imageWidth || mask[0][0].length < imageHeight) {
+//            return mask;
+//        }
         byte[][][] finalMask = new byte[imageDepth][bounds.width][bounds.height];
         for (int z = 0; z < imageDepth; z++) {
             for (int x = bounds.x; x < bounds.x + bounds.width; x++) {
