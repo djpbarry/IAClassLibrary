@@ -225,6 +225,11 @@ public class GenUtils {
 
     public static ImagePlus convertStackTo8Bit(ImagePlus input) {
         ImageStack inputStack = input.getImageStack();
+        if (inputStack.getSize() < 2) {
+            ImageProcessor ip = input.getProcessor();
+            (new TypeConverter(ip, false)).convertToByte();
+            return new ImagePlus("", ip);
+        }
         ImageStack tempStack = new ImageStack(input.getWidth(), input.getHeight());
         int nFrames = input.getNFrames();
         int nSlices = input.getNSlices();

@@ -2,10 +2,13 @@ package IAClasses;
 
 import ij.IJ;
 import ij.ImageStack;
+import ij.gui.Plot;
 import ij.measure.CurveFitter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import java.awt.Color;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 public class FractalEstimator {
 
@@ -111,63 +114,60 @@ public class FractalEstimator {
 
     public static double doSurfaceEstimate(Region region, ImageProcessor image, String plotTitle) {
         int width = image.getWidth(), height = image.getHeight();
-        int epsilonMin = 2;
-        int maxDim = Math.max(width, height);
+        int epsilonMin = 10;
+//        int maxDim = Math.max(width, height);
         int epsilonMax = (int) Math.round(Math.max(width, height) / 4.5);
         int step = (int) Math.round((epsilonMax - epsilonMin + 1) / 10.0);
         int points = (int) Math.ceil((epsilonMax - epsilonMin) / (step - 1));
         if (points < 3) {
             return Double.NaN;
         }
-//        ImageStatistics stats = image.getStatistics();
-//        double imageMax = stats.max;
-//        double imageMin = stats.min;
-        double xCentre = width / 2.0;
-        double yCentre = height / 2.0;
         int l = epsilonMax - epsilonMin + 1;
         double logE[] = new double[l];
-        double boxCounts[] = new double[l];
+        double meanLacVals[] = new double[l];
+        double sdLacVals[] = new double[l];
         for (int epsilon = epsilonMin; epsilon <= epsilonMax; epsilon++) {
-            double h = MAX_GREY * epsilon / maxDim;
-            int i0 = (int) Math.round((2.0 * xCentre - epsilon) / 2.0);
-            while (i0 > 0) {
-                i0 -= epsilon;
-            }
-            int j0 = (int) Math.round((2.0 * yCentre - epsilon) / 2.0);
-            while (j0 > 0) {
-                j0 -= epsilon;
-            }
-            logE[epsilon - epsilonMin] = Math.log(epsilon);
-            double massCount = 0.0;
-            for (int i = i0; i <= width - i0; i += epsilon) {
-                for (int j = j0; j <= height - j0; j += epsilon) {
-                    double min = Double.MAX_VALUE;
-                    double max = Double.MIN_VALUE;
-                    for (int x = (i < 0) ? 0 : i; x <= i + epsilon && x < width; x++) {
-                        for (int y = (j < 0) ? 0 : j; y <= j + epsilon && y < height; y++) {
+//            double h = MAX_GREY * epsilon / maxDim;
+            int epsilon2 = epsilon * epsilon;
+//            double logEpsilon = Math.log(epsilon);
+//            double lacSum = Double.MIN_VALUE;
+            int k = (int) (Math.floor(width / epsilon) * Math.floor(height / epsilon));
+            double[] thisLac = new double[k];
+            int index = 0;
+            for (int i = 0; i < width - epsilon; i += epsilon) {
+                for (int j = 0; j < height - epsilon; j += epsilon) {
+                    double[] pixarray = new double[epsilon2];
+                    for (int y = j; y < j + epsilon && y < height; y++) {
+                        int offset = (y - j) * epsilon;
+                        for (int x = i; x < i + epsilon; x++) {
                             double pix = image.getPixelValue(x, y);
-                            if (pix < min) {
-                                min = pix;
-                            }
-                            if (pix > max) {
-                                max = pix;
-                            }
+                            pixarray[offset + x - i] = pix;
                         }
                     }
-                    if (min < Double.MAX_VALUE && max > Double.MIN_VALUE) {
-                        massCount += Math.floor((max - min) / h) + 1.0;
-                    }
+                    Mean mean = new Mean();
+                    StandardDeviation sd = new StandardDeviation();
+                    thisLac[index] = Math.pow((sd.evaluate(pixarray) / mean.evaluate(pixarray)), 2.0);
+                    index++;
                 }
             }
-            boxCounts[epsilon - epsilonMin] = Math.log(massCount);
+            Mean mean = new Mean();
+            StandardDeviation sd = new StandardDeviation();
+            meanLacVals[epsilon - epsilonMin] = mean.evaluate(thisLac);
+            sdLacVals[epsilon - epsilonMin] = sd.evaluate(thisLac);
+            logE[epsilon - epsilonMin] = epsilon;
         }
-        CurveFitter fitter = new CurveFitter(logE, boxCounts);
-        fitter.doFit(CurveFitter.STRAIGHT_LINE);
-        double D = -(fitter.getParams()[1]);
-        IJ.log(plotTitle + " D: " + D);
-//        Plot plot = new Plot(plotTitle, "log[Epsilon]", "log[Box Counts]", logE, boxCounts);
-//        plot.show();
-        return D;
+//        Mean mean = new Mean();
+//        CurveFitter fitter = new CurveFitter(logE, boxCounts);
+//        fitter.doFit(CurveFitter.STRAIGHT_LINE);
+//        double D = -(fitter.getParams()[1]);
+//        double L = mean.evaluate(lacVals);
+        Mean mean = new Mean();
+        IJ.log(plotTitle + " mean: " + mean.evaluate(meanLacVals) + " sd: " + sdLacVals[0]);
+//        Plot meanPlot = new Plot(plotTitle, "Epsilon", "Mean Lacunarity",logE, meanLacVals);
+//        meanPlot.show();
+//        Plot sdPlot = new Plot(plotTitle, "Epsilon", "Lacunarity SD",logE, sdLacVals);
+//        sdPlot.show();
+        return Double.NaN;
     }
 
     boolean edge(int x, int y, int height, int width, int[] imagePix) {
