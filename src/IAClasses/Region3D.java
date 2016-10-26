@@ -55,16 +55,18 @@ public class Region3D extends Region {
         }
         this.maskStack = maskStack;
         this.newBounds(centre);
+//        IJ.saveAs(new ImagePlus("", getMaskImage(this.maskStack)), "TIF", "c:/users/barry05/adapt_debug/initialMaskStackPreBoundaryUpdate");
         updateBoundary(this.imageWidth, this.imageHeight, this.maskStack, centre);
+//        IJ.saveAs(new ImagePlus("", getMaskImage(this.maskStack)), "TIF", "c:/users/barry05/adapt_debug/initialMaskStackPostBoundaryUpdate");
     }
 
     final void updateBoundary(int imageWidth, int imageHeight, byte[][][] maskStack, short[] centre) {
-        short[][][] bp = new short[imageDepth][][];
+//        short[][][] bp = new short[imageDepth][][];
         for (int z = 0; z < imageDepth; z++) {
-            bp[z] = getOrderedBoundary(imageWidth, imageHeight, centre, z);
-            if (bp[z] != null) {
-                for (int i = 0; i < bp[z].length; i++) {
-                    addBorderPoint(bp[z][i], maskStack);
+            short[][] bp = getOrderedBoundary(imageWidth, imageHeight, centre, z);
+            if (bp != null) {
+                for (int i = 0; i < bp.length; i++) {
+                    addBorderPoint(new short[]{bp[i][0], bp[i][1], (short) z}, maskStack);
                 }
             }
         }
@@ -73,7 +75,7 @@ public class Region3D extends Region {
     public void addBorderPoint(short[] point, byte[][][] mask) {
         borderPix.add(point);
         updateBounds(point);
-        mask[point[2]][point[0]][point[1]] = (byte) (FOREGROUND & 0xFF);
+//        mask[point[2]][point[0]][point[1]] = (byte) (FOREGROUND & 0xFF);
     }
 
     public byte[][][] getMaskStack() {

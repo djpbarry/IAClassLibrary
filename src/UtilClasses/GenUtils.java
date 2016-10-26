@@ -227,7 +227,7 @@ public class GenUtils {
         ImageStack inputStack = input.getImageStack();
         if (inputStack.getSize() < 2) {
             ImageProcessor ip = input.getProcessor();
-            (new TypeConverter(ip, false)).convertToByte();
+            (new TypeConverter(ip, true)).convertToByte();
             return new ImagePlus("", ip);
         }
         ImageStack tempStack = new ImageStack(input.getWidth(), input.getHeight());
