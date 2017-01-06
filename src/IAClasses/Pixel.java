@@ -9,6 +9,7 @@ public class Pixel {
     protected int x, y, iD;
     private double z;
     private double precX, precY;
+    private int associations = 0;
 
     public Pixel(int x, int y, double z) {
         this.precX = Double.NaN;
@@ -16,6 +17,15 @@ public class Pixel {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    public Pixel(int x, int y, double z, int iD) {
+        this.precX = Double.NaN;
+        this.precY = Double.NaN;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.iD = iD;
     }
 
     public Pixel(double x, double y, double z) {
@@ -64,6 +74,14 @@ public class Pixel {
 
     public int getID() {
         return iD;
+    }
+
+    public void decAssociations() {
+        associations--;
+    }
+
+    public int getAssociations() {
+        return associations;
     }
 
     @Override

@@ -26,6 +26,7 @@ import java.util.LinkedList;
 public class Region implements Cloneable {
 
     protected ArrayList<short[]> seedPix = new ArrayList<short[]>();
+    protected ArrayList<Pixel> pix = new ArrayList<Pixel>();
     protected LinkedList<short[]> borderPix = new LinkedList<short[]>();
     protected LinkedList<short[]> expandedBorder = new LinkedList<short[]>();
     protected ArrayList<float[]> centres = new ArrayList<float[]>();
@@ -37,9 +38,14 @@ public class Region implements Cloneable {
     public final static short FOREGROUND = 0, BACKGROUND = 255;
     protected int imageWidth, imageHeight;
     private ImageProcessor mask;
+    private int index;
 
     public Region() {
 
+    }
+
+    public Region(int index) {
+        this.index = index;
     }
 
     public Region(ImageProcessor mask, short[] centre) {
@@ -145,7 +151,7 @@ public class Region implements Cloneable {
 //        }
     }
 
-    PolygonRoi getPolygonRoi(ImageProcessor mask) {
+    public PolygonRoi getPolygonRoi(ImageProcessor mask) {
 //        int bordersize = borderPix.size();
 //        mask.setRoi(r);
 //        mask = mask.crop();
@@ -309,6 +315,20 @@ public class Region implements Cloneable {
 
     public ArrayList<short[]> getSeedPix() {
         return seedPix;
+    }
+
+    public ArrayList<short[]> getPixels(ImageProcessor image) {
+        Rectangle bounds = getBounds();
+        ImageProcessor mask = getMask();
+        ArrayList<short[]> pix = new ArrayList();
+        for (int y = bounds.y; y < bounds.height; y++) {
+            for (int x = bounds.x; x < bounds.width; x++) {
+                if (mask.getPixel(x, y) == Region.FOREGROUND) {
+                    pix.add(new short[]{(short) x, (short) y});
+                }
+            }
+        }
+        return pix;
     }
 
     public Rectangle getBounds() {
@@ -665,6 +685,14 @@ public class Region implements Cloneable {
         m.fill();
         m.copyBits(mask, bounds.x, bounds.y, Blitter.AND);
         return m;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+    
+    public void addPoint(Pixel p){
+        pix.add(p);
     }
 
     public Object clone() {
