@@ -5,8 +5,6 @@
  */
 package IAClasses;
 
-import static IAClasses.Region.BACKGROUND;
-import static IAClasses.Region.FOREGROUND;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -19,6 +17,8 @@ import java.util.Arrays;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.distanceMap3d.EDT;
+import static IAClasses.Region.MASK_BACKGROUND;
+import static IAClasses.Region.MASK_FOREGROUND;
 
 /**
  *
@@ -139,13 +139,13 @@ public class Region3D extends Region {
         byte[][][] mask = new byte[imageDepth][width][height];
         for (int z = 0; z < imageDepth; z++) {
             for (int x = 0; x < width; x++) {
-                Arrays.fill(mask[z][x], (byte) (BACKGROUND & 0xFF));
+                Arrays.fill(mask[z][x], (byte) (MASK_BACKGROUND & 0xFF));
             }
         }
         int m = borderPix.size();
         for (int i = 0; i < m; i++) {
             short[] current = borderPix.get(i);
-            mask[current[2]][current[0]][current[1]] = (byte) (FOREGROUND & 0xFF);
+            mask[current[2]][current[0]][current[1]] = (byte) (MASK_FOREGROUND & 0xFF);
         }
         for (int i = 0; i < imageDepth; i++) {
             ByteProcessor slice = new ByteProcessor(width, height);
@@ -154,7 +154,7 @@ public class Region3D extends Region {
                     slice.putPixel(x, y, mask[i][x][y]);
                 }
             }
-            fill(slice, FOREGROUND, BACKGROUND);
+            fill(slice, MASK_FOREGROUND, MASK_BACKGROUND);
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
                     mask[i][x][y] = (byte) (slice.getPixel(x, y) & 0xFF);
@@ -175,7 +175,7 @@ public class Region3D extends Region {
             for (int y = 0; y < height; y++) {
                 int offset = y * width;
                 for (int x = 0; x < width; x++) {
-                    if (pix[x + offset] != (byte) (BACKGROUND & 0xFF)) {
+                    if (pix[x + offset] != (byte) (MASK_BACKGROUND & 0xFF)) {
                         xsum += x;
                         ysum += y;
                         zsum += z;
@@ -208,7 +208,7 @@ public class Region3D extends Region {
             bx = bounds.x;
             by = bounds.y;
         }
-        ImageFloat edm = EDT.run(new ImageByte(stack), FOREGROUND, true, 0);
+        ImageFloat edm = EDT.run(new ImageByte(stack), MASK_FOREGROUND, true, 0);
 //        IJ.saveAs(edm.getImagePlus(), "TIF", "c:/users/barry05/adapt_debug/edm.tif");
         ArrayList<int[]> max = Utils.findLocalMaxima(1, edm.getImageStack(), 0.9 * edm.getMax(), false, false);
 //        sp.invert();
@@ -225,7 +225,7 @@ public class Region3D extends Region {
     public void addExpandedBorderPix(short[] p) {
         expandedBorder.add(p);
         updateBounds(p);
-        maskStack[p[2]][p[0]][p[1]] = FOREGROUND & 0xFF;
+        maskStack[p[2]][p[0]][p[1]] = MASK_FOREGROUND & 0xFF;
     }
 
     public short[][] getOrderedBoundary() {
@@ -238,7 +238,7 @@ public class Region3D extends Region {
 
     public short[][] getOrderedBoundary(int width, int height, short[] centre, int z) {
         ImageProcessor maskSlice = getMaskImage(null).getProcessor(z + 1);
-        if (centre == null || maskSlice.getPixel(centre[0], centre[1]) != FOREGROUND) {
+        if (centre == null || maskSlice.getPixel(centre[0], centre[1]) != MASK_FOREGROUND) {
             short[] seed = findSeed(null);
             if (seed == null) {
                 return null;
@@ -340,7 +340,7 @@ public class Region3D extends Region {
         byte[][][] fullSizeMask = new byte[imageDepth][imageWidth][imageHeight];
         for (int z = 0; z < imageDepth; z++) {
             for (int x = 0; x < imageWidth; x++) {
-                Arrays.fill(fullSizeMask[z][x], (byte) (BACKGROUND & 0xFF));
+                Arrays.fill(fullSizeMask[z][x], (byte) (MASK_BACKGROUND & 0xFF));
             }
         }
         for (int z = 0; z < imageDepth; z++) {

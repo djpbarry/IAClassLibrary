@@ -60,7 +60,7 @@ public class RegionEdge {
         int ls = startVertex.getBorderPix().size();
         int le = endVertex.getBorderPix().size();
         int l;
-        LinkedList points1, points2;
+        LinkedList<short[]> points1, points2;
         gradPix = new ArrayList<Pixel>();
         if (le <= ls) {
             l = le;
@@ -72,10 +72,10 @@ public class RegionEdge {
             points2 = endVertex.getBorderPix();
         }
         for (int i = 0; i < l; i++) {
-            Pixel pix = (Pixel) points1.get(i);
+            short[] pix = points1.get(i);
             if (points2.contains(pix)) {
-                int x = pix.getX();
-                int y = pix.getY();
+                int x = pix[0];
+                int y = pix[1];
                 double z = gradImage.getPixelValue(x, y);
                 gradPix.add(new Pixel(x, y, z));
             }

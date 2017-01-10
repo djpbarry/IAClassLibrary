@@ -35,7 +35,7 @@ public class Region implements Cloneable {
     protected boolean edge, active;
     protected Rectangle bounds;
     private int[] histogram = new int[256];
-    public final static short FOREGROUND = 0, BACKGROUND = 255;
+    public final static short MASK_FOREGROUND = 0, MASK_BACKGROUND = 255;
     protected int imageWidth, imageHeight;
     private ImageProcessor mask;
     private int index;
@@ -44,7 +44,9 @@ public class Region implements Cloneable {
 
     }
 
-    public Region(int index) {
+    public Region(int index, int width, int height) {
+        this.imageWidth = width;
+        this.imageHeight = height;
         this.index = index;
     }
 
@@ -95,12 +97,12 @@ public class Region implements Cloneable {
         Arrays.fill(histogram, 0);
         int width = mask.getWidth();
         int height = mask.getHeight();
-        int size = mask.getStatistics().histogram[FOREGROUND];
+        int size = mask.getStatistics().histogram[MASK_FOREGROUND];
         double valSum = 0.0, varSum = 0.0, pix;
         if (size > 0) {
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
-                    if (mask.getPixel(i, j) == FOREGROUND) {
+                    if (mask.getPixel(i, j) == MASK_FOREGROUND) {
                         pix = refImage.getPixelValue(i, j);
                         if (pix < min) {
                             min = pix;
@@ -116,7 +118,7 @@ public class Region implements Cloneable {
             mean = valSum / (size);
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
-                    if (mask.getPixel(i, j) == FOREGROUND) {
+                    if (mask.getPixel(i, j) == MASK_FOREGROUND) {
                         varSum += Math.pow(mean - refImage.getPixelValue(i, j), 2);
                     }
                 }
@@ -134,7 +136,7 @@ public class Region implements Cloneable {
         for (int j = 0; j < height; j++) {
             int offset = j * width;
             for (int i = 0; i < width; i++) {
-                if (pix[i + offset] != (byte) Region.BACKGROUND) {
+                if (pix[i + offset] != (byte) Region.MASK_BACKGROUND) {
                     xsum += i;
                     ysum += j;
                     count++;
@@ -317,13 +319,13 @@ public class Region implements Cloneable {
         return seedPix;
     }
 
-    public ArrayList<short[]> getPixels(ImageProcessor image) {
+    public ArrayList<short[]> getPixels() {
         Rectangle bounds = getBounds();
         ImageProcessor mask = getMask();
         ArrayList<short[]> pix = new ArrayList();
-        for (int y = bounds.y; y < bounds.height; y++) {
-            for (int x = bounds.x; x < bounds.width; x++) {
-                if (mask.getPixel(x, y) == Region.FOREGROUND) {
+        for (int y = bounds.y; y < bounds.height + bounds.y; y++) {
+            for (int x = bounds.x; x < bounds.width + bounds.x; x++) {
+                if (mask.getPixel(x, y) == Region.MASK_FOREGROUND) {
                     pix.add(new short[]{(short) x, (short) y});
                 }
             }
@@ -396,15 +398,15 @@ public class Region implements Cloneable {
 
     void drawMask(int width, int height) {
         ImageProcessor mask = new ByteProcessor(width, height);
-        mask.setColor(BACKGROUND);
+        mask.setColor(MASK_BACKGROUND);
         mask.fill();
-        mask.setColor(FOREGROUND);
+        mask.setColor(MASK_FOREGROUND);
         int m = borderPix.size();
         for (int i = 0; i < m; i++) {
             short[] current = borderPix.get(i);
             mask.drawPixel(current[0], current[1]);
         }
-        fill(mask, FOREGROUND, BACKGROUND);
+        fill(mask, MASK_FOREGROUND, MASK_BACKGROUND);
         this.mask = mask;
     }
 
@@ -457,7 +459,7 @@ public class Region implements Cloneable {
     }
 
     int[][] getMaskOutline(short[] centre, ImageProcessor mask) {
-        if (centre == null || mask.getPixel(centre[0], centre[1]) != FOREGROUND) {
+        if (centre == null || mask.getPixel(centre[0], centre[1]) != MASK_FOREGROUND) {
             short[] seed = findSeed(mask);
             if (seed == null) {
                 return null;
@@ -614,7 +616,15 @@ public class Region implements Cloneable {
     }
 
     public ArrayList<float[]> getCentres() {
+        if (centres.size() < 1) {
+            calcCentroid(getMask());
+        }
         return centres;
+    }
+
+    public float[] getCentre() {
+        ArrayList<float[]> c = getCentres();
+        return c.get(c.size() - 1);
     }
 
     public short[] findSeed(ImageProcessor input) {
@@ -681,7 +691,7 @@ public class Region implements Cloneable {
 
     ImageProcessor constructFullSizeMask(int width, int height) {
         ByteProcessor m = new ByteProcessor(width, height);
-        m.setColor(Region.BACKGROUND);
+        m.setColor(Region.MASK_BACKGROUND);
         m.fill();
         m.copyBits(mask, bounds.x, bounds.y, Blitter.AND);
         return m;
@@ -690,9 +700,14 @@ public class Region implements Cloneable {
     public int getIndex() {
         return index;
     }
-    
-    public void addPoint(Pixel p){
+
+    public void addPoint(Pixel p) {
+        if (mask == null) {
+            drawMask(imageWidth, imageHeight);
+        }
         pix.add(p);
+        mask.drawPixel(p.getX(), p.getY());
+        updateBounds(new short[]{(short) p.getX(), (short) p.getY()});
     }
 
     public Object clone() {
