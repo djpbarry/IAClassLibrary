@@ -23,13 +23,13 @@ import java.util.LinkedList;
  *
  * @author barry05
  */
-public class Region implements Cloneable {
+public class Region2 {
 
-    protected ArrayList<short[]> seedPix = new ArrayList<short[]>();
+//    protected ArrayList<short[]> seedPix = new ArrayList<short[]>();
     protected ArrayList<Pixel> pix = new ArrayList<Pixel>();
-    protected LinkedList<short[]> borderPix = new LinkedList<short[]>();
-    protected LinkedList<short[]> expandedBorder = new LinkedList<short[]>();
-    protected ArrayList<float[]> centres = new ArrayList<float[]>();
+    protected LinkedList<Pixel> borderPix = new LinkedList<Pixel>();
+    protected LinkedList<Pixel> expandedBorder = new LinkedList<Pixel>();
+    protected ArrayList<Pixel> centres = new ArrayList<Pixel>();
     private double min = Double.MAX_VALUE, max = Double.MIN_VALUE, mean, seedMean, sigma;
     private double mfD[];
     protected boolean edge, active;
@@ -40,26 +40,26 @@ public class Region implements Cloneable {
     private ImageProcessor mask;
     private int index;
 
-    public Region() {
+    public Region2() {
 
     }
 
-    public Region(int index, int width, int height) {
+    public Region2(int index, int width, int height) {
         this.imageWidth = width;
         this.imageHeight = height;
         this.index = index;
     }
 
-    public Region(ImageProcessor mask, short[] centre) {
+    public Region2(ImageProcessor mask, Pixel centre) {
         this.active = true;
         this.imageWidth = mask.getWidth();
         this.imageHeight = mask.getHeight();
         if (centre != null) {
-            this.centres.add(new float[]{centre[0], centre[1]});
+            this.centres.add(centre);
         }
         this.mask = mask;
         this.newBounds(centre);
-        short[][] bp = this.getOrderedBoundary(imageWidth, imageHeight, mask, centre);
+        Pixel[] bp = this.getOrderedBoundary(imageWidth, imageHeight, mask, centre);
         if (bp != null) {
             for (int i = 0; i < bp.length; i++) {
                 this.addBorderPoint(bp[i], mask);
@@ -67,10 +67,10 @@ public class Region implements Cloneable {
         }
     }
 
-    public Region(int width, int height, short[] centre) {
+    public Region2(int width, int height, Pixel centre) {
         this.imageWidth = width;
         this.imageHeight = height;
-        this.centres.add(new float[]{centre[0], centre[1]});
+        this.centres.add(centre);
         this.newBounds(centre);
         this.addBorderPoint(centre, mask);
         edge = false;
@@ -78,16 +78,16 @@ public class Region implements Cloneable {
         seedMean = mean = 0.0;
     }
 
-    void newBounds(short[] point) {
+    void newBounds(Pixel point) {
         if (point != null) {
-            bounds = new Rectangle(point[0], point[1], 1, 1);
+            bounds = new Rectangle(point.getRoundedX(), point.getRoundedY(), 1, 1);
         }
     }
 
-    public final void addBorderPoint(short[] point, ImageProcessor mask) {
+    public final void addBorderPoint(Pixel point, ImageProcessor mask) {
         borderPix.add(point);
         updateBounds(point);
-        mask.drawPixel(point[0], point[1]);
+        mask.drawPixel(point.getRoundedX(), point.getRoundedY());
     }
 
     public void calcStats(ImageProcessor refImage) {
@@ -136,7 +136,7 @@ public class Region implements Cloneable {
         for (int j = 0; j < height; j++) {
             int offset = j * width;
             for (int i = 0; i < width; i++) {
-                if (pix[i + offset] != (byte) Region.MASK_BACKGROUND) {
+                if (pix[i + offset] != (byte) Region2.MASK_BACKGROUND) {
                     xsum += i;
                     ysum += j;
                     count++;
@@ -146,7 +146,7 @@ public class Region implements Cloneable {
 //        double x = xsum / count;
 //        double y = ysum / count;
 //        if (mask.getPixel((int) Math.round(x), (int) Math.round(y)) < Region.BACKGROUND) {
-        centres.add(new float[]{xsum / count, ysum / count});
+        centres.add(new Pixel(xsum / count, ysum / count));
 //            return true;
 //        } else {
 //            return false;
@@ -171,13 +171,13 @@ public class Region implements Cloneable {
 ////            poly.addPoint(borderPix.get(i).getX(), borderPix.get(i).getY());
 //        }
 //        fill(tempImage, FOREGROUND, BACKGROUND);
-        ArrayList<float[]> centres = getCentres();
-        float[] centre = centres.get(centres.size() - 1);
+        ArrayList<Pixel> centres = getCentres();
+        Pixel centre = centres.get(centres.size() - 1);
 //        short xc = (short) Math.round(centre[0] - rx);
 //        short yc = (short) Math.round(centre[1] - ry);
-        short xc = (short) Math.round(centre[0]);
-        short yc = (short) Math.round(centre[1]);
-        int[][] pix = getMaskOutline(new short[]{xc, yc}, mask);
+        short xc = (short) Math.round(centre.getX());
+        short yc = (short) Math.round(centre.getY());
+        int[][] pix = getMaskOutline(new Pixel(xc, yc), mask);
         if (pix != null) {
             return new PolygonRoi(pix[0], pix[1], pix[0].length, Roi.POLYGON);
         } else {
@@ -248,15 +248,15 @@ public class Region implements Cloneable {
     public int borderContains(int x, int y) {
         int i;
         for (i = 0; i < borderPix.size(); i++) {
-            short[] p = borderPix.get(i);
-            if ((p[0] == x) && (p[1] == y)) {
+            Pixel p = borderPix.get(i);
+            if ((p.getRoundedX() == x) && (p.getRoundedY() == y)) {
                 return i;
             }
         }
         return -1;
     }
 
-    public LinkedList<short[]> getBorderPix() {
+    public LinkedList<Pixel> getBorderPix() {
         return borderPix;
     }
 
@@ -269,18 +269,18 @@ public class Region implements Cloneable {
             return false;
         } else {
             borderPix = expandedBorder;
-            expandedBorder = new LinkedList<short[]>();
+            expandedBorder = new LinkedList<Pixel>();
             return true;
         }
     }
 
-    public void addExpandedBorderPix(short[] p) {
+    public void addExpandedBorderPix(Pixel p) {
         expandedBorder.add(p);
         updateBounds(p);
-        mask.drawPixel(p[0], p[1]);
+        mask.drawPixel(p.getRoundedX(), p.getRoundedY());
     }
 
-    public LinkedList<short[]> getExpandedBorder() {
+    public LinkedList<Pixel> getExpandedBorder() {
         return expandedBorder;
     }
 
@@ -291,7 +291,7 @@ public class Region implements Cloneable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Region other = (Region) obj;
+        final Region2 other = (Region2) obj;
         if (Double.doubleToLongBits(this.min) != Double.doubleToLongBits(other.min)) {
             return false;
         }
@@ -315,18 +315,17 @@ public class Region implements Cloneable {
         this.edge = edge;
     }
 
-    public ArrayList<short[]> getSeedPix() {
-        return seedPix;
-    }
-
+//    public ArrayList<short[]> getSeedPix() {
+//        return seedPix;
+//    }
     public ArrayList<short[]> getPixels() {
         Rectangle bounds = getBounds();
         ImageProcessor mask = getMask();
         ArrayList<short[]> pix = new ArrayList();
         for (int y = bounds.y; y < bounds.height + bounds.y; y++) {
             for (int x = bounds.x; x < bounds.width + bounds.x; x++) {
-                if (mask.getPixel(x, y) == Region.MASK_FOREGROUND) {
-                    pix.add(new short[]{(short) x, (short) y,0,1});
+                if (mask.getPixel(x, y) == Region2.MASK_FOREGROUND) {
+                    pix.add(new short[]{(short) x, (short) y, 0, 1});
                 }
             }
         }
@@ -337,12 +336,12 @@ public class Region implements Cloneable {
         return bounds;
     }
 
-    void updateBounds(short[] pixel) {
+    void updateBounds(Pixel pixel) {
         if (pixel == null) {
             return;
         }
-        int x = pixel[0];
-        int y = pixel[1];
+        int x = pixel.getRoundedX();
+        int y = pixel.getRoundedY();
         if (bounds == null) {
             bounds = new Rectangle(x, y, 1, 1);
             return;
@@ -403,8 +402,8 @@ public class Region implements Cloneable {
         mask.setColor(MASK_FOREGROUND);
         int m = borderPix.size();
         for (int i = 0; i < m; i++) {
-            short[] current = borderPix.get(i);
-            mask.drawPixel(current[0], current[1]);
+            Pixel current = borderPix.get(i);
+            mask.drawPixel(current.getRoundedX(), current.getRoundedY());
         }
         fill(mask, MASK_FOREGROUND, MASK_BACKGROUND);
         this.mask = mask;
@@ -449,18 +448,23 @@ public class Region implements Cloneable {
         return curvature;
     }
 
-    public short[][] getOrderedBoundary(int width, int height, ImageProcessor mask, short[] centre) {
+    public Pixel[] getOrderedBoundary(int width, int height, ImageProcessor mask, Pixel centre) {
         int[][] pix = getMaskOutline(centre, mask);
         if (pix == null) {
             return null;
         } else {
-            return DSPProcessor.interpolatePoints(pix[0].length, pix[0], pix[1]);
+            short[][] points = DSPProcessor.interpolatePoints(pix[0].length, pix[0], pix[1]);
+            Pixel[] output = new Pixel[points.length];
+            for (int i = 0; i < points.length; i++) {
+                output[i] = new Pixel(points[i][0], points[i][1]);
+            }
+            return output;
         }
     }
 
-    int[][] getMaskOutline(short[] centre, ImageProcessor mask) {
-        if (centre == null || mask.getPixel(centre[0], centre[1]) != MASK_FOREGROUND) {
-            short[] seed = findSeed(mask);
+    int[][] getMaskOutline(Pixel centre, ImageProcessor mask) {
+        if (centre == null || mask.getPixel(centre.getRoundedX(), centre.getRoundedY()) != MASK_FOREGROUND) {
+            Pixel seed = findSeed(mask);
             if (seed == null) {
                 return null;
             } else {
@@ -468,7 +472,7 @@ public class Region implements Cloneable {
             }
         }
         Wand wand = new Wand(mask);
-        wand.autoOutline(centre[0], centre[1], 0.0, Wand.EIGHT_CONNECTED);
+        wand.autoOutline(centre.getRoundedX(), centre.getRoundedY(), 0.0, Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
         int[] xpix = new int[n];
         int[] ypix = new int[n];
@@ -494,8 +498,8 @@ public class Region implements Cloneable {
         edges.findEdges();
         int size = stack.getSize();
         drawMask(ip.getWidth(), ip.getHeight());
-        short points[][] = getOrderedBoundary(ip.getWidth(), ip.getHeight(),
-                mask, new short[]{xc, yc});
+        Pixel[] points = getOrderedBoundary(ip.getWidth(), ip.getHeight(),
+                mask, new Pixel(xc, yc));
         float floatPoints[][] = new float[points.length][3];
         double t1 = 0, t2 = 0;
         if (frame > 1 && frame < size) {
@@ -507,8 +511,8 @@ public class Region implements Cloneable {
             t2 = thresholds[frame];
         }
         for (int i = 0; i < points.length; i++) {
-            int x = points[i][0];
-            int y = points[i][1];
+            int x = points[i].getRoundedX();
+            int y = points[i].getRoundedY();
             double g = 0.0;
             if (frame > 1 && frame < size) {
                 g = ipp1.getPixelValue(x, y) - t1 - ipm1.getPixelValue(x, y) + t2;
@@ -611,23 +615,23 @@ public class Region implements Cloneable {
 
     public void loadPixels(LinkedList<short[]> borderPix) {
 //        this.pixels = (ArrayList) pixels.clone();
-        this.borderPix = (LinkedList<short[]>) borderPix.clone();
+        this.borderPix = (LinkedList<Pixel>) borderPix.clone();
 //        setSeedPix();
     }
 
-    public ArrayList<float[]> getCentres() {
+    public ArrayList<Pixel> getCentres() {
         if (centres.size() < 1) {
             calcCentroid(getMask());
         }
         return centres;
     }
 
-    public float[] getCentre() {
-        ArrayList<float[]> c = getCentres();
+    public Pixel getCentre() {
+        ArrayList<Pixel> c = getCentres();
         return c.get(c.size() - 1);
     }
 
-    public short[] findSeed(ImageProcessor input) {
+    public Pixel findSeed(ImageProcessor input) {
         int bx = 0, by = 0;
         if (bounds != null) {
             bounds = checkBounds(bounds);
@@ -642,7 +646,7 @@ public class Region implements Cloneable {
         int[] max = Utils.findImageMaxima(mask);
 //        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/adapt_debug/edm.png");
         if (!(max[0] < 0.0 || max[1] < 0.0)) {
-            return new short[]{(short) (max[0] + bx), (short) (max[1] + by)};
+            return new Pixel(max[0] + bx, max[1] + by);
         } else {
             return null;
         }
@@ -673,11 +677,11 @@ public class Region implements Cloneable {
             mask.erode();
         }
 //        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_a" + index + ".png");
-        short[][] newBorder = getOrderedBoundary(mask.getWidth(), mask.getHeight(), mask, null);
+        Pixel[] newBorder = getOrderedBoundary(mask.getWidth(), mask.getHeight(), mask, null);
         if (newBorder == null) {
             return false;
         }
-        borderPix = new LinkedList<short[]>();
+        borderPix = new LinkedList<Pixel>();
         for (int j = 0; j < newBorder.length; j++) {
             addBorderPoint(newBorder[j], mask);
         }
@@ -691,7 +695,7 @@ public class Region implements Cloneable {
 
     ImageProcessor constructFullSizeMask(int width, int height) {
         ByteProcessor m = new ByteProcessor(width, height);
-        m.setColor(Region.MASK_BACKGROUND);
+        m.setColor(Region2.MASK_BACKGROUND);
         m.fill();
         m.copyBits(mask, bounds.x, bounds.y, Blitter.AND);
         return m;
@@ -707,32 +711,6 @@ public class Region implements Cloneable {
         }
         pix.add(p);
         mask.drawPixel(p.getRoundedX(), p.getRoundedY());
-        updateBounds(new short[]{(short) p.getX(), (short) p.getY()});
-    }
-
-    public Object clone() {
-        try {
-            super.clone();
-        } catch (Exception e) {
-            return null;
-        }
-        Region clone = new Region();
-        clone.seedPix = (ArrayList<short[]>) seedPix.clone();
-        clone.borderPix = (LinkedList<short[]>) borderPix.clone();
-        clone.expandedBorder = (LinkedList<short[]>) expandedBorder.clone();
-        clone.centres = (ArrayList<float[]>) centres.clone();
-        clone.min = min;
-        clone.max = max;
-        clone.mean = mean;
-        clone.seedMean = seedMean;
-        clone.sigma = sigma;
-        clone.mfD = mfD;
-        clone.edge = edge;
-        clone.active = active;
-        clone.bounds = (Rectangle) bounds.clone();
-        clone.histogram = (int[]) histogram.clone();
-        clone.imageHeight = imageHeight;
-        clone.imageWidth = imageWidth;
-        return clone;
+        updateBounds(new Pixel(p.getX(), p.getY()));
     }
 }
