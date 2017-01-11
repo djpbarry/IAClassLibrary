@@ -152,8 +152,8 @@ public class Utils {
                         minIndex = k;
                     }
                 }
-                points[l][0] = ((Pixel) pixels.get(minIndex)).getX();
-                points[l][1] = ((Pixel) pixels.get(minIndex)).getY();
+                points[l][0] = ((Pixel) pixels.get(minIndex)).getRoundedX();
+                points[l][1] = ((Pixel) pixels.get(minIndex)).getRoundedY();
                 pixels.remove(minIndex);
                 l++;
             }

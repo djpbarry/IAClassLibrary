@@ -707,7 +707,7 @@ public class Region implements Cloneable {
             drawMask(imageWidth, imageHeight);
         }
         pix.add(p);
-        mask.drawPixel(p.getX(), p.getY());
+        mask.drawPixel(p.getRoundedX(), p.getRoundedY());
         updateBounds(new short[]{(short) p.getX(), (short) p.getY()});
     }
 
