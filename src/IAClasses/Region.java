@@ -1,5 +1,6 @@
 package IAClasses;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -326,7 +327,7 @@ public class Region implements Cloneable {
         for (int y = bounds.y; y < bounds.height + bounds.y; y++) {
             for (int x = bounds.x; x < bounds.width + bounds.x; x++) {
                 if (mask.getPixel(x, y) == Region.MASK_FOREGROUND) {
-                    pix.add(new short[]{(short) x, (short) y});
+                    pix.add(new short[]{(short) x, (short) y,0,1});
                 }
             }
         }
