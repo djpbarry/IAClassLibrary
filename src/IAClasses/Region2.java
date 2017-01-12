@@ -318,14 +318,14 @@ public class Region2 {
 //    public ArrayList<short[]> getSeedPix() {
 //        return seedPix;
 //    }
-    public ArrayList<short[]> getPixels() {
+    public ArrayList<Pixel> getPixels() {
         Rectangle bounds = getBounds();
         ImageProcessor mask = getMask();
-        ArrayList<short[]> pix = new ArrayList();
+        ArrayList<Pixel> pix = new ArrayList();
         for (int y = bounds.y; y < bounds.height + bounds.y; y++) {
             for (int x = bounds.x; x < bounds.width + bounds.x; x++) {
                 if (mask.getPixel(x, y) == Region2.MASK_FOREGROUND) {
-                    pix.add(new short[]{(short) x, (short) y, 0, 1});
+                    pix.add(new Pixel(x, y, 0, 1));
                 }
             }
         }

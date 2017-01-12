@@ -10,11 +10,11 @@ import java.util.LinkedList;
  */
 public class RegionEdge {
 
-    private Region startVertex, endVertex;
+    private Region2 startVertex, endVertex;
     private double gradient, weight;
     private ArrayList<Pixel> gradPix;
 
-    public RegionEdge(Region start, Region end) {
+    public RegionEdge(Region2 start, Region2 end) {
         startVertex = start;
         endVertex = end;
     }
@@ -30,11 +30,11 @@ public class RegionEdge {
         return;
     }
 
-    public Region getEndVertex() {
+    public Region2 getEndVertex() {
         return endVertex;
     }
 
-    public Region getStartVertex() {
+    public Region2 getStartVertex() {
         return startVertex;
     }
 
@@ -60,7 +60,7 @@ public class RegionEdge {
         int ls = startVertex.getBorderPix().size();
         int le = endVertex.getBorderPix().size();
         int l;
-        LinkedList<short[]> points1, points2;
+        LinkedList<Pixel> points1, points2;
         gradPix = new ArrayList<Pixel>();
         if (le <= ls) {
             l = le;
@@ -72,10 +72,10 @@ public class RegionEdge {
             points2 = endVertex.getBorderPix();
         }
         for (int i = 0; i < l; i++) {
-            short[] pix = points1.get(i);
+            Pixel pix = points1.get(i);
             if (points2.contains(pix)) {
-                int x = pix[0];
-                int y = pix[1];
+                int x = pix.getRoundedX();
+                int y = pix.getRoundedY();
                 double z = gradImage.getPixelValue(x, y);
                 gradPix.add(new Pixel(x, y, z));
             }
