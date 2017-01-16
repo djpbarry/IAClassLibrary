@@ -2,6 +2,7 @@ package IAClasses;
 
 import ij.process.ImageProcessor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 
 /**
@@ -10,7 +11,7 @@ import java.util.LinkedList;
  */
 public class RegionEdge {
 
-    private Region2 startVertex, endVertex;
+    private final Region2 startVertex, endVertex;
     private double gradient, weight;
     private ArrayList<Pixel> gradPix;
 
@@ -20,14 +21,11 @@ public class RegionEdge {
     }
 
     public void calcWeight(double alpha) {
-        double mfd1[] = startVertex.getMfD();
-        double mfd2[] = endVertex.getMfD();
         double vector1[] = {startVertex.getMean(), startVertex.getSigma()};
         double vector2[] = {endVertex.getMean(), endVertex.getSigma()};
         calcGrad();
         weight = (Utils.calcEuclidDist(vector1, vector2) + alpha * gradient)
                 / (alpha + 1.0);
-        return;
     }
 
     public Region2 getEndVertex() {
@@ -53,31 +51,29 @@ public class RegionEdge {
             sum += pix.getZ();
         }
         gradient = sum / l;
-        return;
     }
 
     public void buildGradPix(ImageProcessor gradImage) {
-        int ls = startVertex.getBorderPix().size();
-        int le = endVertex.getBorderPix().size();
+        LinkedList<int[]> startRegionBorder = new LinkedList(Arrays.asList(startVertex.getMaskOutline()));
+        LinkedList<int[]> endRegionBorder = new LinkedList(Arrays.asList(endVertex.getMaskOutline()));
+        int ls = startRegionBorder.size();
+        int le = endRegionBorder.size();
         int l;
-        LinkedList<Pixel> points1, points2;
-        gradPix = new ArrayList<Pixel>();
+        LinkedList<int[]> points1, points2;
+        gradPix = new ArrayList();
         if (le <= ls) {
             l = le;
-            points1 = endVertex.getBorderPix();
-            points2 = startVertex.getBorderPix();
+            points1 = endRegionBorder;
+            points2 = startRegionBorder;
         } else {
             l = ls;
-            points1 = startVertex.getBorderPix();
-            points2 = endVertex.getBorderPix();
+            points1 = startRegionBorder;
+            points2 = endRegionBorder;
         }
         for (int i = 0; i < l; i++) {
-            Pixel pix = points1.get(i);
+            int[] pix = points1.get(i);
             if (points2.contains(pix)) {
-                int x = pix.getRoundedX();
-                int y = pix.getRoundedY();
-                double z = gradImage.getPixelValue(x, y);
-                gradPix.add(new Pixel(x, y, z));
+                gradPix.add(new Pixel(pix[0], pix[1], gradImage.getPixelValue(pix[0], pix[1])));
             }
         }
     }

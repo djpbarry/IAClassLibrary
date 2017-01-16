@@ -1,5 +1,6 @@
 package IAClasses;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -15,9 +16,12 @@ import ij.process.FloodFiller;
 import ij.process.ImageProcessor;
 import ij.process.TypeConverter;
 import java.awt.Rectangle;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -39,6 +43,8 @@ public class Region2 {
     protected int imageWidth, imageHeight;
     private ImageProcessor mask;
     private int index;
+    private Path2D path;
+    private int maskSize;
 
     public Region2() {
 
@@ -62,7 +68,7 @@ public class Region2 {
         Pixel[] bp = this.getOrderedBoundary(imageWidth, imageHeight, mask, centre);
         if (bp != null) {
             for (int i = 0; i < bp.length; i++) {
-                this.addBorderPoint(bp[i], mask);
+                this.addBorderPoint(bp[i]);
             }
         }
     }
@@ -72,7 +78,7 @@ public class Region2 {
         this.imageHeight = height;
         this.centres.add(centre);
         this.newBounds(centre);
-        this.addBorderPoint(centre, mask);
+//        this.addBorderPoint(centre);
         edge = false;
         active = true;
         seedMean = mean = 0.0;
@@ -84,10 +90,17 @@ public class Region2 {
         }
     }
 
-    public final void addBorderPoint(Pixel point, ImageProcessor mask) {
+    public final void addBorderPoint(Pixel point) {
         borderPix.add(point);
-        updateBounds(point);
-        mask.drawPixel(point.getRoundedX(), point.getRoundedY());
+        if (mask == null) {
+            drawMask(imageWidth, imageHeight);
+        }
+        drawMaskPixel(point.getRoundedX(), point.getRoundedY());
+    }
+
+    void drawMaskPixel(int x, int y) {
+        mask.drawPixel(x, y);
+        updateBounds(new Pixel(x, y));
     }
 
     public void calcStats(ImageProcessor refImage) {
@@ -95,62 +108,41 @@ public class Region2 {
             return;
         }
         Arrays.fill(histogram, 0);
-        int width = mask.getWidth();
-        int height = mask.getHeight();
-        int size = mask.getStatistics().histogram[MASK_FOREGROUND];
-        double valSum = 0.0, varSum = 0.0, pix;
+        int size = maskSize;
+        double valSum = 0.0, varSum = 0.0;
+        int coords[][] = getCoordsFromPath();
         if (size > 0) {
-            for (int i = 0; i < width; i++) {
-                for (int j = 0; j < height; j++) {
-                    if (mask.getPixel(i, j) == MASK_FOREGROUND) {
-                        pix = refImage.getPixelValue(i, j);
-                        if (pix < min) {
-                            min = pix;
-                        } else if (pix > max) {
-                            max = pix;
-                        }
-                        valSum += pix;
-                        int bin = (int) Math.floor(pix);
-                        histogram[bin]++;
-                    }
+            for (int i = 0; i < size && coords[i] != null; i++) {
+                int[] c = coords[i];
+                double p = refImage.getPixelValue(c[0], c[1]);
+                if (p < min) {
+                    min = p;
+                } else if (p > max) {
+                    max = p;
                 }
+                valSum += p;
+                int bin = (int) Math.floor(p);
+                histogram[bin]++;
             }
             mean = valSum / (size);
-            for (int i = 0; i < width; i++) {
-                for (int j = 0; j < height; j++) {
-                    if (mask.getPixel(i, j) == MASK_FOREGROUND) {
-                        varSum += Math.pow(mean - refImage.getPixelValue(i, j), 2);
-                    }
-                }
+            for (int i = 0; i < size && coords[i] != null; i++) {
+                int[] c = coords[i];
+                varSum += Math.pow(mean - refImage.getPixelValue(c[0], c[1]), 2);
             }
             sigma = Math.sqrt(varSum) / size;
         }
     }
 
     public void calcCentroid(ImageProcessor mask) {
-        int width = mask.getWidth();
-        int height = mask.getHeight();
-        int count = 0;
         float xsum = 0.0f, ysum = 0.0f;
-        byte[] pix = (byte[]) mask.getPixels();
-        for (int j = 0; j < height; j++) {
-            int offset = j * width;
-            for (int i = 0; i < width; i++) {
-                if (pix[i + offset] != (byte) Region2.MASK_BACKGROUND) {
-                    xsum += i;
-                    ysum += j;
-                    count++;
-                }
-            }
+        int[][] coords = getCoordsFromPath();
+        int size = maskSize;
+        for (int i = 0; i < size && coords[i] != null; i++) {
+            int[] c = coords[i];
+            xsum += c[0];
+            ysum += c[1];
         }
-//        double x = xsum / count;
-//        double y = ysum / count;
-//        if (mask.getPixel((int) Math.round(x), (int) Math.round(y)) < Region.BACKGROUND) {
-        centres.add(new Pixel(xsum / count, ysum / count));
-//            return true;
-//        } else {
-//            return false;
-//        }
+        centres.add(new Pixel(xsum / size, ysum / size));
     }
 
     public PolygonRoi getPolygonRoi(ImageProcessor mask) {
@@ -256,8 +248,12 @@ public class Region2 {
         return -1;
     }
 
-    public LinkedList<Pixel> getBorderPix() {
-        return borderPix;
+    public List<Pixel> getBorderPix() {
+        if (borderPix.size() > 0) {
+            return borderPix;
+        } else {
+            return Arrays.asList(getOrderedBoundary(imageWidth, imageHeight, getMask(), getCentre()));
+        }
     }
 
     public void removeBorderPoint(int index) {
@@ -276,8 +272,7 @@ public class Region2 {
 
     public void addExpandedBorderPix(Pixel p) {
         expandedBorder.add(p);
-        updateBounds(p);
-        mask.drawPixel(p.getRoundedX(), p.getRoundedY());
+        drawMaskPixel(p.getRoundedX(), p.getRoundedY());
     }
 
     public LinkedList<Pixel> getExpandedBorder() {
@@ -362,6 +357,16 @@ public class Region2 {
         }
     }
 
+    void updateBounds(Path2D path) {
+        PathIterator pi = path.getPathIterator(null);
+        while (!pi.isDone()) {
+            float[] coords = new float[6];
+            pi.currentSegment(coords);
+            updateBounds(new Pixel(coords[0], coords[1]));
+            pi.next();
+        }
+    }
+
     public double[][] getDataArray(ImageProcessor refImage) {
         double data[][] = new double[bounds.width + 1][bounds.height + 1];
         for (int i = 0; i < bounds.width; i++) {
@@ -407,6 +412,7 @@ public class Region2 {
         }
         fill(mask, MASK_FOREGROUND, MASK_BACKGROUND);
         this.mask = mask;
+        setMaskSize();
     }
 
     public ImageProcessor getMask() {
@@ -460,6 +466,10 @@ public class Region2 {
             }
             return output;
         }
+    }
+
+    int[][] getMaskOutline() {
+        return getMaskOutline(this.getCentre(), this.getMask());
     }
 
     int[][] getMaskOutline(Pixel centre, ImageProcessor mask) {
@@ -613,12 +623,6 @@ public class Region2 {
         borderPix.clear();
     }
 
-    public void loadPixels(LinkedList<short[]> borderPix) {
-//        this.pixels = (ArrayList) pixels.clone();
-        this.borderPix = (LinkedList<Pixel>) borderPix.clone();
-//        setSeedPix();
-    }
-
     public ArrayList<Pixel> getCentres() {
         if (centres.size() < 1) {
             calcCentroid(getMask());
@@ -683,7 +687,7 @@ public class Region2 {
         }
         borderPix = new LinkedList<Pixel>();
         for (int j = 0; j < newBorder.length; j++) {
-            addBorderPoint(newBorder[j], mask);
+            addBorderPoint(newBorder[j]);
         }
         return true;
     }
@@ -710,7 +714,140 @@ public class Region2 {
             drawMask(imageWidth, imageHeight);
         }
         pix.add(p);
-        mask.drawPixel(p.getRoundedX(), p.getRoundedY());
-        updateBounds(new Pixel(p.getX(), p.getY()));
+        drawMaskPixel(p.getRoundedX(), p.getRoundedY());
+        setMaskSize();
+    }
+
+    public void addPath(Path2D path) {
+        if (this.path == null) {
+            this.path = new Path2D.Float();
+        }
+        this.path.append(path, false);
+        PathIterator pi = this.path.getPathIterator(null);
+        mask = new ByteProcessor(imageWidth, imageHeight);
+        mask.setValue(Region.MASK_BACKGROUND);
+        mask.fill();
+        mask.setValue(Region.MASK_FOREGROUND);
+
+        float[] current = new float[6];
+        pi.currentSegment(current);
+        int[] last = {(int) Math.round(current[0]), (int) Math.round(current[1])};
+        pi.next();
+        int count = 0;
+        while (!pi.isDone()) {
+            if (pi.currentSegment(current) == PathIterator.SEG_LINETO) {
+                int currentX = (int) Math.round(current[0]);
+                int x1, x2;
+                if (last[0] < currentX) {
+                    x1 = last[0];
+                    x2 = currentX;
+                } else {
+                    x2 = last[0];
+                    x1 = currentX;
+                }
+                int y = last[1];
+                for (int x = x1; x <= x2; x++) {
+                    drawMaskPixel(x, y);
+                }
+            }
+            pi.next();
+            last = new int[]{(int) Math.round(current[0]), (int) Math.round(current[1])};
+        }
+
+//        float[] current = new float[6];
+//        pi.currentSegment(current);
+//        int[] last = {(int) Math.round(current[0]), (int) Math.round(current[1])};
+//        pi.next();
+//        while (!pi.isDone()) {
+//            if (pi.currentSegment(current) == PathIterator.SEG_LINETO) {
+//                int currentX = (int) Math.round(current[0]);
+//                mask.drawLine(currentX, last[1], last[0], last[1]);
+//                updateBounds(new Pixel(currentX, last[1]));
+//                updateBounds(new Pixel(last[0], last[1]));
+//            }
+//            pi.next();
+//            last = new int[]{(int) Math.round(current[0]), (int) Math.round(current[1])};
+//        }
+        setMaskSize();
+        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_addPath_" + index);
+    }
+
+    void setMaskSize() {
+        this.maskSize = mask.getStatistics().histogram[Region.MASK_FOREGROUND];
+    }
+
+    public int[][] getCoordsFromPath() {
+        int size = maskSize;
+        int coords[][] = new int[size][];
+        PathIterator pi = path.getPathIterator(null);
+        float[] current = new float[6];
+        pi.currentSegment(current);
+        int[] last = {(int) Math.round(current[0]), (int) Math.round(current[1])};
+        pi.next();
+        int count = 0;
+        while (!pi.isDone()) {
+            if (pi.currentSegment(current) == PathIterator.SEG_LINETO) {
+                int currentX = (int) Math.round(current[0]);
+                int x1, x2;
+                if (last[0] < currentX) {
+                    x1 = last[0];
+                    x2 = currentX;
+                } else {
+                    x2 = last[0];
+                    x1 = currentX;
+                }
+                int y = last[1];
+                for (int x = x1; x <= x2; x++) {
+                    coords[count++] = new int[]{x, y};
+                }
+            }
+            pi.next();
+            last = new int[]{(int) Math.round(current[0]), (int) Math.round(current[1])};
+        }
+        System.out.println(index + ": " + size + " " + count);
+        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_getCoorsFromPath_" + index);
+        return coords;
+    }
+
+    public Path2D getPath() {
+        return path;
+    }
+
+    public ImageProcessor drawPath() {
+        PathIterator pi = path.getPathIterator(null);
+        ByteProcessor bp = new ByteProcessor(imageWidth, imageHeight);
+        bp.setValue(Region.MASK_BACKGROUND);
+        bp.fill();
+        bp.setValue(Region.MASK_FOREGROUND);
+        bp.setLineWidth(3);
+        while (!pi.isDone()) {
+            float[] coords = new float[6];
+            pi.currentSegment(coords);
+            bp.drawDot((int) Math.round(coords[0]), (int) Math.round(coords[1]));
+            pi.next();
+        }
+        return bp;
+    }
+
+    public ImageProcessor drawArea() {
+        PathIterator pi = path.getPathIterator(null);
+        ByteProcessor bp = new ByteProcessor(imageWidth, imageHeight);
+        bp.setValue(Region.MASK_BACKGROUND);
+        bp.fill();
+        bp.setValue(Region.MASK_FOREGROUND);
+        bp.setLineWidth(3);
+        float[] current = new float[6];
+        pi.currentSegment(current);
+        float[] last = {current[0], current[1]};
+        pi.next();
+        while (!pi.isDone()) {
+            if (pi.currentSegment(current) == PathIterator.SEG_LINETO) {
+                bp.drawLine((int) Math.round(current[0]), (int) Math.round(current[1]),
+                        (int) Math.round(last[0]), (int) Math.round(last[1]));
+            }
+            pi.next();
+            last = new float[]{current[0], current[1]};
+        }
+        return bp;
     }
 }
