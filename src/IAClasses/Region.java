@@ -326,7 +326,7 @@ public class Region implements Cloneable {
         for (int y = bounds.y; y < bounds.height + bounds.y; y++) {
             for (int x = bounds.x; x < bounds.width + bounds.x; x++) {
                 if (mask.getPixel(x, y) == Region.MASK_FOREGROUND) {
-                    pix.add(new short[]{(short) x, (short) y,0,1});
+                    pix.add(new short[]{(short) x, (short) y, 0, 1});
                 }
             }
         }
@@ -447,6 +447,10 @@ public class Region implements Cloneable {
             }
         }
         return curvature;
+    }
+
+    public short[][] getOrderedBoundary(int width, int height, ImageProcessor mask, float[] centre) {
+        return getOrderedBoundary(width, height, mask, new short[]{(short) Math.round(centre[0]), (short) Math.round(centre[1])});
     }
 
     public short[][] getOrderedBoundary(int width, int height, ImageProcessor mask, short[] centre) {
@@ -673,7 +677,7 @@ public class Region implements Cloneable {
             mask.erode();
         }
 //        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_a" + index + ".png");
-        short[][] newBorder = getOrderedBoundary(mask.getWidth(), mask.getHeight(), mask, null);
+        short[][] newBorder = getOrderedBoundary(mask.getWidth(), mask.getHeight(), mask, getCentre());
         if (newBorder == null) {
             return false;
         }
