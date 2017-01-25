@@ -4,6 +4,7 @@ import ij.process.ImageProcessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -54,26 +55,19 @@ public class RegionEdge {
     }
 
     public void buildGradPix(ImageProcessor gradImage) {
-        LinkedList<int[]> startRegionBorder = new LinkedList(Arrays.asList(startVertex.getMaskOutline()));
-        LinkedList<int[]> endRegionBorder = new LinkedList(Arrays.asList(endVertex.getMaskOutline()));
-        int ls = startRegionBorder.size();
-        int le = endRegionBorder.size();
-        int l;
-        LinkedList<int[]> points1, points2;
+        List<Pixel> startRegionBorder = startVertex.getBorderPix();
+        List<Pixel> endRegionBorder = endVertex.getBorderPix();
         gradPix = new ArrayList();
-        if (le <= ls) {
-            l = le;
-            points1 = endRegionBorder;
-            points2 = startRegionBorder;
-        } else {
-            l = ls;
-            points1 = startRegionBorder;
-            points2 = endRegionBorder;
+        int endIndex = endVertex.getIndex();
+        for (Pixel pix : startRegionBorder) {
+            if (pix.getNeighbouringRegionIndex() == endIndex) {
+                gradPix.add(new Pixel(pix.getRoundedX(), pix.getRoundedY(), gradImage.getPixelValue(pix.getRoundedX(), pix.getRoundedY())));
+            }
         }
-        for (int i = 0; i < l; i++) {
-            int[] pix = points1.get(i);
-            if (points2.contains(pix)) {
-                gradPix.add(new Pixel(pix[0], pix[1], gradImage.getPixelValue(pix[0], pix[1])));
+        int startIndex = startVertex.getIndex();
+        for (Pixel pix : endRegionBorder) {
+            if (pix.getNeighbouringRegionIndex() == startIndex) {
+                gradPix.add(new Pixel(pix.getRoundedX(), pix.getRoundedY(), gradImage.getPixelValue(pix.getRoundedX(), pix.getRoundedY())));
             }
         }
     }

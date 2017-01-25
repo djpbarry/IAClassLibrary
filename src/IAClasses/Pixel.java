@@ -62,6 +62,10 @@ public class Pixel extends Point2D.Double {
     public int getRoundedY() {
         return (int) Math.round(y);
     }
+    
+    public int getRoundedZ() {
+        return (int) Math.round(z);
+    }
 
     public double getZ() {
         return z;
@@ -74,7 +78,7 @@ public class Pixel extends Point2D.Double {
 //    public double getY() {
 //        return precY;
 //    }
-    public int getID() {
+    public int getNeighbouringRegionIndex() {
         return iD;
     }
 
@@ -115,4 +119,12 @@ public class Pixel extends Point2D.Double {
 //        }
 //        return true;
 //    }
+
+    public void setNeighbouringRegionIndex(int iD) {
+        this.iD = iD;
+    }
+
+    public void setZ(double z) {
+        this.z = z;
+    }
 }

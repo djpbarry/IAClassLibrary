@@ -92,10 +92,10 @@ public class Region2 {
 
     public final void addBorderPoint(Pixel point) {
         borderPix.add(point);
-        if (mask == null) {
-            drawMask(imageWidth, imageHeight);
-        }
-        drawMaskPixel(point.getRoundedX(), point.getRoundedY());
+//        if (mask == null) {
+//            drawMask(imageWidth, imageHeight);
+//        }
+//        drawMaskPixel(point.getRoundedX(), point.getRoundedY());
     }
 
     void drawMaskPixel(int x, int y) {
@@ -484,21 +484,18 @@ public class Region2 {
         Wand wand = new Wand(mask);
         wand.autoOutline(centre.getRoundedX(), centre.getRoundedY(), 0.0, Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
-        int[] xpix = new int[n];
-        int[] ypix = new int[n];
-        System.arraycopy(wand.xpoints, 0, xpix, 0, wand.npoints);
-        System.arraycopy(wand.ypoints, 0, ypix, 0, wand.npoints);
+        int[][] pix = new int[n][2];
         for (int j = 0; j < n; j++) {
-            xpix[j] = wand.xpoints[j];
-            ypix[j] = wand.ypoints[j];
-            if (xpix[j] >= imageWidth) {
-                xpix[j] = imageWidth - 1;
+            pix[j][0] = wand.xpoints[j];
+            pix[j][1] = wand.ypoints[j];
+            if (pix[j][0] >= imageWidth) {
+                pix[j][0] = imageWidth - 1;
             }
-            if (ypix[j] >= imageHeight) {
-                ypix[j] = imageHeight - 1;
+            if (pix[j][1] >= imageHeight) {
+                pix[j][1] = imageHeight - 1;
             }
         }
-        return new int[][]{xpix, ypix};
+        return pix;
     }
 
     public float[][] buildVelMapCol(short xc, short yc, ImageStack stack, int frame, double timeRes, double spatialRes, int[] thresholds) {
@@ -769,7 +766,7 @@ public class Region2 {
 //            last = new int[]{(int) Math.round(current[0]), (int) Math.round(current[1])};
 //        }
         setMaskSize();
-        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_addPath_" + index);
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_addPath_" + index);
     }
 
     void setMaskSize() {
@@ -804,8 +801,8 @@ public class Region2 {
             pi.next();
             last = new int[]{(int) Math.round(current[0]), (int) Math.round(current[1])};
         }
-        System.out.println(index + ": " + size + " " + count);
-        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_getCoorsFromPath_" + index);
+//        System.out.println(index + ": " + size + " " + count);
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_getCoorsFromPath_" + index);
         return coords;
     }
 
@@ -849,5 +846,56 @@ public class Region2 {
             last = new float[]{current[0], current[1]};
         }
         return bp;
+    }
+
+    public void addBorderPoints(List<Pixel> borderPointsToBeAdded, ArrayList<Region2> regions, int baseIndex, int size) {
+        List<Pixel> thisBorderPoints = this.getBorderPix();
+        int ownerOfNewBorderPoints = borderPointsToBeAdded.get(0).getRoundedZ();
+        List<Pixel> pointsToBeRemoved = new LinkedList();
+        boolean[] indices = new boolean[size];
+        Arrays.fill(indices, false);
+        for (Pixel pix : thisBorderPoints) {
+            int neighbour = pix.getNeighbouringRegionIndex();
+            if (neighbour == ownerOfNewBorderPoints) {
+                pointsToBeRemoved.add(pix);
+            }
+        }
+        for (Pixel pix : pointsToBeRemoved) {
+            thisBorderPoints.remove(pix);
+        }
+        pointsToBeRemoved.clear();
+        for (Pixel pix : borderPointsToBeAdded) {
+            int neighbour = pix.getNeighbouringRegionIndex();
+            if (neighbour == index) {
+                pointsToBeRemoved.add(pix);
+            } else {
+                pix.setZ(index);
+                if (neighbour >= baseIndex) {
+                    indices[neighbour - baseIndex] = true;
+                }
+            }
+        }
+        for (Pixel pix : pointsToBeRemoved) {
+            borderPointsToBeAdded.remove(pix);
+        }
+        for(Pixel pix:borderPointsToBeAdded)this.addBorderPoint(pix);
+        for (int i = 0; i < indices.length; i++) {
+            if (indices[i]) {
+                for (Region2 r : regions) {
+                    if (r.getIndex() == i + baseIndex) {
+                        r.updateBorderPoints(ownerOfNewBorderPoints, index);
+                    }
+                }
+            }
+        }
+    }
+
+    public void updateBorderPoints(int oldID, int newID) {
+        List<Pixel> bp = getBorderPix();
+        for (Pixel p : bp) {
+            if (p.getNeighbouringRegionIndex() == oldID) {
+                p.setNeighbouringRegionIndex(newID);
+            }
+        }
     }
 }
