@@ -38,7 +38,7 @@ public class Region2 {
     private double mfD[];
     protected boolean edge, active;
     protected Rectangle bounds;
-    private int[] histogram = new int[256];
+//    private int[] histogram = new int[256];
     public final static short MASK_FOREGROUND = 0, MASK_BACKGROUND = 255;
     protected int imageWidth, imageHeight;
     private ImageProcessor mask;
@@ -107,6 +107,7 @@ public class Region2 {
         if (refImage == null) {
             return;
         }
+        int[] histogram = new int[256];
         Arrays.fill(histogram, 0);
         int size = maskSize;
         double valSum = 0.0, varSum = 0.0;
@@ -345,15 +346,15 @@ public class Region2 {
             int inc = bounds.x - x;
             bounds.x -= inc;
             bounds.width += inc;
-        } else if (x > bounds.x + bounds.width) {
-            bounds.width = x - bounds.x;
+        } else if (x >= bounds.x + bounds.width) {
+            bounds.width = x - bounds.x + 1;
         }
         if (y < bounds.y) {
             int inc = bounds.y - y;
             bounds.y -= inc;
             bounds.height += inc;
-        } else if (y > bounds.y + bounds.height) {
-            bounds.height = y - bounds.y;
+        } else if (y >= bounds.y + bounds.height) {
+            bounds.height = y - bounds.y + 1;
         }
     }
 
@@ -380,9 +381,9 @@ public class Region2 {
         return data;
     }
 
-    public int[] getHistogram() {
-        return histogram;
-    }
+//    public int[] getHistogram() {
+//        return histogram;
+//    }
 
     public double[] getMfD() {
         return mfD;
@@ -485,9 +486,10 @@ public class Region2 {
         wand.autoOutline(centre.getRoundedX(), centre.getRoundedY(), 0.0, Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
         int[][] pix = new int[n][2];
+        Rectangle bounds = getBounds();
         for (int j = 0; j < n; j++) {
-            pix[j][0] = wand.xpoints[j];
-            pix[j][1] = wand.ypoints[j];
+            pix[j][0] = wand.xpoints[j] + bounds.x;
+            pix[j][1] = wand.ypoints[j] + bounds.y;
             if (pix[j][0] >= imageWidth) {
                 pix[j][0] = imageWidth - 1;
             }
@@ -765,8 +767,11 @@ public class Region2 {
 //            pi.next();
 //            last = new int[]{(int) Math.round(current[0]), (int) Math.round(current[1])};
 //        }
+//IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_addPath_PreCrop_" + index);
+        mask.setRoi(getBounds());
+        mask = mask.crop();
         setMaskSize();
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_addPath_" + index);
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_addPath_PostCrop_" + index);
     }
 
     void setMaskSize() {
@@ -878,7 +883,9 @@ public class Region2 {
         for (Pixel pix : pointsToBeRemoved) {
             borderPointsToBeAdded.remove(pix);
         }
-        for(Pixel pix:borderPointsToBeAdded)this.addBorderPoint(pix);
+        for (Pixel pix : borderPointsToBeAdded) {
+            this.addBorderPoint(pix);
+        }
         for (int i = 0; i < indices.length; i++) {
             if (indices[i]) {
                 for (Region2 r : regions) {
