@@ -10,6 +10,7 @@ import ij.measure.Measurements;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
+import ij.process.TypeConverter;
 import java.util.Arrays;
 
 
@@ -30,11 +31,18 @@ public class FluorescenceAnalyser {
     }
 
     public void doAnalysis() {
+        convertImage();
         constructGLCM();
         calcGlcmStats();
         setStats();
     }
 
+    void convertImage(){
+        ImageProcessor ip = imp.getProcessor();
+        ip = new TypeConverter(ip,false).convertToByte();
+        imp.setProcessor(ip);
+    }
+    
     void checkMaskNull() {
         if (mask != null) {
             return;

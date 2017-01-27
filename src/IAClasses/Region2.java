@@ -1,6 +1,5 @@
 package IAClasses;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.PolygonRoi;
@@ -45,6 +44,7 @@ public class Region2 {
     private int index;
     private Path2D path;
     private int maskSize;
+    private double[] statsArray;
 
     public Region2() {
 
@@ -132,6 +132,19 @@ public class Region2 {
             }
             sigma = Math.sqrt(varSum) / size;
         }
+    }
+
+    public void calcStats(ImagePlus imp, int offset){
+        FluorescenceAnalyser fa = new FluorescenceAnalyser(imp, getMask(), offset);
+        fa.doAnalysis();
+        this.statsArray = new double[]{fa.getContrast(),
+            fa.getEnergy(),
+            fa.getHomogeneity(),
+            fa.getKurt(),
+            fa.getMean(),
+            fa.getSkew(),
+            fa.getStd()};
+        
     }
 
     public void calcCentroid(ImageProcessor mask) {
@@ -280,7 +293,11 @@ public class Region2 {
         return expandedBorder;
     }
 
+    @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (obj == null) {
             return false;
         }
@@ -288,20 +305,67 @@ public class Region2 {
             return false;
         }
         final Region2 other = (Region2) obj;
-        if (Double.doubleToLongBits(this.min) != Double.doubleToLongBits(other.min)) {
+        if (this.edge != other.edge) {
             return false;
         }
-        if (Double.doubleToLongBits(this.max) != Double.doubleToLongBits(other.max)) {
+        if (this.active != other.active) {
             return false;
         }
-        if (Double.doubleToLongBits(this.mean) != Double.doubleToLongBits(other.mean)) {
+        if (this.imageWidth != other.imageWidth) {
             return false;
         }
-        if (Double.doubleToLongBits(this.sigma) != Double.doubleToLongBits(other.sigma)) {
+        if (this.imageHeight != other.imageHeight) {
+            return false;
+        }
+        if (this.index != other.index) {
+            return false;
+        }
+        if (this.maskSize != other.maskSize) {
+            return false;
+        }
+        if (this.borderPix != other.borderPix && (this.borderPix == null || !this.borderPix.equals(other.borderPix))) {
+            return false;
+        }
+        if (this.centres != other.centres && (this.centres == null || !this.centres.equals(other.centres))) {
+            return false;
+        }
+        if (this.bounds != other.bounds && (this.bounds == null || !this.bounds.equals(other.bounds))) {
+            return false;
+        }
+        if (this.mask != other.mask && (this.mask == null || !this.mask.equals(other.mask))) {
+            return false;
+        }
+        if (this.path != other.path && (this.path == null || !this.path.equals(other.path))) {
+            return false;
+        }
+        if (!Arrays.equals(this.statsArray, other.statsArray)) {
             return false;
         }
         return true;
     }
+
+//    public boolean equals(Object obj) {
+//        if (obj == null) {
+//            return false;
+//        }
+//        if (getClass() != obj.getClass()) {
+//            return false;
+//        }
+//        final Region2 other = (Region2) obj;
+//        if (Double.doubleToLongBits(this.min) != Double.doubleToLongBits(other.min)) {
+//            return false;
+//        }
+//        if (Double.doubleToLongBits(this.max) != Double.doubleToLongBits(other.max)) {
+//            return false;
+//        }
+//        if (Double.doubleToLongBits(this.mean) != Double.doubleToLongBits(other.mean)) {
+//            return false;
+//        }
+//        if (Double.doubleToLongBits(this.sigma) != Double.doubleToLongBits(other.sigma)) {
+//            return false;
+//        }
+//        return true;
+//    }
 
     public boolean isEdge() {
         return edge;
@@ -905,4 +969,10 @@ public class Region2 {
             }
         }
     }
+
+    public double[] getStatsArray() {
+        return statsArray;
+    }
+    
+    
 }

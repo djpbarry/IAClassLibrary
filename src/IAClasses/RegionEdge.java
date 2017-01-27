@@ -2,8 +2,6 @@ package IAClasses;
 
 import ij.process.ImageProcessor;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -22,10 +20,8 @@ public class RegionEdge {
     }
 
     public void calcWeight(double alpha) {
-        double vector1[] = {startVertex.getMean(), startVertex.getSigma()};
-        double vector2[] = {endVertex.getMean(), endVertex.getSigma()};
         calcGrad();
-        weight = (Utils.calcEuclidDist(vector1, vector2) + alpha * gradient)
+        weight = (Utils.calcEuclidDist(startVertex.getStatsArray(), endVertex.getStatsArray()) + alpha * gradient)
                 / (alpha + 1.0);
     }
 
