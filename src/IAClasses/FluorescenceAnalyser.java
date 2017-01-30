@@ -5,6 +5,7 @@
  */
 package IAClasses;
 
+import static IAClasses.Region.MASK_BACKGROUND;
 import ij.ImagePlus;
 import ij.measure.Measurements;
 import ij.process.ByteProcessor;
@@ -13,12 +14,12 @@ import ij.process.ImageStatistics;
 import ij.process.TypeConverter;
 import java.util.Arrays;
 
-
 public class FluorescenceAnalyser {
 
     ImagePlus imp;
     ImageProcessor mask;
-    final int FOREGROUND = 255, BACKGROUND = 0;
+//    final int FOREGROUND = 255, BACKGROUND = 0;
+    private final double GREY_NORM = 1.0 / 255.0;
     double[][] glcm;
     int offset;
     double contrast, homogeneity, energy, mean, std, skew, kurt;
@@ -37,19 +38,20 @@ public class FluorescenceAnalyser {
         setStats();
     }
 
-    void convertImage(){
+    void convertImage() {
         ImageProcessor ip = imp.getProcessor();
-        ip = new TypeConverter(ip,false).convertToByte();
-        imp.setProcessor(ip);
+        ip = new TypeConverter(ip, false).convertToByte();
+        ip.setRoi(imp.getRoi());
+        imp = new ImagePlus("", ip.crop());
     }
-    
+
     void checkMaskNull() {
         if (mask != null) {
             return;
         } else {
             mask = new ByteProcessor(imp.getWidth(), imp.getHeight());
         }
-        mask.setValue(BACKGROUND);
+        mask.setValue(MASK_BACKGROUND);
         mask.fill();
     }
 
@@ -65,7 +67,7 @@ public class FluorescenceAnalyser {
         }
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width - offset; x++) {
-                if (mask.getPixel(x, y) != BACKGROUND && mask.getPixel(x + offset, y) != BACKGROUND) {
+                if (mask.getPixel(x, y) != MASK_BACKGROUND && mask.getPixel(x + offset, y) != MASK_BACKGROUND) {
                     glcm[ip.getPixel(x, y)][ip.getPixel(x + offset, y)]++;
                     count++;
                 }
@@ -80,7 +82,8 @@ public class FluorescenceAnalyser {
     }
 
     void setStats() {
-        ImageProcessor ip = imp.getProcessor().duplicate();
+        ImageProcessor ip = new TypeConverter(imp.getProcessor(), false).convertToFloat(null);
+        ip.multiply(GREY_NORM);
         ip.setMask(mask);
         ImageStatistics stats = ImageStatistics.getStatistics(ip,
                 Measurements.MEAN + Measurements.STD_DEV + Measurements.KURTOSIS + Measurements.SKEWNESS,
@@ -91,7 +94,7 @@ public class FluorescenceAnalyser {
         kurt = stats.kurtosis;
     }
 
-    double calcGlcmStats() {
+    void calcGlcmStats() {
         int length = glcm.length;
         contrast = 0.0;
         energy = 0.0;
@@ -103,7 +106,7 @@ public class FluorescenceAnalyser {
                 homogeneity += glcm[i][j] / (1.0 + Math.abs(i - j));
             }
         }
-        return contrast;
+        contrast *= Math.pow(GREY_NORM, 2.0);
     }
 
     public double getContrast() {

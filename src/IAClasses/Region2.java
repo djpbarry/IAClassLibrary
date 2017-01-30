@@ -134,17 +134,20 @@ public class Region2 {
         }
     }
 
-    public void calcStats(ImagePlus imp, int offset){
-        FluorescenceAnalyser fa = new FluorescenceAnalyser(imp, getMask(), offset);
+    public void calcStats(ImagePlus imp, int offset) {
+        imp.setRoi(getBounds());
+        FluorescenceAnalyser fa = new FluorescenceAnalyser(imp, getCroppedMask(), offset);
         fa.doAnalysis();
-        this.statsArray = new double[]{fa.getContrast(),
-            fa.getEnergy(),
-            fa.getHomogeneity(),
-            fa.getKurt(),
+//        this.statsArray = new double[]{fa.getContrast(),
+//            fa.getEnergy(),
+//            fa.getHomogeneity(),
+//            fa.getKurt(),
+//            fa.getMean(),
+//            fa.getSkew(),
+//            fa.getStd()};
+                this.statsArray = new double[]{
             fa.getMean(),
-            fa.getSkew(),
             fa.getStd()};
-        
     }
 
     public void calcCentroid(ImageProcessor mask) {
@@ -366,7 +369,6 @@ public class Region2 {
 //        }
 //        return true;
 //    }
-
     public boolean isEdge() {
         return edge;
     }
@@ -448,7 +450,6 @@ public class Region2 {
 //    public int[] getHistogram() {
 //        return histogram;
 //    }
-
     public double[] getMfD() {
         return mfD;
     }
@@ -487,6 +488,18 @@ public class Region2 {
             return constructFullSizeMask(imageWidth, imageHeight);
         }
         return mask.duplicate();
+    }
+
+    ImageProcessor getCroppedMask() {
+        if (mask == null) {
+            drawMask(imageWidth, imageHeight);
+        }
+        Rectangle b = getBounds();
+        if (mask.getWidth() > b.width || mask.getHeight() > b.height) {
+            mask.setRoi(b);
+            mask = mask.crop();
+        }
+        return mask;
     }
 
     public static double[] calcCurvature(short[][] pix, int step) {
@@ -973,6 +986,5 @@ public class Region2 {
     public double[] getStatsArray() {
         return statsArray;
     }
-    
-    
+
 }
