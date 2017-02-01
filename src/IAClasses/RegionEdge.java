@@ -2,6 +2,7 @@ package IAClasses;
 
 import ij.process.ImageProcessor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -51,18 +52,18 @@ public class RegionEdge {
     }
 
     public void buildGradPix(ImageProcessor gradImage) {
-        List<Pixel> startRegionBorder = startVertex.getBorderPix();
-        List<Pixel> endRegionBorder = endVertex.getBorderPix();
+        List<Pixel2> startRegionBorder = startVertex.getBorderPix();
+        List<Pixel2> endRegionBorder = endVertex.getBorderPix();
         gradPix = new ArrayList();
         int endIndex = endVertex.getIndex();
-        for (Pixel pix : startRegionBorder) {
-            if (pix.getNeighbouringRegionIndex() == endIndex) {
+        for (Pixel2 pix : startRegionBorder) {
+            if (Arrays.binarySearch(pix.getAssociations(), endIndex) >= 0) {
                 gradPix.add(new Pixel(pix.getRoundedX(), pix.getRoundedY(), gradImage.getPixelValue(pix.getRoundedX(), pix.getRoundedY())));
             }
         }
         int startIndex = startVertex.getIndex();
-        for (Pixel pix : endRegionBorder) {
-            if (pix.getNeighbouringRegionIndex() == startIndex) {
+        for (Pixel2 pix : endRegionBorder) {
+            if (Arrays.binarySearch(pix.getAssociations(), startIndex) >= 0) {
                 gradPix.add(new Pixel(pix.getRoundedX(), pix.getRoundedY(), gradImage.getPixelValue(pix.getRoundedX(), pix.getRoundedY())));
             }
         }

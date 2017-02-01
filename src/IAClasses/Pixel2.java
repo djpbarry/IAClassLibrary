@@ -13,19 +13,25 @@ public class Pixel2 extends Point2D.Double {
     private double z;
     private int[] associations;
 
-    public Pixel2(double x, double y, double z, int iD) {
+    public Pixel2(int iD, double x, double y, double z, int... associations) {
         this.x = x;
         this.y = y;
         this.z = z;
         this.iD = iD;
+        this.associations = associations;
+        sortAssociations();
     }
 
-    public Pixel2(double x, double y, double z) {
-        this(x, y, z, -1);
+    public Pixel2(int iD, double x, double y, int... associations) {
+        this(iD, x, y, 0.0, associations);
+    }
+
+    public Pixel2(int iD, double x, double y) {
+        this(iD, x, y, null);
     }
 
     public Pixel2(double x, double y) {
-        this(x, y, 0.0, -1);
+        this(-1, x, y);
     }
 
     public int getRoundedX() {
@@ -44,21 +50,44 @@ public class Pixel2 extends Point2D.Double {
         return z;
     }
 
-    public void removeAssociation(int index) {
-        int location = Arrays.binarySearch(associations, index);
+    public boolean removeAssociationBySearch(int searchTerm) {
+        if (associations == null) {
+            return false;
+        }
+        int index = Arrays.binarySearch(associations, searchTerm);
+        if (index < 0) {
+            return false;
+        }
+        if (associations.length > 1) {
+            removeAssociationByIndex(index);
+        } else {
+            associations = null;
+        }
+        return true;
+    }
+
+    public void removeAssociationByIndex(int index) {
         int L = associations.length;
         int[] newAssociations = new int[L - 1];
-        System.arraycopy(associations, 0, newAssociations, 0, location);
-        System.arraycopy(associations, location + 1, newAssociations, location, L - location);
+        System.arraycopy(associations, 0, newAssociations, 0, index);
+        System.arraycopy(associations, index + 1, newAssociations, index, L - index - 1);
         this.associations = newAssociations;
     }
 
     public void addAssociation(int index) {
-        int L = associations.length;
-        int[] newAssociations = new int[L + 1];
-        System.arraycopy(associations, 0, newAssociations, 0, L);
-        newAssociations[L] = index;
-        this.associations = newAssociations;
+        if (associations != null) {
+            if (Arrays.binarySearch(associations, index) >= 0) {
+                return;
+            }
+            int L = associations.length;
+            int[] newAssociations = new int[L + 1];
+            System.arraycopy(associations, 0, newAssociations, 0, L);
+            newAssociations[L] = index;
+            this.associations = newAssociations;
+        } else {
+            associations = new int[]{index};
+        }
+        sortAssociations();
     }
 
     public int[] getAssociations() {
@@ -71,6 +100,12 @@ public class Pixel2 extends Point2D.Double {
 
     public void setiD(int iD) {
         this.iD = iD;
+    }
+
+    final void sortAssociations() {
+        if (associations != null) {
+            Arrays.sort(associations);
+        }
     }
 
 }
