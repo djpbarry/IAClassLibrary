@@ -111,7 +111,7 @@ public class Region2 {
         Arrays.fill(histogram, 0);
         int size = maskSize;
         double valSum = 0.0, varSum = 0.0;
-        int coords[][] = getCoordsFromPath();
+        int[][] coords = getCoordsFromPath();
         if (size > 0) {
             for (int i = 0; i < size && coords[i] != null; i++) {
                 int[] c = coords[i];
@@ -152,8 +152,8 @@ public class Region2 {
 
     public void calcCentroid(ImageProcessor mask) {
         float xsum = 0.0f, ysum = 0.0f;
-        int[][] coords = getCoordsFromPath();
         int size = maskSize;
+        int[][] coords = getCoordsFromPath();
         for (int i = 0; i < size && coords[i] != null; i++) {
             int[] c = coords[i];
             xsum += c[0];
@@ -779,8 +779,7 @@ public class Region2 {
         this.path.append(path, false);
         PathIterator pi = this.path.getPathIterator(null);
         mask = new ByteProcessor(imageWidth, imageHeight);
-        mask.setValue(Region.MASK_BACKGROUND);
-        mask.fill();
+        Arrays.fill((byte[]) mask.getPixels(), (byte) MASK_BACKGROUND);
         mask.setValue(Region.MASK_FOREGROUND);
 
         float[] current = new float[6];
@@ -826,7 +825,10 @@ public class Region2 {
         mask.setRoi(getBounds());
         mask = mask.crop();
         setMaskSize();
+//        System.out.println(index+": "+maskSize);
 //        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_addPath_PostCrop_" + index);
+//IJ.saveAs((new ImagePlus("", mask2)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask2_" + index+"_"+mask2count++);
+
     }
 
     void setMaskSize() {
@@ -855,6 +857,7 @@ public class Region2 {
                 }
                 int y = last[1];
                 for (int x = x1; x <= x2; x++) {
+//                    count++;
                     coords[count++] = new int[]{x, y};
                 }
             }
