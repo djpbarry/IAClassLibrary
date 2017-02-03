@@ -180,15 +180,15 @@ public class Region2 {
 ////            poly.addPoint(borderPix.get(i).getX(), borderPix.get(i).getY());
 //        }
 //        fill(tempImage, FOREGROUND, BACKGROUND);
-        ArrayList<Pixel2> centres = getCentres();
-        Pixel2 centre = centres.get(centres.size() - 1);
+        ArrayList<Pixel2> c = getCentres();
+        Pixel2 centre = c.get(c.size() - 1);
 //        short xc = (short) Math.round(centre[0] - rx);
 //        short yc = (short) Math.round(centre[1] - ry);
         short xc = (short) Math.round(centre.getX());
         short yc = (short) Math.round(centre.getY());
-        int[][] pix = getMaskOutline(new Pixel2(xc, yc), mask);
-        if (pix != null) {
-            return new PolygonRoi(pix[0], pix[1], pix[0].length, Roi.POLYGON);
+        int[][] p = getMaskOutline(new Pixel2(xc, yc), mask);
+        if (p != null) {
+            return new PolygonRoi(p[0], p[1], p[0].length, Roi.POLYGON);
         } else {
             return null;
         }
@@ -359,17 +359,17 @@ public class Region2 {
 //        return seedPix;
 //    }
     public ArrayList<Pixel2> getPixels() {
-        Rectangle bounds = getBounds();
-        ImageProcessor mask = getMask();
-        ArrayList<Pixel2> pix = new ArrayList();
-        for (int y = bounds.y; y < bounds.height + bounds.y; y++) {
-            for (int x = bounds.x; x < bounds.width + bounds.x; x++) {
-                if (mask.getPixel(x, y) == Region2.MASK_FOREGROUND) {
-                    pix.add(new Pixel2(x, y));
+        Rectangle b = getBounds();
+        ImageProcessor m = getMask();
+        ArrayList<Pixel2> p = new ArrayList();
+        for (int y = b.y; y < b.height + b.y; y++) {
+            for (int x = b.x; x < b.width + b.x; x++) {
+                if (m.getPixel(x, y) == Region2.MASK_FOREGROUND) {
+                    p.add(new Pixel2(x, y));
                 }
             }
         }
-        return pix;
+        return p;
     }
 
     public Rectangle getBounds() {
@@ -445,17 +445,17 @@ public class Region2 {
     }
 
     void drawMask(int width, int height) {
-        ImageProcessor mask = new ByteProcessor(width, height);
-        mask.setColor(MASK_BACKGROUND);
-        mask.fill();
-        mask.setColor(MASK_FOREGROUND);
-        int m = borderPix.size();
-        for (int i = 0; i < m; i++) {
+        ImageProcessor m = new ByteProcessor(width, height);
+        m.setColor(MASK_BACKGROUND);
+        m.fill();
+        m.setColor(MASK_FOREGROUND);
+        int s = borderPix.size();
+        for (int i = 0; i < s; i++) {
             Pixel2 current = borderPix.get(i);
-            mask.drawPixel(current.getRoundedX(), current.getRoundedY());
+            m.drawPixel(current.getRoundedX(), current.getRoundedY());
         }
-        fill(mask, MASK_FOREGROUND, MASK_BACKGROUND);
-        this.mask = mask;
+        fill(m, MASK_FOREGROUND, MASK_BACKGROUND);
+        this.mask = m;
         setMaskSize();
     }
 
@@ -511,11 +511,11 @@ public class Region2 {
     }
 
     public Pixel2[] getOrderedBoundary(int width, int height, ImageProcessor mask, Pixel2 centre) {
-        int[][] pix = getMaskOutline(centre, mask);
-        if (pix == null) {
+        int[][] p = getMaskOutline(centre, mask);
+        if (p == null) {
             return null;
         } else {
-            short[][] points = DSPProcessor.interpolatePoints(pix[0].length, pix[0], pix[1]);
+            short[][] points = DSPProcessor.interpolatePoints(p[0].length, p[0], p[1]);
             Pixel2[] output = new Pixel2[points.length];
             for (int i = 0; i < points.length; i++) {
                 output[i] = new Pixel2(points[i][0], points[i][1]);
@@ -540,19 +540,19 @@ public class Region2 {
         Wand wand = new Wand(mask);
         wand.autoOutline(centre.getRoundedX(), centre.getRoundedY(), 0.0, Wand.EIGHT_CONNECTED);
         int n = wand.npoints;
-        int[][] pix = new int[n][2];
-        Rectangle bounds = getBounds();
+        int[][] p = new int[n][2];
+        Rectangle b = getBounds();
         for (int j = 0; j < n; j++) {
-            pix[j][0] = wand.xpoints[j] + bounds.x;
-            pix[j][1] = wand.ypoints[j] + bounds.y;
-            if (pix[j][0] >= imageWidth) {
-                pix[j][0] = imageWidth - 1;
+            p[j][0] = wand.xpoints[j] + b.x;
+            p[j][1] = wand.ypoints[j] + b.y;
+            if (p[j][0] >= imageWidth) {
+                p[j][0] = imageWidth - 1;
             }
-            if (pix[j][1] >= imageHeight) {
-                pix[j][1] = imageHeight - 1;
+            if (p[j][1] >= imageHeight) {
+                p[j][1] = imageHeight - 1;
             }
         }
-        return pix;
+        return p;
     }
 
     public float[][] buildVelMapCol(short xc, short yc, ImageStack stack, int frame, double timeRes, double spatialRes, int[] thresholds) {
@@ -569,6 +569,9 @@ public class Region2 {
         if (frame > 1 && frame < size) {
             ipm1 = stack.getProcessor(frame - 1);
             ipp1 = stack.getProcessor(frame + 1);
+        }
+        if (ipm1 == null || ipp1 == null) {
+            return null;
         }
         if (frame > 1 && frame < size) {
             t1 = thresholds[frame - 2];
@@ -697,14 +700,14 @@ public class Region2 {
             bx = bounds.x;
             by = bounds.y;
         }
-        ImageProcessor mask = input.crop();
-        mask.invert();
+        ImageProcessor ip = input.crop();
+        ip.invert();
         EDM edm = new EDM();
-        edm.toEDM(mask);
-        int[] max = Utils.findImageMaxima(mask);
+        edm.toEDM(ip);
+        int[] m = Utils.findImageMaxima(ip);
 //        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/adapt_debug/edm.png");
-        if (!(max[0] < 0.0 || max[1] < 0.0)) {
-            return new Pixel2(max[0] + bx, max[1] + by);
+        if (!(m[0] < 0.0 || m[1] < 0.0)) {
+            return new Pixel2(m[0] + bx, m[1] + by);
         } else {
             return null;
         }
@@ -740,8 +743,8 @@ public class Region2 {
             return false;
         }
         borderPix = new LinkedList();
-        for (int j = 0; j < newBorder.length; j++) {
-            addBorderPoint(newBorder[j]);
+        for (Pixel2 p : newBorder) {
+            addBorderPoint(p);
         }
         return true;
     }
@@ -916,21 +919,21 @@ public class Region2 {
         int ownerOfNewBorderPoints = borderPointsToBeAdded.get(0).getiD();
         List<Pixel2> pointsToBeRemoved = new LinkedList();
         ArrayList<Integer> indices = new ArrayList();
-        for (Pixel2 pix : thisBorderPoints) {
-            if (pix.removeAssociationBySearch(ownerOfNewBorderPoints) && pix.getAssociations() == null) {
-                pointsToBeRemoved.add(pix);
+        for (Pixel2 p : thisBorderPoints) {
+            if (p.removeAssociationBySearch(ownerOfNewBorderPoints) && p.getAssociations() == null) {
+                pointsToBeRemoved.add(p);
             }
         }
-        for (Pixel2 pix : pointsToBeRemoved) {
-            thisBorderPoints.remove(pix);
+        for (Pixel2 p : pointsToBeRemoved) {
+            thisBorderPoints.remove(p);
         }
         pointsToBeRemoved.clear();
-        for (Pixel2 pix : borderPointsToBeAdded) {
-            if (pix.removeAssociationBySearch(index) && pix.getAssociations() == null) {
-                pointsToBeRemoved.add(pix);
+        for (Pixel2 p : borderPointsToBeAdded) {
+            if (p.removeAssociationBySearch(index) && p.getAssociations() == null) {
+                pointsToBeRemoved.add(p);
             } else {
-                pix.setiD(index);
-                int[] neighbours = pix.getAssociations();
+                p.setiD(index);
+                int[] neighbours = p.getAssociations();
                 for (int n : neighbours) {
                     if (!indices.contains(n)) {
                         indices.add(n);
@@ -938,11 +941,11 @@ public class Region2 {
                 }
             }
         }
-        for (Pixel2 pix : pointsToBeRemoved) {
-            borderPointsToBeAdded.remove(pix);
+        for (Pixel2 p : pointsToBeRemoved) {
+            borderPointsToBeAdded.remove(p);
         }
-        for (Pixel2 pix : borderPointsToBeAdded) {
-            this.addBorderPoint(pix);
+        for (Pixel2 p : borderPointsToBeAdded) {
+            this.addBorderPoint(p);
         }
         for (int i = 0; i < indices.size(); i++) {
             for (Region2 r : regions) {
