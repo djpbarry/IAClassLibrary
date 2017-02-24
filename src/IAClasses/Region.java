@@ -580,6 +580,9 @@ public class Region {
             depth = 3;
         }
         PolygonRoi proi = getPolygonRoi(getMask());
+        if (proi == null) {
+            return null;
+        }
         Straightener straightener = new Straightener();
         ImagePlus sigImp = new ImagePlus("", ip);
         sigImp.setRoi(proi);
