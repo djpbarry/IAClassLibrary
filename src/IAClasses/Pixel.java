@@ -78,7 +78,7 @@ public class Pixel extends Point2D.Double {
 //    public double getY() {
 //        return precY;
 //    }
-    public int getNeighbouringRegionIndex() {
+    public int getID() {
         return iD;
     }
 

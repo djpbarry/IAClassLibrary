@@ -23,7 +23,7 @@ import java.util.LinkedList;
  *
  * @author barry05
  */
-public class Region implements Cloneable {
+public class Region {
 
     protected ArrayList<short[]> seedPix = new ArrayList<short[]>();
     protected ArrayList<Pixel> pix = new ArrayList<Pixel>();
@@ -48,6 +48,10 @@ public class Region implements Cloneable {
         this.imageWidth = width;
         this.imageHeight = height;
         this.index = index;
+    }
+
+    public Region(ImageProcessor mask, float[] centre) {
+        this(mask, new short[]{(short) Math.round(centre[0]), (short) Math.round(centre[1])});
     }
 
     public Region(ImageProcessor mask, short[] centre) {
@@ -632,6 +636,7 @@ public class Region implements Cloneable {
     }
 
     public short[] findSeed(ImageProcessor input) {
+//        IJ.saveAs((new ImagePlus("", input)), "PNG", "C:/users/barryd/adapt_debug/input.png");
         int bx = 0, by = 0;
         if (bounds != null) {
             bounds = checkBounds(bounds);
@@ -644,7 +649,7 @@ public class Region implements Cloneable {
         EDM edm = new EDM();
         edm.toEDM(mask);
         int[] max = Utils.findImageMaxima(mask);
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/adapt_debug/edm.png");
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barryd/adapt_debug/edm.png");
         if (!(max[0] < 0.0 || max[1] < 0.0)) {
             return new short[]{(short) (max[0] + bx), (short) (max[1] + by)};
         } else {
@@ -669,14 +674,14 @@ public class Region implements Cloneable {
     }
 
     public boolean shrink(int iterations, boolean interpolate, int index) {
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_b" + index + ".png");
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barryd/adapt_debug/mask_b" + index + ".png");
         if (mask == null) {
             mask = getMask();
         }
         for (int i = 0; i < iterations; i++) {
             mask.erode();
         }
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_a" + index + ".png");
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barryd/adapt_debug/mask_a" + index + ".png");
         short[][] newBorder = getOrderedBoundary(mask.getWidth(), mask.getHeight(), mask, getCentre());
         if (newBorder == null) {
             return false;
@@ -712,31 +717,5 @@ public class Region implements Cloneable {
         pix.add(p);
         mask.drawPixel(p.getRoundedX(), p.getRoundedY());
         updateBounds(new short[]{(short) p.getX(), (short) p.getY()});
-    }
-
-    public Object clone() {
-        try {
-            super.clone();
-        } catch (Exception e) {
-            return null;
-        }
-        Region clone = new Region();
-        clone.seedPix = (ArrayList<short[]>) seedPix.clone();
-        clone.borderPix = (LinkedList<short[]>) borderPix.clone();
-        clone.expandedBorder = (LinkedList<short[]>) expandedBorder.clone();
-        clone.centres = (ArrayList<float[]>) centres.clone();
-        clone.min = min;
-        clone.max = max;
-        clone.mean = mean;
-        clone.seedMean = seedMean;
-        clone.sigma = sigma;
-        clone.mfD = mfD;
-        clone.edge = edge;
-        clone.active = active;
-        clone.bounds = (Rectangle) bounds.clone();
-        clone.histogram = (int[]) histogram.clone();
-        clone.imageHeight = imageHeight;
-        clone.imageWidth = imageWidth;
-        return clone;
     }
 }
