@@ -191,7 +191,7 @@ public class Utils {
                 } else {
                     diff = pix;
                 }
-                if ((pix >= max) && (diff > maxThresh)) {
+                if ((pix > max) && (diff > maxThresh)) {
                     bProc.drawPixel(x, y);
                 }
             }
