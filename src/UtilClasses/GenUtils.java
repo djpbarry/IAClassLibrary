@@ -219,11 +219,11 @@ public class GenUtils {
         return outputs;
     }
 
-    public static ImageStack convertStackTo8Bit(ImageStack input) {
-        return convertStackTo8Bit(new ImagePlus("", input)).getImageStack();
+    public static ImageStack convertStack(ImageStack input, int bitDepth) {
+        return GenUtils.convertStack(new ImagePlus("", input), bitDepth).getImageStack();
     }
 
-    public static ImagePlus convertStackTo8Bit(ImagePlus input) {
+    public static ImagePlus convertStack(ImagePlus input, int bitDepth) {
         ImageStack inputStack = input.getImageStack();
         if (inputStack.getSize() < 2) {
             ImageProcessor ip = input.getProcessor();
@@ -239,7 +239,15 @@ public class GenUtils {
         }
         ImagePlus tempCytoImp = new ImagePlus("", tempStack);
         StackConverter sc = new StackConverter(tempCytoImp);
-        sc.convertToGray8();
+        switch (bitDepth) {
+            case 8:
+                sc.convertToGray8();
+            case 16:
+                sc.convertToGray16();
+            case 32:
+                sc.convertToGray32();
+            default:
+        }
         tempCytoImp.setDimensions(input.getNChannels(), nSlices, nFrames);
         return tempCytoImp;
     }
