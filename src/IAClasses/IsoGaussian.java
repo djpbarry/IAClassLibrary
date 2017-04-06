@@ -12,6 +12,10 @@ public class IsoGaussian {
 
     public IsoGaussian() {
     }
+    
+        public IsoGaussian(double x0, double y0, double a, double sig) {
+        this(x0, y0, a, sig, sig, 0.0);
+    }
 
     public IsoGaussian(double x0, double y0, double a, double xsig, double ysig, double fit) {
         this.x0 = x0;
