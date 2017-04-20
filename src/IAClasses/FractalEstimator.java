@@ -2,7 +2,6 @@ package IAClasses;
 
 import ij.IJ;
 import ij.ImageStack;
-import ij.gui.Plot;
 import ij.measure.CurveFitter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
@@ -25,7 +24,7 @@ public class FractalEstimator {
         int height = image.getHeight();
         int epsilonMax = (int) Math.round(Math.max(width, height) / 4.5);
         int step = (int) Math.round((epsilonMax - epsilonMin + 1) / 10.0);
-        int points = (int) Math.ceil((epsilonMax - epsilonMin) / (step - 1));
+        int points = (int) Math.ceil(((double) (epsilonMax - epsilonMin)) / (step - 1));
         if (points < 3) {
             return null;
         }
@@ -46,9 +45,9 @@ public class FractalEstimator {
             foreground = 0;
             background = 255;
         }
+        int index = 0;
         for (epsilon = epsilonMin; epsilon <= epsilonMax; epsilon += step) {
             j0 = (int) Math.round((2.0 * xCentre - epsilon) / 2.0);
-            int index = (epsilon - epsilonMin) / step;
             while (j0 > 0) {
                 j0 -= epsilon;
             }
@@ -79,7 +78,7 @@ public class FractalEstimator {
                 }
             }
             dbmCounts2D[index] = Math.log(massCount);
-            dbsCounts2D[index] = Math.log(surfaceCount);
+            dbsCounts2D[index++] = Math.log(surfaceCount);
         }
         double dims[] = new double[2];
         CurveFitter fitter = new CurveFitter(logE, dbmCounts2D);

@@ -162,8 +162,7 @@ public class Utils {
         return null;
     }
 
-    public static ByteProcessor findLocalMaxima(int kWidth, int kHeight, int drawValue,
-            ImageProcessor image, double maxThresh, boolean varyBG) {
+    public static ByteProcessor findLocalMaxima(int kWidth, int kHeight, int drawValue, ImageProcessor image, double maxThresh, boolean varyBG, int buffer) {
         if (image == null) {
             return null;
         }
@@ -171,8 +170,12 @@ public class Utils {
         double max, current, min;
         ByteProcessor bProc = new ByteProcessor(width, height);
         bProc.setValue(drawValue);
-        for (x = kWidth; x < width - kWidth; x++) {
-            for (y = kHeight; y < height - kHeight; y++) {
+        int x0 = kWidth + buffer;
+        int x1 = width - kWidth - buffer;
+        int y0 = kHeight + buffer;
+        int y1 = height - kHeight - buffer;
+        for (x = x0; x < x1; x++) {
+            for (y = y0; y < y1; y++) {
                 for (min = Double.MAX_VALUE, max = 0.0, i = x - kWidth; i <= x + kWidth; i++) {
                     for (j = y - kHeight; j <= y + kHeight; j++) {
                         current = image.getPixelValue(i, j);

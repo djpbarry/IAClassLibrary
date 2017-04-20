@@ -44,12 +44,12 @@ public class GenUtils {
      * Create new parent output directory - make sure directory name is unique
      * so old results are not overwritten
      */
-    public static String openResultsDirectory(String directory, String delimiter) {
-        File newDir = new File(directory + "_Output" + delimiter);
+    public static String openResultsDirectory(String directory) {
+        File newDir = new File(directory + "_Output" + File.separator);
         try {
             int i = 1;
             while (newDir.exists()) {
-                newDir = new File(directory + "_Output_(" + i + ")" + delimiter);
+                newDir = new File(directory + "_Output_(" + i + ")" + File.separator);
                 i++;
             }
             if (!newDir.mkdirs()) {
