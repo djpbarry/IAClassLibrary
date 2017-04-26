@@ -70,4 +70,14 @@ public class Cell implements Comparable<Cell> {
         }
         return null;
     }
+
+    public <T> T getRegionOfType(T r) {
+        Class type = ((T) new Object()).getClass();
+        for (CellRegion region : regions) {
+            if (type.isInstance(region)) {
+                return (T) region;
+            }
+        }
+        return null;
+    }
 }

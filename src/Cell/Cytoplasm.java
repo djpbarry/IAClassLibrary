@@ -13,6 +13,10 @@ import ij.gui.Roi;
  */
 public class Cytoplasm extends CellRegion {
 
+    public Cytoplasm(){
+        super();
+    }
+    
     public Cytoplasm(Roi roi) {
         super(roi);
     }
