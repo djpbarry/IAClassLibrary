@@ -2,6 +2,12 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Cell/Nucleus.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Cell/Cell.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Cell/CellRegion.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Particle/ParticleArray.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Cell/Cytoplasm.java</file>
+        </group>
     </open-files>
 </project-private>

@@ -5,10 +5,15 @@
  */
 package Cell;
 
+import ij.gui.Roi;
+
 /**
  *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
 public class Cytoplasm extends CellRegion {
 
+    public Cytoplasm(Roi roi) {
+        super(roi);
+    }
 }

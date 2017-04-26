@@ -13,12 +13,22 @@ import ij.gui.Roi;
  */
 public class Nucleus extends CellRegion {
 
+    private double[] centroid;
+
     public Nucleus() {
 
     }
 
     public Nucleus(Roi roi, double[] centroid) {
-        this.roi = roi;
+        super(roi);
+        this.centroid = centroid;
+    }
+
+    public double[] getCentroid() {
+        return centroid;
+    }
+
+    public void setCentroid(double[] centroid) {
         this.centroid = centroid;
     }
 }

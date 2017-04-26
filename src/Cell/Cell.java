@@ -14,21 +14,16 @@ import java.util.ArrayList;
  */
 public class Cell implements Comparable<Cell> {
 
-    private Nucleus nucleus;
-    private Cytoplasm cytoplasm;
     private ArrayList<Particle> particles;
+    private ArrayList<CellRegion> regions;
     private int ID;
 
     public Cell() {
 
     }
 
-    public Cell(Nucleus nucleus) {
-        this.nucleus = nucleus;
-    }
-
-    public Nucleus getNucleus() {
-        return nucleus;
+    public Cell(CellRegion region) {
+        this.addCellRegion(region);
     }
 
     public int getID() {
@@ -48,14 +43,31 @@ public class Cell implements Comparable<Cell> {
         }
         return this.ID - ((Cell) cell).getID();
     }
-    
-    public void addParticle(Particle p){
-        if(particles==null)particles=new ArrayList();
+
+    public void addParticle(Particle p) {
+        if (particles == null) {
+            particles = new ArrayList();
+        }
         particles.add(p);
     }
 
     public ArrayList<Particle> getParticles() {
         return particles;
     }
-    
+
+    public final boolean addCellRegion(CellRegion region) {
+        if (regions == null) {
+            regions = new ArrayList();
+        }
+        return regions.add(region);
+    }
+
+    public Nucleus getNucleus() {
+        for (CellRegion region : regions) {
+            if (region instanceof Nucleus) {
+                return (Nucleus) region;
+            }
+        }
+        return null;
+    }
 }

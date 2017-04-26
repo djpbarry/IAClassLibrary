@@ -15,10 +15,13 @@ public class CellRegion {
 
     protected Cell parent;
     protected Roi roi;
-    protected double[] centroid;
 
     public CellRegion() {
 
+    }
+
+    public CellRegion(Roi roi) {
+        this.roi = roi;
     }
 
     public Cell getParent() {
@@ -36,13 +39,4 @@ public class CellRegion {
     public void setRoi(Roi roi) {
         this.roi = roi;
     }
-
-    public double[] getCentroid() {
-        return centroid;
-    }
-
-    public void setCentroid(double[] centroid) {
-        this.centroid = centroid;
-    }
-    
 }
