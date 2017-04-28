@@ -42,9 +42,12 @@ public class DataWriter {
         printer.close();
     }
 
-    public static void saveValues(double[][] vals, File dataFile) throws IOException {
+    public static void saveValues(double[][] vals, File dataFile, String[] headings) throws IOException {
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile), GenVariables.ISO), CSVFormat.EXCEL);
         int L = vals.length;
+        if(headings!=null){
+            printer.printRecord((Object[])headings);
+        }
         for (int l = 0; l < L; l++) {
             for (double v : vals[l]) {
                 printer.print(v);
