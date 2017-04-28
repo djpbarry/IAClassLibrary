@@ -7,12 +7,13 @@ package Cell;
 
 import Particle.Particle;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 /**
  *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
-public class Cell implements Comparable<Cell> {
+public class Cell implements Comparable<Cell>, Comparator<Cell> {
 
     private ArrayList<Particle> particles;
     private ArrayList<CellRegion> regions;
@@ -20,6 +21,10 @@ public class Cell implements Comparable<Cell> {
 
     public Cell() {
 
+    }
+
+    public Cell(int ID) {
+        this.ID = ID;
     }
 
     public Cell(CellRegion region) {
@@ -41,7 +46,17 @@ public class Cell implements Comparable<Cell> {
         if (!(cell instanceof Cell)) {
             throw new ClassCastException();
         }
-        return this.ID - ((Cell) cell).getID();
+        return this.ID - cell.getID();
+    }
+
+    public int compare(Cell cell1, Cell cell2) {
+        if (cell1 == null || cell2 == null) {
+            throw new NullPointerException();
+        }
+        if (!(cell1 instanceof Cell && cell2 instanceof Cell)) {
+            throw new ClassCastException();
+        }
+        return cell1.getID() - cell2.getID();
     }
 
     public void addParticle(Particle p) {
