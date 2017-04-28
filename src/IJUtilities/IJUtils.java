@@ -16,6 +16,8 @@
  */
 package IJUtilities;
 
+import ij.IJ;
+import ij.WindowManager;
 import ij.plugin.frame.RoiManager;
 
 public class IJUtils {
@@ -26,5 +28,24 @@ public class IJUtils {
             instance.reset();
         }
     }
-    
+
+    public static void hideAllImages() {
+        if (IJ.getInstance() == null) {
+            return;
+        }
+        int[] ids = WindowManager.getIDList();
+        for (int i : ids) {
+            WindowManager.getImage(i).hide();
+        }
+    }
+
+    public static void closeAllOpenImages() {
+        if (IJ.getInstance() == null) {
+            return;
+        }
+        int[] ids = WindowManager.getIDList();
+        for (int i : ids) {
+            WindowManager.getImage(i).hide();
+        }
+    }
 }

@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Scanner;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 
@@ -35,18 +36,26 @@ public class DataWriter {
     public static void saveTextWindow(TextWindow tw, File dataFile, String headings) throws IOException {
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile), GenVariables.ISO), CSVFormat.EXCEL);
         int L = tw.getTextPanel().getLineCount();
-        printer.printRecord(headings);
+        printLine(printer, headings);
         for (int l = 0; l < L; l++) {
-            printer.printRecord(tw.getTextPanel().getLine(l).replace("\t", ","));
+            printLine(printer, tw.getTextPanel().getLine(l));
         }
         printer.close();
+    }
+
+    static void printLine(CSVPrinter printer, String line) throws IOException {
+        Scanner scan = new Scanner(line).useDelimiter("\t");
+        while (scan.hasNext()) {
+            printer.print(scan.next());
+        }
+        printer.println();
     }
 
     public static void saveValues(double[][] vals, File dataFile, String[] headings) throws IOException {
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile), GenVariables.ISO), CSVFormat.EXCEL);
         int L = vals.length;
-        if(headings!=null){
-            printer.printRecord((Object[])headings);
+        if (headings != null) {
+            printer.printRecord((Object[]) headings);
         }
         for (int l = 0; l < L; l++) {
             for (double v : vals[l]) {
@@ -56,5 +65,5 @@ public class DataWriter {
         }
         printer.close();
     }
-    
+
 }
