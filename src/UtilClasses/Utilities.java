@@ -12,7 +12,6 @@ import ij.process.ByteProcessor;
 import ij.process.ByteStatistics;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
-import java.awt.HeadlessException;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.io.File;
@@ -70,35 +69,34 @@ public class Utilities {
         if (title == null) {
             title = "Select Directory";
         }
-        while (!validDirectory) {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle(title);
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fileChooser.setApproveButtonText("Ok");
-            if (currentDirectory != null) {
-                fileChooser.setCurrentDirectory(currentDirectory);
-            }
-            int result;
-            try {
-                result = fileChooser.showOpenDialog(null);
-            } catch (HeadlessException e) {
-                result = JFileChooser.ERROR_OPTION;
-            }
-            if (result == JFileChooser.CANCEL_OPTION) {
-                Toolkit.getDefaultToolkit().beep();
-                boolean exit = addExitOption ? IJ.showMessageWithCancel("Exit", "Do you wish to exit?") : true;
-                if (exit) {
-                    return null;
+        try {
+            while (!validDirectory) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle(title);
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                fileChooser.setApproveButtonText("Ok");
+                if (currentDirectory != null) {
+                    fileChooser.setCurrentDirectory(currentDirectory);
                 }
-            } else if (result == JFileChooser.APPROVE_OPTION) {
-                newDirectory = fileChooser.getSelectedFile();
-                if (!(newDirectory.isDirectory() && newDirectory.exists())) {
-                    IJ.showMessage("Invalid Directory!");
-                    validDirectory = false;
-                } else {
-                    validDirectory = true;
+                int result = fileChooser.showOpenDialog(null);
+                if (result == JFileChooser.CANCEL_OPTION) {
+                    Toolkit.getDefaultToolkit().beep();
+                    boolean exit = addExitOption ? IJ.showMessageWithCancel("Exit", "Do you wish to exit?") : true;
+                    if (exit) {
+                        return null;
+                    }
+                } else if (result == JFileChooser.APPROVE_OPTION) {
+                    newDirectory = fileChooser.getSelectedFile();
+                    if (!(newDirectory.isDirectory() && newDirectory.exists())) {
+                        IJ.showMessage("Invalid Directory!");
+                        validDirectory = false;
+                    } else {
+                        validDirectory = true;
+                    }
                 }
             }
+        } catch (RuntimeException e) {
+            IJ.log("Error opening directory:\n" + e.toString());
         }
         return newDirectory;
     }
