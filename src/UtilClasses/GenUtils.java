@@ -45,6 +45,9 @@ public class GenUtils {
      * so old results are not overwritten
      */
     public static String openResultsDirectory(String directory) {
+        if (directory == null) {
+            return null;
+        }
         File newDir = new File(directory + "_Output" + File.separator);
         try {
             int i = 1;
@@ -53,11 +56,11 @@ public class GenUtils {
                 i++;
             }
             if (!newDir.mkdirs()) {
-                System.err.println("Failed to create output directory.");
+                GenUtils.error("Failed to create output directory.");
                 return null;
             }
         } catch (Exception e) {
-            System.err.println(e.toString());
+            GenUtils.error(e.toString());
             return null;
         }
         return newDir.getAbsolutePath();

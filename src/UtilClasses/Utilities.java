@@ -4,7 +4,7 @@
  */
 package UtilClasses;
 
-import ij.IJ;
+import IO.OutputFolderOpener;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.GenericDialog;
@@ -12,13 +12,12 @@ import ij.process.ByteProcessor;
 import ij.process.ByteStatistics;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
+import java.awt.EventQueue;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import javax.swing.JFileChooser;
 
 /**
  *
@@ -63,42 +62,10 @@ public class Utilities {
      *
      * @return the directory in which the images to be analysed are located
      */
-    public static File getFolder(File currentDirectory, String title, boolean addExitOption) {
-        boolean validDirectory = false;
-        File newDirectory = null;
-        if (title == null) {
-            title = "Select Directory";
-        }
-        try {
-            while (!validDirectory) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle(title);
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                fileChooser.setApproveButtonText("Ok");
-                if (currentDirectory != null) {
-                    fileChooser.setCurrentDirectory(currentDirectory);
-                }
-                int result = fileChooser.showOpenDialog(null);
-                if (result == JFileChooser.CANCEL_OPTION) {
-                    Toolkit.getDefaultToolkit().beep();
-                    boolean exit = addExitOption ? IJ.showMessageWithCancel("Exit", "Do you wish to exit?") : true;
-                    if (exit) {
-                        return null;
-                    }
-                } else if (result == JFileChooser.APPROVE_OPTION) {
-                    newDirectory = fileChooser.getSelectedFile();
-                    if (!(newDirectory.isDirectory() && newDirectory.exists())) {
-                        IJ.showMessage("Invalid Directory!");
-                        validDirectory = false;
-                    } else {
-                        validDirectory = true;
-                    }
-                }
-            }
-        } catch (RuntimeException e) {
-            IJ.log("Error opening directory:\n" + e.toString());
-        }
-        return newDirectory;
+    public static File getFolder(File currentDirectory, String title, boolean addExitOption) throws Exception {
+        OutputFolderOpener fo = new OutputFolderOpener(title, currentDirectory, addExitOption);
+        EventQueue.invokeAndWait(fo);
+        return fo.getNewDirectory();
     }
 
     /**
