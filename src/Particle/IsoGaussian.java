@@ -1,4 +1,4 @@
-package IAClasses;
+package Particle;
 
 /**
  * Representation of a 2D IsoGaussian curve.

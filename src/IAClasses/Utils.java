@@ -1,5 +1,6 @@
 package IAClasses;
 
+import Particle.IsoGaussian;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;

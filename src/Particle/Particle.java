@@ -1,7 +1,5 @@
 package Particle;
 
-import IAClasses.IsoGaussian;
-
 /**
  * Represents a detected particle in an individual image or frame.
  *

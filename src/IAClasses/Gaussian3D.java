@@ -4,6 +4,8 @@
  */
 package IAClasses;
 
+import Particle.IsoGaussian;
+
 /**
  *
  * @author barry05
