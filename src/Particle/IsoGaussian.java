@@ -6,28 +6,33 @@ package Particle;
  * @author David J Barry
  * @version 1.0, JAN 2011
  */
-public class IsoGaussian {
+public class IsoGaussian extends Particle {
 
-    protected double x0, y0, magnitude, xSigma, ySigma, fit;
+    protected double xSigma, ySigma, fit;
+
+    public IsoGaussian(int t, IsoGaussian particle) {
+        this(t, particle.getX(), particle.getY(), particle.getMagnitude(), particle.getXSigma(), particle.getYSigma(), particle.getFit(), null, -1);
+    }
 
     public IsoGaussian() {
+        this(0.0, 0.0, 0.0, 0.0);
     }
-    
-        public IsoGaussian(double x0, double y0, double a, double sig) {
+
+    public IsoGaussian(double x0, double y0, double a, double sig) {
         this(x0, y0, a, sig, sig, 0.0);
     }
 
     public IsoGaussian(double x0, double y0, double a, double xsig, double ysig, double fit) {
-        this.x0 = x0;
-        this.y0 = y0;
-        this.magnitude = a;
+        this(0, x0, y0, a, xsig, ysig, fit, null, -1);
+    }
+
+    public IsoGaussian(int t, double x0, double y0, double a, double xsig, double ysig, double fit, Particle link, int iD) {
+        super(t, link, iD, a);
+        this.x = x0;
+        this.y = y0;
         this.xSigma = xsig;
         this.ySigma = ysig;
         this.fit = fit;
-    }
-
-    public double getMagnitude() {
-        return magnitude;
     }
 
     public double getXSigma() {
@@ -38,26 +43,18 @@ public class IsoGaussian {
         return ySigma;
     }
 
-    public double getX() {
-        return x0;
-    }
-
-    public double getY() {
-        return y0;
-    }
-
     public double getFit() {
         return fit;
     }
 
     public double evaluate(double x, double y) {
-        double result = magnitude * Math.exp(-(((x - this.x0) * (x - this.x0))
-                + ((y - this.y0) * (y - this.y0))) / (2 * xSigma * xSigma));
+        double result = magnitude * Math.exp(-(((x - this.x) * (x - this.x))
+                + ((y - this.y) * (y - this.y))) / (2 * xSigma * xSigma));
         return result;
     }
 
-    public Object clone() {
-        return new IsoGaussian(x0, y0, magnitude, xSigma, ySigma, fit);
+    public IsoGaussian makeCopy() {
+        return new IsoGaussian(t, x, y, magnitude, xSigma, ySigma, fit, link, iD);
     }
 
     public boolean equals(Object obj) {
@@ -68,10 +65,10 @@ public class IsoGaussian {
             return false;
         }
         final IsoGaussian other = (IsoGaussian) obj;
-        if (Double.doubleToLongBits(this.x0) != Double.doubleToLongBits(other.x0)) {
+        if (Double.doubleToLongBits(this.x) != Double.doubleToLongBits(other.x)) {
             return false;
         }
-        if (Double.doubleToLongBits(this.y0) != Double.doubleToLongBits(other.y0)) {
+        if (Double.doubleToLongBits(this.y) != Double.doubleToLongBits(other.y)) {
             return false;
         }
         if (Double.doubleToLongBits(this.magnitude) != Double.doubleToLongBits(other.magnitude)) {

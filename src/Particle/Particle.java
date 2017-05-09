@@ -8,11 +8,11 @@ package Particle;
  */
 public class Particle {
 
-    private int iD;
-    private int t;
-    private double x, y;
-    private Particle link;
-    private IsoGaussian c1Gaussian, c2Gaussian;
+    protected int iD;
+    protected int t;
+    protected double x, y, magnitude;
+    protected Particle link;
+    protected Particle colocalisedParticle;
 
     public Particle() {
         t = 0;
@@ -20,34 +20,22 @@ public class Particle {
         y = 0.0;
         iD = -1;
         link = null;
-        c1Gaussian = null;
-        c2Gaussian = null;
     }
 
     /**
      * Creates a new Particle
      *
      * @param time position within an image stack
-     * @param c1Gaussian IsoGaussian representation of particle in red channel
-     * @param c2Gaussian IsoGaussian representation of particle in green channel
      * @param newLink the last <code>Particle</code> in the current
      * <code>ParticleTrajectory</code> to which this particle should be linked.
      * Set to <code>null</code> if this is the first particle in a new
      * trajectory.
      */
-    public Particle(int time, IsoGaussian c1Gaussian, IsoGaussian c2Gaussian,
-            Particle newLink, int iD) {
+    public Particle(int time, Particle newLink, int iD, double magnitude) {
         this.iD = iD;
         this.t = time;
-        this.c1Gaussian = c1Gaussian;
-        this.c2Gaussian = c2Gaussian;
-        if (c1Gaussian != null) {
-            this.x = c1Gaussian.getX();
-            this.y = c1Gaussian.getY();
-        } else {
-            x = y = Double.NaN;
-        }
         this.link = newLink;
+        this.magnitude = magnitude;
     }
 
     /**
@@ -74,40 +62,10 @@ public class Particle {
     }
 
     /**
-     * Returns the peak intensity of this particle in the red channel.
-     */
-    public double getC1Intensity() {
-        if (c1Gaussian != null) {
-            return c1Gaussian.getMagnitude();
-        } else {
-            return 0.0;
-        }
-    }
-
-    /**
-     * Returns the peak intensity of this particle in the green channel.
-     */
-    public double getC2Intensity() {
-        if (c2Gaussian != null) {
-            return c2Gaussian.getMagnitude();
-        } else {
-            return 0.0;
-        }
-    }
-
-    /**
      * Returns the <code>Particle</code> to which this particle is linked.
      */
     public Particle getLink() {
         return link;
-    }
-
-    public IsoGaussian getC2Gaussian() {
-        return c2Gaussian;
-    }
-
-    public IsoGaussian getC1Gaussian() {
-        return c1Gaussian;
     }
 
     public void setLink(Particle link) {
@@ -118,7 +76,21 @@ public class Particle {
         return iD;
     }
 
-    public Object clone() {
-        return new Particle(t, c1Gaussian, c2Gaussian, link, iD);
+    public double getMagnitude() {
+        return magnitude;
     }
+
+    public Particle makeCopy() {
+        return new Particle(t, link, iD, magnitude);
+    }
+
+    public Particle getColocalisedParticle() {
+        return colocalisedParticle;
+    }
+
+    public void setColocalisedParticle(Particle colocalisedParticle) {
+        this.colocalisedParticle = colocalisedParticle;
+    }
+    
+    
 }
