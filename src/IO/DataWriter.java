@@ -58,10 +58,12 @@ public class DataWriter {
             printer.printRecord((Object[]) headings);
         }
         for (int l = 0; l < L; l++) {
-            for (double v : vals[l]) {
-                printer.print(v);
+            if (vals[l] != null) {
+                for (double v : vals[l]) {
+                    printer.print(v);
+                }
+                printer.println();
             }
-            printer.println();
         }
         printer.close();
     }
