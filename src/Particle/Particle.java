@@ -15,27 +15,21 @@ public class Particle {
     protected Particle colocalisedParticle;
 
     public Particle() {
-        t = 0;
-        x = 0.0;
-        y = 0.0;
-        iD = -1;
-        link = null;
+        this(0, 0.0, 0.0, 0.0);
     }
 
-    /**
-     * Creates a new Particle
-     *
-     * @param time position within an image stack
-     * @param newLink the last <code>Particle</code> in the current
-     * <code>ParticleTrajectory</code> to which this particle should be linked.
-     * Set to <code>null</code> if this is the first particle in a new
-     * trajectory.
-     */
-    public Particle(int time, Particle newLink, int iD, double magnitude) {
+    public Particle(int t, double x, double y, double magnitude) {
+        this(t, x, y, magnitude, null, null, -1);
+    }
+
+    public Particle(int t, double x, double y, double magnitude, Particle newLink, Particle cP, int iD) {
+        this.t = t;
+        this.x = x;
+        this.y = y;
         this.iD = iD;
-        this.t = time;
-        this.link = newLink;
         this.magnitude = magnitude;
+        this.link = newLink;
+        this.colocalisedParticle = cP;
     }
 
     /**
@@ -81,7 +75,10 @@ public class Particle {
     }
 
     public Particle makeCopy() {
-        return new Particle(t, link, iD, magnitude);
+        return new Particle(t, x, y, magnitude,
+                link != null ? link.makeCopy() : null,
+                colocalisedParticle != null ? colocalisedParticle.makeCopy() : null,
+                iD);
     }
 
     public Particle getColocalisedParticle() {
@@ -91,6 +88,5 @@ public class Particle {
     public void setColocalisedParticle(Particle colocalisedParticle) {
         this.colocalisedParticle = colocalisedParticle;
     }
-    
-    
+
 }

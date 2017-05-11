@@ -17,8 +17,8 @@ public class Gaussian3D extends IsoGaussian {
     public Gaussian3D(double x0, double y0, double z0, double mag, double xsig,
             double ysig, double zsig, double fit) {
         super();
-        this.x0 = x0;
-        this.y0 = y0;
+        this.x = x0;
+        this.y = y0;
         this.z0 = z0;
         this.magnitude = mag;
         this.xSigma = xsig;
@@ -28,8 +28,8 @@ public class Gaussian3D extends IsoGaussian {
     }
 
     public double evaluate(double x, double y, double z) {
-        double result = magnitude * Math.exp(-(Math.pow(x - this.x0, 2.0) / (2 * xSigma * xSigma)
-                + Math.pow(y - this.y0, 2.0) / (2 * ySigma * ySigma)
+        double result = magnitude * Math.exp(-(Math.pow(x - this.x, 2.0) / (2 * xSigma * xSigma)
+                + Math.pow(y - this.y, 2.0) / (2 * ySigma * ySigma)
                 + Math.pow(z - this.z0, 2.0) / (2 * zSigma * zSigma)));
         return result;
     }

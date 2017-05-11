@@ -11,7 +11,7 @@ public class IsoGaussian extends Particle {
     protected double xSigma, ySigma, fit;
 
     public IsoGaussian(int t, IsoGaussian particle) {
-        this(t, particle.getX(), particle.getY(), particle.getMagnitude(), particle.getXSigma(), particle.getYSigma(), particle.getFit(), null, -1);
+        this(t, particle.getX(), particle.getY(), particle.getMagnitude(), particle.getXSigma(), particle.getYSigma(), particle.getFit(), particle.getLink(), -1, particle.getColocalisedParticle());
     }
 
     public IsoGaussian() {
@@ -23,13 +23,11 @@ public class IsoGaussian extends Particle {
     }
 
     public IsoGaussian(double x0, double y0, double a, double xsig, double ysig, double fit) {
-        this(0, x0, y0, a, xsig, ysig, fit, null, -1);
+        this(0, x0, y0, a, xsig, ysig, fit, null, -1, null);
     }
 
-    public IsoGaussian(int t, double x0, double y0, double a, double xsig, double ysig, double fit, Particle link, int iD) {
-        super(t, link, iD, a);
-        this.x = x0;
-        this.y = y0;
+    public IsoGaussian(int t, double x0, double y0, double a, double xsig, double ysig, double fit, Particle link, int iD, Particle colocalisedParticle) {
+        super(t, x0, y0, a, link, colocalisedParticle, iD);
         this.xSigma = xsig;
         this.ySigma = ysig;
         this.fit = fit;
@@ -54,7 +52,9 @@ public class IsoGaussian extends Particle {
     }
 
     public IsoGaussian makeCopy() {
-        return new IsoGaussian(t, x, y, magnitude, xSigma, ySigma, fit, link, iD);
+        return new IsoGaussian(t, x, y, magnitude, xSigma, ySigma, fit,
+                link != null ? link.makeCopy() : null, iD,
+                colocalisedParticle != null ? colocalisedParticle.makeCopy() : null);
     }
 
     public boolean equals(Object obj) {
