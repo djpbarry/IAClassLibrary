@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.util.Scanner;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 public class DataWriter {
 
@@ -51,6 +52,10 @@ public class DataWriter {
         printer.println();
     }
 
+    public static void saveValues(double[] vals, File dataFile, String[] headings) throws IOException {
+        saveValues(new double[][]{vals}, dataFile, headings);
+    }
+
     public static void saveValues(double[][] vals, File dataFile, String[] headings) throws IOException {
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile), GenVariables.ISO), CSVFormat.EXCEL);
         int L = vals.length;
@@ -68,4 +73,35 @@ public class DataWriter {
         printer.close();
     }
 
+    public static Double[] getAverageValues(double[][] vals, int N) {
+        int L = vals.length;
+        DescriptiveStatistics[] ds = new DescriptiveStatistics[N];
+        for (int l = 0; l < L; l++) {
+            if (vals[l] != null) {
+                for (int i = 0; i < N; i++) {
+                    if (ds[i] == null) {
+                        ds[i] = new DescriptiveStatistics();
+                    }
+                    ds[i].addValue(vals[l][i]);
+                }
+            }
+        }
+        Double[] meanVals = new Double[N + 1];
+        meanVals[0] = new Double(ds[0].getN());
+        for (int j = 0; j < N; j++) {
+            meanVals[j + 1] = ds[j].getMean();
+        }
+        return meanVals;
+    }
+
+    public static String convertArrayToString(String seed, Object[] input, String delimiter) {
+        String output = seed;
+        if (output == null) {
+            output = new String();
+        }
+        for (Object s : input) {
+            output = (output.concat(String.valueOf(s))).concat(delimiter);
+        }
+        return output;
+    }
 }
