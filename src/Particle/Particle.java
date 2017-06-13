@@ -1,5 +1,7 @@
 package Particle;
 
+import IAClasses.Region;
+
 /**
  * Represents a detected particle in an individual image or frame.
  *
@@ -13,16 +15,17 @@ public class Particle {
     protected double x, y, magnitude;
     protected Particle link;
     protected Particle colocalisedParticle;
+    protected Region region;
 
     public Particle() {
         this(0, 0.0, 0.0, 0.0);
     }
 
     public Particle(int t, double x, double y, double magnitude) {
-        this(t, x, y, magnitude, null, null, -1);
+        this(t, x, y, magnitude, null, null, -1, null);
     }
 
-    public Particle(int t, double x, double y, double magnitude, Particle newLink, Particle cP, int iD) {
+    public Particle(int t, double x, double y, double magnitude, Particle newLink, Particle cP, int iD, Region region) {
         this.t = t;
         this.x = x;
         this.y = y;
@@ -30,6 +33,7 @@ public class Particle {
         this.magnitude = magnitude;
         this.link = newLink;
         this.colocalisedParticle = cP;
+        this.region = region;
     }
 
     /**
@@ -78,7 +82,7 @@ public class Particle {
         return new Particle(t, x, y, magnitude,
                 link != null ? link.makeCopy() : null,
                 colocalisedParticle != null ? colocalisedParticle.makeCopy() : null,
-                iD);
+                iD, region);
     }
 
     public Particle getColocalisedParticle() {
@@ -87,6 +91,14 @@ public class Particle {
 
     public void setColocalisedParticle(Particle colocalisedParticle) {
         this.colocalisedParticle = colocalisedParticle;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
     }
 
 }

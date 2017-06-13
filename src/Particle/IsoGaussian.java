@@ -27,7 +27,7 @@ public class IsoGaussian extends Particle {
     }
 
     public IsoGaussian(int t, double x0, double y0, double a, double xsig, double ysig, double fit, Particle link, int iD, Particle colocalisedParticle) {
-        super(t, x0, y0, a, link, colocalisedParticle, iD);
+        super(t, x0, y0, a, link, colocalisedParticle, iD, null);
         this.xSigma = xsig;
         this.ySigma = ysig;
         this.fit = fit;

@@ -18,6 +18,7 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import org.apache.commons.math3.linear.ArrayRealVector;
 
 /**
  *
@@ -39,6 +40,7 @@ public class Region {
     protected int imageWidth, imageHeight;
     private ImageProcessor mask;
     private int index;
+    private ArrayList<Double> morphMeasures;
 
     public Region() {
 
@@ -720,5 +722,21 @@ public class Region {
         pix.add(p);
         mask.drawPixel(p.getRoundedX(), p.getRoundedY());
         updateBounds(new short[]{(short) p.getX(), (short) p.getY()});
+    }
+
+    public boolean addMorphMeasure(double measure) {
+        if (morphMeasures == null) {
+            morphMeasures = new ArrayList();
+        }
+        return morphMeasures.add(measure);
+    }
+
+    public ArrayRealVector getMorphMeasures() {
+        Double[] mm = morphMeasures.toArray(new Double[]{});
+        ArrayRealVector v = new ArrayRealVector(mm.length);
+        for (int i = 0; i < mm.length; i++) {
+            v.setEntry(i, mm[i]);
+        }
+        return v;
     }
 }
