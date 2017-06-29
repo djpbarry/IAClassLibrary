@@ -17,6 +17,7 @@ public class Cell implements Comparable<Cell>, Comparator<Cell> {
 
     private ArrayList<Particle> particles;
     private ArrayList<CellRegion> regions;
+    private ArrayList<Cell> links;
     private int ID;
 
     public Cell() {
@@ -93,5 +94,18 @@ public class Cell implements Comparable<Cell>, Comparator<Cell> {
             }
         }
         return null;
+    }
+
+    public void addLink(Cell c) {
+        if (links == null) {
+            links = new ArrayList();
+        }
+        if (!links.contains(c)) {
+            links.add(c);
+        }
+    }
+
+    public ArrayList<Cell> getLinks() {
+        return links;
     }
 }

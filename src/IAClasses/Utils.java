@@ -1,6 +1,7 @@
 package IAClasses;
 
 import Particle.IsoGaussian;
+import Particle.Particle;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -653,6 +654,25 @@ public class Utils {
             output.addSlice(new TypeConverter(input.getProcessor(i), true).convertToRGB());
         }
         return output;
+    }
+
+    public static boolean drawParticle(ImageProcessor image, Particle p, double tol, double res, boolean invert) {
+        if (p instanceof IsoGaussian) {
+            return draw2DGaussian(image, (IsoGaussian) p, tol, res, invert);
+        } else {
+            return drawBlob(image, p, res);
+        }
+    }
+
+    public static boolean drawBlob(ImageProcessor image, Particle p, double res) {
+        if (image == null || p == null) {
+            return false;
+        }
+        int x = (int) Math.round(p.getX() / res);
+        int y = (int) Math.round(p.getY() / res);
+        double value = image.getPixelValue(x, y);
+        image.putPixelValue(x, y, value + 1.0);
+        return true;
     }
 
     /**
