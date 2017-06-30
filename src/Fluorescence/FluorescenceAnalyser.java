@@ -17,14 +17,19 @@
 package Fluorescence;
 
 import Cell.Cell;
+import Cell.CellRegion;
 import Cell.Cytoplasm;
 import Cell.Nucleus;
 import ij.gui.Roi;
+import ij.measure.Measurements;
 import ij.process.Blitter;
 import ij.process.ByteBlitter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
+import java.util.ArrayList;
+import java.util.Arrays;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 /**
  *
@@ -60,6 +65,41 @@ public class FluorescenceAnalyser {
             }
         }
         return vals;
+    }
+
+    public static Cell[] filterCells(ImageProcessor image, CellRegion regionType, double threshold, int measurement, Cell[] cells) {
+        DescriptiveStatistics ds = new DescriptiveStatistics();
+        boolean[] selected = new boolean[cells.length];
+        Arrays.fill(selected, false);
+        int b = 0;
+        for (Cell cell : cells) {
+            CellRegion cr = cell.getRegion(regionType);
+            if (cr != null) {
+                selected[b] = true;
+                image.setRoi(cr.getRoi());
+                ImageStatistics stats = ImageStatistics.getStatistics(image, measurement, null);
+                switch (measurement) {
+                    case Measurements.MEAN:
+                        ds.addValue(stats.mean);
+                        break;
+                    case Measurements.STD_DEV:
+                        ds.addValue(stats.stdDev);
+                        break;
+                    default:
+                        ds.addValue(0.0);
+                }
+            }
+            b++;
+        }
+        double percentile = threshold > 0.0 ? ds.getPercentile(threshold) : 0.0;
+        double[] measures = ds.getValues();
+        ArrayList<Cell> cells2 = new ArrayList();
+        for (int i = 0, j = 0; i < cells.length; i++) {
+            if (selected[i] && measures[j++] > percentile) {
+                cells2.add(cells[i]);
+            }
+        }
+        return cells2.toArray(new Cell[]{});
     }
     
 }
