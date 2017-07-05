@@ -56,7 +56,7 @@ public class RegionGrower {
     private static boolean simple = false;
     public static short terminal;
     public static short intermediate;
-    private static double lambda = 10000.0; // parameter used in construction of Voronoi manifolds. See Jones et al., 2005: dx.doi.org/10.1007/11569541_54
+    private static double lambda = 10000.0, filtRad = 1.0; // parameter used in construction of Voronoi manifolds. See Jones et al., 2005: dx.doi.org/10.1007/11569541_54
 
     public static int initialiseROIs(ByteProcessor masks, int threshold, int start, ImageProcessor input, PointRoi roi, int width, int height, int size, ArrayList<CellData> cellData, UserVariables uv, boolean protMode) {
         ArrayList<short[]> initP = new ArrayList();
@@ -175,13 +175,10 @@ public class RegionGrower {
      * inputImage.
      */
     private static ShortProcessor growRegions(ShortProcessor regionImage, ImageProcessor inputImage, ArrayList<Region> singleImageRegions, double threshold) {
-        int i;
-        int j;
         int width = regionImage.getWidth();
         int height = regionImage.getHeight();
         int widthheight = width * height;
         boolean totChange = true;
-        boolean thisChange;
         float[] inputPix = (float[]) inputImage.getPixels();
         short[] regionImagePix = (short[]) regionImage.getPixels();
         short[] checkImagePix = new short[widthheight];
@@ -190,40 +187,41 @@ public class RegionGrower {
         short[] expandedImagePix = new short[widthheight];
         Arrays.fill(checkImagePix, Region.MASK_FOREGROUND);
         Arrays.fill(countImagePix, Region.MASK_FOREGROUND);
-        /*
-         * Image texture (and grey levels) used to control region growth.
-         * Standard deviation of grey levels is used as a simple measure of
-         * texture.
-         */
+        ImageProcessor texture = inputImage.duplicate();
+        texture.findEdges();
+        (new GaussianBlur()).blurGaussian(texture, filtRad, filtRad, 0.01);
+        float[] texturePix = (float[]) texture.getPixels();
         int cellNum = singleImageRegions.size();
         float distancemaps[][][] = null;
         if (!simple) {
             distancemaps = new float[cellNum][width][height];
-        }
-        if (!simple) {
             initDistanceMaps(inputImage, (ShortProcessor) regionImage.duplicate(), singleImageRegions, distancemaps, 1.0, threshold);
         }
-
-        ImageStack regionImageStack = new ImageStack(regionImage.getWidth(), regionImage.getHeight());
-        //        ImageStack expandedImageStack = new ImageStack(regionImage.getWidth(), regionImage.getHeight());
+//        ImageStack regionImageStack = new ImageStack(regionImage.getWidth(), regionImage.getHeight());
+//        int count = 0;
         while (totChange) {
+//            ImageStack expandedImageStack = new ImageStack(width, height);
+//            ImageStack tempRegionStack = new ImageStack(width, height);
             totChange = false;
-            for (i = 0; i < cellNum; i++) {
-                ShortProcessor ref = (ShortProcessor) regionImage.duplicate();
+            Arrays.fill(tempRegionPix, Region.MASK_FOREGROUND);
+            for (int i = 0; i < cellNum; i++) {
+//                ShortProcessor expandedImage = new ShortProcessor(width, height);
+//                expandedImage.setPixels(expandedImagePix);
+//                ShortProcessor tempRegionImage = new ShortProcessor(width, height);
+//                tempRegionImage.setPixels(tempRegionPix);
                 Region cell = singleImageRegions.get(i);
                 if (cell != null && cell.isActive()) {
                     Arrays.fill(expandedImagePix, Region.MASK_BACKGROUND);
-                    Arrays.fill(tempRegionPix, Region.MASK_FOREGROUND);
                     LinkedList<short[]> borderPix = cell.getBorderPix();
                     int borderLength = borderPix.size();
-                    thisChange = false;
-                    for (j = 0; j < borderLength; j++) {
+                    boolean thisChange = false;
+                    for (int j = 0; j < borderLength; j++) {
                         short[] thispix = borderPix.get(j);
                         int offset = thispix[1] * width;
                         if (checkImagePix[thispix[0] + offset] == Region.MASK_FOREGROUND) {
                             boolean thisResult;
                             if (!simple) {
-                                thisResult = dijkstraDilate((short[]) ref.getPixels(), cell, thispix, distancemaps, intermediate, i + 1, expandedImagePix, width, height, countImagePix, tempRegionPix);
+                                thisResult = dijkstraDilate(regionImagePix, cell, thispix, inputPix, threshold, texturePix, intermediate, i + 1, expandedImagePix, width, height, countImagePix, tempRegionPix, distancemaps[i]);
                             } else {
                                 thisResult = simpleDilate(regionImagePix, inputPix, cell, thispix, intermediate, threshold, (short) (i + 1), expandedImagePix, width, height, countImagePix, tempRegionPix);
                             }
@@ -232,33 +230,20 @@ public class RegionGrower {
                                 checkImagePix[thispix[0] + offset]++;
                             }
                         }
-                        //                        }
-                        //                        regionImageStack.addSlice(regionImage.duplicate());
-                        //                        IJ.saveAs((new ImagePlus("", regionImageStack)), "TIF", "c:\\users\\barry05\\desktop\\masks\\regions.tif");
-                        //                        expandedImageStack.addSlice(expandedImage.duplicate());
-//                    }
                         cell.setActive(thisChange);
                         totChange = thisChange || totChange;
                     }
-                    //                }
                 }
-                //            regionImageStack.addSlice(regionImage.duplicate());
-                //            IJ.saveAs((new ImagePlus("", regionImageStack)), "TIF", "/Users/Dave/Desktop/EMSeg Test Output/regions.tif");
-                //            if (simple) {
-                expandRegions(singleImageRegions, regionImage, cellNum, terminal, tempRegionPix);
-                //            } else {
-                //                expandRegions(singleImageRegions, regionImages, cellNum);
-                //            }
-                regionImageStack.addSlice(regionImage.duplicate());
-                //            IJ.saveAs((new ImagePlus("", regionImageStack)), "TIF", "c:\\users\\barry05\\desktop\\regions.tif");
+//                expandedImageStack.addSlice(expandedImage.duplicate());
+//                tempRegionStack.addSlice(tempRegionImage.duplicate());
             }
+//            IJ.saveAs(new ImagePlus("", expandedImageStack), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "ExpandedImage", count));
+//            IJ.saveAs(new ImagePlus("", tempRegionStack), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "tempRegions", count));
+//            IJ.saveAs(new ImagePlus("", regionImage), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "RegionImage", count));
+            expandRegions(singleImageRegions, regionImage, cellNum, terminal, tempRegionPix);
+//            IJ.saveAs(new ImagePlus("", regionImage), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "ExpandedRegionImage", count++));
+//            regionImageStack.addSlice(regionImage.duplicate());
         }
-        //        for (i = 0; i < cellNum; i++) {
-        //            Region cell = singleImageRegions.get(i);
-        //            cell.clearPixels();
-        //        }
-        //        IJ.saveAs((new ImagePlus("", expandedImageStack)), "TIF", "c:\\users\\barry05\\desktop\\masks\\expandedimages.tif");
-        //        IJ.saveAs(new ImagePlus("", inputImage), "TIF", "C:/users/barry05/desktop/inputImage.tif");
         return regionImage;
     }
 
@@ -279,47 +264,19 @@ public class RegionGrower {
         int width = inputImage.getWidth();
         int height = inputImage.getHeight();
         int widthheight = width * height;
-        GaussianBlur blurrer = new GaussianBlur();
-        /*
-         * Image texture (and grey levels) used to control region growth.
-         * Standard deviation of grey levels is used as a simple measure of
-         * texture.
-         */
-        ImageProcessor texture = inputImage.duplicate();
-        texture.findEdges();
-        blurrer.blurGaussian(texture, filtRad, filtRad, 0.01);
-        float[] texturePix = (float[]) texture.getPixels();
         int cellNum = singleImageRegions.size();
-        ArrayList<Region> tempRegions = new ArrayList();
-        float[] inputPix = (float[]) inputImage.getPixels();
         short[] checkImagePix = new short[widthheight];
-        short[] tempRegionPix = new short[widthheight];
         short[] countImagePix = new short[widthheight];
-        short[] expandedImagePix = new short[widthheight];
         Arrays.fill(checkImagePix, Region.MASK_FOREGROUND);
         Arrays.fill(countImagePix, Region.MASK_FOREGROUND);
-        ImageStack regionImageStack = new ImageStack(regionImage.getWidth(), regionImage.getHeight());
         for (int n = 0; n < cellNum; n++) {
-            /*
-             * Initialise distance maps. Any non-seed pixels are set to
-             * MAX_VALUE. Seed pixels are set to zero distance. Using these seed
-             * pixels, temporary regions are added to a temporary ArrayList.
-             */
             for (int x = 0; x < width; x++) {
                 Arrays.fill(distancemaps[n][x], Float.MAX_VALUE);
             }
             Region cell = singleImageRegions.get(n);
             if (cell != null) {
-                float[] centre = cell.getCentre();
-                Region cellcopy = new Region(cell.getMask(),
-                        new short[]{(short) Math.round(centre[0]), (short) Math.round(centre[1])});
-                /*
-                 * Copy initial pixels and border pixels to cell copy for distance
-                 * map construction. This can probably be replaced with a clone
-                 * method.
-                 */
-                Rectangle bounds = cellcopy.getBounds();
-                ImageProcessor mask = cellcopy.getMask();
+                Rectangle bounds = cell.getBounds();
+                ImageProcessor mask = cell.getMask();
                 for (int i = bounds.x; i < bounds.x + bounds.width; i++) {
                     for (int j = bounds.y; j < bounds.y + bounds.height; j++) {
                         if (mask.getPixel(i, j) == Region.MASK_FOREGROUND) {
@@ -327,50 +284,13 @@ public class RegionGrower {
                         }
                     }
                 }
-                LinkedList<short[]> borderPix = cellcopy.getBorderPix();
+                LinkedList<short[]> borderPix = cell.getBorderPix();
                 int bordersize = borderPix.size();
                 for (int s = 0; s < bordersize; s++) {
                     short[] pix = borderPix.get(s);
                     distancemaps[n][pix[0]][pix[1]] = 0.0f;
                 }
-                tempRegions.add(cellcopy);
-            } else {
-                tempRegions.add(new Region(inputImage.getWidth(), inputImage.getHeight(), null));
             }
-            regionImageStack.addSlice(regionImage.duplicate());
-        }
-        saveDistanceMaps(distancemaps, "initialDistanceMap");
-        boolean totChange = true, thisChange;
-        while (totChange) {
-            totChange = false;
-            for (int i = 0; i < cellNum; i++) {
-                if (singleImageRegions.get(i) != null) {
-                    short[] regionImagePix = (short[]) regionImageStack.getProcessor(i + 1).getPixels(); // Temporary reference to ensure each pixel is only considered once.
-                    Region cell = tempRegions.get(i);
-                    if (cell.isActive()) {
-                        Arrays.fill(expandedImagePix, Region.MASK_BACKGROUND);
-                        Arrays.fill(tempRegionPix, Region.MASK_FOREGROUND);
-                        LinkedList<short[]> borderPix = cell.getBorderPix();
-                        int borderLength = borderPix.size();
-                        thisChange = false;
-                        for (int j = 0; j < borderLength; j++) {
-                            short[] thispix = borderPix.get(j);
-                            /*
-                             * thisChange is set to true if dilation occurs at any
-                             * border pixel.
-                             */
-                            thisChange = buildDistanceMaps(regionImagePix, inputPix, cell, thispix, distancemaps[i], thresh, texturePix, i + 1, lambda, expandedImagePix, width, height, countImagePix, tempRegionPix) || thisChange;
-                        }
-                        cell.setActive(thisChange);
-                        totChange = thisChange || totChange; // if all regions cease growing, while loop will exit
-                    }
-                }
-            }
-            /*
-             * Update each region to new dilated size and update regionImages to
-             * assign index to scanned pixels
-             */
-            expandRegions(tempRegions, regionImageStack, cellNum, terminal, tempRegionPix);
         }
     }
 
@@ -393,7 +313,7 @@ public class RegionGrower {
                     regionImagePix[i + jOffset] = intermediate;
                     dilate = true;
                     if (expandedImagePix[i + jOffset] != Region.MASK_FOREGROUND) {
-                        float dist = calcDistance(point, i, j, gradientPix, lambda, width);
+                        float dist = calcDistance(point, p, gradientPix, lambda, width);
                         distancemap[i][j] = distancemap[x][y] + dist;
                         cell.addExpandedBorderPix(p);
                         expandedImagePix[i + jOffset] = Region.MASK_FOREGROUND;
@@ -419,8 +339,8 @@ public class RegionGrower {
         return dilate;
     }
 
-    static float calcDistance(short[] point, int i, int j, float[] gradPix, double lambda, int width) {
-        return (float) ((Math.pow(gradPix[j * width + i] - gradPix[point[0] + point[1] * width], 2.0) + lambda) / (1.0 + lambda));
+    static float calcDistance(short[] point1, short[] point2, float[] gradPix, double lambda, int width) {
+        return (float) ((Math.pow(gradPix[point2[1] * width + point2[0]] - gradPix[point1[0] + point1[1] * width], 2.0) + lambda) / (1.0 + lambda));
     }
 
     private static boolean simpleDilate(short[] regionImagePix, float[] greyPix, Region cell, short[] point, short intermediate, double greyThresh, short index, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix) {
@@ -449,7 +369,7 @@ public class RegionGrower {
                         if (expandedImagePix[i + jOffset] != Region.MASK_FOREGROUND) {
                             cell.addExpandedBorderPix(p);
                             expandedImagePix[i + jOffset] = Region.MASK_FOREGROUND;
-                            tempImagePix[x + yOffset]++;
+                            tempImagePix[i + jOffset]++;
                         }
                     }
                     r = regionImagePix[i + jOffset];
@@ -472,7 +392,7 @@ public class RegionGrower {
         return dilate;
     }
 
-    static boolean dijkstraDilate(short[] regionImagePix, Region cell, short[] point, float[][][] distanceMaps, short intermediate, int index, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix) {
+    static boolean dijkstraDilate(short[] regionImagePix, Region cell, short[] point, float[] greyPix, double greyThresh, float[] gradPix, short intermediate, int index, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix, float[][] distanceMap) {
         int x = point[0];
         int y = point[1];
         int yOffset = y * width;
@@ -482,37 +402,44 @@ public class RegionGrower {
             tempImagePix[x + yOffset]++;
             return false;
         }
-        int N = distanceMaps.length;
         boolean dilate = false;
         boolean remove = true;
+        float minDist = Float.MAX_VALUE;
+        short[] p = null;
         for (int j = y > 0 ? y - 1 : 0; j < height && j <= y + 1; j++) {
             int jOffset = j * width;
             for (int i = x > 0 ? x - 1 : 0; i < width && i <= x + 1; i++) {
-                if (countPix[i + jOffset] == 0) {
-                    countPix[i + jOffset]++;
-                    short r = regionImagePix[i + jOffset];
-                    if ((r == Region.MASK_FOREGROUND || r == intermediate) && distanceMaps[index - 1][i][j] < Float.MAX_VALUE) {
-                        boolean thisdilate = true;
-                        for (int k = 0; k < N; k++) {
-                            if (k != index - 1) {
-                                thisdilate = (distanceMaps[index - 1][i][j]
-                                        < distanceMaps[k][i][j]) && thisdilate;
-                            }
-                        }
-                        if (thisdilate) {
-                            short[] p = new short[]{(short) i, (short) j};
-                            regionImagePix[i + jOffset] = intermediate;
-                            dilate = true;
-                            if (expandedImagePix[i + jOffset] != Region.MASK_FOREGROUND) {
-                                cell.addExpandedBorderPix(p);
-                                expandedImagePix[i + jOffset] = Region.MASK_FOREGROUND;
-                                tempImagePix[x + yOffset]++;
-                            }
-                        }
+//                if (countPix[i + jOffset] == 0) {
+//                    countPix[i + jOffset]++;
+                short r = regionImagePix[i + jOffset];
+                double g = greyPix[jOffset + i];
+                if ((r == Region.MASK_FOREGROUND || r == intermediate) && (g > greyThresh)) {
+                    float dist = distanceMap[x][y] + calcDistance(point, new short[]{(short) i, (short) j}, gradPix, lambda, width);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        p = new short[]{(short) i, (short) j};
                     }
-                    r = regionImagePix[i + jOffset];
-                    remove = (r == intermediate || r == index) && remove;
                 }
+//                }
+            }
+        }
+        if (p != null) {
+            int i = p[0];
+            int jOffset = width * p[1];
+            regionImagePix[i + jOffset] = intermediate;
+            dilate = true;
+            distanceMap[p[0]][p[1]] = minDist;
+            if (expandedImagePix[i + jOffset] != Region.MASK_FOREGROUND) {
+                cell.addExpandedBorderPix(p);
+                expandedImagePix[i + jOffset] = Region.MASK_FOREGROUND;
+                tempImagePix[i + jOffset]++;
+            }
+        }
+        for (int j = y > 0 ? y - 1 : 0; j < height && j <= y + 1; j++) {
+            int jOffset = j * width;
+            for (int i = x > 0 ? x - 1 : 0; i < width && i <= x + 1; i++) {
+                short r = regionImagePix[i + jOffset];
+                remove = (r == intermediate || r == index) && remove;
             }
         }
         if (!remove) {
