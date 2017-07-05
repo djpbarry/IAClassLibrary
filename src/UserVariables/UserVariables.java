@@ -47,7 +47,6 @@ public class UserVariables {
     private final boolean usedSmoothedVels = true;
     private final int ovalRadius = 2;
 //    private boolean simple = true;
-    private double lambda = 10000.0; // parameter used in construction of Voronoi manifolds. See Jones et al., 2005: dx.doi.org/10.1007/11569541_54
     private int minLength = 0;
     private String threshMethod = AutoThresholder.Method.Intermodes.toString();
     private boolean blebDetect = true;
@@ -464,13 +463,6 @@ public class UserVariables {
 //    public void setSimple(boolean simple) {
 //        this.simple = simple;
 //    }
-    public double getLambda() {
-        return lambda;
-    }
-
-    public void setLambda(double lambda) {
-        this.lambda = lambda;
-    }
 
     public int getMinLength() {
         return minLength;

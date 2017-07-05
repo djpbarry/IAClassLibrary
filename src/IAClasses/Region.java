@@ -77,6 +77,9 @@ public class Region {
         this.imageWidth = width;
         this.imageHeight = height;
         this.centres.add(new float[]{centre[0], centre[1]});
+        this.mask = new ByteProcessor(width,height);
+        this.mask.setValue(MASK_BACKGROUND);
+        this.mask.fill();
         this.newBounds(centre);
         this.addBorderPoint(centre, mask);
         edge = false;
