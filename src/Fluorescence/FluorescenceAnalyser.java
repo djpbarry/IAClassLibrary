@@ -21,7 +21,6 @@ import Cell.CellRegion;
 import Cell.Cytoplasm;
 import Cell.Nucleus;
 import IAClasses.Region;
-import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
 import ij.measure.Measurements;
@@ -32,6 +31,10 @@ import ij.process.FloatBlitter;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -171,6 +174,73 @@ public class FluorescenceAnalyser {
             }
         }
         return dists;
+    }
+
+    public static void generateFluorMapsPerCellOverTime(FloatProcessor[] fluorMaps, File childDir) {
+        File mean;
+        File std;
+        PrintWriter meanStream;
+        PrintWriter stdStream;
+        try {
+            mean = new File(childDir + File.separator + "MeanFluorescenceIntensity.csv");
+            meanStream = new PrintWriter(new FileOutputStream(mean));
+            std = new File(childDir + File.separator + "STDFluorescenceIntensity.csv");
+            stdStream = new PrintWriter(new FileOutputStream(std));
+            meanStream.print("Normalised Distance from Cell Edge,");
+            stdStream.print("Normalised Distance from Cell Edge,");
+            int mapHeight = fluorMaps[0].getHeight();
+            int mapWidth = fluorMaps[0].getWidth();
+            for (int x = 0; x < mapWidth; x++) {
+                meanStream.print("Mean Fluorescence Intensity (AU) Frame " + x + ",");
+                stdStream.print("Standard Deviation of Fluorescence Intensity (AU) Frame " + x + ",");
+            }
+            meanStream.println();
+            stdStream.println();
+            for (int y = 0; y < mapHeight; y++) {
+                String normDist = String.valueOf(((double) y) / (mapHeight - 1.0));
+                meanStream.print(normDist + ",");
+                stdStream.print(normDist + ",");
+                for (int x = 0; x < mapWidth; x++) {
+                    meanStream.print(fluorMaps[0].getPixelValue(x, y) + ",");
+                    stdStream.print(fluorMaps[1].getPixelValue(x, y) + ",");
+                }
+                meanStream.println();
+                stdStream.println();
+            }
+            meanStream.close();
+            stdStream.close();
+        } catch (FileNotFoundException e) {
+            System.out.println(e.toString());
+        }
+    }
+
+    public static void generateFluorMapsFromStack(ImageStack fluorMaps, String dir) {
+        File mean;
+        PrintWriter meanStream;
+        try {
+            mean = new File(dir + File.separator + "MeanFluorescenceIntensity.csv");
+            meanStream = new PrintWriter(new FileOutputStream(mean));
+            meanStream.print("Distance,");
+            for (int x = 0; x < fluorMaps.size(); x++) {
+                meanStream.print("Cell " + x + ",");
+            }
+            meanStream.println();
+            int mapHeight = fluorMaps.getHeight();
+            int mapWidth = fluorMaps.getWidth();
+            for (int y = 0; y < mapHeight; y++) {
+                meanStream.print(y + ",");
+                for (int i = 1; i <= fluorMaps.size(); i++) {
+                    ImageProcessor fluorMap = fluorMaps.getProcessor(i);
+                    for (int x = 0; x < mapWidth; x++) {
+                        meanStream.print(fluorMap.getPixelValue(x, y) + ",");
+                    }
+                }
+                meanStream.println();
+            }
+            meanStream.close();
+        } catch (FileNotFoundException e) {
+            System.out.println(e.toString());
+        }
     }
 
 }
