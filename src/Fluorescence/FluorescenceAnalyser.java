@@ -20,16 +20,23 @@ import Cell.Cell;
 import Cell.CellRegion;
 import Cell.Cytoplasm;
 import Cell.Nucleus;
+import IAClasses.Region;
+import ij.ImagePlus;
+import ij.ImageStack;
 import ij.gui.Roi;
 import ij.measure.Measurements;
 import ij.process.Blitter;
 import ij.process.ByteBlitter;
 import ij.process.ByteProcessor;
+import ij.process.FloatBlitter;
+import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 /**
  *
@@ -101,5 +108,69 @@ public class FluorescenceAnalyser {
         }
         return cells2.toArray(new Cell[]{});
     }
-    
+
+    public static ImageStack getMeanFluorDists(Cell[] cells, int height, ImageStack stack, int key, int steps, int stepSize) {
+        ImageStack output = new ImageStack(1, height);
+        Region[] regions = new Region[cells.length];
+        for (int i = 0; i < cells.length; i++) {
+            ByteProcessor mask = new ByteProcessor(stack.getWidth(), stack.getHeight());
+            mask.setValue(Region.MASK_BACKGROUND);
+            mask.fill();
+            Roi roi = cells[i].getNucleus().getRoi();
+            ImageProcessor roiMask = roi.getMask();
+            roiMask.invert();
+            (new ByteBlitter(mask)).copyBits(roiMask, roi.getBounds().x, roi.getBounds().y, Blitter.COPY);
+            regions[i] = new Region(mask, cells[i].getNucleus().getCentroid());
+        }
+        for (Region region : regions) {
+            output.addSlice(getFluorDists(height, stack, ImageProcessor.MIN, steps, stepSize, new Region[]{region}, 1, 1)[0]);
+        }
+        return output;
+    }
+
+    public static FloatProcessor[] getFluorDists(int height, ImageStack stack, int key, int steps, int stepSize, Region[] regions, int start, int end) {
+        FloatProcessor[] dists = new FloatProcessor[2];
+        int width = 1 + end - start;
+        dists[0] = new FloatProcessor(width, height);
+        dists[1] = new FloatProcessor(width, height);
+        FloatBlitter meanBlitter = new FloatBlitter(dists[0]);
+        FloatBlitter stdBlitter = new FloatBlitter(dists[1]);
+        Mean mean = new Mean();
+        StandardDeviation std = new StandardDeviation();
+        for (int i = start; i <= end; i++) {
+            Region r = regions[i - 1];
+            Region current = new Region(r.getMask(), r.getCentre());
+            ArrayList<Double> means = new ArrayList();
+            ArrayList<Double> stds = new ArrayList();
+            int index = 0, s = 0;
+            while (current.morphFilter(stepSize, false, index, key) && s++ < steps) {
+                float[][] pix = current.buildMapCol(stack.getProcessor(i), height, 3);
+                if (pix != null) {
+                    double[] pixVals = new double[pix.length];
+                    for (int j = 0; j < height; j++) {
+                        pixVals[j] = pix[j][2];
+                    }
+                    means.add(mean.evaluate(pixVals, 0, height));
+                    stds.add(std.evaluate(pixVals));
+                    index++;
+                }
+            }
+            if (index > 0) {
+                FloatProcessor meanCol = new FloatProcessor(1, means.size());
+                FloatProcessor stdCol = new FloatProcessor(1, stds.size());
+                for (int k = 0; k < meanCol.getHeight(); k++) {
+                    meanCol.putPixelValue(0, k, means.get(k));
+                    stdCol.putPixelValue(0, k, stds.get(k));
+                }
+                meanCol.setInterpolate(true);
+                meanCol.setInterpolationMethod(ImageProcessor.BILINEAR);
+                stdCol.setInterpolate(true);
+                stdCol.setInterpolationMethod(ImageProcessor.BILINEAR);
+                meanBlitter.copyBits(meanCol.resize(1, height), i - start, 0, Blitter.COPY);
+                stdBlitter.copyBits(stdCol.resize(1, height), i - start, 0, Blitter.COPY);
+            }
+        }
+        return dists;
+    }
+
 }

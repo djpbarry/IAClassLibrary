@@ -52,8 +52,12 @@ public class Region {
         this.index = index;
     }
 
-    public Region(ImageProcessor mask, float[] centre) {
+    public Region(ImageProcessor mask, double[] centre) {
         this(mask, new short[]{(short) Math.round(centre[0]), (short) Math.round(centre[1])});
+    }
+
+    public Region(ImageProcessor mask, float[] centre) {
+        this(mask, new double[]{centre[0], centre[1]});
     }
 
     public Region(ImageProcessor mask, short[] centre) {
@@ -77,7 +81,7 @@ public class Region {
         this.imageWidth = width;
         this.imageHeight = height;
         this.centres.add(new float[]{centre[0], centre[1]});
-        this.mask = new ByteProcessor(width,height);
+        this.mask = new ByteProcessor(width, height);
         this.mask.setValue(MASK_BACKGROUND);
         this.mask.fill();
         this.newBounds(centre);
@@ -681,15 +685,20 @@ public class Region {
         return bounds;
     }
 
-    public boolean shrink(int iterations, boolean interpolate, int index) {
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barryd/adapt_debug/mask_b" + index + ".png");
+    public boolean morphFilter(int iterations, boolean interpolate, int index, int mode) {
         if (mask == null) {
             mask = getMask();
         }
         for (int i = 0; i < iterations; i++) {
-            mask.erode();
+            switch (mode) {
+                case ImageProcessor.MIN:
+                    mask.dilate();
+                    break;
+                case ImageProcessor.MAX:
+                    mask.erode();
+                    break;
+            }
         }
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barryd/adapt_debug/mask_a" + index + ".png");
         short[][] newBorder = getOrderedBoundary(mask.getWidth(), mask.getHeight(), mask, getCentre());
         if (newBorder == null) {
             return false;
