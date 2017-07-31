@@ -33,11 +33,12 @@ public class PeakFinder {
         return inputImage;
     }
 
-    public static int[] findMaxAndSides(double[] data, double radius) {
+    public static int[] findMaxAndSides(double[] data) {
         DescriptiveStatistics stats = new DescriptiveStatistics(data);
         double max = stats.getMax();
+        double min = stats.getMin();
         int[] indices = new int[]{-1, -1, -1};
-        double[] thresholds = new double[]{0.5 * max, max, 0.75 * max};
+        double[] thresholds = new double[]{0.5 * (max - min) + min, max, 0.8 * (max - min) + min};
         boolean[] ops = new boolean[]{true, true, false};
         int j = 0;
         for (int i = 0; i < data.length && j < 3; i++) {
@@ -46,6 +47,22 @@ public class PeakFinder {
             }
         }
         return indices;
+    }
+
+    public static double[] smoothData(double[] data, double radius) {
+        FloatProcessor fp = new FloatProcessor(data.length, 1);
+        float[] floatPix = new float[data.length];
+        for (int i = 0; i < data.length; i++) {
+            floatPix[i] = (float) data[i];
+        }
+        fp.setPixels(floatPix);
+        (new GaussianBlur()).blurGaussian(fp, radius);
+        floatPix = (float[]) fp.getPixels();
+        double[] doublePix = new double[floatPix.length];
+        for (int i = 0; i < data.length; i++) {
+            doublePix[i] = floatPix[i];
+        }
+        return doublePix;
     }
 
 }
