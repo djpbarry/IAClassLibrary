@@ -53,7 +53,7 @@ import java.util.LinkedList;
  */
 public class RegionGrower {
 
-    private static boolean simple = false;
+    private static boolean simple = true;
     public static short terminal;
     public static short intermediate;
     private static double lambda = 100.0, filtRad = 10.0; // parameter used in construction of Voronoi manifolds. See Jones et al., 2005: dx.doi.org/10.1007/11569541_54
@@ -196,8 +196,8 @@ public class RegionGrower {
         if (!simple) {
             distancemaps = new float[cellNum][width][height];
             initDistanceMaps(inputImage, (ShortProcessor) regionImage.duplicate(), singleImageRegions, distancemaps, 1.0, threshold);
+            saveDistanceMaps(distancemaps, "DistanceMaps");
         }
-        saveDistanceMaps(distancemaps, "DistanceMaps");
 //        ImageStack regionImageStack = new ImageStack(regionImage.getWidth(), regionImage.getHeight());
         int count = 0;
         while (totChange) {
