@@ -31,7 +31,7 @@ public class MacroWriter {
         if (IJ.getInstance() == null) {
             imagej = "C:/users/barryd/fiji-nojre/Fiji.app/";
         } else {
-            IJ.getDirectory("imagej");
+            imagej = IJ.getDirectory("imagej");
         }
         File dir = GenUtils.createDirectory(imagej + "plugins/Scripts/Plugins/AutoRun", true);
         String content = "filename = \"./plugins/Scripts/CellMotilityWarningIssued.txt\";\n"
