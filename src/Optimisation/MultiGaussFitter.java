@@ -193,7 +193,7 @@ public class MultiGaussFitter extends Fitter {
         return fits;
     }
 
-    boolean initialize(double xySigEst){
+    boolean initialize(){
         return true;
     }
 

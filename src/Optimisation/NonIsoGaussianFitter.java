@@ -4,8 +4,6 @@
  */
 package Optimisation;
 
-import Optimisation.IsoGaussianFitter;
-
 /**
  *
  * @author barry05
@@ -34,8 +32,8 @@ public class NonIsoGaussianFitter extends IsoGaussianFitter {
         }
     }
 
-    boolean initialize(double sigmaEst) {
-        if (sigmaEst <= 0.0 || xData == null || yData == null || zData == null) {
+    boolean initialize() {
+        if (sigEst <= 0.0 || xData == null || yData == null || zData == null) {
             return false;
         }
         // Calculate some things that might be useful for predicting parametres
@@ -65,8 +63,8 @@ public class NonIsoGaussianFitter extends IsoGaussianFitter {
         restarts = defaultRestarts;
         nRestarts = 0;
         simp[0][0] = 0.0;
-        simp[0][1] = sigmaEst;
-        simp[0][2] = sigmaEst;
+        simp[0][1] = sigEst;
+        simp[0][2] = sigEst;
         simp[0][3] = maxz;
         simp[0][4] = xmean;
         simp[0][5] = ymean;

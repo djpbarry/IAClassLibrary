@@ -1,7 +1,5 @@
 package Optimisation;
 
-import Optimisation.Fitter;
-
 /**
  * 2D Gaussian Curve Fitter based on ImageJ's <code>CurveFitter</code>.
  *
@@ -12,7 +10,7 @@ import Optimisation.Fitter;
  */
 public class IsoGaussianFitter extends Fitter {
 
-    private double x0, y0, mag, sigEst;
+    protected double x0, y0, mag, sigEst;
     private boolean floatingSigma;
 
     public IsoGaussianFitter() {
@@ -21,10 +19,11 @@ public class IsoGaussianFitter extends Fitter {
     /**
      * Construct a new CurveFitter.
      */
-    public IsoGaussianFitter(double[] xVals, double[] yVals, double[][] zVals, boolean floatingSigma) {
+    public IsoGaussianFitter(double[] xVals, double[] yVals, double[][] zVals, boolean floatingSigma, double sigEst) {
         this.xData = xVals;
         this.yData = yVals;
         this.zData = new double[xData.length * yData.length];
+        this.sigEst = sigEst;
         for (int x = 0; x < xData.length; x++) {
             for (int y = 0; y < yData.length; y++) {
                 double z = zVals[x][y];
@@ -50,7 +49,7 @@ public class IsoGaussianFitter extends Fitter {
         }
     }
 
-    boolean initialize(double xySigEst) {
+    boolean initialize() {
         if (xData == null || yData == null || zData == null) {
             return false;
         }
@@ -85,9 +84,7 @@ public class IsoGaussianFitter extends Fitter {
         simp[0][2] = xmean; // c
         simp[0][3] = ymean; // d
         if (floatingSigma) {
-            simp[0][4] = xySigEst;
-        } else {
-            sigEst = xySigEst;
+            simp[0][4] = sigEst;
         }
         return true;
     }

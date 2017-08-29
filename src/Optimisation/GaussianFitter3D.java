@@ -48,7 +48,7 @@ public class GaussianFitter3D extends IsoGaussianFitter {
         (new ImagePlus("", stack)).show();
     }
 
-    boolean initialize(double xySigEst) {
+    boolean initialize() {
         if ( xData == null || yData == null || zData == null) {
             return false;
         }

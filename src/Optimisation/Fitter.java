@@ -23,7 +23,7 @@ public abstract class Fitter {
     protected static final double gamma = 2.0; // expansion coefficient
     protected static final double beta = 0.5; // contraction coefficient
     protected static double maxError = 1.0E-10; // maximum error tolerance
-    protected static final double root2 = 1.414214; // square root of 2
+    protected static final double root2 = Math.pow(2.0, 0.5); // square root of 2
     public static final int IterFactor = 500;
     protected static int defaultRestarts = 2; // default number of restarts
     protected double[] xData;
@@ -42,11 +42,11 @@ public abstract class Fitter {
     protected int nRestarts; // the number of restarts that occurred
     protected int numPoints; // number of data points
 
-    public boolean doFit(double xySigEst) {
+    public boolean doFit() {
         if (xData == null || yData == null || zData == null) {
             return false;
         }
-        initialize(xySigEst);
+        initialize();
         restart(0);
         numIter = 0;
         boolean done = false;
@@ -132,7 +132,7 @@ public abstract class Fitter {
     /**
      * Initialise the simplex
      */
-    abstract boolean initialize(double xySigEst);
+    abstract boolean initialize();
 
     /**
      * Restart the simplex at the nth vertex
