@@ -65,7 +65,7 @@ public class MultiGaussFitter extends Fitter {
                         ye[n][m] = ye[n - 1][m];
                         mag[n][m] = mag[n - 1][m];
                         bg[n][m] = bg[n - 1][m];
-                        residual -= multiEvaluate(xe[n][m], ye[n][m], mag[n][m], bg[n][m], i, j);
+                        residual -= evaluate(new double[]{i, j}, xe[n][m], ye[n][m], mag[n][m], bg[n][m]);
                     }
                     if (residual > mag[n][n]) {
                         mag[n][n] = residual;
@@ -135,11 +135,11 @@ public class MultiGaussFitter extends Fitter {
                 float res = 0.0f;
                 int k;
                 for (k = 0; k < index; k++) {
-                    res += multiEvaluate(xe[N][k], ye[N][k], mag[N][k], bg[N][k], i, j);
+                    res += evaluate(new double[]{i, j}, xe[N][k], ye[N][k], mag[N][k], bg[N][k]);
                 }
-                res += multiEvaluate(xe[N][k] + xinc, ye[N][k] + yinc, mag[N][k] + minc, bg[N][k] + bginc, i, j);
+                res += evaluate(new double[]{i, j}, xe[N][k] + xinc, ye[N][k] + yinc, mag[N][k] + minc, bg[N][k] + bginc);
                 for (k = index + 1; k <= N; k++) {
-                    res += multiEvaluate(xe[N][k], ye[N][k], mag[N][k], bg[N][k], i, j);
+                    res += evaluate(new double[]{i, j}, xe[N][k], ye[N][k], mag[N][k], bg[N][k]);
                 }
                 double e = res - M[i][j];
                 residuals += e * e;
@@ -166,8 +166,8 @@ public class MultiGaussFitter extends Fitter {
         return 1.0 - (srs / sumMeanDiffSqr);
     }
 
-    double multiEvaluate(double x0, double y0, double mag, double bg, int x, int y) {
-        return mag * Math.exp(-(((x - x0) * (x - x0) + (y - y0) * (y - y0)) / (_2sig2))) + bg;
+    public double evaluate(double[] x, double... p) {
+        return p[2] * Math.exp(-(((x[0] - p[0]) * (x[0] - p[0]) + (x[1] - p[1]) * (x[1] - p[1])) / (_2sig2))) + p[3];
     }
 
     public ArrayList<IsoGaussian> getFits(double spatialRes, double xoffset, double yoffset, double magThresh, double fitThresh) {
@@ -191,6 +191,10 @@ public class MultiGaussFitter extends Fitter {
             }
         }
         return fits;
+    }
+
+    boolean initialize(double xySigEst){
+        return true;
     }
 
     void getBestModel() {
