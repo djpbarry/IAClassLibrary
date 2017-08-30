@@ -52,8 +52,8 @@ public abstract class Fitter {
         boolean done = false;
         double[] center = new double[numParams]; // mean of simplex vertices
         while (!done) {
-            System.out.println("x= " + simp[best][0] + "; y= " + simp[best][1]
-                    + "; r= " + simp[best][2]);
+//            System.out.println("x= " + simp[best][0] + "; y= " + simp[best][1]
+//                    + "; r= " + simp[best][2]);
             numIter++;
             for (int i = 0; i < numParams; i++) {
                 center[i] = 0.0;

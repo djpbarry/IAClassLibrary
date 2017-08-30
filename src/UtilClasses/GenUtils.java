@@ -128,7 +128,7 @@ public class GenUtils {
             }
             if (!dir.exists()) {
                 if (!dir.mkdirs()) {
-                    IJ.error("Failed to create directory: " + dirName);
+                    IJ.log("Failed to create directory: " + dirName);
                     return null;
                 }
             }
