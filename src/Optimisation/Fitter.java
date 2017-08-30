@@ -19,9 +19,9 @@ package Optimisation;
 
 public abstract class Fitter {
 
-    protected static final double alpha = -1.0; // reflection coefficient
-    protected static final double gamma = 2.0; // expansion coefficient
-    protected static final double beta = 0.5; // contraction coefficient
+    protected final double alpha = -1.0; // reflection coefficient
+    protected final double gamma = 2.0; // expansion coefficient
+    protected final double beta = 0.5; // contraction coefficient
     protected static double maxError = 1.0E-10; // maximum error tolerance
     protected static final double root2 = Math.pow(2.0, 0.5); // square root of 2
     public static final int IterFactor = 500;
@@ -52,10 +52,8 @@ public abstract class Fitter {
         boolean done = false;
         double[] center = new double[numParams]; // mean of simplex vertices
         while (!done) {
-            //            System.out.println("x1= " + simp[best][0] + "; s1= " + simp[best][1]
-            //                    + "; x2= " + simp[best][2] + "; s2= " + simp[best][3] + "; y1= "
-            //                    + simp[best][4] + "; s3= " + simp[best][5] + "; A= " + simp[best][6]
-            //                    + "; a= " + simp[best][7] + ";");
+            System.out.println("x= " + simp[best][0] + "; y= " + simp[best][1]
+                    + "; r= " + simp[best][2]);
             numIter++;
             for (int i = 0; i < numParams; i++) {
                 center[i] = 0.0;
@@ -123,9 +121,6 @@ public abstract class Fitter {
                 }
             }
         }
-//        mag = simp[best][1];
-//        x0 = simp[best][2];
-//        y0 = simp[best][3];
         return true;
     }
 

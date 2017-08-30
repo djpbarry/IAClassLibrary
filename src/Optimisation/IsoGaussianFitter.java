@@ -26,7 +26,6 @@ public class IsoGaussianFitter extends Fitter {
         this.sigEst = sigEst;
         for (int x = 0; x < xData.length; x++) {
             for (int y = 0; y < yData.length; y++) {
-                double z = zVals[x][y];
                 this.zData[y * xData.length + x] = zVals[x][y];
             }
         }
