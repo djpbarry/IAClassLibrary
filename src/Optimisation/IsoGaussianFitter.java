@@ -10,6 +10,7 @@ package Optimisation;
  */
 public class IsoGaussianFitter extends Fitter {
 
+    private final int BG = 0, MAG = 1, X0 = 2, Y0 = 3, SIGMA = 4;
     protected double x0, y0, mag, sigEst;
     private boolean floatingSigma;
 
@@ -41,10 +42,9 @@ public class IsoGaussianFitter extends Fitter {
             numPoints = 0;
         }
         this.floatingSigma = floatingSigma;
+        numParams = Y0 + 1;
         if (floatingSigma) {
-            numParams = 5;
-        } else {
-            numParams = 4;
+            numParams++;
         }
     }
 
@@ -78,12 +78,12 @@ public class IsoGaussianFitter extends Fitter {
         maxIter = IterFactor * numParams * numParams; // Where does this estimate come from?
         restarts = defaultRestarts;
         nRestarts = 0;
-        simp[0][0] = minz; // a
-        simp[0][1] = maxz; // b
-        simp[0][2] = xmean; // c
-        simp[0][3] = ymean; // d
+        simp[0][BG] = minz; // a
+        simp[0][MAG] = maxz; // b
+        simp[0][X0] = xmean; // c
+        simp[0][Y0] = ymean; // d
         if (floatingSigma) {
-            simp[0][4] = sigEst;
+            simp[0][SIGMA] = sigEst;
         }
         return true;
     }
@@ -97,10 +97,10 @@ public class IsoGaussianFitter extends Fitter {
         }
         double sig = sigEst;
         if (floatingSigma) {
-            sig = p[4];
+            sig = p[SIGMA];
         }
-        return p[0] + p[1] * Math.exp(-(((x[0] - p[2]) * (x[0] - p[2])) / (2 * sig * sig) + ((x[1] - p[3])
-                * (x[1] - p[3])) / (2 * sig * sig)));
+        return p[BG] + p[MAG] * Math.exp(-(((x[0] - p[X0]) * (x[0] - p[X0])) / (2 * sig * sig) + ((x[1] - p[Y0])
+                * (x[1] - p[Y0])) / (2 * sig * sig)));
     }
 
     public int getNumParams() {
@@ -108,30 +108,30 @@ public class IsoGaussianFitter extends Fitter {
     }
 
     public double getMag() {
-        return mag;
+        return simp[best][MAG];
     }
 
     public double getX0() {
-        return x0;
+        return simp[best][X0];
     }
 
     public double getXsig() {
         if (!floatingSigma) {
             return sigEst;
         } else {
-            return simp[best][4];
+            return simp[best][SIGMA];
         }
     }
 
     public double getY0() {
-        return y0;
+        return simp[best][Y0];
     }
 
     public double getYsig() {
         if (!floatingSigma) {
             return sigEst;
         } else {
-            return simp[best][4];
+            return simp[best][SIGMA];
         }
     }
 
