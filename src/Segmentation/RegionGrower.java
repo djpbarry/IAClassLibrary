@@ -58,7 +58,7 @@ public class RegionGrower {
     public static short intermediate;
     private static double lambda = 100.0, filtRad = 10.0; // parameter used in construction of Voronoi manifolds. See Jones et al., 2005: dx.doi.org/10.1007/11569541_54
 
-    public static int initialiseROIs(ByteProcessor masks, int threshold, int start, ImageProcessor input, PointRoi roi, int width, int height, int size, ArrayList<CellData> cellData, UserVariables uv, boolean protMode) {
+    public static int initialiseROIs(ByteProcessor masks, int threshold, int start, ImageProcessor input, PointRoi roi, int width, int height, int size, ArrayList<CellData> cellData, UserVariables uv, boolean protMode, boolean selectiveOutput) {
         ArrayList<short[]> initP = new ArrayList();
         int n;
         if (roi != null) {
@@ -88,9 +88,9 @@ public class RegionGrower {
         int s = cellData.size();
         int N = s + n;
         for (int i = s; i < N; i++) {
-            cellData.add(new CellData(start));
-            cellData.get(i).setImageWidth(width);
-            cellData.get(i).setImageHeight(height);
+            CellData cell = new CellData(start, selectiveOutput ? start == 1 : true);
+            cell.setImageWidth(width);
+            cell.setImageHeight(height);
             short[] init;
             if (roi != null) {
                 init = new short[]{(short) (roi.getXCoordinates()[i] + roi.getBounds().x), (short) (roi.getYCoordinates()[i] + roi.getBounds().y)};
@@ -103,12 +103,13 @@ public class RegionGrower {
                 mask.fill();
                 mask.setColor(Region.MASK_FOREGROUND);
                 mask.drawPixel(init[0], init[1]);
-                cellData.get(i).setInitialRegion(new Region(mask, init));
-                cellData.get(i).setEndFrame(size);
+                cell.setInitialRegion(new Region(mask, init));
+                cell.setEndFrame(size);
             } else {
-                cellData.get(i).setInitialRegion(null);
-                cellData.get(i).setEndFrame(0);
+                cell.setInitialRegion(null);
+                cell.setEndFrame(0);
             }
+            cellData.add(cell);
         }
         return n;
     }
@@ -124,7 +125,7 @@ public class RegionGrower {
             }
         }
         ArrayList<CellData> cells = new ArrayList();
-        RegionGrower.initialiseROIs(null, -1, 0, inputProc, proi, inputProc.getWidth(), inputProc.getHeight(), 1, cells, null, false);
+        RegionGrower.initialiseROIs(null, -1, 0, inputProc, proi, inputProc.getWidth(), inputProc.getHeight(), 1, cells, null, false, false);
         return findCellRegions(inputProc, getThreshold(inputProc, true, t, method), cells);
     }
 

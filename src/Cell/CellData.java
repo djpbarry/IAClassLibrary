@@ -44,9 +44,15 @@ public class CellData {
     private Region[] cellRegions;
     private Region initialRegion;
     private int imageWidth, imageHeight;
+    private boolean output;
 
     public CellData(int startframe) {
+        this(startframe, true);
+    }
+
+    public CellData(int startframe, boolean output) {
         this.startFrame = startframe;
+        this.output = output;
     }
 
     /**
@@ -336,4 +342,13 @@ public class CellData {
     public int getLength() {
         return 1 + endFrame - startFrame;
     }
+
+    public boolean isOutput() {
+        return output;
+    }
+
+    public void setOutput(boolean output) {
+        this.output = output;
+    }
+    
 }
