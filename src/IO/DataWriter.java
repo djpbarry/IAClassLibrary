@@ -65,7 +65,11 @@ public class DataWriter {
         for (int l = 0; l < L; l++) {
             if (vals[l] != null) {
                 for (double v : vals[l]) {
-                    printer.print(v);
+                    if (!Double.isNaN(v)) {
+                        printer.print(v);
+                    } else {
+                        printer.print(" ");
+                    }
                 }
                 printer.println();
             }
@@ -103,5 +107,26 @@ public class DataWriter {
             output = (output.concat(String.valueOf(s))).concat(delimiter);
         }
         return output;
+    }
+
+    public static double[][] transposeValues(double[][] data) {
+        int l1 = data.length;
+        int l2 = -1;
+        for (double[] d : data) {
+            if (d != null && d.length > l2) {
+                l2 = d.length;
+            }
+        }
+        double[][] transposedData = new double[l2][l1];
+        for (int i = 0; i < l2; i++) {
+            for (int j = 0; j < l1; j++) {
+                if (data[j] != null && i < data[j].length) {
+                    transposedData[i][j] = data[j][i];
+                } else {
+                    transposedData[i][j] = Double.NaN;
+                }
+            }
+        }
+        return transposedData;
     }
 }
