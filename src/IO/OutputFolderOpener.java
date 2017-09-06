@@ -49,34 +49,37 @@ public class OutputFolderOpener implements Runnable {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle(title);
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fileChooser.setApproveButtonText("Ok");
+            fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
             if (currentDirectory != null) {
                 fileChooser.setCurrentDirectory(currentDirectory);
             }
             int result;
             try {
-                result = fileChooser.showOpenDialog(IJ.getInstance());
+                result = fileChooser.showDialog(IJ.getInstance(), "Ok");
             } catch (HeadlessException e) {
                 GenUtils.error(e.toString());
                 result = JFileChooser.ERROR_OPTION;
             }
-            if (result == JFileChooser.CANCEL_OPTION) {
-                Toolkit.getDefaultToolkit().beep();
-                boolean exit = addExitOption ? IJ.showMessageWithCancel("Exit", "Do you wish to exit?") : true;
-                if (exit) {
+            switch (result) {
+                case JFileChooser.CANCEL_OPTION:
+                    Toolkit.getDefaultToolkit().beep();
+                    boolean exit = addExitOption ? IJ.showMessageWithCancel("Exit", "Do you wish to exit?") : true;
+                    if (exit) {
+                        return;
+                    }
+                    break;
+                case JFileChooser.APPROVE_OPTION:
+                    newDirectory = fileChooser.getSelectedFile();
+                    if (!(newDirectory.isDirectory() && newDirectory.exists())) {
+                        IJ.showMessage("Invalid Directory!");
+                        validDirectory = false;
+                    } else {
+                        validDirectory = true;
+                    }
+                    break;
+                default:
+                    GenUtils.error("Error opening output directory.");
                     return;
-                }
-            } else if (result == JFileChooser.APPROVE_OPTION) {
-                newDirectory = fileChooser.getSelectedFile();
-                if (!(newDirectory.isDirectory() && newDirectory.exists())) {
-                    IJ.showMessage("Invalid Directory!");
-                    validDirectory = false;
-                } else {
-                    validDirectory = true;
-                }
-            } else {
-                GenUtils.error("Error opening output directory.");
-                return;
             }
         }
     }
@@ -84,6 +87,5 @@ public class OutputFolderOpener implements Runnable {
     public File getNewDirectory() {
         return newDirectory;
     }
-    
-    
+
 }
