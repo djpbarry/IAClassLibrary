@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.util.Scanner;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 public class DataWriter {
@@ -52,18 +53,24 @@ public class DataWriter {
         printer.println();
     }
 
-    public static void saveValues(double[] vals, File dataFile, String[] headings) throws IOException {
-        saveValues(new double[][]{vals}, dataFile, headings);
+    public static void saveValues(double[] vals, File dataFile, String[] colHeadings, String[] rowLabels) throws IOException {
+        saveValues(new double[][]{vals}, dataFile, colHeadings, rowLabels);
     }
 
-    public static void saveValues(double[][] vals, File dataFile, String[] headings) throws IOException {
+    public static void saveValues(double[][] vals, File dataFile, String[] colHeadings, String[] rowLabels) throws IOException {
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile), GenVariables.ISO), CSVFormat.EXCEL);
         int L = vals.length;
-        if (headings != null) {
-            printer.printRecord((Object[]) headings);
+        if (rowLabels != null) {
+            colHeadings = ArrayUtils.addAll(new String[]{" "}, colHeadings);
+        }
+        if (colHeadings != null) {
+            printer.printRecord((Object[]) colHeadings);
         }
         for (int l = 0; l < L; l++) {
             if (vals[l] != null) {
+                if (rowLabels != null) {
+                    printer.print(rowLabels[l]);
+                }
                 for (double v : vals[l]) {
                     if (!Double.isNaN(v)) {
                         printer.print(v);

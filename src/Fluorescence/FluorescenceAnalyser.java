@@ -214,7 +214,7 @@ public class FluorescenceAnalyser {
         }
     }
 
-    public static void generateFluorMapsFromStack(ImageStack fluorMaps, String dir) {
+    public static void generateFluorMapsFromStack(ImageStack fluorMaps, String dir, String[] headings) {
         File mean;
         PrintWriter meanStream;
         try {
@@ -222,7 +222,7 @@ public class FluorescenceAnalyser {
             meanStream = new PrintWriter(new FileOutputStream(mean));
             meanStream.print("Distance,");
             for (int x = 0; x < fluorMaps.size(); x++) {
-                meanStream.print("Cell " + x + ",");
+                meanStream.print(headings[x] + ",");
             }
             meanStream.println();
             int mapHeight = fluorMaps.getHeight();

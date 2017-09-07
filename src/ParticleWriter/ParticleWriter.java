@@ -21,7 +21,6 @@ import Particle.Blob;
 import Particle.IsoGaussian;
 import Particle.Particle;
 import ij.process.ImageProcessor;
-import java.awt.Color;
 import java.util.ArrayList;
 
 /**
@@ -30,8 +29,7 @@ import java.util.ArrayList;
  */
 public class ParticleWriter {
 
-    public static void drawParticle(ImageProcessor image,
-            Particle p, boolean preview, double blobSize, double spatialRes) {
+    public static void drawParticle(ImageProcessor image, Particle p, boolean preview, double blobSize, double spatialRes, int label) {
         int radius = (int) Math.round(blobSize / spatialRes);
         int x = (int) Math.round(p.getX() / spatialRes);
         int y = (int) Math.round(p.getY() / spatialRes);
@@ -48,11 +46,14 @@ public class ParticleWriter {
             image.drawLine(x, y - radius, x, y + radius);
             image.drawLine(x + radius, y, x - radius, y);
         }
+        if (label >= 0) {
+            image.drawString(String.format("%d", label), x, y);
+        }
     }
 
-    public static void drawDetections(ArrayList<Particle> detections, ImageProcessor output, boolean preview, double blobSize, double spatialRes) {
-        for (Particle p : detections) {
-            drawParticle(output, p, preview, blobSize, spatialRes);
+    public static void drawDetections(ArrayList<Particle> detections, ImageProcessor output, boolean preview, double blobSize, double spatialRes, boolean label) {
+        for (int i = 0; i < detections.size(); i++) {
+            drawParticle(output, detections.get(i), preview, blobSize, spatialRes, label ? i + 1 : -1);
         }
     }
 
