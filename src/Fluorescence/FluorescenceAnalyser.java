@@ -21,6 +21,8 @@ import Cell.CellRegion;
 import Cell.Cytoplasm;
 import Cell.Nucleus;
 import IAClasses.Region;
+import IO.DataWriter;
+import ij.IJ;
 import ij.ImageStack;
 import ij.gui.Roi;
 import ij.measure.Measurements;
@@ -34,9 +36,11 @@ import ij.process.ImageStatistics;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
@@ -215,31 +219,24 @@ public class FluorescenceAnalyser {
     }
 
     public static void generateFluorMapsFromStack(ImageStack fluorMaps, String dir, String[] headings) {
-        File mean;
-        PrintWriter meanStream;
-        try {
-            mean = new File(dir + File.separator + "MeanFluorescenceIntensity.csv");
-            meanStream = new PrintWriter(new FileOutputStream(mean));
-            meanStream.print("Distance,");
-            for (int x = 0; x < fluorMaps.size(); x++) {
-                meanStream.print(headings[x] + ",");
-            }
-            meanStream.println();
-            int mapHeight = fluorMaps.getHeight();
-            int mapWidth = fluorMaps.getWidth();
-            for (int y = 0; y < mapHeight; y++) {
-                meanStream.print(y + ",");
-                for (int i = 1; i <= fluorMaps.size(); i++) {
-                    ImageProcessor fluorMap = fluorMaps.getProcessor(i);
-                    for (int x = 0; x < mapWidth; x++) {
-                        meanStream.print(fluorMap.getPixelValue(x, y) + ",");
-                    }
+        File mean = new File(String.format("%s%s%s", dir, File.separator, "MeanFluorescenceIntensity.csv"));
+        headings = ArrayUtils.addAll(new String[]{"Distance"}, headings);
+        int mapHeight = fluorMaps.getHeight();
+        int mapWidth = fluorMaps.getWidth();
+        double[][] data = new double[mapHeight][fluorMaps.getSize() + 1];
+        for (int y = 0; y < mapHeight; y++) {
+            data[y][0] = y;
+            for (int i = 1; i <= fluorMaps.size(); i++) {
+                ImageProcessor fluorMap = fluorMaps.getProcessor(i);
+                for (int x = 0; x < mapWidth; x++) {
+                    data[y][i] = fluorMap.getPixelValue(x, y);
                 }
-                meanStream.println();
             }
-            meanStream.close();
-        } catch (FileNotFoundException e) {
-            System.out.println(e.toString());
+        }
+        try {
+            DataWriter.saveValues(data, mean, headings, null);
+        } catch (IOException e) {
+            IJ.log(String.format("Failed to save mean fluorescence data: %s", e.toString()));
         }
     }
 
