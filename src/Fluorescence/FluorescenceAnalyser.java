@@ -220,12 +220,12 @@ public class FluorescenceAnalyser {
 
     public static void generateFluorMapsFromStack(ImageStack fluorMaps, String dir, String[] headings) {
         File mean = new File(String.format("%s%s%s", dir, File.separator, "MeanFluorescenceIntensity.csv"));
-        headings = ArrayUtils.addAll(new String[]{"Distance"}, headings);
+        headings = ArrayUtils.addAll(new String[]{"Normalised Distance From Nucleus"}, headings);
         int mapHeight = fluorMaps.getHeight();
         int mapWidth = fluorMaps.getWidth();
         double[][] data = new double[mapHeight][fluorMaps.getSize() + 1];
         for (int y = 0; y < mapHeight; y++) {
-            data[y][0] = y;
+            data[y][0] = ((double) y) / (mapHeight-1);
             for (int i = 1; i <= fluorMaps.size(); i++) {
                 ImageProcessor fluorMap = fluorMaps.getProcessor(i);
                 for (int x = 0; x < mapWidth; x++) {
