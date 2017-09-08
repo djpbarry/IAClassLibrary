@@ -54,7 +54,7 @@ public class RegionEdge {
     public void buildGradPix(ImageProcessor gradImage) {
         List<Pixel2> startRegionBorder = startVertex.getBorderPix();
         List<Pixel2> endRegionBorder = endVertex.getBorderPix();
-        gradPix = new ArrayList();
+        gradPix = new ArrayList<>();
         int endIndex = endVertex.getIndex();
         for (Pixel2 pix : startRegionBorder) {
             if (Arrays.binarySearch(pix.getAssociations(), endIndex) >= 0) {

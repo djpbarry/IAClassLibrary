@@ -29,10 +29,10 @@ import java.util.List;
 public class Region2 {
 
 //    protected ArrayList<short[]> seedPix = new ArrayList<short[]>();
-    protected ArrayList<Pixel2> pix = new ArrayList();
-    protected LinkedList<Pixel2> borderPix = new LinkedList();
-    protected LinkedList<Pixel2> expandedBorder = new LinkedList();
-    protected ArrayList<Pixel2> centres = new ArrayList();
+    protected ArrayList<Pixel2> pix = new ArrayList<>();
+    protected LinkedList<Pixel2> borderPix = new LinkedList<>();
+    protected LinkedList<Pixel2> expandedBorder = new LinkedList<>();
+    protected ArrayList<Pixel2> centres = new ArrayList<>();
     private double min = Double.MAX_VALUE, max = Double.MIN_VALUE, mean, seedMean, sigma;
     private double mfD[];
     protected boolean edge, active;
@@ -361,7 +361,7 @@ public class Region2 {
     public ArrayList<Pixel2> getPixels() {
         Rectangle b = getBounds();
         ImageProcessor m = getMask();
-        ArrayList<Pixel2> p = new ArrayList();
+        ArrayList<Pixel2> p = new ArrayList<>();
         for (int y = b.y; y < b.height + b.y; y++) {
             for (int x = b.x; x < b.width + b.x; x++) {
                 if (m.getPixel(x, y) == Region2.MASK_FOREGROUND) {
@@ -742,7 +742,7 @@ public class Region2 {
         if (newBorder == null) {
             return false;
         }
-        borderPix = new LinkedList();
+        borderPix = new LinkedList<>();
         for (Pixel2 p : newBorder) {
             addBorderPoint(p);
         }
@@ -917,8 +917,8 @@ public class Region2 {
     public void addBorderPoints(List<Pixel2> borderPointsToBeAdded, ArrayList<Region2> regions) {
         List<Pixel2> thisBorderPoints = this.getBorderPix();
         int ownerOfNewBorderPoints = borderPointsToBeAdded.get(0).getiD();
-        List<Pixel2> pointsToBeRemoved = new LinkedList();
-        ArrayList<Integer> indices = new ArrayList();
+        List<Pixel2> pointsToBeRemoved = new LinkedList<>();
+        ArrayList<Integer> indices = new ArrayList<>();
         for (Pixel2 p : thisBorderPoints) {
             if (p.removeAssociationBySearch(ownerOfNewBorderPoints) && p.getAssociations() == null) {
                 pointsToBeRemoved.add(p);

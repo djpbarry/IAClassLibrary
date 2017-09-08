@@ -294,7 +294,7 @@ public class SkeletonProcessor {
     public static double[][] mapSkeleton(ImageProcessor image, ImageProcessor mask, int foreground) {
         int w = mask.getWidth();
         int h = mask.getHeight();
-        ArrayList<double[]> vals = new ArrayList();
+        ArrayList<double[]> vals = new ArrayList<>();
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
                 if (mask.getPixel(x, y) == foreground) {

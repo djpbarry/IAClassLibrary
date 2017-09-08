@@ -62,7 +62,7 @@ public class Cell implements Comparable<Cell>, Comparator<Cell> {
 
     public void addParticle(Particle p) {
         if (particles == null) {
-            particles = new ArrayList();
+            particles = new ArrayList<>();
         }
         particles.add(p);
     }
@@ -73,7 +73,7 @@ public class Cell implements Comparable<Cell>, Comparator<Cell> {
 
     public final boolean addCellRegion(CellRegion region) {
         if (regions == null) {
-            regions = new ArrayList();
+            regions = new ArrayList<>();
         }
         return regions.add(region);
     }
@@ -98,7 +98,7 @@ public class Cell implements Comparable<Cell>, Comparator<Cell> {
 
     public void addLink(Cell c) {
         if (links == null) {
-            links = new ArrayList();
+            links = new ArrayList<>();
         }
         if (!links.contains(c)) {
             links.add(c);

@@ -59,7 +59,7 @@ public class RegionGrower {
     private static double lambda = 100.0, filtRad = 10.0; // parameter used in construction of Voronoi manifolds. See Jones et al., 2005: dx.doi.org/10.1007/11569541_54
 
     public static int initialiseROIs(ByteProcessor masks, int threshold, int start, ImageProcessor input, PointRoi roi, int width, int height, int size, ArrayList<CellData> cellData, UserVariables uv, boolean protMode, boolean selectiveOutput) {
-        ArrayList<short[]> initP = new ArrayList();
+        ArrayList<short[]> initP = new ArrayList<>();
         int n;
         if (roi != null) {
             if (roi.getType() == Roi.POINT) {
@@ -83,7 +83,7 @@ public class RegionGrower {
             n = initP.size();
         }
         if (cellData == null) {
-            cellData = new ArrayList();
+            cellData = new ArrayList<>();
         }
         int s = cellData.size();
         int N = s + n;
@@ -124,7 +124,7 @@ public class RegionGrower {
                 proi.addPoint(centroid[0], centroid[1]);
             }
         }
-        ArrayList<CellData> cells = new ArrayList();
+        ArrayList<CellData> cells = new ArrayList<>();
         RegionGrower.initialiseROIs(null, -1, 0, inputProc, proi, inputProc.getWidth(), inputProc.getHeight(), 1, cells, null, false, false);
         return findCellRegions(inputProc, getThreshold(inputProc, true, t, method), cells);
     }
@@ -140,7 +140,7 @@ public class RegionGrower {
         int width = inputDup.getWidth();
         int height = inputDup.getHeight();
         int n = cellData.size();
-        ArrayList<Region> singleImageRegions = new ArrayList();
+        ArrayList<Region> singleImageRegions = new ArrayList<>();
         /*
          * Create image depicting regions to be "grown". Regions initialised
          * using centroids.

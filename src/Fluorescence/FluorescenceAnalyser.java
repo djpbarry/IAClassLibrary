@@ -107,7 +107,7 @@ public class FluorescenceAnalyser {
         }
         double percentile = threshold > 0.0 ? ds.getPercentile(threshold) : 0.0;
         double[] measures = ds.getValues();
-        ArrayList<Cell> cells2 = new ArrayList();
+        ArrayList<Cell> cells2 = new ArrayList<>();
         for (int i = 0, j = 0; i < cells.length; i++) {
             if (selected[i] && measures[j++] > percentile) {
                 cells2.add(cells[i]);
@@ -147,8 +147,8 @@ public class FluorescenceAnalyser {
         for (int i = start; i <= end; i++) {
             Region r = regions[i - 1];
             Region current = new Region(r.getMask(), r.getCentre());
-            ArrayList<Double> means = new ArrayList();
-            ArrayList<Double> stds = new ArrayList();
+            ArrayList<Double> means = new ArrayList<>();
+            ArrayList<Double> stds = new ArrayList<>();
             int index = 0, s = 0;
             while (current.morphFilter(stepSize, false, index, key) && s++ < steps) {
                 float[][] pix = current.buildMapCol(stack.getProcessor(i), height, 3);

@@ -335,7 +335,7 @@ public class Region {
     public ArrayList<short[]> getPixels() {
         Rectangle bounds = getBounds();
         ImageProcessor mask = getMask();
-        ArrayList<short[]> pix = new ArrayList();
+        ArrayList<short[]> pix = new ArrayList<>();
         for (int y = bounds.y; y < bounds.height + bounds.y; y++) {
             for (int x = bounds.x; x < bounds.width + bounds.x; x++) {
                 if (mask.getPixel(x, y) == Region.MASK_FOREGROUND) {
@@ -630,9 +630,7 @@ public class Region {
     }
 
     public void loadPixels(LinkedList<short[]> borderPix) {
-//        this.pixels = (ArrayList) pixels.clone();
-        this.borderPix = (LinkedList<short[]>) borderPix.clone();
-//        setSeedPix();
+        this.borderPix = new LinkedList<>(borderPix);
     }
 
     public ArrayList<float[]> getCentres() {
@@ -738,7 +736,7 @@ public class Region {
 
     public boolean addMorphMeasure(double measure) {
         if (morphMeasures == null) {
-            morphMeasures = new ArrayList();
+            morphMeasures = new ArrayList<>();
         }
         return morphMeasures.add(measure);
     }

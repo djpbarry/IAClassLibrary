@@ -65,7 +65,7 @@ public class FuzzyThresholder {
         boolean finished = false;
         while (!finished) {
             finished = true;
-            ArrayList<int[]> newPoints = new ArrayList();
+            ArrayList<int[]> newPoints = new ArrayList<>();
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     if (binary.getPixel(x, y) == BACKGROUND && ip.getPixelValue(x, y) <= t1 && searchNeighbourhood(binary, FOREGROUND, x, y)) {
