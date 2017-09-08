@@ -9,14 +9,14 @@ import java.util.ArrayList;
 public class ParticleArray {
 
     private int depth;
-    private ArrayList<Particle> detections[];
+    private ArrayList<ArrayList<Particle>> detections;
 
     public ParticleArray(int depth) {
         this.depth = depth;
         if (depth > 0) {
-            detections = new ArrayList[depth];
+            detections = new ArrayList<>();
             for (int i = 0; i < depth; i++) {
-                detections[i] = new ArrayList<Particle>();
+                detections.add(new ArrayList<>());
             }
         } else {
             this.depth = 0;
@@ -28,7 +28,7 @@ public class ParticleArray {
         if (detections == null || level > depth - 1) {
             return false;
         }
-        detections[level].add(detection);
+        detections.get(level).add(detection);
         return true;
     }
     
@@ -37,7 +37,7 @@ public class ParticleArray {
             return false;
         }
         Particle detection = null;
-        detections[level].set(index, detection);
+        detections.get(level).set(index, detection);
         return true;
     }
     
@@ -47,7 +47,7 @@ public class ParticleArray {
 
     public ArrayList<Particle> getLevel(int level) {
         if (detections != null) {
-            return detections[level];
+            return detections.get(level);
         } else {
             return null;
         }

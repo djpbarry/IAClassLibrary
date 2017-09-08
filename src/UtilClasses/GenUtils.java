@@ -165,20 +165,20 @@ public class GenUtils {
         }
     }
 
-    public static ArrayList<double[]>[] readData(int cols, File[] input, String delimiter) {
+    public static ArrayList<ArrayList<double[]>> readData(int cols, File[] input, String delimiter) {
         int numOfFiles = input.length;
-        ArrayList<double[]>[] output = new ArrayList[numOfFiles];
+        ArrayList<ArrayList<double[]>> output = new ArrayList<>();
         for (int i = 0; i < numOfFiles; i++) {
-            output[i] = new ArrayList<double[]>();
+            output.add(new ArrayList<>());
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(input[i])));
                 String line = br.readLine();
                 while (line != null) {
-                    output[i].add(new double[cols]);
+                    output.get(i).add(new double[cols]);
                     int colindex = 0;
                     Scanner scan = new Scanner(line);
                     while (scan.hasNextDouble()) {
-                        (output[i].get(output[i].size() - 1))[colindex] = scan.nextDouble();
+                        (output.get(i).get(output.get(i).size() - 1))[colindex] = scan.nextDouble();
                         colindex++;
                     }
                     line = br.readLine();

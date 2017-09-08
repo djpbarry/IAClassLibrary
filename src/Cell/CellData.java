@@ -35,7 +35,7 @@ public class CellData {
     private double sigThresh, minVel, maxVel;
     private FloatProcessor greyVelMap, greySigMap, greyCurveMap;
     private Roi[] velRois;
-    private ArrayList<BoundaryPixel> curvatureMinima[], curvatureMaxima[];
+    private ArrayList<ArrayList<BoundaryPixel>> curvatureMinima, curvatureMaxima;
     private double noisyVelocities[][];
     private double[][] smoothVelocities;
     private double scaleFactors[];
@@ -124,17 +124,17 @@ public class CellData {
         this.scaleFactors = scaleFactors;
     }
 
+    public ArrayList<ArrayList<BoundaryPixel>> getCurvatureMinima() {
+        return curvatureMinima;
+    }
+
     /**
      * Get a list of curvature minima detected in this cell's curvature map
      *
      * @return a collection of pixels representing curvature minima, where the
      * array index denotes movie frame number
      */
-    public ArrayList<BoundaryPixel>[] getCurvatureMinima() {
-        return curvatureMinima;
-    }
-
-    public void setCurvatureMinima(ArrayList<BoundaryPixel>[] curvatureMinima) {
+    public void setCurvatureMinima(ArrayList<ArrayList<BoundaryPixel>> curvatureMinima) {
         this.curvatureMinima = curvatureMinima;
     }
 
@@ -311,11 +311,11 @@ public class CellData {
         this.initialRegion = initialRegion;
     }
 
-    public ArrayList<BoundaryPixel>[] getCurvatureMaxima() {
+    public ArrayList<ArrayList<BoundaryPixel>> getCurvatureMaxima() {
         return curvatureMaxima;
     }
 
-    public void setCurvatureMaxima(ArrayList<BoundaryPixel>[] curvatureMaxima) {
+    public void setCurvatureMaxima(ArrayList<ArrayList<BoundaryPixel>> curvatureMaxima) {
         this.curvatureMaxima = curvatureMaxima;
     }
 
@@ -350,5 +350,5 @@ public class CellData {
     public void setOutput(boolean output) {
         this.output = output;
     }
-    
+
 }
