@@ -134,7 +134,7 @@ public class IsoGaussianFitter extends Fitter {
             return simp[best][SIGMA];
         }
     }
-
+    
     /*
      * static { System.loadLibrary("libVirusTracker_GaussianFitter"); }
      */

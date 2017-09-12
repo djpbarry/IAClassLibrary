@@ -17,11 +17,7 @@
 package Optimisation;
 
 import IAClasses.Utils;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.gui.OvalRoi;
 import ij.gui.Roi;
-import ij.process.ImageProcessor;
 import java.awt.Rectangle;
 
 /**
@@ -34,35 +30,11 @@ public class RoiFitter extends Fitter {
     protected final double gamma = 2.0; // expansion coefficient
     protected final double beta = 0.5; // contraction coefficient
     private Roi initRoi;
-
-    public static void main(String args[]) {
-        ImagePlus imp = IJ.openImage();
-        ImageProcessor ip = imp.getProcessor();
-        int width = ip.getWidth();
-        int height = ip.getHeight();
-        float[] pix = (float[]) ip.getPixels();
-        double[] xVals = new double[width];
-        double[] yVals = new double[height];
-        for (int x = 0; x < width; x++) {
-            xVals[x] = x;
-        }
-        for (int y = 0; y < height; y++) {
-            yVals[y] = y;
-        }
-        OvalRoi roi = new OvalRoi(0.375 * width, 0.375 * height, 0.25 * width, 0.25 * height);
-        RoiFitter instance = new RoiFitter(xVals, yVals, pix, roi);
-        instance.doFit();
-        double[] p = instance.getParams();
-        double rw = p[3] * 2.0;
-        double x0 = p[0] - p[3];
-        double y0 = p[0] - p[3];
-        roi = new OvalRoi(x0, y0, rw, rw);
-        imp.setRoi(roi);
-        imp.show();
-        System.exit(0);
-    }
+//    private double 
+//    private final boolean ring;
 
     public RoiFitter(double[] xVals, double[] yVals, float[] zVals, Roi initRoi) {
+//        this.ring = ring;
         this.xData = xVals;
         this.yData = yVals;
         this.initRoi = initRoi;
@@ -90,7 +62,7 @@ public class RoiFitter extends Fitter {
 //            return 0.0;
 //        } else {
 //            return 1.0;
-//        }
+//    
         double dist = Math.abs(Utils.calcDistance(params[0], params[1], x[0], x[1]) - params[2]);
         return 1.0 / (1.0 + dist);
     }
@@ -104,7 +76,7 @@ public class RoiFitter extends Fitter {
         simp = new double[numVertices][numVertices];
         next = new double[numVertices];
         Rectangle bounds = initRoi.getBounds();
-        simp[0][2] = bounds.width; // c
+        simp[0][2] = bounds.width / 2.0; // c
         simp[0][0] = bounds.x + bounds.width / 2; // a
         simp[0][1] = bounds.y + bounds.width / 2; // b
         maxIter = IterFactor * numParams * numParams; // Where does this estimate come from?

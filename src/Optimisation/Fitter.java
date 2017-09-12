@@ -297,5 +297,4 @@ public abstract class Fitter {
             return Double.NaN;
         }
     }
-
 }
