@@ -16,8 +16,14 @@
  */
 package Optimisation;
 
-import IAClasses.Utils;
+import ij.IJ;
+import ij.gui.OvalRoi;
 import ij.gui.Roi;
+import ij.measure.Measurements;
+import ij.process.FloatPolygon;
+import ij.process.FloatProcessor;
+import ij.process.FloatStatistics;
+import ij.process.ImageProcessor;
 import java.awt.Rectangle;
 
 /**
@@ -26,14 +32,12 @@ import java.awt.Rectangle;
  */
 public class RoiFitter extends Fitter {
 
-    protected final double alpha = -1.0; // reflection coefficient
-    protected final double gamma = 2.0; // expansion coefficient
-    protected final double beta = 0.5; // contraction coefficient
     private Roi initRoi;
 //    private double 
 //    private final boolean ring;
 
     public RoiFitter(double[] xVals, double[] yVals, float[] zVals, Roi initRoi) {
+        super(-1.0, 2.0, 0.5, 1.0E-3);
 //        this.ring = ring;
         this.xData = xVals;
         this.yData = yVals;
@@ -57,14 +61,52 @@ public class RoiFitter extends Fitter {
     }
 
     public double evaluate(double[] params, double... x) {
-//        double dist = Utils.calcDistance(params[0], params[1], x[0], x[1]);
-//        if (dist < params[2]) {
-//            return 0.0;
-//        } else {
-//            return 1.0;
-//    
-        double dist = Math.abs(Utils.calcDistance(params[0], params[1], x[0], x[1]) - params[2]);
-        return 1.0 / (1.0 + dist);
+        FloatProcessor fproc = new FloatProcessor(xData.length, yData.length, zData);
+        double x0 = params[0] - params[2];
+        double y0 = params[1] - params[2];
+        double w = 2.0 * params[2];
+        if (w <= 0.0) {
+            return -Double.MAX_VALUE;
+        }
+        OvalRoi roi = new OvalRoi(x0, y0, w, w);
+        if (x0 < 0.0
+                || x0 + w >= xData.length
+                || y0 < 0.0
+                || y0 + w >= yData.length) {
+            return Math.PI * params[2] * params[2] - areaInsideImage(roi, fproc);
+        }
+        FloatPolygon fpoly = roi.getFloatPolygon();
+        int n = fpoly.npoints;
+        float[] xpoints = fpoly.xpoints;
+        float[] ypoints = fpoly.ypoints;
+        double perimSum = 0.0;
+        fproc.setInterpolationMethod(ImageProcessor.BILINEAR);
+        for (int i = 0; i < n; i++) {
+            perimSum += fproc.getInterpolatedPixel(xpoints[i], ypoints[i]);
+        }
+        fproc.setRoi(roi);
+        FloatStatistics stats = new FloatStatistics(fproc, Measurements.MEAN + Measurements.AREA, null);
+//        System.out.println(String.format("%f %f %f", perimSum / n, stats.mean, perimSum / n - stats.mean));
+        double result = perimSum / n - stats.mean;
+        if (Double.isNaN(result)) {
+            return -1.0;
+        } else {
+            return result;
+        }
+    }
+
+    int areaInsideImage(Roi roi, ImageProcessor image) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int sum = 0;
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (roi.contains(x, y)) {
+                    sum++;
+                }
+            }
+        }
+        return sum;
     }
 
     boolean initialize() {
@@ -89,15 +131,13 @@ public class RoiFitter extends Fitter {
         if (x == null) {
             return false;
         }
-
-        double e;
-        x[numParams] = 0.0;
-        for (int i = 0; i < xData.length; i++) {
-            for (int j = 0; j < yData.length; j++) {
-                e = evaluate(x, xData[i], yData[j]) - zData[j * xData.length + i];
-                x[numParams] = x[numParams] + (e * e);
-            }
-        }
+        double e = evaluate(x, null) - 1.0;
+        x[numParams] = e * e;
         return true;
+    }
+    
+    protected void showProgress(int current, int max){
+        IJ.showStatus("Fitting...");
+        IJ.showProgress(current, max);
     }
 }

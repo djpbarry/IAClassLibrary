@@ -19,10 +19,10 @@ package Optimisation;
 
 public abstract class Fitter {
 
-    protected final double alpha = -1.0; // reflection coefficient
-    protected final double gamma = 2.0; // expansion coefficient
-    protected final double beta = 0.5; // contraction coefficient
-    protected static double maxError = 1.0E-10; // maximum error tolerance
+    protected final double alpha; // reflection coefficient
+    protected final double gamma; // expansion coefficient
+    protected final double beta; // contraction coefficient
+    protected final double maxError; // maximum error tolerance
     protected static final double root2 = Math.pow(2.0, 0.5); // square root of 2
     public static final int IterFactor = 500;
     protected static int defaultRestarts = 2; // default number of restarts
@@ -42,6 +42,20 @@ public abstract class Fitter {
     protected int nRestarts; // the number of restarts that occurred
     protected int numPoints; // number of data points
 
+    public Fitter() {
+        this.alpha = -1.0; // reflection coefficient
+        this.gamma = 2.0; // expansion coefficient
+        this.beta = 0.5; // contraction coefficient
+        this.maxError = 1.0E-10; // maximum error tolerance
+    }
+
+    public Fitter(double alpha, double gamma, double beta, double maxError) {
+        this.alpha = alpha; // reflection coefficient
+        this.gamma = gamma; // expansion coefficient
+        this.beta = beta; // contraction coefficient
+        this.maxError = maxError; // maximum error tolerance
+    }
+
     public boolean doFit() {
         if (xData == null || yData == null || zData == null) {
             return false;
@@ -52,6 +66,7 @@ public abstract class Fitter {
         boolean done = false;
         double[] center = new double[numParams]; // mean of simplex vertices
         while (!done) {
+            showProgress(numIter + maxIter * (defaultRestarts - restarts), maxIter * defaultRestarts);
 //            System.out.println("x= " + simp[best][0] + "; y= " + simp[best][1]
 //                    + "; r= " + simp[best][2]);
             numIter++;
@@ -296,5 +311,9 @@ public abstract class Fitter {
         } else {
             return Double.NaN;
         }
+    }
+
+    protected void showProgress(int current, int max){
+
     }
 }
