@@ -59,16 +59,14 @@ public class FileReader {
             ArrayList<String> thisParams = getParamsArray(br.readLine(), delimiter);
             if (thisParams != null) {
                 int numThisParams = thisParams.size();
+                for (int p = 0; p < paramNames.size(); p++) {
+                    data.get(i).add(new ArrayList());
+                }
                 String line = br.readLine();
                 while (line != null) {
                     Scanner scan = new Scanner(line).useDelimiter(delimiter + "\\s*");
                     for (int k = 0; k < numThisParams; k++) {
-                        int j = getParamIndex(thisParams.get(k), paramNames);
-                        if (data.get(i).get(j) == null) {
-                            data.get(i).add(new ArrayList<>());
-                        }
-                        double val = scan.nextDouble();
-                        data.get(i).get(j).add(val);
+                        data.get(i).get(getParamIndex(thisParams.get(k), paramNames)).add(scan.nextDouble());
                     }
                     line = br.readLine();
                 }
