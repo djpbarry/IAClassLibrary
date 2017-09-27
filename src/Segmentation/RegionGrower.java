@@ -241,7 +241,7 @@ public class RegionGrower {
             }
 //            IJ.saveAs(new ImagePlus("", expandedImageStack), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "ExpandedImage", count));
 //            IJ.saveAs(new ImagePlus("", tempRegionStack), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "tempRegions", count));
-            IJ.saveAs(new ImagePlus("", regionImage), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "RegionImage", count++));
+//            IJ.saveAs(new ImagePlus("", regionImage), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "RegionImage", count++));
             expandRegions(singleImageRegions, regionImage, cellNum, terminal, tempRegionPix);
 //            IJ.saveAs(new ImagePlus("", regionImage), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "ExpandedRegionImage", count++));
 //            regionImageStack.addSlice(regionImage.duplicate());
@@ -258,7 +258,7 @@ public class RegionGrower {
                     distanceMapImage.putPixelValue(x, y, distancemaps[i][x][y]);
                 }
             }
-            IJ.saveAs(new ImagePlus("", distanceMapImage), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", label, i));
+//            IJ.saveAs(new ImagePlus("", distanceMapImage), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", label, i));
         }
     }
 
@@ -332,7 +332,7 @@ public class RegionGrower {
             }
             expandRegions(singleImageRegions, regionStack, cellNum, terminal, tempRegionPix);
         }
-        IJ.saveAs(new ImagePlus("", regionStack), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s.tif", "RegionImage"));
+//        IJ.saveAs(new ImagePlus("", regionStack), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s.tif", "RegionImage"));
     }
 
     static boolean buildDistanceMaps(short[] regionImagePix, float[] greyPix, Region cell, short[] point, float[][] distancemap, double thresh, float[] gradientPix, int index, double lambda, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix) {

@@ -3,8 +3,15 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/IO/FileReader.java</file>
             <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Optimisation/Fitter.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/IO/DataReader.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/UtilClasses/Utilities.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Optimisation/MultiGaussFitter.java</file>
             <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Optimisation/RoiFitter.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/IO/DataWriter.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Optimisation/IsoGaussianFitter.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Optimisation/SurvivalFitter.java</file>
         </group>
     </open-files>
 </project-private>

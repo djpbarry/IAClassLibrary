@@ -67,6 +67,10 @@ public abstract class Fitter {
         double[] center = new double[numParams]; // mean of simplex vertices
         while (!done) {
             showProgress(numIter + maxIter * (defaultRestarts - restarts), maxIter * defaultRestarts);
+//            for (double d : simp[best]) {
+//                System.out.print(String.format("%f, ", d));
+//            }
+//            System.out.println();
 //            System.out.println("x= " + simp[best][0] + "; y= " + simp[best][1]
 //                    + "; r= " + simp[best][2]);
             numIter++;
@@ -313,7 +317,7 @@ public abstract class Fitter {
         }
     }
 
-    protected void showProgress(int current, int max){
+    protected void showProgress(int current, int max) {
 
     }
 }
