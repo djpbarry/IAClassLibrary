@@ -19,6 +19,7 @@ package Optimisation;
 import IO.DataReader;
 import IO.FileReader;
 import UtilClasses.GenVariables;
+import ij.IJ;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +36,6 @@ import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
 public class SurvivalFitter extends Fitter {
-
-    private double[] zDivs;
 
     public static void main(String[] args) {
         FileReader fr = new FileReader(1, 1, GenVariables.UTF8);
@@ -77,14 +76,21 @@ public class SurvivalFitter extends Fitter {
 //            }
 //        }
 
-        for (int p = 7; p < 8; p++) {
-            SurvivalFitter sf = new SurvivalFitter(xVals, yVals, zVals, p);
+        for (int p = 5; p < 6; p++) {
+            SurvivalFitter sf = new SurvivalFitter(xVals, yVals, zVals, 2 * p);
             sf.doFit();
             double[] params = sf.getParams();
-            int i = 0;
-            System.out.println(String.format("Parameters: %d", p));
-            for (double d : params) {
-                System.out.println(String.format("%d, %f", i++, d));
+            double[] xCoords = sf.getXCoords(params);
+            double[] yCoords = sf.getYCoords(params);
+            for (int i = 0, xIndex = 0, yIndex = 0; i < 2 * yCoords.length - 1; i++) {
+                if (i > 0) {
+                    if (i % 2 < 1) {
+                        xIndex++;
+                    } else {
+                        yIndex++;
+                    }
+                }
+                System.out.println(String.format("%f, %f", xCoords[xIndex], yCoords[yCoords.length - 1 - yIndex]));
             }
         }
         System.exit(0);
@@ -121,28 +127,33 @@ public class SurvivalFitter extends Fitter {
         if (e > 0.0) {
             return 1.0 + e;
         }
-        if (x[0] > p[numParams - 1]) {
-            return zDivs[0];
-        } else {
-            int i = 0;
-            while (i < numParams && p[i] < x[0]) {
-                i++;
-            }
-            return zDivs[numParams - i];
+        double[] xCoords = getXCoords(p);
+        double[] yCoords = getYCoords(p);
+        if (x[0] >= xCoords[xCoords.length - 1]) {
+            return 0.0;
         }
+        int i = 0;
+        while (i < xCoords.length && xCoords[i] < x[0]) {
+            i++;
+        }
+        return yCoords[yCoords.length - 1 - i];
     }
 
     double errorCheck(double[] p) {
+        return calcError(getXCoords(p), xData) + calcError(getYCoords(p), new double[]{0.0, 1.0});
+    }
+
+    double calcError(double[] coords1, double[] coords2) {
         double err = 0.0;
-        if (p[0] < 0.0) {
-            err += -p[0];
+        if (coords1[0] < 0.0) {
+            err += -coords1[0];
         }
-        if (p[numParams - 1] > xData[xData.length - 1]) {
-            err += p[numParams - 1] - xData[xData.length - 1];
+        if (coords1[coords1.length - 1] > coords2[coords2.length - 1]) {
+            err += coords1[coords1.length - 1] - coords2[coords2.length - 1];
         }
-        for (int i = 0; i < numParams - 1; i++) {
-            if (p[i] > p[i + 1]) {
-                err += p[i] - p[i + 1];
+        for (int i = 0; i < coords1.length - 1; i++) {
+            if (coords1[i] > coords1[i + 1]) {
+                err += coords1[i] - coords1[i + 1];
             }
         }
         return err;
@@ -159,18 +170,18 @@ public class SurvivalFitter extends Fitter {
         maxIter = IterFactor * numParams * numParams; // Where does this estimate come from?
         restarts = defaultRestarts;
         nRestarts = 0;
-        for (int i = 0; i < numParams; i++) {
-            simp[0][i] = xData[(int) Math.round((i + 1) * xData.length / (numParams + 1))];
+        double[] xCoords = new double[numParams / 2];
+        double[] yCoords = new double[numParams / 2];
+        for (int i = 0; i < xCoords.length; i++) {
+            xCoords[i] = xData[(int) Math.round((i + 1) * xData.length / (xCoords.length + 1))];
         }
-        EmpiricalDistribution dist = new EmpiricalDistribution(numParams + 1);
+        EmpiricalDistribution dist = new EmpiricalDistribution(numParams / 2 + 1);
         dist.load(zData);
         List<SummaryStatistics> stats = dist.getBinStats();
-        zDivs = new double[numParams + 1];
-        for (int i = 1; i < numParams; i++) {
-            zDivs[i] = stats.get(i).getMean();
+        for (int i = 0; i < yCoords.length; i++) {
+            yCoords[i] = stats.get(i).getMean();
         }
-        zDivs[0] = 0.0;
-        zDivs[numParams] = 1.0;
+        simp[0] = setParams(xCoords, yCoords);
         return true;
     }
 
@@ -186,5 +197,26 @@ public class SurvivalFitter extends Fitter {
             return point;
         }
 
+    }
+
+    double[] getXCoords(double[] p) {
+        int xLength = numParams / 2;
+        double[] xCoords = new double[xLength];
+        System.arraycopy(p, 0, xCoords, 0, xLength);
+        return xCoords;
+    }
+
+    double[] getYCoords(double[] p) {
+        int yLength = numParams / 2;
+        double[] yCoords = new double[yLength];
+        System.arraycopy(p, numParams / 2, yCoords, 0, yLength);
+        return yCoords;
+    }
+
+    double[] setParams(double[] xCoords, double[] yCoords) {
+        double[] output = new double[xCoords.length + yCoords.length + 1];
+        System.arraycopy(xCoords, 0, output, 0, xCoords.length);
+        System.arraycopy(yCoords, 0, output, xCoords.length, yCoords.length);
+        return output;
     }
 }

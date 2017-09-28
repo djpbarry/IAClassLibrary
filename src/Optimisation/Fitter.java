@@ -199,11 +199,16 @@ public abstract class Fitter {
         /*
          * x[numParams] = sumResiduals(x, xData, yData, zData); return true;
          */
+//        for (double d : x) {
+//            System.out.print(String.format("%f, ", d));
+//        }
+//        System.out.println();
         double e;
         x[numParams] = 0.0;
         for (int i = 0; i < xData.length; i++) {
             for (int j = 0; j < yData.length; j++) {
                 e = evaluate(x, xData[i], yData[j]) - zData[j * xData.length + i];
+//                System.out.println(String.format("%f", evaluate(x, xData[i], yData[j])));
                 x[numParams] = x[numParams] + (e * e);
             }
         }
