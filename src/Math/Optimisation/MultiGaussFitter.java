@@ -1,6 +1,6 @@
-package Optimisation;
+package Math.Optimisation;
 
-import Optimisation.Fitter;
+import Math.Optimisation.Fitter;
 import Particle.IsoGaussian;
 import java.util.ArrayList;
 import java.util.Arrays;

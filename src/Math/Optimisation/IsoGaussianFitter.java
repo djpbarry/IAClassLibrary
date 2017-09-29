@@ -1,4 +1,4 @@
-package Optimisation;
+package Math.Optimisation;
 
 /**
  * 2D Gaussian Curve Fitter based on ImageJ's <code>CurveFitter</code>.

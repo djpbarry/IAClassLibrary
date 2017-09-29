@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package Optimisation;
+package Math.Optimisation;
 
-import Optimisation.IsoGaussianFitter;
+import Math.Optimisation.IsoGaussianFitter;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
