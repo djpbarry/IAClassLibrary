@@ -19,17 +19,18 @@ package Optimisation;
 import IO.DataReader;
 import IO.FileReader;
 import UtilClasses.GenVariables;
-import ij.IJ;
+import ij.gui.Plot;
+import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
+import org.apache.commons.math3.ml.clustering.MultiKMeansPlusPlusClusterer;
 import org.apache.commons.math3.ml.distance.DistanceMeasure;
-import org.apache.commons.math3.random.EmpiricalDistribution;
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 
 /**
  *
@@ -51,49 +52,64 @@ public class SurvivalFitter extends Fitter {
         double[] yVals = {0};
         float[] zVals = new float[N];
         for (int i = 0; i < N; i++) {
-            zVals[i] = new Double(data[1][i]).floatValue();
+            zVals[i] = new Double(data[1][i] * 100.0).floatValue();
         }
-//        ArrayList<ClusterablePoint> clusterInput = new ArrayList();
-//
-//        for (int i = 0; i < N; i++) {
-//            clusterInput.add(new ClusterablePoint(new double[]{xVals[i], zVals[i]}));
-//        }
-//
-//        for (int p = 3; p < 8; p++) {
-//            KMeansPlusPlusClusterer<ClusterablePoint> kmeans = new KMeansPlusPlusClusterer(
-//                    p, 1000, new DistanceMeasure() {
-//                public double compute(double[] a, double[] b) {
-//                    return Math.abs(a[1] - b[1]);
-//                }
-//            }
-//            );
-//            List<CentroidCluster<ClusterablePoint>> clusters = kmeans.cluster(clusterInput);
-//            System.out.println(String.format("Parameters: %d", p));
-//            int i = 0;
-//            for (CentroidCluster c : clusters) {
-//                double[] d = c.getCenter().getPoint();
-//                System.out.println(String.format("%d, %f, %f", i++, d[0], d[1]));
-//            }
-//        }
+        ArrayList<Clusterable> clusterInput = new ArrayList();
 
-        for (int p = 5; p < 6; p++) {
-            SurvivalFitter sf = new SurvivalFitter(xVals, yVals, zVals, 2 * p);
-            sf.doFit();
-            double[] params = sf.getParams();
-            double[] xCoords = sf.getXCoords(params);
-            double[] yCoords = sf.getYCoords(params);
-            for (int i = 0, xIndex = 0, yIndex = 0; i < 2 * yCoords.length - 1; i++) {
-                if (i > 0) {
-                    if (i % 2 < 1) {
-                        xIndex++;
-                    } else {
-                        yIndex++;
-                    }
-                }
-                System.out.println(String.format("%f, %f", xCoords[xIndex], yCoords[yCoords.length - 1 - yIndex]));
+        for (int i = 0; i < N; i++) {
+            clusterInput.add(new ClusterablePoint(new double[]{xVals[i], zVals[i]}));
+        }
+        Random r = new Random();
+        for (int p = 6; p < 7; p++) {
+            KMeansPlusPlusClusterer<Clusterable> kmeans = new KMeansPlusPlusClusterer(p, -1, new YDist());
+//            List<CentroidCluster<Clusterable>> clusters = kmeans.cluster(clusterInput);
+//            showPlot(clusters, "Pre-Sort");
+            MultiKMeansPlusPlusClusterer<Clusterable> multiCluster = new MultiKMeansPlusPlusClusterer(kmeans, 100, new ClusterablePointScore());
+            List<CentroidCluster<Clusterable>> clusters = multiCluster.cluster(clusterInput);
+//            ZeroSlopeClusterOptimiser<CentroidCluster> optim = new ZeroSlopeClusterOptimiser(clusters);
+//            optim.optimise(10000);
+            showPlot(clusters, "Post-Sort");
+            System.out.println(String.format("Parameters: %d", p));
+            int i = 0;
+            for (CentroidCluster c : clusters) {
+                double[] d = c.getCenter().getPoint();
+                System.out.println(String.format("%d, %f, %f", i++, d[0], d[1]));
             }
         }
+
+        for (int p = 3; p < 9; p++) {
+            SurvivalFitter sf = new SurvivalFitter(xVals, yVals, zVals, p + 1);
+            sf.doFit();
+            double[] params = sf.getParams();
+//            double[] xCoords = sf.getXCoords(params);
+//            double[] yCoords = sf.getYCoords(params);
+            for (int i = 0; i < params.length; i++) {
+                System.out.print(String.format("%f, ", params[i]));
+            }
+            System.out.println();
+        }
         System.exit(0);
+    }
+
+    public static void showPlot(List<CentroidCluster<Clusterable>> clusters, String title) {
+        Plot plot = new Plot(title, "X", "Y");
+        plot.setLineWidth(10);
+        Random r = new Random();
+        for (CentroidCluster c : clusters) {
+            Color color = new Color(r.nextFloat(), r.nextFloat(), r.nextFloat());
+            plot.setColor(color);
+            List<ClusterablePoint> points = c.getPoints();
+            double[] xpoints = new double[points.size()];
+            double[] ypoints = new double[points.size()];
+            for (int j = 0; j < points.size(); j++) {
+                ClusterablePoint point = points.get(j);
+                xpoints[j] = point.getPoint()[0];
+                ypoints[j] = point.getPoint()[1];
+            }
+            plot.addPoints(xpoints, ypoints, Plot.DOT);
+        }
+        plot.setLimits(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+        plot.show();
     }
 
     public SurvivalFitter() {
@@ -127,20 +143,26 @@ public class SurvivalFitter extends Fitter {
         if (e > 0.0) {
             return 1.0 + e;
         }
-        double[] xCoords = getXCoords(p);
-        double[] yCoords = getYCoords(p);
-        if (x[0] >= xCoords[xCoords.length - 1]) {
-            return 0.0;
+//        double[] xCoords = getXCoords(p);
+//        double[] yCoords = getYCoords(p);
+        if (x[0] <= p[0]) {
+//            return (Math.exp(-p[numParams - 1] * p[0]) + Math.exp(-p[numParams - 1] * 0.0)) / 2.0;
+            return 1.0;
+        }
+        if (x[0] >= p[numParams - 2]) {
+//            return (Math.exp(-p[numParams - 1] * p[numParams - 2]) + Math.exp(-p[numParams - 1] * xData[xData.length - 1])) / 2.0;
+            return Math.exp(-p[numParams - 1] * p[numParams - 2]);
         }
         int i = 0;
-        while (i < xCoords.length && xCoords[i] < x[0]) {
+        while (p[i] < x[0]) {
             i++;
         }
-        return yCoords[yCoords.length - 1 - i];
+//        return (Math.exp(-p[numParams - 1] * p[i]) + Math.exp(-p[numParams - 1] * p[i - 1])) / 2.0;
+        return Math.exp(-p[numParams - 1] * p[i - 1]);
     }
 
     double errorCheck(double[] p) {
-        return calcError(getXCoords(p), xData) + calcError(getYCoords(p), new double[]{0.0, 1.0});
+        return calcError(getXCoords(p), xData);
     }
 
     double calcError(double[] coords1, double[] coords2) {
@@ -170,53 +192,47 @@ public class SurvivalFitter extends Fitter {
         maxIter = IterFactor * numParams * numParams; // Where does this estimate come from?
         restarts = defaultRestarts;
         nRestarts = 0;
-        double[] xCoords = new double[numParams / 2];
-        double[] yCoords = new double[numParams / 2];
-        for (int i = 0; i < xCoords.length; i++) {
-            xCoords[i] = xData[(int) Math.round((i + 1) * xData.length / (xCoords.length + 1))];
+//        double[] xCoords = new double[numParams / 2];
+//        double[] yCoords = new double[numParams / 2];
+        for (int i = 0; i < numParams - 1; i++) {
+            simp[0][i] = xData[(int) Math.round((i + 1) * xData.length / numParams)];
         }
-        EmpiricalDistribution dist = new EmpiricalDistribution(numParams / 2 + 1);
-        dist.load(zData);
-        List<SummaryStatistics> stats = dist.getBinStats();
-        for (int i = 0; i < yCoords.length; i++) {
-            yCoords[i] = stats.get(i).getMean();
-        }
-        simp[0] = setParams(xCoords, yCoords);
+        simp[0][numParams - 1] = 0.05;
+//        EmpiricalDistribution dist = new EmpiricalDistribution(numParams / 2 + 1);
+//        dist.load(zData);
+//        List<SummaryStatistics> stats = dist.getBinStats();
+//        for (int i = 0; i < yCoords.length; i++) {
+//            yCoords[i] = stats.get(i).getMean();
+//        }
+//        simp[0] = setParams(xCoords, yCoords);
         return true;
     }
 
-    private static class ClusterablePoint implements Clusterable {
+    private static class YDist implements DistanceMeasure {
 
-        private double[] point;
-
-        public ClusterablePoint(double[] point) {
-            this.point = point;
+        public double compute(double[] a, double[] b) {
+            return Math.abs(a[1] - b[1]);
         }
-
-        public double[] getPoint() {
-            return point;
-        }
-
     }
 
     double[] getXCoords(double[] p) {
-        int xLength = numParams / 2;
+        int xLength = numParams - 1;
         double[] xCoords = new double[xLength];
         System.arraycopy(p, 0, xCoords, 0, xLength);
         return xCoords;
     }
-
-    double[] getYCoords(double[] p) {
-        int yLength = numParams / 2;
-        double[] yCoords = new double[yLength];
-        System.arraycopy(p, numParams / 2, yCoords, 0, yLength);
-        return yCoords;
-    }
-
-    double[] setParams(double[] xCoords, double[] yCoords) {
-        double[] output = new double[xCoords.length + yCoords.length + 1];
-        System.arraycopy(xCoords, 0, output, 0, xCoords.length);
-        System.arraycopy(yCoords, 0, output, xCoords.length, yCoords.length);
-        return output;
-    }
+//
+//    double[] getYCoords(double[] p) {
+//        int yLength = numParams / 2;
+//        double[] yCoords = new double[yLength];
+//        System.arraycopy(p, numParams / 2, yCoords, 0, yLength);
+//        return yCoords;
+//    }
+//
+//    double[] setParams(double[] xCoords, double[] yCoords) {
+//        double[] output = new double[xCoords.length + yCoords.length + 1];
+//        System.arraycopy(xCoords, 0, output, 0, xCoords.length);
+//        System.arraycopy(yCoords, 0, output, xCoords.length, yCoords.length);
+//        return output;
+//    }
 }
