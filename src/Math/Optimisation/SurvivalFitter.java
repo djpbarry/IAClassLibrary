@@ -16,6 +16,8 @@
  */
 package Math.Optimisation;
 
+import Math.Clustering.ClusterablePoint;
+import Math.Clustering.ClusterablePointScore;
 import IO.DataReader;
 import IO.FileReader;
 import UtilClasses.GenVariables;

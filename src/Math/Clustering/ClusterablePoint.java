@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package Math.Optimisation;
+package Math.Clustering;
 
 import org.apache.commons.math3.fitting.WeightedObservedPoint;
 import org.apache.commons.math3.ml.clustering.Clusterable;
