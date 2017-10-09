@@ -3,9 +3,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Optimisation/ZeroSlopeClustererOptimiser.java</file>
-            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Optimisation/ClusterablePoint.java</file>
-            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Optimisation/SurvivalFitter.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Math/Optimisation/Fitter.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Math/Clustering/StairsFitter.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/IO/DataWriter.java</file>
         </group>
     </open-files>
 </project-private>

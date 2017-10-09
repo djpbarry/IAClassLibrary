@@ -38,30 +38,34 @@ import org.apache.commons.math3.ml.distance.DistanceMeasure;
  */
 public class StairsFitter {
 
+    private ImagePlus plot;
+    private List<CentroidCluster<Clusterable>> bestClusters;
+
     public StairsFitter() {
 
     }
 
-    public static void main(String[] args) {
-        double[][] data = null;
-        try {
-            data = DataReader.readFile(new File("C:\\Users\\barryd\\OneDrive - The Francis Crick Institute\\Working Data\\Yardimici\\Dominika\\test.csv"), CSVFormat.EXCEL);
-        } catch (Exception e) {
+//    public static void main(String[] args) {
+//        double[][] data = null;
+//        try {
+//            data = DataReader.readFile(new File("C:\\Users\\barryd\\OneDrive - The Francis Crick Institute\\Working Data\\Yardimici\\Dominika\\test.csv"), CSVFormat.EXCEL);
+//        } catch (Exception e) {
+//
+//        }
+//        int N = data[0].length;
+//        double[] xVals = data[0];
+//        double[] yVals = new double[N];
+//        for (int i = 0; i < N; i++) {
+//            yVals[i] = data[1][i] * 100.0;
+//        }
+//        (new StairsFitter()).doFit(xVals, yVals, new int[]{2, 9}, 5.0);
+//        System.exit(0);
+//    }
 
-        }
-        int N = data[0].length;
-        double[] xVals = data[0];
-        double[] yVals = new double[N];
-        for (int i = 0; i < N; i++) {
-            yVals[i] = data[1][i] * 100.0;
-        }
-        (new StairsFitter()).doFit(xVals, yVals, new int[]{3, 9});
-        System.exit(0);
-    }
-
-    public boolean doFit(double[] xVals, double[] yVals, int[] range) {
+    public boolean doFit(double[] xVals, double[] yVals, int[] range, double threshold) {
         ArrayList<Clusterable> clusterInput = new ArrayList();
         int N = xVals.length;
+        boolean fitted = false;
         if (yVals.length != N) {
             return false;
         }
@@ -71,24 +75,27 @@ public class StairsFitter {
         Random r = new Random();
         double minSD = Double.MAX_VALUE;
         int bestIndex = -1;
-        List<ImagePlus> imps = new ArrayList();
+//        List<ImagePlus> imps = new ArrayList();
         for (int p = range[0]; p < range[1]; p++) {
             KMeansPlusPlusClusterer<Clusterable> kmeans = new KMeansPlusPlusClusterer(p, -1, new YDist());
             MultiKMeansPlusPlusClusterer<Clusterable> multiCluster = new MultiKMeansPlusPlusClusterer(kmeans, 100, new ClusterablePointScore());
             List<CentroidCluster<Clusterable>> clusters = multiCluster.cluster(clusterInput);
-            imps.add(showPlot(clusters, String.format("%d Clusters", p)));
-            System.out.println(String.format("Parameters: %d", p));
-            double sd = calcInterClusterSpread(clusters, 5.0);
+//            imps.add(plot);
+//            System.out.println(String.format("Parameters: %d", p));
+            double sd = calcInterClusterSpread(clusters, threshold);
             if (!Double.isNaN(sd) && sd < minSD) {
                 minSD = sd;
                 bestIndex = p;
+                bestClusters = clusters;
+                plot = showPlot(clusters, String.format("%d Clusters", p));
+                fitted = true;
             }
         }
-        System.out.println(String.format("Best: %d", bestIndex));
-        imps.forEach((imp) -> {
-            imp.close();
-        });
-        return true;
+//        System.out.println(String.format("Best: %d", bestIndex));
+//        imps.forEach((imp) -> {
+//            imp.close();
+//        });
+        return fitted;
     }
 
     public static ImagePlus showPlot(List<CentroidCluster<Clusterable>> clusters, String title) {
@@ -109,8 +116,8 @@ public class StairsFitter {
             plot.addPoints(xpoints, ypoints, Plot.DOT);
         }
         plot.setLimits(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
-        plot.show();
-        return plot.getImagePlus();
+        ImagePlus output = plot.makeHighResolution(null, 4.0f, true, false);
+        return output;
     }
 
     double calcInterClusterSpread(List<CentroidCluster<Clusterable>> clusters, double threshold) {
@@ -126,6 +133,7 @@ public class StairsFitter {
         Arrays.sort(yCoords);
         Arrays.sort(xCoords);
         for (int j = 0; j < N - 1; j++) {
+//            System.out.println("x1:" + xCoords[j] + " y1:" + yCoords[j] + "x2:" + xCoords[j + 1] + " y2:" + yCoords[j + 1]);
             if (yCoords[j + 1] - yCoords[j] < threshold
                     || xCoords[j + 1] - xCoords[j] < threshold) {
                 return Double.NaN;
@@ -139,6 +147,14 @@ public class StairsFitter {
         public double compute(double[] a, double[] b) {
             return Math.abs(a[1] - b[1]);
         }
+    }
+
+    public ImagePlus getPlot() {
+        return plot;
+    }
+
+    public List<CentroidCluster<Clusterable>> getBestClusters() {
+        return bestClusters;
     }
 
 }

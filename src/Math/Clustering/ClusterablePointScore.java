@@ -31,10 +31,10 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  */
 public class ClusterablePointScore<T extends Clusterable> extends ClusterEvaluator<T> {
 
-    public ClusterablePointScore(){
+    public ClusterablePointScore() {
         super();
     }
-    
+
     public ClusterablePointScore(DistanceMeasure measure) {
         super(measure);
     }
@@ -42,7 +42,7 @@ public class ClusterablePointScore<T extends Clusterable> extends ClusterEvaluat
     public double score(List<? extends Cluster<T>> clusters) {
         double score = 0.0;
         for (Cluster c : clusters) {
-            score+=calcStandardDeviation(c);
+            score += calcVariance(c)[1];
         }
         return score;
     }
@@ -51,17 +51,18 @@ public class ClusterablePointScore<T extends Clusterable> extends ClusterEvaluat
         return score1 < score2;
     }
 
-    double calcStandardDeviation(Cluster cluster) {
+    public double[] calcVariance(Cluster cluster) {
         List<Clusterable> points = cluster.getPoints();
         if (points == null) {
-            return Double.NaN;
+            return null;
         }
         DescriptiveStatistics statsY = new DescriptiveStatistics();
+        DescriptiveStatistics statsX = new DescriptiveStatistics();
         for (Clusterable c : points) {
+            statsX.addValue(c.getPoint()[0]);
             statsY.addValue(c.getPoint()[1]);
         }
-
-        return statsY.getVariance();
+        return new double[]{statsX.getVariance(), statsY.getVariance()};
     }
 
     double calculateSlope(Cluster cluster) {
