@@ -656,6 +656,17 @@ public class Utils {
         return output;
     }
 
+    /**
+     * 
+     * @param image
+     * @param p
+     * @param tol
+     * @param res
+     * @param invert
+     * @return 
+     * 
+     * @deprecated use {@link ParticleWriter.ParticleWriter#drawParticle(ij.process.ImageProcessor, Particle.Particle, boolean, double, double, int) instead
+     */
     public static boolean drawParticle(ImageProcessor image, Particle p, double tol, double res, boolean invert) {
         if (p instanceof IsoGaussian) {
             return draw2DGaussian(image, (IsoGaussian) p, tol, res, invert);

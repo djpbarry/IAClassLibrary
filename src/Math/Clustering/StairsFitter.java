@@ -16,16 +16,13 @@
  */
 package Math.Clustering;
 
-import IO.DataReader;
 import ij.ImagePlus;
 import ij.gui.Plot;
 import java.awt.Color;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Clusterable;
 import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
@@ -58,7 +55,7 @@ public class StairsFitter {
 //        for (int i = 0; i < N; i++) {
 //            yVals[i] = data[1][i] * 100.0;
 //        }
-//        (new StairsFitter()).doFit(xVals, yVals, new int[]{2, 9}, 5.0);
+//        (new StairsFitter()).doFit(xVals, yVals, new int[]{7, 9}, 5.0);
 //        System.exit(0);
 //    }
 
@@ -88,6 +85,7 @@ public class StairsFitter {
                 bestIndex = p;
                 bestClusters = clusters;
                 plot = showPlot(clusters, String.format("%d Clusters", p));
+//                IJ.saveAs(plot, "PNG", "C:\\Users\\barryd\\OneDrive - The Francis Crick Institute\\Working Data\\Yardimici\\Dominika\\plot.png");
                 fitted = true;
             }
         }
@@ -100,7 +98,7 @@ public class StairsFitter {
 
     public static ImagePlus showPlot(List<CentroidCluster<Clusterable>> clusters, String title) {
         Plot plot = new Plot(title, "X", "Y");
-        plot.setLineWidth(10);
+        plot.setLineWidth(5);
         Random r = new Random();
         for (CentroidCluster c : clusters) {
             Color color = new Color(r.nextFloat(), r.nextFloat(), r.nextFloat());
