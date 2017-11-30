@@ -1,5 +1,6 @@
 package IAClasses;
 
+import Image.ImageNormaliser;
 import Particle.IsoGaussian;
 import Particle.Particle;
 import ij.IJ;
@@ -657,14 +658,14 @@ public class Utils {
     }
 
     /**
-     * 
+     *
      * @param image
      * @param p
      * @param tol
      * @param res
      * @param invert
-     * @return 
-     * 
+     * @return
+     *
      * @deprecated use {@link ParticleWriter.ParticleWriter#drawParticle(ij.process.ImageProcessor, Particle.Particle, boolean, double, double, int) instead
      */
     public static boolean drawParticle(ImageProcessor image, Particle p, double tol, double res, boolean invert) {
@@ -810,14 +811,11 @@ public class Utils {
     }
 
     public static ImageProcessor updateImage(ImageStack channel1, ImageStack channel2, int slice) {
-        ImageProcessor redIP = channel1.getProcessor(slice).duplicate();
-        redIP.resetMinAndMax();
+        ImageProcessor redIP = ImageNormaliser.normaliseImage(channel1.getProcessor(slice), 255.0);
         ImageStack red = (new ImagePlus("", (new TypeConverter(redIP, true)).convertToByte())).getImageStack();
-        ImageProcessor greenIP = null;
         ImageStack green = null;
         if (channel2 != null) {
-            greenIP = channel2.getProcessor(slice).duplicate();
-            greenIP.resetMinAndMax();
+            ImageProcessor greenIP = ImageNormaliser.normaliseImage(channel2.getProcessor(slice), 255.0);
             green = (new ImagePlus("", (new TypeConverter(greenIP, true)).convertToByte())).getImageStack();
         }
         return ((new RGBStackMerge()).mergeStacks(channel1.getWidth(), channel1.getHeight(), 1, red, green, null, false)).getProcessor(1);

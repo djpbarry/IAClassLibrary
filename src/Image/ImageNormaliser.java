@@ -27,11 +27,12 @@ import ij.process.ImageProcessor;
  */
 public class ImageNormaliser {
 
-    public static FloatProcessor normaliseImage(ImageProcessor image) {
+    public static FloatProcessor normaliseImage(ImageProcessor image, double normFactor) {
         FloatProcessor floatImage = image.convertToFloatProcessor();
         FloatStatistics stats = new FloatStatistics(floatImage, Measurements.MIN_MAX, null);
         floatImage.subtract(stats.min);
-        floatImage.multiply(1.0 / (stats.max - stats.min));
+        floatImage.multiply(normFactor / (stats.max - stats.min));
+        floatImage.resetMinAndMax();
         return floatImage;
     }
 }
