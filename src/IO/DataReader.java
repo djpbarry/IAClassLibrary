@@ -18,9 +18,7 @@ package IO;
 
 import UtilClasses.GenVariables;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -32,21 +30,43 @@ import org.apache.commons.csv.CSVRecord;
  */
 public class DataReader {
 
-    public static double[][] readFile(File file, CSVFormat format) throws IOException {
+    public static double[][] readFile(File file, CSVFormat format, String[] colHeadings, String[] rowLabels) throws IOException {
         ArrayList<ArrayList<Double>> data = new ArrayList();
-        CSVParser parser = CSVParser.parse(new InputStreamReader(new FileInputStream(file), GenVariables.UTF8), format);
+        CSVParser parser = CSVParser.parse(file, GenVariables.UTF8, format);
+        ArrayList<String> headings = new ArrayList();
+        ArrayList<String> rows = new ArrayList();
+        int maxM = 0;
         for (CSVRecord record : parser) {
-            for (int j = 0; j < record.size(); j++) {
-                if (data.size() <= j) {
+            int lineNumber = (int) parser.getCurrentLineNumber() - 1;
+            int line = colHeadings == null ? lineNumber : lineNumber - 1;
+            if (record.getRecordNumber() == 1 && colHeadings != null) {
+                for (int j = 0; j < record.size(); j++) {
+                    headings.add(record.get(j));
+                }
+            } else {
+                int j = 0;
+                if (rowLabels != null) {
+                    rows.add(record.get(0));
+                    j++;
+                }
+                if (data.size() <= line) {
                     data.add(new ArrayList());
                 }
-                data.get(j).add(Double.parseDouble(record.get(j)));
+                for (; j < record.size(); j++) {
+                    data.get(line).add(Double.parseDouble(record.get(j)));
+                }
+                if (j > maxM) {
+                    maxM = j;
+                }
             }
         }
-        int m = data.size(), n = data.get(0).size();
-        double[][] output = new double[m][n];
+        colHeadings = headings.toArray(colHeadings);
+        rowLabels = rows.toArray(rowLabels);
+        int m = data.size();
+        double[][] output = new double[m][maxM];
         for (int j = 0; j < m; j++) {
             ArrayList<Double> current = data.get(j);
+            int n = current.size();
             for (int i = 0; i < n; i++) {
                 output[j][i] = current.get(i);
             }

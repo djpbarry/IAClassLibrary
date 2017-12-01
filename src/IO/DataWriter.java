@@ -61,7 +61,7 @@ public class DataWriter {
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile), GenVariables.ISO), CSVFormat.EXCEL);
         int L = vals.length;
         if (rowLabels != null) {
-            colHeadings = ArrayUtils.addAll(new String[]{" "}, colHeadings);
+            colHeadings = ArrayUtils.addAll(new String[]{String.valueOf(CSVFormat.EXCEL.getDelimiter())}, colHeadings);
         }
         if (colHeadings != null) {
             printer.printRecord((Object[]) colHeadings);
