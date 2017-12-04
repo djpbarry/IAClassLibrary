@@ -30,23 +30,23 @@ import org.apache.commons.csv.CSVRecord;
  */
 public class DataReader {
 
-    public static double[][] readFile(File file, CSVFormat format, String[] colHeadings, String[] rowLabels) throws IOException {
+    public static double[][] readFile(File file, CSVFormat format, ArrayList<String> colHeadings, ArrayList<String> rowLabels) throws IOException {
         ArrayList<ArrayList<Double>> data = new ArrayList();
         CSVParser parser = CSVParser.parse(file, GenVariables.UTF8, format);
-        ArrayList<String> headings = new ArrayList();
-        ArrayList<String> rows = new ArrayList();
+//        ArrayList<String> headings = new ArrayList();
+//        ArrayList<String> rows = new ArrayList();
         int maxM = 0;
         for (CSVRecord record : parser) {
             int lineNumber = (int) parser.getCurrentLineNumber() - 1;
             int line = colHeadings == null ? lineNumber : lineNumber - 1;
             if (record.getRecordNumber() == 1 && colHeadings != null) {
                 for (int j = 0; j < record.size(); j++) {
-                    headings.add(record.get(j));
+                    colHeadings.add(record.get(j));
                 }
             } else {
                 int j = 0;
                 if (rowLabels != null) {
-                    rows.add(record.get(0));
+                    rowLabels.add(record.get(0));
                     j++;
                 }
                 if (data.size() <= line) {
@@ -60,8 +60,8 @@ public class DataReader {
                 }
             }
         }
-        colHeadings = headings.toArray(colHeadings);
-        rowLabels = rows.toArray(rowLabels);
+//        colHeadings = headings.toArray(colHeadings);
+//        rowLabels = rows.toArray(rowLabels);
         int m = data.size();
         double[][] output = new double[m][maxM];
         for (int j = 0; j < m; j++) {
