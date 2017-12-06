@@ -55,7 +55,7 @@ public class Particle {
     /**
      * This particle's z-position within an image stack.
      */
-    public int getTimePoint() {
+    public int getFrameNumber() {
         return t;
     }
 
