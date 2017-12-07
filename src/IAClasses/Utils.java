@@ -811,11 +811,11 @@ public class Utils {
     }
 
     public static ImageProcessor updateImage(ImageStack channel1, ImageStack channel2, int slice) {
-        ImageProcessor redIP = ImageNormaliser.normaliseImage(channel1.getProcessor(slice), 255.0);
+        ImageProcessor redIP = ImageNormaliser.normaliseImage(channel1.getProcessor(slice), 255.0, ImageNormaliser.FLOAT);
         ImageStack red = (new ImagePlus("", (new TypeConverter(redIP, true)).convertToByte())).getImageStack();
         ImageStack green = null;
         if (channel2 != null) {
-            ImageProcessor greenIP = ImageNormaliser.normaliseImage(channel2.getProcessor(slice), 255.0);
+            ImageProcessor greenIP = ImageNormaliser.normaliseImage(channel2.getProcessor(slice), 255.0, ImageNormaliser.FLOAT);
             green = (new ImagePlus("", (new TypeConverter(greenIP, true)).convertToByte())).getImageStack();
         }
         return ((new RGBStackMerge()).mergeStacks(channel1.getWidth(), channel1.getHeight(), 1, red, green, null, false)).getProcessor(1);
