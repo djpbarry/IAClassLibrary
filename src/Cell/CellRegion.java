@@ -6,6 +6,7 @@
 package Cell;
 
 import ij.gui.Roi;
+import ij.process.ImageStatistics;
 
 /**
  *
@@ -15,6 +16,7 @@ public class CellRegion {
 
     protected Cell parent;
     protected Roi roi;
+    protected ImageStatistics fluorStats;
 
     public CellRegion() {
 
@@ -39,4 +41,13 @@ public class CellRegion {
     public void setRoi(Roi roi) {
         this.roi = roi;
     }
+
+    public ImageStatistics getFluorStats() {
+        return fluorStats;
+    }
+
+    public void setFluorStats(ImageStatistics fluorStats) {
+        this.fluorStats = fluorStats;
+    }
+    
 }

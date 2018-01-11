@@ -64,17 +64,20 @@ public class FluorescenceAnalyser {
                 image.setRoi(nucRoi);
                 image.setMask(nucMask);
                 ImageStatistics nucstats = ImageStatistics.getStatistics(image, measurements, null);
+                nucleus.setFluorStats(nucstats);
                 Roi cytoRoi = cyto.getRoi();
                 ByteProcessor cytoMask = (ByteProcessor) cytoRoi.getMask();
                 image.setRoi(cytoRoi);
                 image.setMask(cytoMask);
                 ImageStatistics cellstats = ImageStatistics.getStatistics(image, measurements, null);
+                cell.setFluorStats(cellstats);
                 int xc = nucRoi.getBounds().x - cytoRoi.getBounds().x;
                 int yc = nucRoi.getBounds().y - cytoRoi.getBounds().y;
                 (new ByteBlitter(cytoMask)).copyBits(nucMask, xc, yc, Blitter.SUBTRACT);
                 image.setRoi(cytoRoi);
                 image.setMask(cytoMask);
                 ImageStatistics cytostats = ImageStatistics.getStatistics(image, measurements, null);
+                cyto.setFluorStats(cytostats);
                 vals[i] = new double[]{cell.getID(), cellstats.mean, cellstats.stdDev, nucstats.mean, nucstats.stdDev, cytostats.mean, cytostats.stdDev, nucstats.mean / cytostats.mean, nucstats.stdDev / cytostats.stdDev};
             }
         }

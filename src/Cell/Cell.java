@@ -13,7 +13,7 @@ import java.util.Comparator;
  *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
-public class Cell implements Comparable<Cell>, Comparator<Cell> {
+public class Cell extends CellRegion implements Comparable<Cell>, Comparator<Cell> {
 
     private ArrayList<Particle> particles;
     private ArrayList<CellRegion> regions;
