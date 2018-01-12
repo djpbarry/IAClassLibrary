@@ -51,9 +51,11 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
  */
 public class FluorescenceAnalyser {
 
-    public static double[][] analyseCellFluorescenceDistribution(ImageProcessor image, int measurements, Cell[] cells) {
+    public static double[][] analyseCellFluorescenceDistribution(ImageProcessor image, int measurements, Cell[] cells, double normFactor) {
         int N = cells.length;
         double[][] vals = new double[N][];
+        ImageProcessor image2 = image.duplicate();
+        image2.multiply(normFactor);
         for (int i = 0; i < N; i++) {
             Cell cell = cells[i];
             if (cell.getID() > 0) {
@@ -61,24 +63,26 @@ public class FluorescenceAnalyser {
                 Cytoplasm cyto = (Cytoplasm) cell.getRegion(new Cytoplasm());
                 Roi nucRoi = nucleus.getRoi();
                 ByteProcessor nucMask = (ByteProcessor) nucRoi.getMask();
-                image.setRoi(nucRoi);
-                image.setMask(nucMask);
-                ImageStatistics nucstats = ImageStatistics.getStatistics(image, measurements, null);
+                image2.setRoi(nucRoi);
+                image2.setMask(nucMask);
+                ImageStatistics nucstats = ImageStatistics.getStatistics(image2, measurements, null);
                 nucleus.setFluorStats(nucstats);
                 Roi cytoRoi = cyto.getRoi();
                 ByteProcessor cytoMask = (ByteProcessor) cytoRoi.getMask();
-                image.setRoi(cytoRoi);
-                image.setMask(cytoMask);
-                ImageStatistics cellstats = ImageStatistics.getStatistics(image, measurements, null);
+                image2.setRoi(cytoRoi);
+                image2.setMask(cytoMask);
+                ImageStatistics cellstats = ImageStatistics.getStatistics(image2, measurements, null);
                 cell.setFluorStats(cellstats);
                 int xc = nucRoi.getBounds().x - cytoRoi.getBounds().x;
                 int yc = nucRoi.getBounds().y - cytoRoi.getBounds().y;
                 (new ByteBlitter(cytoMask)).copyBits(nucMask, xc, yc, Blitter.SUBTRACT);
-                image.setRoi(cytoRoi);
-                image.setMask(cytoMask);
-                ImageStatistics cytostats = ImageStatistics.getStatistics(image, measurements, null);
+                image2.setRoi(cytoRoi);
+                image2.setMask(cytoMask);
+                ImageStatistics cytostats = ImageStatistics.getStatistics(image2, measurements, null);
                 cyto.setFluorStats(cytostats);
-                vals[i] = new double[]{cell.getID(), cellstats.mean, cellstats.stdDev, nucstats.mean, nucstats.stdDev, cytostats.mean, cytostats.stdDev, nucstats.mean / cytostats.mean, nucstats.stdDev / cytostats.stdDev};
+                vals[i] = new double[]{cell.getID(), nucleus.getCentroid()[0], nucleus.getCentroid()[1],
+                    cellstats.mean, cellstats.stdDev, nucstats.mean, nucstats.stdDev, cytostats.mean,
+                    cytostats.stdDev, nucstats.mean / cytostats.mean, nucstats.stdDev / cytostats.stdDev};
             }
         }
         return vals;
@@ -228,7 +232,7 @@ public class FluorescenceAnalyser {
         int mapWidth = fluorMaps.getWidth();
         double[][] data = new double[mapHeight][fluorMaps.getSize() + 1];
         for (int y = 0; y < mapHeight; y++) {
-            data[y][0] = ((double) y) / (mapHeight-1);
+            data[y][0] = ((double) y) / (mapHeight - 1);
             for (int i = 1; i <= fluorMaps.size(); i++) {
                 ImageProcessor fluorMap = fluorMaps.getProcessor(i);
                 for (int x = 0; x < mapWidth; x++) {
