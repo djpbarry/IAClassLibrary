@@ -16,13 +16,41 @@
  */
 package Particle;
 
+import ij.process.ImageProcessor;
+
 /**
  *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
 public class Blob extends Particle {
 
-    public Blob(int t, double x, double y, double magnitude) {
+    private final ImageProcessor image;
+    private final int blobRadius;
+    private final double res;
+
+    public Blob(int t, double x, double y, double magnitude, ImageProcessor image, int blobRadius, double res) {
         super(t, x, y, magnitude);
+        this.image = image;
+        this.blobRadius = blobRadius;
+        this.res=res;
+        refineCentroid();
     }
+
+    private void refineCentroid() {
+        int x0 = (int) Math.round(this.x / res) - blobRadius;
+        int y0 = (int) Math.round(this.y  /res) - blobRadius;
+        int width = blobRadius * 2;
+        double sumX = 0.0, sumY = 0.0, sum = 0.0;
+        for (int y = y0; y <= y0 + width; y++) {
+            for (int x = x0; x <= x0 + width; x++) {
+                double p = image.getPixelValue(x, y);
+                sumX += p * x;
+                sumY += p * y;
+                sum += p;
+            }
+        }
+        this.x = sumX*res / sum;
+        this.y = sumY*res / sum;
+    }
+
 }
