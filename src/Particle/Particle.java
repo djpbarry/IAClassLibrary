@@ -1,6 +1,7 @@
 package Particle;
 
 import IAClasses.Region;
+import ij.process.ImageProcessor;
 
 /**
  * Represents a detected particle in an individual image or frame.
@@ -99,6 +100,23 @@ public class Particle {
 
     public void setRegion(Region region) {
         this.region = region;
+    }
+
+    public void refineCentroid(ImageProcessor image, int blobRadius, double res) {
+        int x0 = (int) Math.round(this.x / res) - blobRadius;
+        int y0 = (int) Math.round(this.y / res) - blobRadius;
+        int width = blobRadius * 2;
+        double sumX = 0.0, sumY = 0.0, sum = 0.0;
+        for (int y = y0; y <= y0 + width; y++) {
+            for (int x = x0; x <= x0 + width; x++) {
+                double p = image.getPixelValue(x, y);
+                sumX += p * x;
+                sumY += p * y;
+                sum += p;
+            }
+        }
+        this.x = sumX * res / sum;
+        this.y = sumY * res / sum;
     }
 
 }
