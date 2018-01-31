@@ -15,6 +15,7 @@ import ij.process.ImageProcessor;
 import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -62,7 +63,7 @@ public class Utilities {
      *
      * @return the directory in which the images to be analysed are located
      */
-    public static File getFolder(File currentDirectory, String title, boolean addExitOption) throws Exception {
+    public static File getFolder(File currentDirectory, String title, boolean addExitOption) throws InterruptedException, InvocationTargetException {
         OutputFolderOpener fo = new OutputFolderOpener(title, currentDirectory, addExitOption);
         EventQueue.invokeAndWait(fo);
         return fo.getNewDirectory();
