@@ -241,7 +241,7 @@ public class FluorescenceAnalyser {
             }
         }
         try {
-            DataWriter.saveValues(data, mean, headings, null);
+            DataWriter.saveValues(data, mean, headings, null, false);
         } catch (IOException e) {
             IJ.log(String.format("Failed to save mean fluorescence data: %s", e.toString()));
         }

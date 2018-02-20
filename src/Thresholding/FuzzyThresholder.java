@@ -61,7 +61,7 @@ public class FuzzyThresholder {
         binary.setValue(FOREGROUND);
         ImageProcessor fuzzyBinary = binary.duplicate();
         fuzzyBinary.setValue(FOREGROUND);
-        IJ.saveAs(new ImagePlus("", binary), "PNG", String.format("C:/Users/barryd/Debugging/fuzzy_threshold_debug%s%s", File.separator, "binary"));
+//        IJ.saveAs(new ImagePlus("", binary), "PNG", String.format("C:/Users/barryd/Debugging/fuzzy_threshold_debug%s%s", File.separator, "binary"));
         boolean finished = false;
         while (!finished) {
             finished = true;
@@ -81,7 +81,7 @@ public class FuzzyThresholder {
                 }
             }
         }
-        IJ.saveAs(new ImagePlus("", fuzzyBinary), "PNG", String.format("C:/Users/barryd/Debugging/fuzzy_threshold_debug%s%s", File.separator, "fuzzyBinary"));
+//        IJ.saveAs(new ImagePlus("", fuzzyBinary), "PNG", String.format("C:/Users/barryd/Debugging/fuzzy_threshold_debug%s%s", File.separator, "fuzzyBinary"));
         return fuzzyBinary;
     }
 

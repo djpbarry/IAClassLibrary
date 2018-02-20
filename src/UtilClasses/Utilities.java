@@ -4,6 +4,7 @@
  */
 package UtilClasses;
 
+import IO.InputFileOpener;
 import IO.OutputFolderOpener;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -67,6 +68,12 @@ public class Utilities {
         OutputFolderOpener fo = new OutputFolderOpener(title, currentDirectory, addExitOption);
         EventQueue.invokeAndWait(fo);
         return fo.getNewDirectory();
+    }
+    
+    public static File getFile(File currentDirectory, String title, boolean addExitOption) throws InterruptedException, InvocationTargetException {
+        InputFileOpener fo = new InputFileOpener(title, currentDirectory, addExitOption);
+        EventQueue.invokeAndWait(fo);
+        return fo.getFile();
     }
 
     /**
