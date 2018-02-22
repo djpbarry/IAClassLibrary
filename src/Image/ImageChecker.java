@@ -45,4 +45,8 @@ public class ImageChecker {
         return binaryImage;
     }
 
+    public static boolean isBinaryImage(ImageProcessor image) {
+        ImageStatistics stats = image.getStatistics();
+        return image.getWidth() * image.getHeight() == stats.histogram[0] + stats.histogram[255];
+    }
 }
