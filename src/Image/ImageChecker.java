@@ -44,5 +44,5 @@ public class ImageChecker {
         }
         return binaryImage;
     }
-    
+
 }

@@ -88,7 +88,7 @@ public class FluorescenceAnalyser {
         return vals;
     }
 
-    public static Cell[] filterCells(ImageProcessor image, CellRegion regionType, double threshold, int measurement, Cell[] cells) {
+    public static Cell[] filterCells(ImageProcessor image, CellRegion regionType, double threshold, int measurement, Cell[] cells, boolean aboveThreshold) {
         DescriptiveStatistics ds = new DescriptiveStatistics();
         boolean[] selected = new boolean[cells.length];
         Arrays.fill(selected, false);
@@ -116,7 +116,9 @@ public class FluorescenceAnalyser {
         double[] measures = ds.getValues();
         ArrayList<Cell> cells2 = new ArrayList<>();
         for (int i = 0, j = 0; i < cells.length; i++) {
-            if (selected[i] && measures[j++] > percentile) {
+            if (aboveThreshold && selected[i] && measures[j++] > percentile) {
+                cells2.add(cells[i]);
+            } else if (!aboveThreshold && selected[i] && measures[j++] < percentile) {
                 cells2.add(cells[i]);
             }
         }
@@ -130,14 +132,19 @@ public class FluorescenceAnalyser {
             ByteProcessor mask = new ByteProcessor(stack.getWidth(), stack.getHeight());
             mask.setValue(Region.MASK_BACKGROUND);
             mask.fill();
-            Roi roi = cells[i].getNucleus().getRoi();
-            ImageProcessor roiMask = roi.getMask();
-            roiMask.invert();
-            (new ByteBlitter(mask)).copyBits(roiMask, roi.getBounds().x, roi.getBounds().y, Blitter.COPY);
-            regions[i] = new Region(mask, cells[i].getNucleus().getCentroid());
+            Cytoplasm cyto = (Cytoplasm) cells[i].getRegion(new Cytoplasm());
+            if (cyto != null) {
+                Roi roi = cyto.getRoi();
+                ImageProcessor roiMask = roi.getMask().duplicate();
+                roiMask.invert();
+                (new ByteBlitter(mask)).copyBits(roiMask, roi.getBounds().x, roi.getBounds().y, Blitter.COPY);
+                regions[i] = new Region(mask, cells[i].getNucleus().getCentroid());
+            } else {
+                regions[i] = null;
+            }
         }
         for (Region region : regions) {
-            output.addSlice(getFluorDists(height, stack, ImageProcessor.MIN, steps, stepSize, new Region[]{region}, 1, 1)[0]);
+            output.addSlice(getFluorDists(height, stack, ImageProcessor.MAX, steps, stepSize, new Region[]{region}, 1, 1)[0]);
         }
         return output;
     }
@@ -153,6 +160,9 @@ public class FluorescenceAnalyser {
         StandardDeviation std = new StandardDeviation();
         for (int i = start; i <= end; i++) {
             Region r = regions[i - 1];
+            if (r == null) {
+                continue;
+            }
             Region current = new Region(r.getMask(), r.getCentre());
             ArrayList<Double> means = new ArrayList<>();
             ArrayList<Double> stds = new ArrayList<>();
@@ -227,7 +237,7 @@ public class FluorescenceAnalyser {
 
     public static void generateFluorMapsFromStack(ImageStack fluorMaps, String dir, String[] headings) {
         File mean = new File(String.format("%s%s%s", dir, File.separator, "MeanFluorescenceIntensity.csv"));
-        headings = ArrayUtils.addAll(new String[]{"Normalised Distance From Nucleus"}, headings);
+        headings = ArrayUtils.addAll(new String[]{"Normalised Distance From Boundary"}, headings);
         int mapHeight = fluorMaps.getHeight();
         int mapWidth = fluorMaps.getWidth();
         double[][] data = new double[mapHeight][fluorMaps.getSize() + 1];
