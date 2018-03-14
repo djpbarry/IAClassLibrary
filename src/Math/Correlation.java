@@ -5,6 +5,8 @@
  */
 package Math;
 
+import ij.process.ImageProcessor;
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.correlation.SpearmansCorrelation;
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 
@@ -16,6 +18,10 @@ public class Correlation {
 
     public static double spearman(double[] array1, double[] array2) {
         return (new SpearmansCorrelation()).correlation(array1, array2);
+    }
+
+    public static double pearsons(double[] array1, double[] array2) {
+        return (new PearsonsCorrelation()).correlation(array1, array2);
     }
 
     public static double[] randSpearman(double[] array1, double[] array2, double lp, double up, int N) {
@@ -32,5 +38,24 @@ public class Correlation {
         }
         Percentile p = new Percentile();
         return new double[]{p.evaluate(randCoeffs, lp), p.evaluate(randCoeffs, up)};
+    }
+
+    public static double[] imageCorrelation(ImageProcessor image1, ImageProcessor image2) {
+        float[] pix1 = (float[]) image1.convertToFloatProcessor().getPixels();
+        float[] pix2 = (float[]) image2.convertToFloatProcessor().getPixels();
+
+        if (pix1.length != pix2.length) {
+            return null;
+        }
+
+        double[] dpix1 = new double[pix1.length];
+        double[] dpix2 = new double[pix2.length];
+
+        for (int i = 0; i < pix1.length; i++) {
+            dpix1[i] = pix1[i];
+            dpix2[i] = pix2[i];
+        }
+
+        return new double[]{pearsons(dpix1, dpix2), spearman(dpix1, dpix2)};
     }
 }
