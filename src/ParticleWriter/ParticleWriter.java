@@ -37,7 +37,7 @@ public class ParticleWriter {
             image.drawOval((x - radius), (y - radius), 2 * radius, 2 * radius);
         } else if (p instanceof IsoGaussian) {
             if (preview) {
-                radius = (int) Math.round(((IsoGaussian) p).getXSigma() / spatialRes);
+                radius = (int) Math.round(2.0*((IsoGaussian) p).getXSigma());
                 image.drawOval((x - radius), (y - radius), 2 * radius, 2 * radius);
             } else {
                 Utils.draw2DGaussian(image, (IsoGaussian) p, 0.0, spatialRes, false);
