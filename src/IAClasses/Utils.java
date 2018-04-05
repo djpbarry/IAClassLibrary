@@ -217,10 +217,10 @@ public class Utils {
     public static ArrayList<int[]> findLocalMaxima(int kWidth, ImageProcessor image, double maxThresh, boolean varyBG, boolean absolute) {
         ImageStack stack = new ImageStack(image.getWidth(), image.getHeight());
         stack.addSlice(image);
-        return findLocalMaxima(kWidth, stack, maxThresh, varyBG, absolute);
+        return findLocalMaxima(kWidth, stack, maxThresh, varyBG, absolute, kWidth);
     }
 
-    public static ArrayList<int[]> findLocalMaxima(int radius, ImageStack stack, double maxThresh, boolean varyBG, boolean absolute) {
+    public static ArrayList<int[]> findLocalMaxima(int xyRadius, ImageStack stack, double maxThresh, boolean varyBG, boolean absolute, int zRadius) {
         if (stack == null) {
             return null;
         }
@@ -231,16 +231,16 @@ public class Utils {
         for (z = 0; z < depth; z++) {
             for (x = 0; x < width; x++) {
                 for (y = 0; y < height; y++) {
-                    for (min = Double.MAX_VALUE, max = 0.0, j = y - radius; j <= y + radius; j++) {
+                    for (min = Double.MAX_VALUE, max = 0.0, j = y - xyRadius; j <= y + xyRadius; j++) {
                         if (j < 0 || j >= height) {
                             continue;
                         }
                         int jOffset = j * width;
-                        for (k = z - radius; k <= z + radius; k++) {
+                        for (k = z - zRadius; k <= z + zRadius; k++) {
                             if (k < 0 || k >= depth) {
                                 continue;
                             }
-                            for (i = x - radius; i <= x + radius; i++) {
+                            for (i = x - xyRadius; i <= x + xyRadius; i++) {
                                 if (i < 0 || i >= width) {
                                     continue;
                                 }

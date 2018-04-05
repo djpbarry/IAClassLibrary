@@ -210,7 +210,7 @@ public class Region3D extends Region {
         }
         ImageFloat edm = EDT.run(new ImageByte(stack), MASK_FOREGROUND, true, 0);
 //        IJ.saveAs(edm.getImagePlus(), "TIF", "c:/users/barry05/adapt_debug/edm.tif");
-        ArrayList<int[]> max = Utils.findLocalMaxima(1, edm.getImageStack(), 0.9 * edm.getMax(), false, false);
+        ArrayList<int[]> max = Utils.findLocalMaxima(1, edm.getImageStack(), 0.9 * edm.getMax(), false, false, 1);
 //        sp.invert();
         if (!(max.isEmpty())) {
             return new short[]{(short) Math.round(max.get(0)[0] + bx),
