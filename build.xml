@@ -70,6 +70,7 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <property name="pluginsDir"  location="C:\Users\barryd\FIJI\DEV\Fiji.app\plugins" />
     <target name="-pre-init">
         <exec executable="C:\Users\barryd\Strawberry\perl\bin\perl.exe">
             <arg line="C:\Users\barryd\documents\Perl_Scripts\get_mercurial_revision_number.pl"/>
@@ -77,5 +78,15 @@
             <arg line="1"/>
             <arg line="$"/>
         </exec>
+    </target>
+    <target name="-post-init">
+        <echo message="--Deleting ${pluginsDir}\${application.title}*.jar" />
+        <delete>
+            <fileset dir="${pluginsDir}" includes="${application.title}*.jar"/>
+        </delete>
+    </target>
+    <target name="-post-jar">
+        <echo message="--Copied JAR to pluginsDir: ${pluginsDir}" />
+        <copy file="${basedir}/${dist.jar}" toDir="${pluginsDir}" />
     </target>
 </project>

@@ -432,35 +432,6 @@ public class Region {
         return mask.duplicate();
     }
 
-    public static double[] calcCurvature(short[][] pix, int step) {
-        int n = pix.length;
-        double curvature[] = new double[n];
-        if (n < step) {
-            Arrays.fill(curvature, 0.0);
-        } else {
-            for (int j = 0; j < n; j++) {
-                int i = j - step;
-                int k = j + step;
-                if (i < 0) {
-                    i += n;
-                }
-                if (k >= n) {
-                    k -= n;
-                }
-                double theta1 = Utils.arcTan(pix[j][0] - pix[i][0], pix[j][1] - pix[i][1]);
-                double theta2 = Utils.arcTan(pix[k][0] - pix[j][0], pix[k][1] - pix[j][1]);
-                if (Math.abs(theta1 - theta2) >= 180.0) {
-                    if (theta2 > theta1) {
-                        theta2 -= 360.0;
-                    } else {
-                        theta1 -= 360.0;
-                    }
-                }
-                curvature[j] = theta1 - theta2;
-            }
-        }
-        return curvature;
-    }
 
     public short[][] getOrderedBoundary(int width, int height, ImageProcessor mask, float[] centre) {
         return getOrderedBoundary(width, height, mask, new short[]{(short) Math.round(centre[0]), (short) Math.round(centre[1])});
