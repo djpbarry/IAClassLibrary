@@ -60,9 +60,9 @@ public class DataWriter {
     public static void saveValues(double[][] vals, File dataFile, String[] colHeadings, String[] rowLabels, boolean append) throws IOException {
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile,append), GenVariables.ISO), CSVFormat.EXCEL);
         int L = vals.length;
-        if (rowLabels != null) {
-            colHeadings = ArrayUtils.addAll(new String[]{"Label"}, colHeadings);
-        }
+//        if (rowLabels != null) {
+//            colHeadings = ArrayUtils.addAll(new String[]{"Label"}, colHeadings);
+//        }
         if (colHeadings != null) {
             printer.printRecord((Object[]) colHeadings);
         }

@@ -41,7 +41,7 @@ public class DataReader {
             int lineNumber = (int) parser.getCurrentLineNumber() - 1;
             int line = colHeadings == null ? lineNumber : lineNumber - 1;
             if (record.getRecordNumber() == 1 && colHeadings != null) {
-                for (int j = 0; j < record.size(); j++) {
+                for (int j = rowLabels == null ? 0 : 1; j < record.size(); j++) {
                     colHeadings.add(record.get(j));
                 }
             } else {
@@ -54,7 +54,13 @@ public class DataReader {
                     data.add(new ArrayList());
                 }
                 for (; j < record.size(); j++) {
-                    data.get(line).add(Double.parseDouble(record.get(j)));
+                    double d;
+                    try {
+                        d = Double.parseDouble(record.get(j));
+                    } catch (NumberFormatException e) {
+                        d = Double.NaN;
+                    }
+                    data.get(line).add(d);
                 }
                 if (j > maxM) {
                     maxM = j;
