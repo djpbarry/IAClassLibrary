@@ -154,6 +154,11 @@ public class GenUtils {
         return dir;
     }
 
+    public static void logError(Exception e) {
+        IJ.log(e.getLocalizedMessage());
+        IJ.log(e.getMessage());
+        IJ.log(e.toString());
+    }
     public static void error(String message) {
         Toolkit.getDefaultToolkit().beep();
         IJ.error(message);
