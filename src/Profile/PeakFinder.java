@@ -20,6 +20,7 @@ import IAClasses.Utils;
 import ij.plugin.filter.GaussianBlur;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
+import java.util.Arrays;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 public class PeakFinder {
@@ -37,12 +38,26 @@ public class PeakFinder {
         DescriptiveStatistics stats = new DescriptiveStatistics(data);
         double max = stats.getMax();
         double min = stats.getMin();
-        int[] indices = new int[]{-1, -1, -1};
         double[] thresholds = new double[]{0.5 * (max - min) + min, max, 0.8 * (max - min) + min};
         boolean[] ops = new boolean[]{true, true, false};
+        return findIndices(data, ops, thresholds);
+    }
+
+    public static int[] findRegionWidth(double[] data, double thresh) {
+        DescriptiveStatistics stats = new DescriptiveStatistics(data);
+        double max = stats.getMax();
+        double min = stats.getMin();
+        double[] thresholds = new double[]{thresh * (max - min) + min, thresh * (max - min) + min};
+        boolean[] ops = new boolean[]{true, false};
+        return findIndices(data, ops, thresholds);
+    }
+
+    private static int[] findIndices(double[] data, boolean[] ops, double[] thresholds) {
+        int[] indices = new int[]{ops.length};
+        Arrays.fill(indices, -1);
         int j = 0;
-        for (int i = 0; i < data.length && j < 3; i++) {
-            if ((ops[j] && data[i] >= thresholds[j]) || (!ops[j] && data[i] <= thresholds[j])) {
+        for (int i = 0; i < data.length && j < ops.length; i++) {
+            if ((ops[j] && data[i] >= thresholds[j]) || (!ops[j] && data[i] < thresholds[j])) {
                 indices[j++] = i;
             }
         }
