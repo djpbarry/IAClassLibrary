@@ -17,18 +17,15 @@
 package MetaData;
 
 import ij.ImagePlus;
-import ij.measure.Calibration;
 
 public class ParamsReader {
 
-    private ImagePlus imp;
     private double spatialRes;
-    private double frameRate;
+    private double framesPerSecond;
 
     public ParamsReader(ImagePlus imp) {
-        this.imp = imp;
         this.spatialRes = imp.getCalibration().pixelWidth;
-        this.frameRate = imp.getCalibration().frameInterval;
+        this.framesPerSecond = 1.0 / imp.getCalibration().frameInterval;
     }
 
     public double getSpatialRes() {
@@ -36,7 +33,7 @@ public class ParamsReader {
     }
 
     public double getFrameRate() {
-        return frameRate;
+        return framesPerSecond;
     }
 
 }
