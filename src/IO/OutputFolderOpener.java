@@ -41,6 +41,10 @@ public class OutputFolderOpener implements Runnable {
     }
 
     public void run() {
+        openDirectory();
+    }
+
+    public void openDirectory() {
         boolean validDirectory = false;
         if (title == null) {
             title = "Select Directory";

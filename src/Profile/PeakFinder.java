@@ -43,17 +43,14 @@ public class PeakFinder {
         return findIndices(data, ops, thresholds);
     }
 
-    public static int[] findRegionWidth(double[] data, double thresh) {
-        DescriptiveStatistics stats = new DescriptiveStatistics(data);
-        double max = stats.getMax();
-        double min = stats.getMin();
+    public static int[] findRegionWidth(double[] data, double thresh, double min, double max) {
         double[] thresholds = new double[]{thresh * (max - min) + min, thresh * (max - min) + min};
         boolean[] ops = new boolean[]{true, false};
         return findIndices(data, ops, thresholds);
     }
 
     private static int[] findIndices(double[] data, boolean[] ops, double[] thresholds) {
-        int[] indices = new int[]{ops.length};
+        int[] indices = new int[ops.length];
         Arrays.fill(indices, -1);
         int j = 0;
         for (int i = 0; i < data.length && j < ops.length; i++) {
@@ -62,6 +59,14 @@ public class PeakFinder {
             }
         }
         return indices;
+    }
+
+    public static double[][] smoothData(double[][] data, double radius) {
+        double[][] smoothedData = new double[data.length][];
+        for (int i = 0; i < data.length; i++) {
+            smoothedData[i] = smoothData(data[i], radius);
+        }
+        return smoothedData;
     }
 
     public static double[] smoothData(double[] data, double radius) {
@@ -78,6 +83,22 @@ public class PeakFinder {
             doublePix[i] = floatPix[i];
         }
         return doublePix;
+    }
+
+    public static double[] findMinAndMax(double[][] data) {
+        double[] extrema = {Double.MAX_VALUE, Double.MIN_VALUE};
+        for (double[] d : data) {
+            DescriptiveStatistics stats = new DescriptiveStatistics(d);
+            double max = stats.getMax();
+            double min = stats.getMin();
+            if (max > extrema[1]) {
+                extrema[1] = max;
+            }
+            if (min < extrema[0]) {
+                extrema[0] = min;
+            }
+        }
+        return extrema;
     }
 
 }
