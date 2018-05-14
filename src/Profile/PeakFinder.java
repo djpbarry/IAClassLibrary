@@ -69,6 +69,34 @@ public class PeakFinder {
         return smoothedData;
     }
 
+    public static double[][] smoothData2D(double[][] data, double radius) {
+        int mapWidth = 0;
+        for (double[] d : data) {
+            if (d.length > mapWidth) {
+                mapWidth = d.length;
+            }
+        }
+        FloatProcessor fp = new FloatProcessor(mapWidth, data.length);
+        float[] floatPix = new float[data.length * mapWidth];
+        for (int y = 0; y < data.length; y++) {
+            int offset = y * mapWidth;
+            for (int x = 0; x < mapWidth; x++) {
+                floatPix[x + offset] = (float) data[y][x];
+            }
+        }
+        fp.setPixels(floatPix);
+        (new GaussianBlur()).blurGaussian(fp, radius);
+        floatPix = (float[]) fp.getPixels();
+        double[][] doublePix = new double[data.length][mapWidth];
+        for (int y = 0; y < data.length; y++) {
+            int offset = y * mapWidth;
+            for (int x = 0; x < mapWidth; x++) {
+                doublePix[y][x] = floatPix[x + offset];
+            }
+        }
+        return doublePix;
+    }
+
     public static double[] smoothData(double[] data, double radius) {
         FloatProcessor fp = new FloatProcessor(data.length, 1);
         float[] floatPix = new float[data.length];
