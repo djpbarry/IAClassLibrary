@@ -58,7 +58,7 @@ public class DataWriter {
     }
 
     public static void saveValues(double[][] vals, File dataFile, String[] colHeadings, String[] rowLabels, boolean append) throws IOException {
-        CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile,append), GenVariables.ISO), CSVFormat.EXCEL);
+        CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile, append), GenVariables.ISO), CSVFormat.EXCEL);
         int L = vals.length;
 //        if (rowLabels != null) {
 //            colHeadings = ArrayUtils.addAll(new String[]{"Label"}, colHeadings);
@@ -69,7 +69,11 @@ public class DataWriter {
         for (int l = 0; l < L; l++) {
             if (vals[l] != null) {
                 if (rowLabels != null) {
-                    printer.print(rowLabels[l]);
+                    if (rowLabels.length > l) {
+                        printer.print(rowLabels[l]);
+                    } else {
+                        printer.print(" ");
+                    }
                 }
                 for (double v : vals[l]) {
                     if (!Double.isNaN(v)) {
