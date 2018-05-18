@@ -20,6 +20,8 @@ import IAClasses.Utils;
 import Particle.Blob;
 import Particle.IsoGaussian;
 import Particle.Particle;
+import ij.gui.Overlay;
+import ij.gui.TextRoi;
 import ij.process.ImageProcessor;
 import java.util.ArrayList;
 
@@ -29,7 +31,7 @@ import java.util.ArrayList;
  */
 public class ParticleWriter {
 
-    public static void drawParticle(ImageProcessor image, Particle p, boolean preview, double blobSize, double spatialRes, int label) {
+    public static void drawParticle(ImageProcessor image, Particle p, boolean preview, double blobSize, double spatialRes, int label, Overlay overlay) {
         int radius = (int) Math.round(blobSize / spatialRes);
         int x = (int) Math.round(p.getX() / spatialRes);
         int y = (int) Math.round(p.getY() / spatialRes);
@@ -37,7 +39,7 @@ public class ParticleWriter {
             image.drawOval((x - radius), (y - radius), 2 * radius, 2 * radius);
         } else if (p instanceof IsoGaussian) {
             if (preview) {
-                radius = (int) Math.round(2.0*((IsoGaussian) p).getXSigma());
+                radius = (int) Math.round(2.0 * ((IsoGaussian) p).getXSigma());
                 image.drawOval((x - radius), (y - radius), 2 * radius, 2 * radius);
             } else {
                 Utils.draw2DGaussian(image, (IsoGaussian) p, 0.0, spatialRes, false);
@@ -46,14 +48,14 @@ public class ParticleWriter {
             image.drawLine(x, y - radius, x, y + radius);
             image.drawLine(x + radius, y, x - radius, y);
         }
-        if (label >= 0) {
-            image.drawString(String.format("%d", label), x, y);
+        if (label >= 0 && overlay != null) {
+            overlay.add(new TextRoi(x, y, String.format("%d", label)));
         }
     }
 
-    public static void drawDetections(ArrayList<Particle> detections, ImageProcessor output, boolean preview, double blobSize, double spatialRes, boolean label) {
+    public static void drawDetections(ArrayList<Particle> detections, ImageProcessor output, boolean preview, double blobSize, double spatialRes, boolean label, Overlay overlay) {
         for (int i = 0; i < detections.size(); i++) {
-            drawParticle(output, detections.get(i), preview, blobSize, spatialRes, label ? i + 1 : -1);
+            drawParticle(output, detections.get(i), preview, blobSize, spatialRes, label ? i + 1 : -1, overlay);
         }
     }
 
