@@ -29,8 +29,8 @@ public class FileName {
         }
         int period = name.indexOf('.');
         if (period > -1) {
-            output = (name.substring(0, period)).replaceAll("[\\\\/:*?\"<>|]", "");
+            output = name.substring(0, period);
         }
-        return output;
+        return output.replaceAll("[\\\\/:*?\"<>|]", "");
     }
 }
