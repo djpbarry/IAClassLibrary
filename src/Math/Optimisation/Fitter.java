@@ -57,9 +57,9 @@ public abstract class Fitter {
     }
 
     public boolean doFit() {
-        if (xData == null || yData == null || zData == null) {
-            return false;
-        }
+//        if (xData == null || yData == null || zData == null) {
+//            return false;
+//        }
         initialize();
         restart(0);
         numIter = 0;
@@ -249,23 +249,6 @@ public abstract class Fitter {
     }
 
     public abstract double evaluate(double[] vector, double... params);
-
-    /**
-     * Returns residuals array ie. differences between data and curve.
-     */
-    public double[] getResiduals() {
-        if (!(numPoints > 0)) {
-            return null;
-        }
-        double[] params = getParams();
-        double[] residuals = new double[numPoints];
-        for (int x = 0; x < xData.length; x++) {
-            for (int y = 0; y < yData.length; y++) {
-                residuals[x * y] = zData[x + xData.length * y] - evaluate(params, xData[x], yData[y]);
-            }
-        }
-        return residuals;
-    }
 
     /**
      * Get the set of parameter values from the best corner of the simplex
