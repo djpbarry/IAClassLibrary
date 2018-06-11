@@ -55,7 +55,7 @@ public class CurveAnalyser {
                 curvature[j] = theta1 - theta2;
             }
         }
-        if (!loop) {
+        if (!loop && n > 2 * step) {
             double[] curvature2 = new double[n - 2 * step];
             System.arraycopy(curvature, step, curvature2, 0, n - 2 * step);
             curvature = curvature2;
