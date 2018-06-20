@@ -17,6 +17,7 @@
 package Graph;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 /**
@@ -24,16 +25,32 @@ import java.util.Set;
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class Graph {
- 
+
     private Set<Node> nodes = new HashSet<>();
-     
+
+    public Graph() {
+
+    }
+
+    public Graph(Graph graph) {
+        for (Node n : graph.getNodes()) {
+            this.addNode(new Node(n));
+        }
+    }
+
     public void addNode(Node nodeA) {
         nodes.add(nodeA);
     }
- 
-    // getters and setters 
 
+    // getters and setters 
     public Set<Node> getNodes() {
         return nodes;
+    }
+
+    public void resetNodes() {
+        for (Node n : getNodes()) {
+            n.setDistance(Integer.MAX_VALUE);
+            n.setShortestPath(new LinkedList());
+        }
     }
 }
