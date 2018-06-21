@@ -16,6 +16,7 @@
  */
 package Graph;
 
+import IAClasses.Utils;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -76,6 +77,10 @@ public class Node {
 
     public int getY() {
         return y;
+    }
+
+    public double getDist(int x, int y) {
+        return Utils.calcDistance(x, y, this.x, this.y);
     }
 
     public int getSimpleDist(int x, int y) {
