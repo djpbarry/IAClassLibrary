@@ -22,6 +22,9 @@ public class Plate {
     private Roi outline;
     private int nWellRows, nWellCols;
     private double wellRadius;
+    private double xBuff;
+    private double yBuff;
+    private double interWellSpacing;
     private Roi cropRoi;
 
 //    public static void main(String[] args) {
@@ -29,11 +32,16 @@ public class Plate {
 //        (new ImagePlus("", p.drawPlate(10))).show();
 //        System.exit(0);
 //    }
-    public Plate(int nWellRows, int nWellCols, double wellRadius) {
+    public Plate(int nWellRows, int nWellCols, double wellRadius, double xBuff, double yBuff, double interWellSpacing) {
         this.nWellRows = nWellRows;
         this.nWellCols = nWellCols;
         this.wellRadius = wellRadius;
-        this.outline = new Roi(0, 0, nWellCols * wellRadius * 2.0, nWellRows * wellRadius * 2.0);
+        this.xBuff = xBuff;
+        this.yBuff = yBuff;
+        this.interWellSpacing = interWellSpacing;
+        this.outline = new Roi(0, 0,
+                nWellCols * wellRadius * 2.0 + 2.0 * xBuff + (nWellCols - 1) * interWellSpacing,
+                nWellRows * wellRadius * 2.0 + 2.0 * yBuff + (nWellRows - 1) * interWellSpacing);
     }
 
     ImageProcessor drawPlate(double angle) {
@@ -50,8 +58,8 @@ public class Plate {
         y = image.getHeight() / 2.0;
         for (int j = 1; j <= nWellRows * 2; j += 2) {
             for (int i = 1; i <= nWellCols * 2; i += 2) {
-                double x0 = x - bounds.width / 2.0 + (double) i * wellRadius;
-                double y0 = y - bounds.height / 2.0 + (double) j * wellRadius;
+                double x0 = x - bounds.width / 2.0 + (double) i * wellRadius + xBuff + ((i - 1) / 2) * interWellSpacing;
+                double y0 = y - bounds.height / 2.0 + (double) j * wellRadius + yBuff + ((j - 1) / 2) * interWellSpacing;
                 OvalRoi well = new OvalRoi(x0 - wellRadius, y0 - wellRadius, 2 * wellRadius, 2 * wellRadius);
                 image.draw(RoiRotator.rotate(well, angle, x, y));
             }
@@ -78,14 +86,14 @@ public class Plate {
         double xc = bounds.width / 2.0;
         double yc = bounds.height / 2.0;
         Roi plate = RoiRotator.rotate(new Roi(0, 0, bounds.width, bounds.height), angle, xc, yc);
-        double xShift = (x - plate.getBounds().width / 2.0) - plate.getBounds().x ;
-        double yShift = (y - plate.getBounds().height / 2.0) - plate.getBounds().y ;
+        double xShift = (x - plate.getBounds().width / 2.0) - plate.getBounds().x;
+        double yShift = (y - plate.getBounds().height / 2.0) - plate.getBounds().y;
         plate.setLocation(plate.getBounds().x + xShift, plate.getBounds().y + yShift);
         overlay.add(plate);
         for (int j = 1; j <= nWellRows * 2; j += 2) {
             for (int i = 1; i <= nWellCols * 2; i += 2) {
-                double x0 = xc - bounds.width / 2.0 + (double) i * wellRadius;
-                double y0 = yc - bounds.height / 2.0 + (double) j * wellRadius;
+                double x0 = xc - bounds.width / 2.0 + i * wellRadius + xBuff + ((i - 1) / 2) * interWellSpacing;
+                double y0 = yc - bounds.height / 2.0 + j * wellRadius + yBuff + ((j - 1) / 2) * interWellSpacing;
                 OvalRoi well = new OvalRoi(x0 - wellRadius, y0 - wellRadius, 2 * wellRadius, 2 * wellRadius);
                 Roi well2 = RoiRotator.rotate(well, angle, xc, yc);
                 well2.setLocation(well2.getBounds().x + xShift, well2.getBounds().y + yShift);

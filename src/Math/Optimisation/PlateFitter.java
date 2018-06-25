@@ -24,7 +24,7 @@ public class PlateFitter extends Fitter {
 
     public static void main(String[] args) {
         ImagePlus imp = IJ.openImage();
-        PlateFitter fitter = new PlateFitter(imp.getProcessor(), 2, 3, 86);
+        PlateFitter fitter = new PlateFitter(imp.getProcessor(), 2, 3, 86, 30, 20, 10);
         fitter.doFit();
         double[] p = fitter.getParams();
         imp.setOverlay(fitter.getPlateTemplate().drawOverlay(p[0], p[1], p[2]));
@@ -33,10 +33,10 @@ public class PlateFitter extends Fitter {
         System.exit(0);
     }
 
-    public PlateFitter(ImageProcessor image, int rows, int cols, int wellRad) {
+    public PlateFitter(ImageProcessor image, int rows, int cols, int wellRad, double xBuff, double yBuff, double interWellSpacing) {
         super();
         this.image = image;
-        this.plateTemplate = new Plate(rows, cols, wellRad);
+        this.plateTemplate = new Plate(rows, cols, wellRad, xBuff, yBuff, interWellSpacing);
         numParams = 3;
     }
 

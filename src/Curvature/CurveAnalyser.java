@@ -26,12 +26,18 @@ import java.util.Arrays;
 public class CurveAnalyser {
 
     public static double[] calcCurvature(int[][] pix, int step, boolean loop) {
+
+//        int index = 0;
         int n = pix.length;
         double[] curvature = new double[n];
         if (n < step) {
             Arrays.fill(curvature, 0.0);
         } else {
             for (int j = 0; j < n; j++) {
+//                ByteProcessor bp = new ByteProcessor(1010, 1010);
+//                bp.setColor(255);
+//                bp.fill();
+//                bp.setColor(0);
                 int i = j - step;
                 int k = j + step;
                 if (!loop && (i < 0 || k >= n)) {
@@ -43,6 +49,9 @@ public class CurveAnalyser {
                 if (k >= n) {
                     k -= n;
                 }
+//                bp.drawLine(pix[j][0], pix[j][1], pix[k][0], pix[k][1]);
+//                bp.drawLine(pix[j][0], pix[j][1], pix[i][0], pix[i][1]);
+//                IJ.saveAs(new ImagePlus("", bp), "PNG", "C:\\Users\\barryd\\debugging\\anamorf_debug\\curve_" + index++);
                 double theta1 = Utils.arcTan(pix[j][0] - pix[i][0], pix[j][1] - pix[i][1]);
                 double theta2 = Utils.arcTan(pix[k][0] - pix[j][0], pix[k][1] - pix[j][1]);
                 if (Math.abs(theta1 - theta2) >= 180.0) {
