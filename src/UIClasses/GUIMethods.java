@@ -14,29 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package IO.File;
+package UIClasses;
 
-import java.io.File;
-import java.io.FilenameFilter;
+import java.awt.Container;
+import java.util.Properties;
 
 /**
  *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
-public class ImageFilter implements FilenameFilter {
+public interface GUIMethods {
 
-    private String[] exts;
+    public boolean setVariables();
 
-    public ImageFilter(String[] exts) {
-        this.exts = exts;
-    }
-
-    public boolean accept(File current, String name) {
-        for (String e : exts) {
-            if (name.toLowerCase().endsWith(e.toLowerCase())) {
-                return true;
-            }
-        }
-        return false;
-    }
+    public void setProperties(Properties p, Container c);
 }

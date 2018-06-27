@@ -64,7 +64,7 @@ public class Plate {
         return image;
     }
 
-    Overlay drawOverlay(double x, double y, double angle) {
+    public Overlay drawOverlay(double x, double y, double angle) {
         Overlay overlay = new Overlay();
         Rectangle bounds = outline.getBounds();
         double xc = bounds.width / 2.0;

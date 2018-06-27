@@ -7,8 +7,6 @@ package Math.Optimisation;
 
 import Math.Correlation;
 import static Math.Optimisation.Fitter.IterFactor;
-import ij.IJ;
-import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
 import java.awt.Rectangle;
@@ -21,17 +19,6 @@ public class PlateFitter extends Fitter {
 
     private Plate plateTemplate;
     private ImageProcessor image;
-
-    public static void main(String[] args) {
-        ImagePlus imp = IJ.openImage();
-        PlateFitter fitter = new PlateFitter(imp.getProcessor(), 2, 3, 86, 30, 20, 10);
-        fitter.doFit();
-        double[] p = fitter.getParams();
-        imp.setOverlay(fitter.getPlateTemplate().drawOverlay(p[0], p[1], p[2]));
-        IJ.saveAs(imp, "TIF", "D:\\OneDrive - The Francis Crick Institute\\Working Data\\Sahai\\Karin\\overlay");
-        System.out.println(String.format("X: %f, Y: %f, Theta: %f, Corr: %f", p[0], p[1], p[2], p[3]));
-        System.exit(0);
-    }
 
     public PlateFitter(ImageProcessor image, int rows, int cols, int wellRad, double xBuff, double yBuff, double interWellSpacing) {
         super();
