@@ -46,25 +46,57 @@ public class Plate {
 
     ImageProcessor drawPlate(double angle) {
         Rectangle bounds = outline.getBounds();
-        double x = bounds.width / 2.0;
-        double y = bounds.height / 2.0;
-        Roi plate = RoiRotator.rotate(new Roi(0, 0, bounds.width, bounds.height), angle, x, y);
+        Roi plate = getPlateOutline(angle);
         Rectangle bounds2 = plate.getBounds();
         cropRoi = plate;
         ImageProcessor image = constructImage(bounds2);
         plate.setLocation(0, 0);
         image.draw(plate);
-        x = image.getWidth() / 2.0;
-        y = image.getHeight() / 2.0;
+        double x = image.getWidth() / 2.0;
+        double y = image.getHeight() / 2.0;
         for (int j = 1; j <= nWellRows * 2; j += 2) {
             for (int i = 1; i <= nWellCols * 2; i += 2) {
-                double x0 = x - bounds.width / 2.0 + (double) i * wellRadius + xBuff + ((i - 1) / 2) * interWellSpacing;
-                double y0 = y - bounds.height / 2.0 + (double) j * wellRadius + yBuff + ((j - 1) / 2) * interWellSpacing;
-                OvalRoi well = new OvalRoi(x0 - wellRadius, y0 - wellRadius, 2 * wellRadius, 2 * wellRadius);
-                image.draw(RoiRotator.rotate(well, angle, x, y));
+                image.draw(RoiRotator.rotate(
+                        constructWell(x, y, bounds.width, bounds.height, i, j),
+                        angle, x, y));
             }
         }
         return image;
+    }
+
+    Overlay drawOverlay(double x, double y, double angle) {
+        Overlay overlay = new Overlay();
+        Rectangle bounds = outline.getBounds();
+        double xc = bounds.width / 2.0;
+        double yc = bounds.height / 2.0;
+        Roi plate = getPlateOutline(angle);
+        double xShift = (x - plate.getBounds().width / 2.0) - plate.getBounds().x;
+        double yShift = (y - plate.getBounds().height / 2.0) - plate.getBounds().y;
+        plate.setLocation(plate.getBounds().x + xShift, plate.getBounds().y + yShift);
+        overlay.add(plate);
+        for (int j = 1; j <= nWellRows * 2; j += 2) {
+            for (int i = 1; i <= nWellCols * 2; i += 2) {
+                Roi well2 = RoiRotator.rotate(
+                        constructWell(xc, yc, bounds.width, bounds.height, i, j),
+                        angle, xc, yc);
+                well2.setLocation(well2.getBounds().x + xShift, well2.getBounds().y + yShift);
+                overlay.add(well2);
+            }
+        }
+        return overlay;
+    }
+
+    OvalRoi constructWell(double x, double y, int width, int height, int i, int j) {
+        double x0 = x - width / 2.0 + (double) i * wellRadius + xBuff + ((i - 1) / 2) * interWellSpacing;
+        double y0 = y - height / 2.0 + (double) j * wellRadius + yBuff + ((j - 1) / 2) * interWellSpacing;
+        return new OvalRoi(x0 - wellRadius, y0 - wellRadius, 2 * wellRadius, 2 * wellRadius);
+    }
+    
+    Roi getPlateOutline(double angle){
+        Rectangle bounds = outline.getBounds();
+        double x = bounds.width / 2.0;
+        double y = bounds.height / 2.0;
+        return RoiRotator.rotate(new Roi(0, 0, bounds.width, bounds.height), angle, x, y);
     }
 
     ImageProcessor constructImage(Rectangle roi) {
@@ -79,28 +111,4 @@ public class Plate {
     public Roi getCropRoi() {
         return cropRoi;
     }
-
-    Overlay drawOverlay(double x, double y, double angle) {
-        Overlay overlay = new Overlay();
-        Rectangle bounds = outline.getBounds();
-        double xc = bounds.width / 2.0;
-        double yc = bounds.height / 2.0;
-        Roi plate = RoiRotator.rotate(new Roi(0, 0, bounds.width, bounds.height), angle, xc, yc);
-        double xShift = (x - plate.getBounds().width / 2.0) - plate.getBounds().x;
-        double yShift = (y - plate.getBounds().height / 2.0) - plate.getBounds().y;
-        plate.setLocation(plate.getBounds().x + xShift, plate.getBounds().y + yShift);
-        overlay.add(plate);
-        for (int j = 1; j <= nWellRows * 2; j += 2) {
-            for (int i = 1; i <= nWellCols * 2; i += 2) {
-                double x0 = xc - bounds.width / 2.0 + i * wellRadius + xBuff + ((i - 1) / 2) * interWellSpacing;
-                double y0 = yc - bounds.height / 2.0 + j * wellRadius + yBuff + ((j - 1) / 2) * interWellSpacing;
-                OvalRoi well = new OvalRoi(x0 - wellRadius, y0 - wellRadius, 2 * wellRadius, 2 * wellRadius);
-                Roi well2 = RoiRotator.rotate(well, angle, xc, yc);
-                well2.setLocation(well2.getBounds().x + xShift, well2.getBounds().y + yShift);
-                overlay.add(well2);
-            }
-        }
-        return overlay;
-    }
-
 }
