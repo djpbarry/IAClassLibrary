@@ -17,6 +17,7 @@
 package IO;
 
 import UtilClasses.GenVariables;
+import ij.measure.ResultsTable;
 import ij.text.TextWindow;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,7 +26,6 @@ import java.io.OutputStreamWriter;
 import java.util.Scanner;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 public class DataWriter {
@@ -139,5 +139,30 @@ public class DataWriter {
             }
         }
         return transposedData;
+    }
+
+    public static void saveResultsTable(ResultsTable rt, File file) throws IOException {
+        String[] headings = rt.getHeadings();
+        boolean labels = headings[0].contentEquals("Label");
+        int nCols = headings.length;
+        int nRows = rt.getCounter();
+        String[] rowLabels = null;
+        if (labels) {
+            rowLabels = new String[nRows];
+        }
+        double data[][] = new double[nRows][labels ? nCols - 1 : nCols];
+        for (int j = 0; j < nRows; j++) {
+            if (labels) {
+                rowLabels[j] = rt.getLabel(j);
+            }
+            for (int i = labels ? 1 : 0; i < nCols; i++) {
+                if (labels) {
+                    data[j][i - 1] = rt.getValueAsDouble(i, j);
+                } else {
+                    data[j][i] = rt.getValueAsDouble(i, j);
+                }
+            }
+        }
+        saveValues(data, file, headings, rowLabels, false);
     }
 }

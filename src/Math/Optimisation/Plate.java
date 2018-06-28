@@ -12,6 +12,7 @@ import ij.plugin.RoiRotator;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import java.awt.Rectangle;
+import java.util.LinkedList;
 
 /**
  *
@@ -19,6 +20,9 @@ import java.awt.Rectangle;
  */
 public class Plate {
 
+    public final static String PLATE_COMPONENT = "Plate Component";
+    public final static String WELL = "Well";
+    public final static String OUTLINE = "Outline";
     private Roi outline;
     private int nWellRows, nWellCols;
     private double wellRadius;
@@ -86,6 +90,30 @@ public class Plate {
         return overlay;
     }
 
+    public LinkedList<Roi> drawRoi(double x, double y, double angle) {
+        LinkedList<Roi> rois = new LinkedList();
+        Rectangle bounds = outline.getBounds();
+        double xc = bounds.width / 2.0;
+        double yc = bounds.height / 2.0;
+        Roi plate = getPlateOutline(angle);
+        double xShift = (x - plate.getBounds().width / 2.0) - plate.getBounds().x;
+        double yShift = (y - plate.getBounds().height / 2.0) - plate.getBounds().y;
+        plate.setLocation(plate.getBounds().x + xShift, plate.getBounds().y + yShift);
+        plate.setProperty(PLATE_COMPONENT, OUTLINE);
+        rois.add(plate);
+        for (int j = 1; j <= nWellRows * 2; j += 2) {
+            for (int i = 1; i <= nWellCols * 2; i += 2) {
+                Roi well2 = RoiRotator.rotate(
+                        constructWell(xc, yc, bounds.width, bounds.height, i, j),
+                        angle, xc, yc);
+                well2.setLocation(well2.getBounds().x + xShift, well2.getBounds().y + yShift);
+                well2.setProperty(PLATE_COMPONENT, WELL);
+                rois.add(well2);
+            }
+        }
+        return rois;
+    }
+    
     OvalRoi constructWell(double x, double y, int width, int height, int i, int j) {
         double x0 = x - width / 2.0 + (double) i * wellRadius + xBuff + ((i - 1) / 2) * interWellSpacing;
         double y0 = y - height / 2.0 + (double) j * wellRadius + yBuff + ((j - 1) / 2) * interWellSpacing;
