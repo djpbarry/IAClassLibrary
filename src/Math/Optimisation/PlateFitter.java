@@ -20,10 +20,10 @@ public class PlateFitter extends Fitter {
     private Plate plateTemplate;
     private ImageProcessor image;
 
-    public PlateFitter(ImageProcessor image, int rows, int cols, int wellRad, double xBuff, double yBuff, double interWellSpacing) {
+    public PlateFitter(ImageProcessor image, int rows, int cols, int wellRad, double xBuff, double yBuff, double interWellSpacing, double shrinkFactor) {
         super();
         this.image = image;
-        this.plateTemplate = new Plate(rows, cols, wellRad, xBuff, yBuff, interWellSpacing);
+        this.plateTemplate = new Plate(rows, cols, wellRad, xBuff, yBuff, interWellSpacing, shrinkFactor);
         numParams = 3;
     }
 

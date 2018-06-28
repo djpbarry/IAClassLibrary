@@ -22,6 +22,7 @@ public class Plate {
 
     public final static String PLATE_COMPONENT = "Plate Component";
     public final static String WELL = "Well";
+    public final static String SHRUNK_WELL = "Shrunk Well";
     public final static String OUTLINE = "Outline";
     private Roi outline;
     private int nWellRows, nWellCols;
@@ -29,6 +30,7 @@ public class Plate {
     private double xBuff;
     private double yBuff;
     private double interWellSpacing;
+    private double shrinkFactor;
     private Roi cropRoi;
 
 //    public static void main(String[] args) {
@@ -36,13 +38,14 @@ public class Plate {
 //        (new ImagePlus("", p.drawPlate(10))).show();
 //        System.exit(0);
 //    }
-    public Plate(int nWellRows, int nWellCols, double wellRadius, double xBuff, double yBuff, double interWellSpacing) {
+    public Plate(int nWellRows, int nWellCols, double wellRadius, double xBuff, double yBuff, double interWellSpacing, double shrinkFactor) {
         this.nWellRows = nWellRows;
         this.nWellCols = nWellCols;
         this.wellRadius = wellRadius;
         this.xBuff = xBuff;
         this.yBuff = yBuff;
         this.interWellSpacing = interWellSpacing;
+        this.shrinkFactor = shrinkFactor;
         this.outline = new Roi(0, 0,
                 nWellCols * wellRadius * 2.0 + 2.0 * xBuff + (nWellCols - 1) * interWellSpacing,
                 nWellRows * wellRadius * 2.0 + 2.0 * yBuff + (nWellRows - 1) * interWellSpacing);
@@ -103,24 +106,30 @@ public class Plate {
         rois.add(plate);
         for (int j = 1; j <= nWellRows * 2; j += 2) {
             for (int i = 1; i <= nWellCols * 2; i += 2) {
-                Roi well2 = RoiRotator.rotate(
-                        constructWell(xc, yc, bounds.width, bounds.height, i, j),
-                        angle, xc, yc);
-                well2.setLocation(well2.getBounds().x + xShift, well2.getBounds().y + yShift);
-                well2.setProperty(PLATE_COMPONENT, WELL);
-                rois.add(well2);
+                OvalRoi well = constructWell(xc, yc, bounds.width, bounds.height, i, j);
+                Rectangle wellBounds = well.getBounds();
+                double shrunkWellX = wellBounds.x + ((1.0 - shrinkFactor) / 2.0) * wellBounds.width;
+                double shrunkWellY = wellBounds.y + ((1.0 - shrinkFactor) / 2.0) * wellBounds.height;
+                OvalRoi shrunkWell = new OvalRoi(shrunkWellX, shrunkWellY, wellBounds.width * shrinkFactor, wellBounds.height * shrinkFactor);
+                Roi rotatedWell = RoiRotator.rotate(well, angle, xc, yc);
+                rotatedWell.setLocation(rotatedWell.getBounds().x + xShift, rotatedWell.getBounds().y + yShift);
+                rotatedWell.setProperty(PLATE_COMPONENT, WELL);
+                Roi rotatedShrunkWell = RoiRotator.rotate(shrunkWell, angle, xc, yc);
+                rotatedShrunkWell.setLocation(rotatedShrunkWell.getBounds().x + xShift, rotatedShrunkWell.getBounds().y + yShift);
+                rotatedShrunkWell.setProperty(PLATE_COMPONENT, SHRUNK_WELL);
+                rois.add(rotatedShrunkWell);
             }
         }
         return rois;
     }
-    
+
     OvalRoi constructWell(double x, double y, int width, int height, int i, int j) {
         double x0 = x - width / 2.0 + (double) i * wellRadius + xBuff + ((i - 1) / 2) * interWellSpacing;
         double y0 = y - height / 2.0 + (double) j * wellRadius + yBuff + ((j - 1) / 2) * interWellSpacing;
         return new OvalRoi(x0 - wellRadius, y0 - wellRadius, 2 * wellRadius, 2 * wellRadius);
     }
-    
-    Roi getPlateOutline(double angle){
+
+    Roi getPlateOutline(double angle) {
         Rectangle bounds = outline.getBounds();
         double x = bounds.width / 2.0;
         double y = bounds.height / 2.0;
