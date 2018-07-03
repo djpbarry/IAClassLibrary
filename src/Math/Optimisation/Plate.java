@@ -12,7 +12,6 @@ import ij.plugin.RoiRotator;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import java.awt.Rectangle;
-import java.util.LinkedList;
 
 /**
  *
@@ -83,29 +82,6 @@ public class Plate {
         overlay.add(plate);
         for (int j = 1; j <= nWellRows * 2; j += 2) {
             for (int i = 1; i <= nWellCols * 2; i += 2) {
-                Roi well2 = RoiRotator.rotate(
-                        constructWell(xc, yc, bounds.width, bounds.height, i, j),
-                        angle, xc, yc);
-                well2.setLocation(well2.getBounds().x + xShift, well2.getBounds().y + yShift);
-                overlay.add(well2);
-            }
-        }
-        return overlay;
-    }
-
-    public LinkedList<Roi> drawRoi(double x, double y, double angle) {
-        LinkedList<Roi> rois = new LinkedList();
-        Rectangle bounds = outline.getBounds();
-        double xc = bounds.width / 2.0;
-        double yc = bounds.height / 2.0;
-        Roi plate = getPlateOutline(angle);
-        double xShift = (x - plate.getBounds().width / 2.0) - plate.getBounds().x;
-        double yShift = (y - plate.getBounds().height / 2.0) - plate.getBounds().y;
-        plate.setLocation(plate.getBounds().x + xShift, plate.getBounds().y + yShift);
-        plate.setProperty(PLATE_COMPONENT, OUTLINE);
-        rois.add(plate);
-        for (int j = 1; j <= nWellRows * 2; j += 2) {
-            for (int i = 1; i <= nWellCols * 2; i += 2) {
                 OvalRoi well = constructWell(xc, yc, bounds.width, bounds.height, i, j);
                 Rectangle wellBounds = well.getBounds();
                 double shrunkWellX = wellBounds.x + ((1.0 - shrinkFactor) / 2.0) * wellBounds.width;
@@ -114,13 +90,14 @@ public class Plate {
                 Roi rotatedWell = RoiRotator.rotate(well, angle, xc, yc);
                 rotatedWell.setLocation(rotatedWell.getBounds().x + xShift, rotatedWell.getBounds().y + yShift);
                 rotatedWell.setProperty(PLATE_COMPONENT, WELL);
+                overlay.add(rotatedWell);
                 Roi rotatedShrunkWell = RoiRotator.rotate(shrunkWell, angle, xc, yc);
                 rotatedShrunkWell.setLocation(rotatedShrunkWell.getBounds().x + xShift, rotatedShrunkWell.getBounds().y + yShift);
                 rotatedShrunkWell.setProperty(PLATE_COMPONENT, SHRUNK_WELL);
-                rois.add(rotatedShrunkWell);
+                overlay.add(rotatedShrunkWell);
             }
         }
-        return rois;
+        return overlay;
     }
 
     OvalRoi constructWell(double x, double y, int width, int height, int i, int j) {
