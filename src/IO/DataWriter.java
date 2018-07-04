@@ -156,11 +156,7 @@ public class DataWriter {
                 rowLabels[j] = rt.getLabel(j);
             }
             for (int i = labels ? 1 : 0; i < nCols; i++) {
-                if (labels) {
-                    data[j][i - 1] = rt.getValueAsDouble(i, j);
-                } else {
-                    data[j][i] = rt.getValueAsDouble(i, j);
-                }
+                data[j][labels ? i - 1 : i] = rt.getValueAsDouble(rt.getColumnIndex(headings[i]), j);
             }
         }
         saveValues(data, file, headings, rowLabels, false);
