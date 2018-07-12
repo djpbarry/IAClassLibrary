@@ -20,6 +20,7 @@ import ij.ImagePlus;
 import java.io.IOException;
 import loci.formats.FormatException;
 import loci.formats.ImageReader;
+import loci.formats.meta.MetadataStore;
 import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
 import net.imglib2.img.ImagePlusAdapter;
@@ -27,7 +28,7 @@ import net.imglib2.img.Img;
 
 /**
  *
-// * @author David Barry <david.barry at crick dot ac dot uk>
+ * // * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class BioFormatsFileReader {
 
@@ -44,11 +45,17 @@ public class BioFormatsFileReader {
         return reader.getSizeC();
     }
 
-    public static Img openImage(String fileName, int series) throws FormatException, IOException {
+//    public static double getXYSpatialRes(String fileName, int series) throws FormatException, IOException {
+//        ImageReader reader = new ImageReader();
+//        reader.setId(fileName);
+//        reader.setSeries(series);
+//        return reader;
+//    }
+    public static BioFormatsImg openImage(String fileName, int series) throws FormatException, IOException {
         ImporterOptions io = new ImporterOptions();
         io.setId(fileName);
         io.setSeriesOn(series, true);
         ImagePlus[] imps = BF.openImagePlus(io);
-        return ImagePlusAdapter.wrap( imps[0] );
+        return new BioFormatsImg(ImagePlusAdapter.wrap(imps[0]), null, 1.0, 1.0);
     }
 }
