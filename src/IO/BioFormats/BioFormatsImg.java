@@ -16,9 +16,12 @@
  */
 package IO.BioFormats;
 
+import ViewMaker.CreateInterval;
+import ij.IJ;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.view.Views;
 
 /**
  *
@@ -30,12 +33,16 @@ public class BioFormatsImg {
     private final Img< FloatType> img;
     private final double xySpatRes;
     private final double zSpatRes;
+    private final int channel;
+    private final String id;
 
-    public BioFormatsImg(Img< FloatType> img, RandomAccessibleInterval< FloatType> interval, double xySpatRes, double zSpatRes) {
+    public BioFormatsImg(Img< FloatType> img, RandomAccessibleInterval< FloatType> interval, double xySpatRes, double zSpatRes, String id, int channel) {
         this.img = img;
         this.interval = interval;
         this.xySpatRes = xySpatRes;
         this.zSpatRes = zSpatRes;
+        this.id = id;
+        this.channel = channel;
     }
 
     public Img< FloatType> getImg() {
@@ -52,6 +59,15 @@ public class BioFormatsImg {
 
     public RandomAccessibleInterval< FloatType> getInterval() {
         return interval;
+    }
+
+    public BioFormatsImg copy() {
+        Img copyimg = img.copy();
+        return new BioFormatsImg(copyimg, CreateInterval.createInterval(copyimg.numDimensions(), copyimg, channel), xySpatRes, zSpatRes, id, channel);
+    }
+
+    public String toString() {
+        return String.format("%s\nXY Spatial Res (%cm): %f\nZ Spatial Res (%cm): %f\n", id, IJ.micronSymbol, xySpatRes, IJ.micronSymbol, zSpatRes);
     }
 
 }

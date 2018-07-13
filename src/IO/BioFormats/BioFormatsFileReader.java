@@ -16,11 +16,11 @@
  */
 package IO.BioFormats;
 
+import MetaData.ParamsReader;
 import ij.ImagePlus;
 import java.io.IOException;
 import loci.formats.FormatException;
 import loci.formats.ImageReader;
-import loci.formats.meta.MetadataStore;
 import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
 import net.imglib2.img.ImagePlusAdapter;
@@ -45,17 +45,28 @@ public class BioFormatsFileReader {
         return reader.getSizeC();
     }
 
-//    public static double getXYSpatialRes(String fileName, int series) throws FormatException, IOException {
-//        ImageReader reader = new ImageReader();
-//        reader.setId(fileName);
-//        reader.setSeries(series);
-//        return reader;
-//    }
-    public static BioFormatsImg openImage(String fileName, int series) throws FormatException, IOException {
+    public static double getXYSpatialRes(String fileName, int series) throws FormatException, IOException {
         ImporterOptions io = new ImporterOptions();
         io.setId(fileName);
         io.setSeriesOn(series, true);
         ImagePlus[] imps = BF.openImagePlus(io);
-        return new BioFormatsImg(ImagePlusAdapter.wrap(imps[0]), null, 1.0, 1.0);
+        ParamsReader pr = new ParamsReader(imps[0]);
+        return pr.getXYSpatialRes();
+    }
+    
+    public static double getZSpatialRes(String fileName, int series) throws FormatException, IOException {
+        ImporterOptions io = new ImporterOptions();
+        io.setId(fileName);
+        io.setSeriesOn(series, true);
+        ImagePlus[] imps = BF.openImagePlus(io);
+        ParamsReader pr = new ParamsReader(imps[0]);
+        return pr.getzSpatialRes();
+    }
+    
+    public static Img openImage(String fileName, int series) throws FormatException, IOException {
+        ImporterOptions io = new ImporterOptions();
+        io.setId(fileName);
+        io.setSeriesOn(series, true);
+        return ImagePlusAdapter.wrap(BF.openImagePlus(io)[0]);
     }
 }

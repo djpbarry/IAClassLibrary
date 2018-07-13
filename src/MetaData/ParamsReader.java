@@ -20,20 +20,26 @@ import ij.ImagePlus;
 
 public class ParamsReader {
 
-    private double spatialRes;
-    private double framesPerSecond;
+    private final double xySpatialRes;
+    private final double zSpatialRes;
+    private final double framesPerSecond;
 
     public ParamsReader(ImagePlus imp) {
-        this.spatialRes = imp.getCalibration().pixelWidth;
+        this.xySpatialRes = imp.getCalibration().pixelWidth;
+        this.zSpatialRes = imp.getCalibration().pixelDepth;
         this.framesPerSecond = 1.0 / imp.getCalibration().frameInterval;
     }
 
-    public double getSpatialRes() {
-        return spatialRes;
+    public double getXYSpatialRes() {
+        return xySpatialRes;
     }
 
     public double getFrameRate() {
         return framesPerSecond;
+    }
+
+    public double getzSpatialRes() {
+        return zSpatialRes;
     }
 
 }
