@@ -16,12 +16,14 @@
  */
 package ImgLib2.Filters;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import net.imglib2.Cursor;
 import net.imglib2.Dimensions;
 import net.imglib2.Interval;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.algorithm.neighborhood.CenteredRectangleShape;
 import net.imglib2.algorithm.neighborhood.Neighborhood;
-import net.imglib2.algorithm.neighborhood.RectangleShape;
 import net.imglib2.algorithm.region.hypersphere.HyperSphere;
 import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImgFactory;
@@ -44,16 +46,19 @@ public class MaximumFinder {
      * @param imageFactory - the factory for the output img
      * @return - an Img with circles on locations of a local minimum
      */
-    public static < T extends RealType< T>, U extends RealType< U>> Img< BitType> findAndDisplayLocalMinima(
-            RandomAccessibleInterval< T> source, long[] dimensions, T tolerance, int radius) {
+    public static < T extends RealType< T>, U extends RealType< U>> Img< BitType> findAndDisplayLocalMaxima(
+            RandomAccessibleInterval< T> source, long[] dimensions, T tolerance, int[] radius, boolean absolute) {
         // Create a new image for the output
 //        Img< U> output = imageFactory.create(source);
-        Img<BitType> output= (new ArrayImgFactory(new BitType())).create(dimensions);
+        Img<BitType> output = (new ArrayImgFactory(new BitType())).create(dimensions);
 
         // define an interval that is one pixel smaller on each side in each dimension,
         // so that the search in the 8-neighborhood (3x3x3...x3) never goes outside
         // of the defined interval
-        Interval interval = Intervals.expand(source, -radius);
+        Interval interval = source;
+        for (int r = 0; r < radius.length; r++) {
+            interval = Intervals.expand(interval, -radius[r], r);
+        }
 
         // create a view on the source with this interval
         source = Views.interval(source, interval);
@@ -65,7 +70,7 @@ public class MaximumFinder {
         // instantiate a RectangleShape to access rectangular local neighborhoods
         // of radius 1 (that is 3x3x...x3 neighborhoods), skipping the center pixel
         // (this corresponds to an 8-neighborhood in 2d or 26-neighborhood in 3d, ...)
-        final RectangleShape shape = new RectangleShape(radius, true);
+        final CenteredRectangleShape shape = new CenteredRectangleShape(radius, true);
 
         // iterate over the set of neighborhoods in the image
         for (final Neighborhood< T> localNeighborhood : shape.neighborhoods(source)) {
@@ -85,9 +90,11 @@ public class MaximumFinder {
                     break;
                 }
             }
+            Arrays.sort(radius);
+            int maxRadius = radius[radius.length-1];
             if (isMaximum && centerValue.getRealFloat() > tolerance.getRealFloat()) {
                 // draw a sphere of radius one in the new image
-                HyperSphere< BitType> hyperSphere = new HyperSphere<>(output, center, 1);
+                HyperSphere< BitType> hyperSphere = new HyperSphere<>(output, center, maxRadius);
 
                 // set every value inside the sphere to 1
                 for (BitType value : hyperSphere) {
