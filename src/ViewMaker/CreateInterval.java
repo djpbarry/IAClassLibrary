@@ -27,8 +27,8 @@ import net.imglib2.view.Views;
  */
 public class CreateInterval {
 
-    public static  RandomAccessibleInterval< FloatType> createInterval(int nD, Img img, int channel) {
-         RandomAccessibleInterval< FloatType> view = Views.hyperSlice(img, 2, channel);
+    public static RandomAccessibleInterval< FloatType> createInterval(int nD, Img img, int channel) {
+        RandomAccessibleInterval< FloatType> view = Views.hyperSlice(img, 2, channel);
 //        if (nD > 3) {
 //            view = Intervals.createMinMax(0, 0, channel, 0, img.max(0), img.max(1), channel, img.max(3));
 //        } else if (nD > 2) {

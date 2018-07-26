@@ -16,12 +16,18 @@
  */
 package IO.BioFormats;
 
-import ViewMaker.CreateInterval;
-import ij.IJ;
-import net.imglib2.RandomAccessibleInterval;
-import net.imglib2.img.Img;
-import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.view.Views;
+import ij.ImagePlus;
+import java.io.IOException;
+import loci.common.services.DependencyException;
+import loci.common.services.ServiceException;
+import loci.common.services.ServiceFactory;
+import loci.formats.FormatException;
+import loci.formats.ImageReader;
+import loci.formats.meta.IMetadata;
+import loci.formats.services.OMEXMLService;
+import loci.plugins.BF;
+import loci.plugins.in.ImporterOptions;
+import ome.units.quantity.Length;
 
 /**
  *
@@ -29,45 +35,54 @@ import net.imglib2.view.Views;
  */
 public class BioFormatsImg {
 
-    private final RandomAccessibleInterval< FloatType> interval;
-    private final Img< FloatType> img;
-    private final double xySpatRes;
-    private final double zSpatRes;
-    private final int channel;
+    private final ImporterOptions io;
+    private final ImageReader reader;
+    private final IMetadata meta;
     private final String id;
 
-    public BioFormatsImg(Img< FloatType> img, RandomAccessibleInterval< FloatType> interval, double xySpatRes, double zSpatRes, String id, int channel) {
-        this.img = img;
-        this.interval = interval;
-        this.xySpatRes = xySpatRes;
-        this.zSpatRes = zSpatRes;
+    public BioFormatsImg(String id) throws IOException, DependencyException, ServiceException, FormatException {
         this.id = id;
-        this.channel = channel;
+        io = new ImporterOptions();
+        reader = new ImageReader();
+        io.setId(id);
+        reader.setId(id);
+        ServiceFactory factory = new ServiceFactory();
+        OMEXMLService service = factory.getInstance(OMEXMLService.class);
+        meta = service.createOMEXMLMetadata();
+        service.convertMetadata(meta, reader.getMetadataStore());
     }
 
-    public Img< FloatType> getImg() {
-        return img;
+    public String toString(int series) {
+        Length xy = getXYSpatialRes(series);
+        Length z = getZSpatialRes(series);
+        return String.format("%s\nXY Spatial Res (%s): %f\nZ Spatial Res (%s): %f\n", id, xy.unit().getSymbol(), xy.value().floatValue(), z.unit().getSymbol(), z.value().floatValue());
+    }
+    
+    public ImagePlus getImg(int series, int channel) throws FormatException, IOException {
+        io.setSeriesOn(series, true);
+        io.setCBegin(series, channel);
+        io.setCEnd(series, channel);
+        return BF.openImagePlus(io)[0];
     }
 
-    public double getXySpatRes() {
-        return xySpatRes;
+    public int getSeriesCount() {
+        return reader.getSeriesCount();
     }
 
-    public double getzSpatRes() {
-        return zSpatRes;
+    private String getDimOrder() {
+        return reader.getDimensionOrder();
     }
 
-    public RandomAccessibleInterval< FloatType> getInterval() {
-        return interval;
+    public int getChannelCount() {
+        return reader.getSizeC();
     }
 
-    public BioFormatsImg copy() {
-        Img copyimg = img.copy();
-        return new BioFormatsImg(copyimg, CreateInterval.createInterval(copyimg.numDimensions(), copyimg, channel), xySpatRes, zSpatRes, id, channel);
+    public Length getXYSpatialRes(int series) {
+        return meta.getPixelsPhysicalSizeX(series);
     }
 
-    public String toString() {
-        return String.format("%s\nXY Spatial Res (%cm): %f\nZ Spatial Res (%cm): %f\n", id, IJ.micronSymbol, xySpatRes, IJ.micronSymbol, zSpatRes);
+    public Length getZSpatialRes(int series) {
+        return meta.getPixelsPhysicalSizeZ(series);
     }
 
 }

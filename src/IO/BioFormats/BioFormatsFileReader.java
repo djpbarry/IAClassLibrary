@@ -31,13 +31,13 @@ import net.imglib2.img.Img;
  * // * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class BioFormatsFileReader {
-
+    
     public static int getSeriesCount(String fileName) throws FormatException, IOException {
         ImageReader reader = new ImageReader();
         reader.setId(fileName);
         return reader.getSeriesCount();
     }
-
+    
     public static int getChannelCount(String fileName, int series) throws FormatException, IOException {
         ImageReader reader = new ImageReader();
         reader.setId(fileName);
