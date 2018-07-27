@@ -16,6 +16,7 @@
  */
 package IO.BioFormats;
 
+import UtilClasses.GenUtils;
 import ij.ImagePlus;
 import java.io.IOException;
 import loci.common.services.DependencyException;
@@ -24,6 +25,8 @@ import loci.common.services.ServiceFactory;
 import loci.formats.FormatException;
 import loci.formats.ImageReader;
 import loci.formats.meta.IMetadata;
+import loci.formats.meta.MetadataRetrieve;
+import loci.formats.meta.MetadataStore;
 import loci.formats.services.OMEXMLService;
 import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
@@ -39,17 +42,18 @@ public class BioFormatsImg {
     private final ImageReader reader;
     private final IMetadata meta;
     private final String id;
+    private ImagePlus img;
 
     public BioFormatsImg(String id) throws IOException, DependencyException, ServiceException, FormatException {
         this.id = id;
         io = new ImporterOptions();
         reader = new ImageReader();
         io.setId(id);
-        reader.setId(id);
         ServiceFactory factory = new ServiceFactory();
         OMEXMLService service = factory.getInstance(OMEXMLService.class);
         meta = service.createOMEXMLMetadata();
-        service.convertMetadata(meta, reader.getMetadataStore());
+        reader.setMetadataStore(meta);
+        reader.setId(id);
     }
 
     public String toString(int series) {
@@ -57,8 +61,8 @@ public class BioFormatsImg {
         Length z = getZSpatialRes(series);
         return String.format("%s\nXY Spatial Res (%s): %f\nZ Spatial Res (%s): %f\n", id, xy.unit().getSymbol(), xy.value().floatValue(), z.unit().getSymbol(), z.value().floatValue());
     }
-    
-    public ImagePlus getImg(int series, int channel) throws FormatException, IOException {
+
+    private ImagePlus getImg(int series, int channel) throws FormatException, IOException {
         io.setSeriesOn(series, true);
         io.setCBegin(series, channel);
         io.setCEnd(series, channel);
@@ -83,6 +87,19 @@ public class BioFormatsImg {
 
     public Length getZSpatialRes(int series) {
         return meta.getPixelsPhysicalSizeZ(series);
+    }
+
+    public ImagePlus getImg() {
+        return img;
+    }
+
+    public void setImg(int series, int channel) {
+        try {
+            this.img = getImg(series, channel);
+        } catch (Exception e) {
+            GenUtils.error("There seems to be a problem opening that image!");
+            GenUtils.logError(e);
+        }
     }
 
 }
