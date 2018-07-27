@@ -1,5 +1,6 @@
 package IAClasses;
 
+import Extrema.MaximaFinder;
 import Image.ImageNormaliser;
 import Particle.IsoGaussian;
 import Particle.Particle;
@@ -165,136 +166,24 @@ public class Utils {
         return null;
     }
 
+    @Deprecated
     public static ByteProcessor findLocalMaxima(int kWidth, int kHeight, int drawValue, ImageProcessor image, double maxThresh, boolean varyBG, int buffer) {
-        if (image == null) {
-            return null;
-        }
-        int i, j, x, y, width = image.getWidth(), height = image.getHeight();
-        double max, current, min;
-        ByteProcessor bProc = new ByteProcessor(width, height);
-        bProc.setValue(drawValue);
-        int x0 = kWidth + buffer;
-        int x1 = width - kWidth - buffer;
-        int y0 = kHeight + buffer;
-        int y1 = height - kHeight - buffer;
-        for (x = x0; x < x1; x++) {
-            for (y = y0; y < y1; y++) {
-                for (min = Double.MAX_VALUE, max = 0.0, i = x - kWidth; i <= x + kWidth; i++) {
-                    for (j = y - kHeight; j <= y + kHeight; j++) {
-                        current = image.getPixelValue(i, j);
-                        if ((current > max) && !((x == i) && (y == j))) {
-                            max = current;
-                        }
-                        if ((current < min) && !((x == i) && (y == j))) {
-                            min = current;
-                        }
-                    }
-                }
-                double pix = image.getPixelValue(x, y);
-                double diff;
-                if (varyBG) {
-                    diff = pix - min;
-                } else {
-                    diff = pix;
-                }
-                if ((pix > max) && (diff > maxThresh)) {
-                    bProc.drawPixel(x, y);
-                }
-            }
-        }
-        if (drawValue > 0.0) {
-            Prefs.blackBackground = false;
-        }
-        EDM edm = new EDM();
-        ByteProcessor bProc2 = (ByteProcessor) bProc.duplicate();
-        bProc2.invert();
-        edm.setup("points", new ImagePlus("", bProc2));
-        edm.run(bProc2);
-        bProc2.multiply(drawValue);
-        return bProc2;
+        return MaximaFinder.findLocalMaxima(kWidth, kHeight, drawValue, image, maxThresh, varyBG, buffer);
     }
 
+    @Deprecated
     public static ArrayList<int[]> findLocalMaxima(int kWidth, ImageProcessor image, double maxThresh, boolean varyBG, boolean absolute) {
-        ImageStack stack = new ImageStack(image.getWidth(), image.getHeight());
-        stack.addSlice(image);
-        return findLocalMaxima(kWidth, stack, maxThresh, varyBG, absolute, kWidth);
+        return MaximaFinder.findLocalMaxima(kWidth, image, maxThresh, varyBG, absolute);
     }
 
+    @Deprecated
     public static ArrayList<int[]> findLocalMaxima(int xyRadius, ImageStack stack, double maxThresh, boolean varyBG, boolean absolute, int zRadius) {
-        if (stack == null) {
-            return null;
-        }
-        int i, j, k, x, y, z, width = stack.getWidth(), height = stack.getHeight(), depth = stack.getSize();
-        double max, current, min;
-        ArrayList<int[]> maxima = new ArrayList<int[]>();
-        Object[] stackPix = stack.getImageArray();
-        for (z = 0; z < depth; z++) {
-            for (x = 0; x < width; x++) {
-                for (y = 0; y < height; y++) {
-                    for (min = Double.MAX_VALUE, max = 0.0, j = y - xyRadius; j <= y + xyRadius; j++) {
-                        if (j < 0 || j >= height) {
-                            continue;
-                        }
-                        int jOffset = j * width;
-                        for (k = z - zRadius; k <= z + zRadius; k++) {
-                            if (k < 0 || k >= depth) {
-                                continue;
-                            }
-                            for (i = x - xyRadius; i <= x + xyRadius; i++) {
-                                if (i < 0 || i >= width) {
-                                    continue;
-                                }
-                                current = ((float[]) stackPix[k])[i + jOffset];
-                                if ((current > max) && !((x == i) && (y == j))) {
-                                    max = current;
-                                }
-                                if ((current < min) && !((x == i) && (y == j))) {
-                                    min = current;
-                                }
-                            }
-                        }
-                    }
-                    double pix = ((float[]) stackPix[z])[x + y * width];
-                    double diff;
-                    if (varyBG) {
-                        diff = pix - min;
-                    } else {
-                        diff = pix;
-                    }
-                    boolean pixmax;
-                    if (absolute) {
-                        pixmax = pix > max;
-                    } else {
-                        pixmax = pix >= max;
-                    }
-                    if (pixmax && (diff > maxThresh)) {
-                        maxima.add(new int[]{x, y, z});
-                    }
-                }
-            }
-        }
-        return maxima;
+        return MaximaFinder.findLocalMaxima(xyRadius, stack, maxThresh, varyBG, absolute, zRadius);
     }
 
+    @Deprecated
     public static int[] findImageMaxima(ImageProcessor image) {
-        if (image == null) {
-            return null;
-        }
-        int thismax[] = {-1, -1};
-//        double max = image.getStatistics().max;
-        double max = 0.0;
-        int width = image.getWidth(), height = image.getHeight();
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                double pix = image.getPixelValue(x, y);
-                if (pix > max) {
-                    thismax[0] = x;
-                    thismax[1] = y;
-                    max = pix;
-                }
-            }
-        }
-        return thismax;
+        return MaximaFinder.findImageMaxima(image);
     }
 
     public static int[] searchImage(ByteProcessor image, int searchVal) {
