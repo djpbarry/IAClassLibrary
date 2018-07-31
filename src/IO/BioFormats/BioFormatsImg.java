@@ -102,4 +102,8 @@ public class BioFormatsImg {
         }
     }
 
+    public void setImg(ImagePlus img) {
+        this.img = img;
+    }
+
 }

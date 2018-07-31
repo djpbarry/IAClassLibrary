@@ -16,10 +16,15 @@
  */
 package IO;
 
+import UtilClasses.Utilities;
+import ij.IJ;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
+import org.apache.commons.io.FilenameUtils;
 
 public class PropertyWriter {
 
@@ -31,6 +36,18 @@ public class PropertyWriter {
             props.storeToXML(stream, comment);
         } else {
             props.store(stream, comment);
+        }
+    }
+
+    public static void loadProperties(Properties props, String label) throws IOException, InterruptedException, InvocationTargetException {
+        File file = Utilities.getFile(new File(IJ.getDir("current")), label, false);
+        FileInputStream stream = new FileInputStream(file);
+        String ext = FilenameUtils.getExtension(file.getName());
+        boolean XML = ext.contains("xml") || ext.contains("XML");
+        if (XML) {
+            props.loadFromXML(stream);
+        } else {
+            props.load(stream);
         }
     }
 }
