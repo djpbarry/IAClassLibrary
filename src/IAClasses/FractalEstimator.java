@@ -24,6 +24,9 @@ public class FractalEstimator {
         int height = image.getHeight();
         int epsilonMax = (int) Math.round(Math.max(width, height) / 4.5);
         int step = (int) Math.round((epsilonMax - epsilonMin + 1) / 10.0);
+        if (step < 2) {
+            step = 2;
+        }
         int points = (int) Math.ceil(((double) (epsilonMax - epsilonMin)) / (step - 1));
         if (points < 3) {
             return null;
