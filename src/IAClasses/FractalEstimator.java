@@ -27,7 +27,7 @@ public class FractalEstimator {
         if (step < 2) {
             step = 2;
         }
-        int points = (int) Math.ceil(((double) (epsilonMax - epsilonMin)) / (step - 1));
+        int points = (int) Math.round(((double) (epsilonMax - epsilonMin)) / (step - 1));
         if (points < 3) {
             return null;
         }
@@ -81,6 +81,7 @@ public class FractalEstimator {
                 }
             }
             dbmCounts2D[index] = Math.log(massCount);
+//            System.out.println(String.format("%f %f", logE[index], dbmCounts2D[index]));
             dbsCounts2D[index++] = Math.log(surfaceCount);
         }
         double dims[] = new double[2];
