@@ -20,24 +20,21 @@ public class FractalEstimator {
 
     public double[] do2DEstimate(ImageProcessor image) {
         int epsilonMin = 2;
+        int nPoints = 10;
         int width = image.getWidth();
         int height = image.getHeight();
         int epsilonMax = (int) Math.round(Math.max(width, height) / 4.5);
-        int step = (int) Math.round((epsilonMax - epsilonMin + 1) / 10.0);
-        if (step < 2) {
-            step = 2;
-        }
-        int points = (int) Math.round(((double) (epsilonMax - epsilonMin)) / (step - 1));
-        if (points < 3) {
+        if (epsilonMax < epsilonMin + nPoints) {
             return null;
         }
-        int epsilon, j, k, j0, k0, x, y, massCount, surfaceCount;
+        double step = (epsilonMax - epsilonMin) / (nPoints - 1);
+        int j, k, j0, k0, x, y, massCount, surfaceCount;
         boolean mass, surface;
         double xCentre = width / 2.0;
         double yCentre = height / 2.0;
-        double dbmCounts2D[] = new double[points];
-        double dbsCounts2D[] = new double[points];
-        double logE[] = new double[points];
+        double dbmCounts2D[] = new double[nPoints];
+        double dbsCounts2D[] = new double[nPoints];
+        double logE[] = new double[nPoints];
         ImageStack stack = new ImageStack(width, height);
         stack.addSlice(image);
         int[] inputPix = Utils.convertPixToInt(stack.getImageArray())[0];
@@ -48,8 +45,8 @@ public class FractalEstimator {
             foreground = 0;
             background = 255;
         }
-        int index = 0;
-        for (epsilon = epsilonMin; epsilon <= epsilonMax; epsilon += step) {
+        for (int p = 0; p < nPoints; p++) {
+            int epsilon = (int) Math.round(epsilonMin + p * step);
             j0 = (int) Math.round((2.0 * xCentre - epsilon) / 2.0);
             while (j0 > 0) {
                 j0 -= epsilon;
@@ -58,7 +55,7 @@ public class FractalEstimator {
             while (k0 > 0) {
                 k0 -= epsilon;
             }
-            logE[index] = Math.log(epsilon);
+            logE[p] = Math.log(epsilon);
             for (j = j0, massCount = 0, surfaceCount = 0; j < width - j0; j += epsilon) {
                 for (k = k0; k < height - k0; k += epsilon) {
                     for (y = k < 0 ? 0 : k, mass = false, surface = false; y < k + epsilon && y < height; y++) {
@@ -80,9 +77,9 @@ public class FractalEstimator {
                     }
                 }
             }
-            dbmCounts2D[index] = Math.log(massCount);
+            dbmCounts2D[p] = Math.log(massCount);
 //            System.out.println(String.format("%f %f", logE[index], dbmCounts2D[index]));
-            dbsCounts2D[index++] = Math.log(surfaceCount);
+            dbsCounts2D[p] = Math.log(surfaceCount);
         }
         double dims[] = new double[2];
         CurveFitter fitter = new CurveFitter(logE, dbmCounts2D);

@@ -155,7 +155,7 @@ public class MaximaFinder {
                     }
                     double pix = ((float[]) stackPix[z])[x + y * width];
                     double diff = varyBG ? pix : pix - min;
-                    if (absolute ? pix > max : pix >= max && (diff > maxThresh)) {
+                    if ((absolute ? pix > max : pix >= max) && (diff > maxThresh)) {
                         maxima.add(new int[]{x, y, z});
                     }
                 }

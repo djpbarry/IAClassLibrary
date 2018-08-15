@@ -93,6 +93,10 @@ public class BioFormatsImg {
         return img;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public void setImg(int series, int channel) {
         try {
             this.img = getImg(series, channel);
@@ -104,6 +108,14 @@ public class BioFormatsImg {
 
     public void setImg(ImagePlus img) {
         this.img = img;
+    }
+
+    public String getInfo(int s) {
+        return String.format("%s\n"
+                + "XY Spatial Res: %f\n"
+                + "Z Spatial Res: %f", getId(),
+                getXYSpatialRes(s).value().floatValue(),
+                getZSpatialRes(s).value().floatValue());
     }
 
 }
