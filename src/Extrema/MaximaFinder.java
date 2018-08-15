@@ -16,6 +16,7 @@
  */
 package Extrema;
 
+import UtilClasses.GenUtils;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.Prefs;
@@ -109,79 +110,25 @@ public class MaximaFinder {
         return bProc2;
     }
 
-    public static ArrayList<int[]> findLocalMaxima(int kWidth, ImageProcessor image, double maxThresh, boolean varyBG, boolean absolute) {
+    public static ArrayList<int[]> findLocalMaxima(int kWidth, ImageProcessor image, float maxThresh, boolean varyBG, boolean absolute) {
         ImageStack stack = new ImageStack(image.getWidth(), image.getHeight());
         stack.addSlice(image);
         return findLocalMaxima(kWidth, stack, maxThresh, varyBG, absolute, kWidth);
     }
 
-    public static ArrayList<int[]> findLocalMaxima(int xyRadius, ImageStack stack, double maxThresh, boolean varyBG, boolean absolute, int zRadius) {
-        if (stack == null) {
+    @Deprecated
+    public static ArrayList<int[]> findLocalMaxima(int xyRadius, ImageStack stack, float maxThresh, boolean varyBG, boolean absolute, int zRadius) {
+        try {
+            return new MultiThreadedMaximaFinder().findLocalMaxima(xyRadius, stack, maxThresh, varyBG, absolute, zRadius);
+        } catch (InterruptedException e) {
+            GenUtils.logError(e);
             return null;
         }
-        int width = stack.getWidth();
-        int height = stack.getHeight();
-        int depth = stack.getSize();
-        double max;
-        double current;
-        double min;
-        ArrayList<int[]> maxima = new ArrayList();
-        Object[] stackPix = stack.getImageArray();
-        for (int z = 0; z < depth; z++) {
-            for (int x = 0; x < width; x++) {
-                for (int y = 0, j; y < height; y++) {
-                    for (min = Double.MAX_VALUE, max = 0.0, j = y - xyRadius; j <= y + xyRadius; j++) {
-                        if (j < 0 || j >= height) {
-                            continue;
-                        }
-                        int jOffset = j * width;
-                        for (int k = z - zRadius; k <= z + zRadius; k++) {
-                            if (k < 0 || k >= depth) {
-                                continue;
-                            }
-                            for (int i = x - xyRadius; i <= x + xyRadius; i++) {
-                                if (i < 0 || i >= width) {
-                                    continue;
-                                }
-                                current = ((float[]) stackPix[k])[i + jOffset];
-                                if ((current > max) && !((x == i) && (y == j))) {
-                                    max = current;
-                                }
-                                if ((current < min) && !((x == i) && (y == j))) {
-                                    min = current;
-                                }
-                            }
-                        }
-                    }
-                    double pix = ((float[]) stackPix[z])[x + y * width];
-                    double diff = varyBG ? pix : pix - min;
-                    if ((absolute ? pix > max : pix >= max) && (diff > maxThresh)) {
-                        maxima.add(new int[]{x, y, z});
-                    }
-                }
-            }
-        }
-        return maxima;
     }
 
-    public static ImagePlus makeLocalMaximaImage(int xyRadius, ImagePlus imp, double maxThresh, boolean varyBG, boolean absolute, int zRadius, byte background) {
-        (new StackConverter(imp)).convertToGray32();
-        ArrayList<int[]> localMaxima = findLocalMaxima(xyRadius, imp.getImageStack(), maxThresh, varyBG, absolute, zRadius);
-        int width = imp.getWidth();
-        int height = imp.getHeight();
-        ImageStack output = new ImageStack(width, height);
-        byte foreground = (byte) ~background;
-        for (int n = 0; n < imp.getNSlices(); n++) {
-            ByteProcessor bp = new ByteProcessor(width, height);
-            bp.setValue(background);
-            bp.fill();
-            output.addSlice(bp);
-        }
-        Object[] stackPix = output.getImageArray();
-        for (int[] pix : localMaxima) {
-            ((byte[]) stackPix[pix[2]])[pix[0] + pix[1] * width] = foreground;
-        }
-        return new ImagePlus(String.format("%s - Local Maxima", imp.getTitle()), output);
+    @Deprecated
+    public static ImagePlus makeLocalMaximaImage(int xyRadius, ImagePlus imp, float maxThresh, boolean varyBG, boolean absolute, int zRadius, byte background) {
+        return new MultiThreadedMaximaFinder().makeLocalMaximaImage(xyRadius, imp, maxThresh, varyBG, absolute, zRadius, background);
     }
 
 }

@@ -173,12 +173,12 @@ public class Utils {
 
     @Deprecated
     public static ArrayList<int[]> findLocalMaxima(int kWidth, ImageProcessor image, double maxThresh, boolean varyBG, boolean absolute) {
-        return MaximaFinder.findLocalMaxima(kWidth, image, maxThresh, varyBG, absolute);
+        return MaximaFinder.findLocalMaxima(kWidth, image, (float) maxThresh, varyBG, absolute);
     }
 
     @Deprecated
     public static ArrayList<int[]> findLocalMaxima(int xyRadius, ImageStack stack, double maxThresh, boolean varyBG, boolean absolute, int zRadius) {
-        return MaximaFinder.findLocalMaxima(xyRadius, stack, maxThresh, varyBG, absolute, zRadius);
+        return MaximaFinder.findLocalMaxima(xyRadius, stack, (float) maxThresh, varyBG, absolute, zRadius);
     }
 
     @Deprecated
