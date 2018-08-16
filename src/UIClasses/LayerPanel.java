@@ -28,11 +28,15 @@ import javax.swing.JPanel;
 public class LayerPanel extends JPanel implements GUIMethods {
 
     protected BioFormatsImg img;
-    protected Properties panelProps;
-    protected Properties inputProps;
+    protected Properties props;
 
     public LayerPanel() {
+        this(null);
+    }
+
+    public LayerPanel(Properties props) {
         super();
+        this.props = props;
     }
 
     public BioFormatsImg getImg() {
@@ -44,21 +48,11 @@ public class LayerPanel extends JPanel implements GUIMethods {
     }
 
     public void setProperties(Properties p, Container container) {
-        panelProps = PropertyExtractor.setProperties(new Properties(), container);
+        props = PropertyExtractor.setProperties(p, container);
     }
 
     public boolean setVariables() {
-        setProperties(panelProps, this);
+        setProperties(props, this);
         return true;
     }
-
-    public void setInputProps(Properties inputProps) {
-        this.inputProps = inputProps;
-    }
-
-    public Properties getPanelProps() {
-        return panelProps;
-    }
-    
-    
 }
