@@ -37,7 +37,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         try {
             localMaxima = findLocalMaxima(xyRadius, imp.getImageStack(), maxThresh, varyBG, absolute, zRadius);
         } catch (InterruptedException e) {
-            GenUtils.logError(e);
+            GenUtils.logError(e, "Error detecting local maxima.");
         }
         int width = imp.getWidth();
         int height = imp.getHeight();

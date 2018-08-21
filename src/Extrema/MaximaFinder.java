@@ -121,7 +121,7 @@ public class MaximaFinder {
         try {
             return new MultiThreadedMaximaFinder().findLocalMaxima(xyRadius, stack, maxThresh, varyBG, absolute, zRadius);
         } catch (InterruptedException e) {
-            GenUtils.logError(e);
+            GenUtils.logError(e, "Problem detecting local maxima.");
             return null;
         }
     }

@@ -25,8 +25,6 @@ import loci.common.services.ServiceFactory;
 import loci.formats.FormatException;
 import loci.formats.ImageReader;
 import loci.formats.meta.IMetadata;
-import loci.formats.meta.MetadataRetrieve;
-import loci.formats.meta.MetadataStore;
 import loci.formats.services.OMEXMLService;
 import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
@@ -38,35 +36,41 @@ import ome.units.quantity.Length;
  */
 public class BioFormatsImg {
 
-    private final ImporterOptions io;
+    private ImporterOptions io;
     private final ImageReader reader;
-    private final IMetadata meta;
-    private final String id;
-    private ImagePlus img;
+    private IMetadata meta;
+    private String id;
+    private ImagePlus img = new ImagePlus();
+    private ImagePlus tempImg;
 
-    public BioFormatsImg(String id) throws IOException, DependencyException, ServiceException, FormatException {
-        this.id = id;
-        io = new ImporterOptions();
+    public BioFormatsImg() {
+        this(null);
+    }
+
+    public BioFormatsImg(String id) {
         reader = new ImageReader();
-        io.setId(id);
-        ServiceFactory factory = new ServiceFactory();
-        OMEXMLService service = factory.getInstance(OMEXMLService.class);
-        meta = service.createOMEXMLMetadata();
-        reader.setMetadataStore(meta);
-        reader.setId(id);
+        try {
+            this.io = new ImporterOptions();
+            ServiceFactory factory = new ServiceFactory();
+            OMEXMLService service = factory.getInstance(OMEXMLService.class);
+            this.meta = service.createOMEXMLMetadata();
+            this.reader.setMetadataStore(meta);
+        } catch (IOException e) {
+            GenUtils.logError(e, String.format("Problem encountered opening %s.", id));
+        } catch (DependencyException e) {
+            GenUtils.logError(e, "Problem initialising Bio-Formats services.");
+        } catch (ServiceException e) {
+            GenUtils.logError(e, "Could not initialise metadata object.");
+        }
+        if (id != null) {
+            this.setId(id);
+        }
     }
 
     public String toString(int series) {
         Length xy = getXYSpatialRes(series);
         Length z = getZSpatialRes(series);
         return String.format("%s\nXY Spatial Res (%s): %f\nZ Spatial Res (%s): %f\n", id, xy.unit().getSymbol(), xy.value().floatValue(), z.unit().getSymbol(), z.value().floatValue());
-    }
-
-    private ImagePlus getImg(int series, int channel) throws FormatException, IOException {
-        io.setSeriesOn(series, true);
-        io.setCBegin(series, channel);
-        io.setCEnd(series, channel);
-        return BF.openImagePlus(io)[0];
     }
 
     public int getSeriesCount() {
@@ -97,17 +101,35 @@ public class BioFormatsImg {
         return id;
     }
 
-    public void setImg(int series, int channel) {
+    public void setId(String id) {
+        this.id = id;
         try {
-            this.img = getImg(series, channel);
-        } catch (Exception e) {
-            GenUtils.error("There seems to be a problem opening that image!");
-            GenUtils.logError(e);
+            this.io.setId(id);
+            this.reader.setId(id);
+        } catch (IOException e) {
+            GenUtils.logError(e, String.format("Problem encountered opening %s.", id));
+        } catch (FormatException e) {
+            GenUtils.logError(e, String.format("%s is not a supported format.", id));
         }
     }
 
-    public void setImg(ImagePlus img) {
-        this.img = img;
+    public void setImg(int series, int channel) {
+        try {
+            io.setSeriesOn(series, true);
+            io.setCBegin(series, channel);
+            io.setCEnd(series, channel);
+            img = BF.openImagePlus(io)[0];
+        } catch (Exception e) {
+            GenUtils.logError(e, "There seems to be a problem opening that image!");
+        }
+    }
+
+    public void setTempImg(ImagePlus tempImg) {
+        this.tempImg = tempImg;
+    }
+
+    public ImagePlus getTempImg() {
+        return tempImg;
     }
 
     public String getInfo(int s) {
