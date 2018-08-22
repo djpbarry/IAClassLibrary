@@ -23,8 +23,9 @@ import ij.Prefs;
 import ij.plugin.filter.EDM;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
-import ij.process.StackConverter;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -118,17 +119,18 @@ public class MaximaFinder {
 
     @Deprecated
     public static ArrayList<int[]> findLocalMaxima(int xyRadius, ImageStack stack, float maxThresh, boolean varyBG, boolean absolute, int zRadius) {
-        try {
-            return new MultiThreadedMaximaFinder().findLocalMaxima(xyRadius, stack, maxThresh, varyBG, absolute, zRadius);
-        } catch (InterruptedException e) {
-            GenUtils.logError(e, "Problem detecting local maxima.");
-            return null;
-        }
+        MultiThreadedMaximaFinder mf = new MultiThreadedMaximaFinder(null, Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()),
+                new int[]{xyRadius, xyRadius, zRadius}, maxThresh, new boolean[]{varyBG, absolute});
+        mf.start();
+        return mf.getMaxima();
     }
 
     @Deprecated
     public static ImagePlus makeLocalMaximaImage(int xyRadius, ImagePlus imp, float maxThresh, boolean varyBG, boolean absolute, int zRadius, byte background) {
-        return new MultiThreadedMaximaFinder().makeLocalMaximaImage(xyRadius, imp, maxThresh, varyBG, absolute, zRadius, background);
+        MultiThreadedMaximaFinder mf = new MultiThreadedMaximaFinder(null, Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()),
+                new int[]{xyRadius, xyRadius, zRadius}, maxThresh, new boolean[]{varyBG, absolute});
+        mf.start();
+        return mf.makeLocalMaximaImage(background);
     }
 
 }

@@ -16,6 +16,7 @@
  */
 package Extrema;
 
+import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
 import UtilClasses.GenUtils;
 import ij.ImagePlus;
@@ -23,6 +24,7 @@ import ij.ImageStack;
 import ij.process.ByteProcessor;
 import ij.process.StackConverter;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -31,14 +33,24 @@ import java.util.concurrent.TimeUnit;
  */
 public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
-    public ImagePlus makeLocalMaximaImage(int xyRadius, ImagePlus imp, float maxThresh, boolean varyBG, boolean absolute, int zRadius, byte background) {
+    private final ArrayList<int[]> maxima;
+    final int[] radii;
+    final ImageStack stack;
+    final float thresh;
+    final boolean[] criteria;
+
+    public MultiThreadedMaximaFinder(BioFormatsImg img, ExecutorService exec, int[] radii, float thresh, boolean[] criteria) {
+        super(img, exec);
+        this.radii = radii;
+        this.thresh = thresh;
+        this.criteria = criteria;
+        this.maxima = new ArrayList();
+        this.stack = img.getTempImg().getImageStack();
+    }
+
+    public ImagePlus makeLocalMaximaImage(byte background) {
+        ImagePlus imp = img.getTempImg();
         (new StackConverter(imp)).convertToGray32();
-        ArrayList<int[]> localMaxima = new ArrayList();
-        try {
-            localMaxima = findLocalMaxima(xyRadius, imp.getImageStack(), maxThresh, varyBG, absolute, zRadius);
-        } catch (InterruptedException e) {
-            GenUtils.logError(e, "Error detecting local maxima.");
-        }
         int width = imp.getWidth();
         int height = imp.getHeight();
         ImageStack output = new ImageStack(width, height);
@@ -50,32 +62,42 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             output.addSlice(bp);
         }
         Object[] stackPix = output.getImageArray();
-        for (int[] pix : localMaxima) {
+        for (int[] pix : maxima) {
             ((byte[]) stackPix[pix[2]])[pix[0] + pix[1] * width] = foreground;
         }
         return new ImagePlus(String.format("%s - Local Maxima", imp.getTitle()), output);
     }
 
-    public ArrayList<int[]> findLocalMaxima(int xyRadius, ImageStack stack, float maxThresh, boolean varyBG, boolean absolute, int zRadius) throws InterruptedException {
+    public void run() {
         if (stack == null) {
-            return null;
+            return;
         }
         int width = stack.getWidth();
         int height = stack.getHeight();
         int depth = stack.getSize();
-        ArrayList<int[]> maxima = new ArrayList();
         Object[] stackPix = stack.getImageArray();
         for (int z = 0; z < depth; z++) {
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
-                    exec.submit(new RunnableMaximaFinder(stackPix, varyBG, absolute,
-                            maxThresh, maxima, new int[]{x, y, z}, new int[]{width, height, depth},
-                            new int[]{xyRadius, xyRadius, zRadius}));
+                    exec.submit(new RunnableMaximaFinder(stackPix, criteria[0], criteria[1],
+                            thresh, maxima, new int[]{x, y, z}, new int[]{width, height, depth},
+                            radii));
                 }
             }
         }
         exec.shutdown();
-        exec.awaitTermination(12, TimeUnit.HOURS);
+        try {
+            exec.awaitTermination(12, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            GenUtils.logError(e, "Error detecting local maxima.");
+            return;
+        }
+        ImagePlus maxima = makeLocalMaximaImage((byte) 0);
+        maxima.show();
+        img.setTempImg(maxima);
+    }
+
+    public ArrayList<int[]> getMaxima() {
         return maxima;
     }
 

@@ -17,8 +17,10 @@
 package UIClasses;
 
 import IO.BioFormats.BioFormatsImg;
+import Process.MultiThreadedProcess;
 import java.awt.Container;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
 import javax.swing.JPanel;
 
 /**
@@ -27,21 +29,20 @@ import javax.swing.JPanel;
  */
 public class LayerPanel extends JPanel implements GUIMethods {
 
+    protected final ExecutorService exec;
     protected final BioFormatsImg img;
     protected final Properties props;
+    protected MultiThreadedProcess process;
 
     public LayerPanel() {
-        this(null);
+        this(null, null, null);
     }
 
-    public LayerPanel(Properties props) {
-        this(props, null);
-    }
-
-    public LayerPanel(Properties props, BioFormatsImg img) {
+    public LayerPanel(Properties props, BioFormatsImg img, ExecutorService exec) {
         super();
         this.props = props;
         this.img = img;
+        this.exec = exec;
     }
 
     public void setProperties(Properties p, Container container) {
@@ -52,4 +53,9 @@ public class LayerPanel extends JPanel implements GUIMethods {
         setProperties(props, this);
         return true;
     }
+
+    public MultiThreadedProcess getProcess() {
+        return process;
+    }
+
 }

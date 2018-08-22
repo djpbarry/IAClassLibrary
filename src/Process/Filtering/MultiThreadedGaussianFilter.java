@@ -14,24 +14,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package Process;
+package Process.Filtering;
 
 import IO.BioFormats.BioFormatsImg;
+import Process.MultiThreadedProcess;
+import ij.ImagePlus;
+import ij.plugin.GaussianBlur3D;
+import ij.process.StackConverter;
 import java.util.concurrent.ExecutorService;
 
 /**
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public abstract class MultiThreadedProcess extends Thread {
+public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
 
-    protected final ExecutorService exec;
-    protected final BioFormatsImg img;
+    private final double[] sigma;
+    private final int series, channel;
 
-    public MultiThreadedProcess(BioFormatsImg img, ExecutorService exec) {
-        this.img = img;
-        this.exec = exec;
+    public MultiThreadedGaussianFilter(BioFormatsImg img, ExecutorService exec, double[] sigma, int series, int channel) {
+        super(img, exec);
+        this.sigma = sigma;
+        this.series = series;
+        this.channel = channel;
     }
 
-    public abstract void run();
+    public void run() {
+        img.setImg(series, channel);
+        ImagePlus imp = img.getImg();
+        (new StackConverter(imp)).convertToGray32();
+        GaussianBlur3D.blur(imp, sigma[0], sigma[1], sigma[2]);
+        imp.show();
+        img.setTempImg(imp);
+    }
 }

@@ -16,12 +16,25 @@
  */
 package Process;
 
+import java.util.LinkedList;
+
 /**
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public abstract class RunnableProcess extends Thread {
+public class ProcessPipeline {
 
-    public abstract void run();
-    
+    private final LinkedList<MultiThreadedProcess> pipeline;
+
+    public ProcessPipeline() {
+        this.pipeline = new LinkedList();
+    }
+
+    public boolean addProcess(MultiThreadedProcess process) {
+        return pipeline.add(process);
+    }
+
+    public MultiThreadedProcess removeProcess() {
+        return pipeline.removeLast();
+    }
 }
