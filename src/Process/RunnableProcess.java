@@ -22,6 +22,12 @@ package Process;
  */
 public abstract class RunnableProcess extends Thread {
 
+    protected final String name;
+
+    public RunnableProcess(String name) {
+        this.name = name;
+    }
+
     public abstract void run();
-    
+
 }

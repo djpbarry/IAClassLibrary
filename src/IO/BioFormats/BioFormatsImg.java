@@ -140,4 +140,16 @@ public class BioFormatsImg {
                 getZSpatialRes(s).value().floatValue());
     }
 
+    public float[][] getTempStackPixels() {
+        if (tempImg == null) {
+            return null;
+        }
+        Object[] pixels = tempImg.getImageStack().getImageArray();
+        float[][] output = new float[pixels.length][];
+        for (int i = 0; i < pixels.length; i++) {
+            output[i] = (float[]) pixels[i];
+        }
+        return output;
+    }
+
 }

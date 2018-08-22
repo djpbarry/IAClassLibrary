@@ -75,13 +75,14 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         int width = stack.getWidth();
         int height = stack.getHeight();
         int depth = stack.getSize();
-        Object[] stackPix = stack.getImageArray();
-        for (int z = 0; z < depth; z++) {
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
+        float[][] stackPix = img.getTempStackPixels();
+        int threadCount = 0;
+        for (int z = radii[2]; z < depth - radii[2]; z++) {
+            for (int x = radii[0]; x < width - radii[0]; x++) {
+                for (int y = radii[1]; y < height - radii[1]; y++) {
                     exec.submit(new RunnableMaximaFinder(stackPix, criteria[0], criteria[1],
                             thresh, maxima, new int[]{x, y, z}, new int[]{width, height, depth},
-                            radii));
+                            radii, "MaxFinder-" + threadCount++));
                 }
             }
         }
