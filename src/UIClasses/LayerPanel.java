@@ -58,4 +58,10 @@ public class LayerPanel extends JPanel implements GUIMethods {
         return process;
     }
 
+    protected void previewButtonFocusLost(java.awt.event.FocusEvent evt) {
+        if (process != null) {
+            process.interrupt();
+        }
+    }
+
 }
