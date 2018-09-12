@@ -16,6 +16,8 @@
  */
 package Segmentation;
 
+import Binary.BinaryMaker;
+import Binary.EDMMaker;
 import Cell.CellData;
 import IAClasses.Region;
 import IAClasses.Utils;
@@ -171,9 +173,15 @@ public class RegionGrower {
         return singleImageRegions;
     }
 
-    /*
-     * Conditional dilate the regions in regionImage based on the information in
-     * inputImage.
+    /**
+     * Produces a region image following conditional dilation of the regions 
+     * in the input regionImage
+     * 
+     * @param regionImage Image to be dilated
+     * @param inputImage 
+     * @param singleImageRegions List of regions in image
+     * @param threshold Grey level threshold for dilation
+     * @return Dilated region image
      */
     private static ShortProcessor growRegions(ShortProcessor regionImage, ImageProcessor inputImage, ArrayList<Region> singleImageRegions, double threshold) {
         int width = regionImage.getWidth();
@@ -200,17 +208,13 @@ public class RegionGrower {
             saveDistanceMaps(distancemaps, "DistanceMaps");
         }
 //        ImageStack regionImageStack = new ImageStack(regionImage.getWidth(), regionImage.getHeight());
-        int count = 0;
+        byte[] voronoiPix = EDMMaker.makeVoronoiPix(BinaryMaker.makeBinaryImage(regionImagePix, width, height, null, 0, 0));
         while (totChange) {
 //            ImageStack expandedImageStack = new ImageStack(width, height);
 //            ImageStack tempRegionStack = new ImageStack(width, height);
             totChange = false;
             Arrays.fill(tempRegionPix, Region.MASK_FOREGROUND);
             for (int i = 0; i < cellNum; i++) {
-//                ShortProcessor expandedImage = new ShortProcessor(width, height);
-//                expandedImage.setPixels(expandedImagePix);
-//                ShortProcessor tempRegionImage = new ShortProcessor(width, height);
-//                tempRegionImage.setPixels(tempRegionPix);
                 Region cell = singleImageRegions.get(i);
                 if (cell != null && cell.isActive()) {
                     Arrays.fill(expandedImagePix, Region.MASK_BACKGROUND);
@@ -225,7 +229,7 @@ public class RegionGrower {
                             if (!simple) {
                                 thisResult = dijkstraDilate(regionImagePix, cell, thispix, inputPix, threshold, texturePix, intermediate, i + 1, expandedImagePix, width, height, countImagePix, tempRegionPix, distancemaps[i]);
                             } else {
-                                thisResult = simpleDilate(regionImagePix, inputPix, cell, thispix, intermediate, threshold, (short) (i + 1), expandedImagePix, width, height, countImagePix, tempRegionPix);
+                                thisResult = simpleDilate(regionImagePix, inputPix, cell, thispix, intermediate, threshold, (short) (i + 1), expandedImagePix, width, height, countImagePix, tempRegionPix, voronoiPix);
                             }
                             thisChange = thisResult || thisChange;
                             if (!thisResult) {
@@ -236,12 +240,20 @@ public class RegionGrower {
                         totChange = thisChange || totChange;
                     }
                 }
+//                ShortProcessor expandedImage = new ShortProcessor(width, height);
+//                expandedImage.setPixels(expandedImagePix);
+//                ShortProcessor tempRegionImage = new ShortProcessor(width, height);
+//                tempRegionImage.setPixels(tempRegionPix);
 //                expandedImageStack.addSlice(expandedImage.duplicate());
 //                tempRegionStack.addSlice(tempRegionImage.duplicate());
             }
-//            IJ.saveAs(new ImagePlus("", expandedImageStack), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "ExpandedImage", count));
-//            IJ.saveAs(new ImagePlus("", tempRegionStack), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "tempRegions", count));
-//            IJ.saveAs(new ImagePlus("", regionImage), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "RegionImage", count++));
+//            if (expandedImageStack.size() > 0) {
+//                IJ.saveAs(new ImagePlus("", expandedImageStack), "TIF", String.format("D:\\debugging\\adapt_debug\\output\\%s_%d.tif", "ExpandedImage", count));
+//            }
+//            if (tempRegionStack.size() > 0) {
+//                IJ.saveAs(new ImagePlus("", tempRegionStack), "TIF", String.format("D:\\debugging\\adapt_debug\\output\\%s_%d.tif", "tempRegions", count));
+//            }
+//            IJ.saveAs(new ImagePlus("", regionImage), "TIF", String.format("D:\\debugging\\adapt_debug\\output\\%s_%d.tif", "RegionImage", count++));
             expandRegions(singleImageRegions, regionImage, cellNum, terminal, tempRegionPix);
 //            IJ.saveAs(new ImagePlus("", regionImage), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "ExpandedRegionImage", count++));
 //            regionImageStack.addSlice(regionImage.duplicate());
@@ -390,7 +402,25 @@ public class RegionGrower {
         return (float) ((Math.pow(gradPix[point2[1] * width + point2[0]] - gradPix[point1[0] + point1[1] * width], 2.0) + lambda) / (1.0 + lambda));
     }
 
-    private static boolean simpleDilate(short[] regionImagePix, float[] greyPix, Region cell, short[] point, short intermediate, double greyThresh, short index, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix) {
+    /**
+     * Conditionally dilate regions
+     * 
+     * @param regionImagePix Pixel object representation region image
+     * @param greyPix Grey level pixels 
+     * @param cell Region object considered for dilation
+     * @param point current point being queried for dilation
+     * @param intermediate Value to assign to pixels in region image if dilation is possible
+     * @param greyThresh Grey level threshold criteria for dilation
+     * @param index Current region index
+     * @param expandedImagePix Candidate pixels for dilation
+     * @param width Image width
+     * @param height Image height
+     * @param countPix Reference grid for keeping track of how often pixels are queried
+     * @param tempImagePix 
+     * @param voronoiPix Pixel object representing voronoi segmentation
+     * @return True if dilation is possible, false otherwise
+     */
+    private static boolean simpleDilate(short[] regionImagePix, float[] greyPix, Region cell, short[] point, short intermediate, double greyThresh, short index, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix, byte[] voronoiPix) {
         int x = point[0];
         int y = point[1];
         int yOffset = y * width;
@@ -409,7 +439,9 @@ public class RegionGrower {
                     countPix[i + jOffset]++;
                     short r = regionImagePix[i + jOffset];
                     double g = greyPix[jOffset + i];
-                    if ((r == Region.MASK_FOREGROUND || r == intermediate) && (g > greyThresh)) {
+                    int v = voronoiPix[jOffset + i];
+                    if ((r == Region.MASK_FOREGROUND || r == intermediate) && (g > greyThresh)
+                            && (v == Region.MASK_FOREGROUND)) {
                         short[] p = new short[]{(short) i, (short) j};
                         regionImagePix[i + jOffset] = intermediate;
                         dilate = true;

@@ -60,6 +60,13 @@ public class Region {
         this(mask, new double[]{centre[0], centre[1]});
     }
 
+    /**
+     * Creates a new Region instance.
+     * 
+     * @param mask A binary mask image that defines the region
+     * @param centre The centre of the mask - any point within the mask object 
+     * in the form [x, y].
+     */
     public Region(ImageProcessor mask, short[] centre) {
         this.active = true;
         this.imageWidth = mask.getWidth();
@@ -75,6 +82,7 @@ public class Region {
                 this.addBorderPoint(bp[i], mask);
             }
         }
+        drawMask(imageWidth, imageHeight);
     }
 
     public Region(int width, int height, short[] centre) {
@@ -431,7 +439,6 @@ public class Region {
         }
         return mask.duplicate();
     }
-
 
     public short[][] getOrderedBoundary(int width, int height, ImageProcessor mask, float[] centre) {
         return getOrderedBoundary(width, height, mask, new short[]{(short) Math.round(centre[0]), (short) Math.round(centre[1])});

@@ -19,8 +19,11 @@ package Binary;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.AutoThresholder;
+import ij.process.ByteProcessor;
 import ij.process.FloodFiller;
 import ij.process.ImageProcessor;
+import ij.process.ImageStatistics;
+import ij.process.ShortProcessor;
 import ij.process.StackStatistics;
 
 /**
@@ -29,6 +32,15 @@ import ij.process.StackStatistics;
  */
 public class BinaryMaker {
 
+    /**
+     * Generates a binary stack from an input stack
+     * 
+     * @param stackImp The input stack
+     * @param method The thresholding method to employ
+     * @param manualThresh The manual threshold to use, if required
+     * @param holeSize The approximate size of holes to be filled post-thresholding
+     * @return 
+     */
     public static ImageStack makeBinaryStack(ImagePlus stackImp, String method, int manualThresh, int holeSize) {
         int threshold = manualThresh;
         if (method != null) {
@@ -41,23 +53,56 @@ public class BinaryMaker {
         int s = stack.size();
         ImageStack output = new ImageStack(stack.getWidth(), stack.getHeight());
         for (int i = 1; i <= s; i++) {
-            ImageProcessor slice = stack.getProcessor(i);
-            slice.threshold(threshold);
-            slice = slice.convertToByteProcessor(false);
-            fill(slice, 255, 0);
-            slice.invert();
-            for (int j = 0; j < holeSize; j++) {
-                slice.dilate();
-            }
-            for (int j = 0; j < 2 * holeSize; j++) {
-                slice.erode();
-            }
-            for (int j = 0; j < holeSize; j++) {
-                slice.dilate();
-            }
-            slice.invert();
-            output.addSlice(slice);
+            output.addSlice(makeBinaryImage(stack.getProcessor(i), null, threshold, holeSize));
         }
+        return output;
+    }
+
+    /**
+     * Generates a binary image from an input pixels
+     * 
+     * @param pix Input image pixels
+     * @param width Input image width
+     * @param height Input image height
+     * @param method Thresholding method
+     * @param manualThresh A manual threshold value
+     * @param holeSize Approximate size of holes to be filled in mask object
+     * @return A binary, thresholded image
+     */
+    public static ByteProcessor makeBinaryImage(short[] pix, int width, int height, String method, int manualThresh, int holeSize) {
+        ShortProcessor ip = new ShortProcessor(width, height);
+        ip.setPixels(pix);
+        return makeBinaryImage(ip.duplicate(), method, manualThresh, holeSize);
+    }
+
+    /**
+     * Generates a binary image from an input image
+     * 
+     * @param ip Input image
+     * @param method Thresholding method to employ
+     * @param manualThresh A manual threshold value
+     * @param holeSize Approximate size of holes to be filled in mask object
+     * @return A binary, thresholded image
+     */
+    public static ByteProcessor makeBinaryImage(ImageProcessor ip, String method, int manualThresh, int holeSize) {
+        int threshold = manualThresh;
+        if (method != null) {
+            threshold = getThreshold(ip.getStatistics(), method);
+        }
+        ip.threshold(threshold);
+        ByteProcessor output = ip.convertToByteProcessor(false);
+        fill(output, 255, 0);
+        output.invert();
+        for (int j = 0; j < holeSize; j++) {
+            output.dilate();
+        }
+        for (int j = 0; j < 2 * holeSize; j++) {
+            output.erode();
+        }
+        for (int j = 0; j < holeSize; j++) {
+            output.dilate();
+        }
+        output.invert();
         return output;
     }
 
@@ -94,5 +139,17 @@ public class BinaryMaker {
                 pixels[i] = (byte) foreground;
             }
         }
+    }
+
+    /**
+     * Calculates a grey level threshold based on the specified method
+     * 
+     * @param stats Image statistics for the image of interest
+     * @param method The tresholding method to employ
+     * @return A grey level threshold
+     */
+    static int getThreshold(ImageStatistics stats, String method) {
+        int tIndex = new AutoThresholder().getThreshold(method, stats.histogram);
+        return (int) Math.round(stats.min + tIndex * stats.binSize);
     }
 }

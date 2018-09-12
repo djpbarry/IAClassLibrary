@@ -16,7 +16,6 @@
  */
 package Extrema;
 
-import UtilClasses.GenUtils;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.Prefs;
@@ -24,7 +23,6 @@ import ij.plugin.filter.EDM;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -131,6 +129,46 @@ public class MaximaFinder {
                 new int[]{xyRadius, xyRadius, zRadius}, maxThresh, new boolean[]{varyBG, absolute});
         mf.start();
         return mf.makeLocalMaximaImage(background);
+    }
+
+    /**
+     * Checks whether the current position is a local maximum.
+     * 
+     * @param x X-Coordinate
+     * @param y Y-Coordinate
+     * @param kWidth Search radius in X-dimension
+     * @param kHeight Search radius in Y-dimension
+     * @param pix Image pixels
+     * @param varyBG Take into consideration local background variation?
+     * @param maxThresh The minimum intensity permissable for a maxima
+     * @param width The width of the image
+     * @return true if (x, y) is a local maximum, false otherwise
+     */
+    public static boolean isLocalMax(int x, int y, int kWidth, int kHeight, short[] pix, boolean varyBG, double maxThresh, int width) {
+        double min = Double.MAX_VALUE, max = 0.0;
+        for (int j = y - kHeight; j <= y + kHeight; j++) {
+            int jOffset = j * width;
+            for (int i = x - kWidth; i <= x + kWidth; i++) {
+                double current = pix[jOffset + i];
+                if ((current > max) && !((x == i) && (y == j))) {
+                    max = current;
+                }
+                if ((current < min) && !((x == i) && (y == j))) {
+                    min = current;
+                }
+            }
+        }
+        double p = pix[y * width + x];
+        double diff;
+        if (varyBG) {
+            diff = p - min;
+        } else {
+            diff = p;
+        }
+        if ((p >= max) && (diff > maxThresh)) {
+            return true;
+        }
+        return false;
     }
 
 }

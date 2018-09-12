@@ -28,7 +28,7 @@ public class UserVariables {
     private double blebDurThresh = 0.0; // minimum duration (in frames) of bleb to be considered in analysis
     private int curveRange = 10;
     private boolean useSigThresh = true;
-    private double spatialRes = 0.212; //timeRes in frames/minute, spatialRes in microns/pixel;
+    private double spatialRes = 1.0; //timeRes in frames/minute, spatialRes in microns/pixel;
     private double cutOffTime = 120.0;
     private double cortexDepth = 1.0;
     private boolean autoThreshold = true; // User-specifed threshold is used if set to false
@@ -36,12 +36,12 @@ public class UserVariables {
     private double sigThreshFact = 0.0;
     private double spatFiltRad = 5.0; // radius of Gaussian filters used to smooth velocity and signal maps
     private int erosion = 4;
-    private boolean getMorph = true;
-    private double timeRes = 60.0; // temporal resolution in frames per minute
+    private boolean getMorph = false;
+    private double timeRes = 1.0; // temporal resolution in frames per minute
     private double blebLenThresh = 0.0; // minimum normalised length of bleb to be considered in analysis
     private double minCurveThresh = 0.0;
 //    private double maxCurveThresh = 0.0;
-    private boolean analyseProtrusions = true;
+    private boolean analyseProtrusions = false;
     private double sigRecoveryThresh = 0.25;
     private double gaussRad = 1.0;
     private final boolean usedSmoothedVels = true;
@@ -52,7 +52,7 @@ public class UserVariables {
     private boolean blebDetect = true;
     private double filoSizeMax = 4;
     private boolean getFluorDist = false;
-    private double morphSizeMin = 50.0;
+    private double morphSizeMin = 100.0;
     private double filoSizeMin = 1.0;
     private int visLineWidth = 2;
     private boolean displayPlots = true;
