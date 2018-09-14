@@ -20,14 +20,11 @@ import Binary.BinaryMaker;
 import Binary.EDMMaker;
 import IAClasses.Region;
 import Process.MultiThreadedProcess;
-import UtilClasses.GenUtils;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Multi-threaded execution of region-growing segmentation
@@ -49,8 +46,8 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
      * @param singleImageRegions The regions to be grown
      * @param threshold The grey level threshold to employ during region growing
      */
-    public MultiThreadedRegionGrower(ShortProcessor regionImage, ImageProcessor inputImage, ArrayList<Region> singleImageRegions, double threshold) {
-        super(null, null);
+    public MultiThreadedRegionGrower(ShortProcessor regionImage, ImageProcessor inputImage, ArrayList<Region> singleImageRegions, double threshold, ExecutorService exec) {
+        super(null, exec);
         this.regionImage = regionImage;
         this.inputImage = inputImage;
         this.singleImageRegions = singleImageRegions;
@@ -59,7 +56,6 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
 
     @Override
     public void run() {
-        ExecutorService ex = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         int width = regionImage.getWidth();
         int height = regionImage.getHeight();
         int widthheight = width * height;
@@ -77,17 +73,12 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
         for (int i = 0; i < cellNum; i++) {
             Region cell = singleImageRegions.get(i);
             if (cell != null && cell.isActive()) {
-                ex.submit(new RunnableRegionGrower(cell, expandedImagePix, width,
+                exec.submit(new RunnableRegionGrower(cell, expandedImagePix, width,
                         checkImagePix, regionImagePix, inputPix, threshold,
                         i, height, countImagePix, tempRegionPix, regionImage,
                         voronoiPix, "RegionGrower_" + i));
             }
         }
-        ex.shutdown();
-        try {
-            ex.awaitTermination(12, TimeUnit.HOURS);
-        } catch (InterruptedException e) {
-            GenUtils.logError(e, "Error detecting cells.");
-        }
+        terminate("Error detecting cells.");
     }
 }

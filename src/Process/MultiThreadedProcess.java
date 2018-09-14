@@ -17,7 +17,9 @@
 package Process;
 
 import IO.BioFormats.BioFormatsImg;
+import UtilClasses.GenUtils;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -34,4 +36,13 @@ public abstract class MultiThreadedProcess extends Thread {
     }
 
     public abstract void run();
+
+    public void terminate(String errorMessage) {
+        exec.shutdown();
+        try {
+            exec.awaitTermination(12, TimeUnit.HOURS);
+        } catch (InterruptedException e) {
+            GenUtils.logError(e, errorMessage);
+        }
+    }
 }
