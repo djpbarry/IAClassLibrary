@@ -52,7 +52,7 @@ public class UserVariables {
     private boolean blebDetect = true;
     private double filoSizeMax = 4;
     private boolean getFluorDist = false;
-    private double morphSizeMin = 100.0;
+    private double morphSizeMin = 500.0;
     private double filoSizeMin = 1.0;
     private int visLineWidth = 2;
     private boolean displayPlots = true;

@@ -16,11 +16,10 @@
  */
 package Segmentation;
 
-import Binary.BinaryMaker;
-import Binary.EDMMaker;
 import Cell.CellData;
 import IAClasses.Region;
 import IAClasses.Utils;
+import Process.Segmentation.MultiThreadedRegionGrower;
 import UserVariables.UserVariables;
 import ij.IJ;
 import ij.ImagePlus;
@@ -80,6 +79,7 @@ public class RegionGrower {
                 ByteBlitter bb = new ByteBlitter(binary);
                 bb.copyBits(masks, 0, 0, Blitter.SUBTRACT);
             }
+//            IJ.saveAs(new ImagePlus("", binary), "PNG", String.format("D:\\debugging\\adapt_debug\\output\\%s_%d.png", "Residuals", (start - 2)));
             double minArea = protMode ? getMinFilArea(uv) : getMinCellArea(uv);
             getSeedPoints(binary, initP, minArea);
             n = initP.size();
@@ -116,6 +116,15 @@ public class RegionGrower {
         return n;
     }
 
+    /**
+     * Find cell regions in the given image
+     * 
+     * @param inputProc Input image
+     * @param rois Regions of interest on which to initialise the regions
+     * @param t Percentile to use in manual threshold calculation
+     * @param method Method to use for automatic threshold calculation
+     * @return List of regions
+     */
     public static ArrayList<Region> findCellRegions(ImageProcessor inputProc, Roi[] rois, double t, String method) {
         PointRoi proi = null;
         for (Roi r : rois) {
@@ -174,90 +183,17 @@ public class RegionGrower {
     }
 
     /**
-     * Produces a region image following conditional dilation of the regions 
-     * in the input regionImage
-     * 
+     * Produces a region image following conditional dilation of the regions in
+     * the input regionImage
+     *
      * @param regionImage Image to be dilated
-     * @param inputImage 
+     * @param inputImage
      * @param singleImageRegions List of regions in image
      * @param threshold Grey level threshold for dilation
      * @return Dilated region image
      */
     private static ShortProcessor growRegions(ShortProcessor regionImage, ImageProcessor inputImage, ArrayList<Region> singleImageRegions, double threshold) {
-        int width = regionImage.getWidth();
-        int height = regionImage.getHeight();
-        int widthheight = width * height;
-        boolean totChange = true;
-        float[] inputPix = (float[]) inputImage.getPixels();
-        short[] regionImagePix = (short[]) regionImage.getPixels();
-        short[] checkImagePix = new short[widthheight];
-        short[] tempRegionPix = new short[widthheight];
-        short[] countImagePix = new short[widthheight];
-        short[] expandedImagePix = new short[widthheight];
-        Arrays.fill(checkImagePix, Region.MASK_FOREGROUND);
-        Arrays.fill(countImagePix, Region.MASK_FOREGROUND);
-        ImageProcessor texture = inputImage.duplicate();
-        texture.findEdges();
-        (new GaussianBlur()).blurGaussian(texture, filtRad, filtRad, 0.01);
-        float[] texturePix = (float[]) texture.getPixels();
-        int cellNum = singleImageRegions.size();
-        float distancemaps[][][] = null;
-        if (!simple) {
-            distancemaps = new float[cellNum][width][height];
-            initDistanceMaps(inputImage, (ShortProcessor) regionImage.duplicate(), singleImageRegions, distancemaps, 1.0, threshold);
-            saveDistanceMaps(distancemaps, "DistanceMaps");
-        }
-//        ImageStack regionImageStack = new ImageStack(regionImage.getWidth(), regionImage.getHeight());
-        byte[] voronoiPix = EDMMaker.makeVoronoiPix(BinaryMaker.makeBinaryImage(regionImagePix, width, height, null, 0, 0));
-        while (totChange) {
-//            ImageStack expandedImageStack = new ImageStack(width, height);
-//            ImageStack tempRegionStack = new ImageStack(width, height);
-            totChange = false;
-            Arrays.fill(tempRegionPix, Region.MASK_FOREGROUND);
-            for (int i = 0; i < cellNum; i++) {
-                Region cell = singleImageRegions.get(i);
-                if (cell != null && cell.isActive()) {
-                    Arrays.fill(expandedImagePix, Region.MASK_BACKGROUND);
-                    LinkedList<short[]> borderPix = cell.getBorderPix();
-                    int borderLength = borderPix.size();
-                    boolean thisChange = false;
-                    for (int j = 0; j < borderLength; j++) {
-                        short[] thispix = borderPix.get(j);
-                        int offset = thispix[1] * width;
-                        if (checkImagePix[thispix[0] + offset] == Region.MASK_FOREGROUND) {
-                            boolean thisResult;
-                            if (!simple) {
-                                thisResult = dijkstraDilate(regionImagePix, cell, thispix, inputPix, threshold, texturePix, intermediate, i + 1, expandedImagePix, width, height, countImagePix, tempRegionPix, distancemaps[i]);
-                            } else {
-                                thisResult = simpleDilate(regionImagePix, inputPix, cell, thispix, intermediate, threshold, (short) (i + 1), expandedImagePix, width, height, countImagePix, tempRegionPix, voronoiPix);
-                            }
-                            thisChange = thisResult || thisChange;
-                            if (!thisResult) {
-                                checkImagePix[thispix[0] + offset]++;
-                            }
-                        }
-                        cell.setActive(thisChange);
-                        totChange = thisChange || totChange;
-                    }
-                }
-//                ShortProcessor expandedImage = new ShortProcessor(width, height);
-//                expandedImage.setPixels(expandedImagePix);
-//                ShortProcessor tempRegionImage = new ShortProcessor(width, height);
-//                tempRegionImage.setPixels(tempRegionPix);
-//                expandedImageStack.addSlice(expandedImage.duplicate());
-//                tempRegionStack.addSlice(tempRegionImage.duplicate());
-            }
-//            if (expandedImageStack.size() > 0) {
-//                IJ.saveAs(new ImagePlus("", expandedImageStack), "TIF", String.format("D:\\debugging\\adapt_debug\\output\\%s_%d.tif", "ExpandedImage", count));
-//            }
-//            if (tempRegionStack.size() > 0) {
-//                IJ.saveAs(new ImagePlus("", tempRegionStack), "TIF", String.format("D:\\debugging\\adapt_debug\\output\\%s_%d.tif", "tempRegions", count));
-//            }
-//            IJ.saveAs(new ImagePlus("", regionImage), "TIF", String.format("D:\\debugging\\adapt_debug\\output\\%s_%d.tif", "RegionImage", count++));
-            expandRegions(singleImageRegions, regionImage, cellNum, terminal, tempRegionPix);
-//            IJ.saveAs(new ImagePlus("", regionImage), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", "ExpandedRegionImage", count++));
-//            regionImageStack.addSlice(regionImage.duplicate());
-        }
+        (new MultiThreadedRegionGrower(regionImage, inputImage, singleImageRegions, threshold)).run();
         return regionImage;
     }
 
@@ -404,19 +340,21 @@ public class RegionGrower {
 
     /**
      * Conditionally dilate regions
-     * 
+     *
      * @param regionImagePix Pixel object representation region image
-     * @param greyPix Grey level pixels 
+     * @param greyPix Grey level pixels
      * @param cell Region object considered for dilation
      * @param point current point being queried for dilation
-     * @param intermediate Value to assign to pixels in region image if dilation is possible
+     * @param intermediate Value to assign to pixels in region image if dilation
+     * is possible
      * @param greyThresh Grey level threshold criteria for dilation
      * @param index Current region index
      * @param expandedImagePix Candidate pixels for dilation
      * @param width Image width
      * @param height Image height
-     * @param countPix Reference grid for keeping track of how often pixels are queried
-     * @param tempImagePix 
+     * @param countPix Reference grid for keeping track of how often pixels are
+     * queried
+     * @param tempImagePix
      * @param voronoiPix Pixel object representing voronoi segmentation
      * @return True if dilation is possible, false otherwise
      */
@@ -536,33 +474,54 @@ public class RegionGrower {
         return dilate;
     }
 
-    /*
+    /**
      * Updates regionImages according to the expanded border sets in regions.
      * When complete, borders are dilated to expanded borders and expanded
      * borders are set to null.
+     *
+     * @param regions Regions list to be expanded
+     * @param regionImage Image depicting regions
+     * @param N Number of regions to be expanded
+     * @param terminal Value used in region image to depict termination of
+     * expansion
+     * @param tempRegionPix Contains candidate points for expansion
      */
     static void expandRegions(ArrayList<Region> regions, ShortProcessor regionImage, int N, short terminal, short[] tempRegionPix) {
         int width = regionImage.getWidth();
         for (int i = 0; i < N; i++) {
-            Region cell = regions.get(i);
-            if (cell != null) {
-                LinkedList<short[]> pixels = cell.getExpandedBorder();
-                int borderLength = pixels.size();
-                for (int j = 0; j < borderLength; j++) {
-                    short[] current = pixels.get(j);
-                    int x = current[0];
-                    int y = current[1];
-                    int yOffset = y * width;
-                    if (tempRegionPix[x + yOffset] > 1) {
-                        regionImage.putPixelValue(x, y, terminal);
-                    } else {
-                        regionImage.putPixelValue(x, y, i + 1);
-                    }
-                }
-                cell.expandBorder();
-            }
+            expandRegion(regions.get(i), width, tempRegionPix, regionImage, i);
         }
         //        IJ.saveAs((new ImagePlus("", tempRegionImage)), "PNG", "c:\\users\\barry05\\desktop\\masks\\tempRegionImage.png");
+    }
+
+    /**
+     * Updates regionImages according to the expanded border set in region. When
+     * complete, border is dilated to expanded border and expanded border is set
+     * to null.
+     *
+     * @param cell Region to be expanded
+     * @param width Image width
+     * @param tempRegionPix Contains candidate points for expansion
+     * @param regionImage Image depicting regions
+     * @param i Region index
+     */
+    static void expandRegion(Region cell, int width, short[] tempRegionPix, ShortProcessor regionImage, int i) {
+        if (cell != null) {
+            LinkedList<short[]> pixels = cell.getExpandedBorder();
+            int borderLength = pixels.size();
+            for (int j = 0; j < borderLength; j++) {
+                short[] current = pixels.get(j);
+                int x = current[0];
+                int y = current[1];
+                int yOffset = y * width;
+                if (tempRegionPix[x + yOffset] > 1) {
+                    regionImage.putPixelValue(x, y, terminal);
+                } else {
+                    regionImage.putPixelValue(x, y, i + 1);
+                }
+            }
+            cell.expandBorder();
+        }
     }
 
     static void expandRegions(ArrayList<Region> regions, ImageStack regionImageStack, int N, short terminal, short[][] tempRegionPix) {
