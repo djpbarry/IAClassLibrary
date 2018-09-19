@@ -29,20 +29,19 @@ import javax.swing.JPanel;
  */
 public class LayerPanel extends JPanel implements GUIMethods {
 
-    protected final ExecutorService exec;
+    protected ExecutorService exec;
     protected final BioFormatsImg img;
     protected final Properties props;
     protected MultiThreadedProcess process;
 
     public LayerPanel() {
-        this(null, null, null);
+        this(null, null);
     }
 
-    public LayerPanel(Properties props, BioFormatsImg img, ExecutorService exec) {
+    public LayerPanel(Properties props, BioFormatsImg img) {
         super();
         this.props = props;
         this.img = img;
-        this.exec = exec;
     }
 
     public void setProperties(Properties p, Container container) {

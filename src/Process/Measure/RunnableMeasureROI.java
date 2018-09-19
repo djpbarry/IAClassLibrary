@@ -14,36 +14,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package Process;
+package Process.Measure;
 
-import IO.BioFormats.BioFormatsImg;
-import UtilClasses.GenUtils;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import Process.RunnableProcess;
+import ij.ImagePlus;
+import ij.gui.Roi;
+import ij.plugin.filter.Analyzer;
+import java.util.ArrayList;
 
 /**
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public abstract class MultiThreadedProcess extends Thread {
+public class RunnableMeasureROI extends RunnableProcess {
 
-    protected final ExecutorService exec;
-    protected final BioFormatsImg img;
+    ImagePlus image;
+    ArrayList<Roi> allRois;
 
-    public MultiThreadedProcess(BioFormatsImg img) {
-        this.img = img;
-        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    public RunnableMeasureROI(ImagePlus image, ArrayList<Roi> allRois) {
+        super(null);
+        this.image = image;
+        this.allRois = allRois;
     }
 
-    public abstract void run();
-
-    public void terminate(String errorMessage) {
-        exec.shutdown();
-        try {
-            exec.awaitTermination(12, TimeUnit.HOURS);
-        } catch (InterruptedException e) {
-            GenUtils.logError(e, errorMessage);
+    @Override
+    public void run() {
+        for (Roi r : allRois) {
+            image.setRoi(r);
+            (new Analyzer(image)).measure();
         }
     }
 }

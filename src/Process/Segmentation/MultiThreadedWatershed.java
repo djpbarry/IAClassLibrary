@@ -35,7 +35,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     private final double thresh;
 
     public MultiThreadedWatershed(BioFormatsImg img, ExecutorService exec, double[] sigma, int series, int channel, double thresh) {
-        super(img, exec);
+        super(img);
         this.sigma = sigma;
         this.series = series;
         this.channel = channel;

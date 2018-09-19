@@ -40,7 +40,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     final boolean[] criteria;
 
     public MultiThreadedMaximaFinder(BioFormatsImg img, ExecutorService exec, int[] radii, float thresh, boolean[] criteria) {
-        super(img, exec);
+        super(img);
         this.radii = radii;
         this.thresh = thresh;
         this.criteria = criteria;
