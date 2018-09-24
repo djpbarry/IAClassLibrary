@@ -161,6 +161,7 @@ public class GenUtils {
         IJ.log(e.getLocalizedMessage());
         IJ.log(e.getMessage());
         IJ.log(e.toString());
+        e.printStackTrace();
     }
 
     public static void error(String message) {
