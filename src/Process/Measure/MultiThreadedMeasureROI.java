@@ -19,6 +19,7 @@ package Process.Measure;
 import Process.MultiThreadedProcess;
 import ij.gui.Roi;
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  *
@@ -29,10 +30,14 @@ public class MultiThreadedMeasureROI extends MultiThreadedProcess {
     ArrayList<ArrayList<Roi>> allRois;
     int measurements;
 
-    public MultiThreadedMeasureROI(ArrayList<ArrayList<Roi>> allRois, int measurements) {
-        super(null);
+    public MultiThreadedMeasureROI(ArrayList<ArrayList<Roi>> allRois, int measurements, Properties props) {
+        super(null, props);
         this.allRois = allRois;
         this.measurements = measurements;
+    }
+
+    public void setup() {
+
     }
 
     @Override

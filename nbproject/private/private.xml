@@ -2,6 +2,15 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Process/Filtering/MultiThreadedGaussianFilter.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Process/Segmentation/MultiThreadedRegionGrower.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Process/Segmentation/MultiThreadedWatershed.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Process/Measure/MultiThreadedMeasureROI.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Process/ROI/MultiThreadedROIConstructor.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Process/ProcessPipeline.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Extrema/MultiThreadedMaximaFinder.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IA_Class_Library/src/Process/MultiThreadedProcess.java</file>
+        </group>
     </open-files>
 </project-private>

@@ -24,7 +24,7 @@ import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
+import java.util.Properties;
 
 /**
  * Multi-threaded execution of region-growing segmentation
@@ -40,18 +40,22 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
 
     /**
      * Constructor method
-     * 
+     *
      * @param regionImage The image on which segmented regions will be drawn
      * @param inputImage The image upon which the segmentation is based
      * @param singleImageRegions The regions to be grown
      * @param threshold The grey level threshold to employ during region growing
      */
-    public MultiThreadedRegionGrower(ShortProcessor regionImage, ImageProcessor inputImage, ArrayList<Region> singleImageRegions, double threshold, ExecutorService exec) {
-        super(null);
+    public MultiThreadedRegionGrower(ShortProcessor regionImage, ImageProcessor inputImage, ArrayList<Region> singleImageRegions, double threshold, Properties props) {
+        super(null, props);
         this.regionImage = regionImage;
         this.inputImage = inputImage;
         this.singleImageRegions = singleImageRegions;
         this.threshold = threshold;
+    }
+
+    public void setup() {
+
     }
 
     @Override

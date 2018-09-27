@@ -21,6 +21,7 @@ import Process.MultiThreadedProcess;
 import ij.ImagePlus;
 import ij.plugin.GaussianBlur3D;
 import ij.process.StackConverter;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import mcib3d.image3d.regionGrowing.Watershed3D;
 
@@ -34,12 +35,16 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     private final int series, channel;
     private final double thresh;
 
-    public MultiThreadedWatershed(BioFormatsImg img, ExecutorService exec, double[] sigma, int series, int channel, double thresh) {
-        super(img);
+    public MultiThreadedWatershed(BioFormatsImg img, ExecutorService exec, double[] sigma, int series, int channel, double thresh, Properties props) {
+        super(img, props);
         this.sigma = sigma;
         this.series = series;
         this.channel = channel;
         this.thresh = thresh;
+    }
+
+    public void setup() {
+
     }
 
     public void run() {

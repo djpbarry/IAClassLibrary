@@ -47,7 +47,6 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.concurrent.Executors;
 
 /**
  *
@@ -194,7 +193,7 @@ public class RegionGrower {
      * @return Dilated region image
      */
     private static ShortProcessor growRegions(ShortProcessor regionImage, ImageProcessor inputImage, ArrayList<Region> singleImageRegions, double threshold) {
-        (new MultiThreadedRegionGrower(regionImage, inputImage, singleImageRegions, threshold, Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()))).run();
+        (new MultiThreadedRegionGrower(regionImage, inputImage, singleImageRegions, threshold, null)).run();
         return regionImage;
     }
 

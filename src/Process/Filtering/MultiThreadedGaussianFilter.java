@@ -21,7 +21,7 @@ import Process.MultiThreadedProcess;
 import ij.ImagePlus;
 import ij.plugin.GaussianBlur3D;
 import ij.process.StackConverter;
-import java.util.concurrent.Executors;
+import java.util.Properties;
 
 /**
  *
@@ -32,11 +32,15 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
     private final double[] sigma;
     private final int series, channel;
 
-    public MultiThreadedGaussianFilter(BioFormatsImg img, double[] sigma, int series, int channel) {
-        super(img);
+    public MultiThreadedGaussianFilter(BioFormatsImg img, double[] sigma, int series, int channel, Properties props) {
+        super(img, props);
         this.sigma = sigma;
         this.series = series;
         this.channel = channel;
+    }
+
+    public void setup() {
+
     }
 
     public void run() {

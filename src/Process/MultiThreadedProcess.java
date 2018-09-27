@@ -18,6 +18,7 @@ package Process;
 
 import IO.BioFormats.BioFormatsImg;
 import UtilClasses.GenUtils;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -30,11 +31,15 @@ public abstract class MultiThreadedProcess extends Thread {
 
     protected final ExecutorService exec;
     protected final BioFormatsImg img;
+    protected final Properties props;
 
-    public MultiThreadedProcess(BioFormatsImg img) {
+    public MultiThreadedProcess(BioFormatsImg img, Properties props) {
         this.img = img;
+        this.props = props;
         this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
+
+    public abstract void setup();
 
     public abstract void run();
 

@@ -21,6 +21,7 @@ import Process.MultiThreadedProcess;
 import ij.ImagePlus;
 import ij.gui.Roi;
 import java.util.ArrayList;
+import java.util.Properties;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.image3d.ImageInt;
@@ -34,9 +35,13 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     final ArrayList<ArrayList<Roi>> allRois;
     Objects3DPopulation objectPop;
 
-    public MultiThreadedROIConstructor(BioFormatsImg img) {
-        super(img);
+    public MultiThreadedROIConstructor(BioFormatsImg img, Properties props) {
+        super(img, props);
         this.allRois = new ArrayList();
+    }
+
+    public void setup() {
+
     }
 
     @Override

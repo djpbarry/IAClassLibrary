@@ -24,6 +24,7 @@ import ij.ImageStack;
 import ij.process.ByteProcessor;
 import ij.process.StackConverter;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -39,8 +40,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     final float thresh;
     final boolean[] criteria;
 
-    public MultiThreadedMaximaFinder(BioFormatsImg img, ExecutorService exec, int[] radii, float thresh, boolean[] criteria) {
-        super(img);
+    public MultiThreadedMaximaFinder(BioFormatsImg img, ExecutorService exec, int[] radii, float thresh, boolean[] criteria, Properties props) {
+        super(img, props);
         this.radii = radii;
         this.thresh = thresh;
         this.criteria = criteria;
@@ -48,6 +49,10 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         this.stack = img.getTempImg().getImageStack();
     }
 
+    public void setup(){
+        
+    }
+    
     public ImagePlus makeLocalMaximaImage(byte background) {
         ImagePlus imp = img.getTempImg();
         (new StackConverter(imp)).convertToGray32();

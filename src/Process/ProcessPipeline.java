@@ -37,4 +37,8 @@ public class ProcessPipeline {
     public MultiThreadedProcess removeProcess() {
         return pipeline.removeLast();
     }
+
+    public MultiThreadedProcess getProcess(int i) {
+        return pipeline.get(i);
+    }
 }
