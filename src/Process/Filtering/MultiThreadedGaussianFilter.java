@@ -32,6 +32,10 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
     private final double[] sigma;
     private final int series, channel;
 
+    public MultiThreadedGaussianFilter(BioFormatsImg img, Properties props) {
+        this(img, null, 0, 0, props);
+    }
+
     public MultiThreadedGaussianFilter(BioFormatsImg img, double[] sigma, int series, int channel, Properties props) {
         super(img, props);
         this.sigma = sigma;

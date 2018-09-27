@@ -40,6 +40,10 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     final float thresh;
     final boolean[] criteria;
 
+    public MultiThreadedMaximaFinder(BioFormatsImg img, Properties props) {
+        this(img, null, null, 0f, null, props);
+    }
+
     public MultiThreadedMaximaFinder(BioFormatsImg img, ExecutorService exec, int[] radii, float thresh, boolean[] criteria, Properties props) {
         super(img, props);
         this.radii = radii;
@@ -49,10 +53,10 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         this.stack = img.getTempImg().getImageStack();
     }
 
-    public void setup(){
-        
+    public void setup() {
+
     }
-    
+
     public ImagePlus makeLocalMaximaImage(byte background) {
         ImagePlus imp = img.getTempImg();
         (new StackConverter(imp)).convertToGray32();

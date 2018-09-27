@@ -30,15 +30,25 @@ public class ProcessPipeline {
         this.pipeline = new LinkedList();
     }
 
-    public boolean addProcess(MultiThreadedProcess process) {
-        return pipeline.add(process);
+    public void addProcess(MultiThreadedProcess process, int i) {
+        while (pipeline.size() <= i) {
+            pipeline.add(null);
+        }
+        removeProcesses(i + 1);
+        pipeline.set(i, process);
     }
 
-    public MultiThreadedProcess removeProcess() {
-        return pipeline.removeLast();
+    public void removeProcesses(int i) {
+        while (pipeline.size() > i) {
+            pipeline.removeLast();
+        }
     }
 
     public MultiThreadedProcess getProcess(int i) {
         return pipeline.get(i);
+    }
+
+    public int getSize() {
+        return pipeline.size();
     }
 }
