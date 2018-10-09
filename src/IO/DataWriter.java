@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Scanner;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -86,6 +87,16 @@ public class DataWriter {
             }
         }
         printer.close();
+    }
+
+    public static void saveValues(ArrayList<ArrayList<Double>> vals, File dataFile, String[] colHeadings, String[] rowLabels, boolean append) throws IOException {
+        double[][] convertedVals = new double[vals.get(0).size()][vals.size()];
+        for (int j = 0; j < convertedVals.length; j++) {
+            for (int i = 0; i < convertedVals[j].length; i++) {
+                convertedVals[j][i] = vals.get(i).get(j);
+            }
+        }
+        saveValues(convertedVals, dataFile, colHeadings, rowLabels, append);
     }
 
     public static Double[] getAverageValues(double[][] vals, int N) {
