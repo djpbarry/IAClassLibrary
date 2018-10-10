@@ -25,6 +25,7 @@
 package IO.BioFormats;
 
 import ij.process.FloatProcessor;
+import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -48,7 +49,7 @@ public class BioFormatsImageWriter {
 
     }
 
-    public static void saveImage(FloatProcessor ip, File filename) throws DependencyException, ServiceException, FormatException, IOException {
+    public static void saveImage(FloatProcessor ip, File filename, IndexColorModel lut) throws DependencyException, ServiceException, FormatException, IOException {
         String id = filename.getAbsolutePath();
 
         int w = ip.getWidth(), h = ip.getHeight();
@@ -72,6 +73,9 @@ public class BioFormatsImageWriter {
         writer.setMetadataRetrieve(meta);
         writer.setValidBitsPerPixel(32);
         writer.setId(id);
+        if (lut != null) {
+            writer.setColorModel(lut);
+        }
         writer.setCompression("LZW");
         writer.saveBytes(0, img);
         writer.close();
