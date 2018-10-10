@@ -24,14 +24,19 @@
  */
 package IO.BioFormats;
 
-import ij.process.ByteProcessor;
+import ij.gui.Roi;
+import ij.process.FloatProcessor;
 import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import loci.common.services.DependencyException;
+import loci.common.services.ServiceException;
 import loci.common.services.ServiceFactory;
+import loci.formats.FormatException;
 import loci.formats.FormatTools;
-import loci.formats.IFormatWriter;
-import loci.formats.ImageWriter;
 import loci.formats.MetadataTools;
 import loci.formats.meta.IMetadata;
+import loci.formats.out.TiffWriter;
 import loci.formats.services.OMEXMLService;
 
 /**
@@ -44,28 +49,41 @@ public class BioFormatsImageWriter {
 
     }
 
-    public static void saveImage(ByteProcessor ip, File filename) throws Exception {
+    public static void saveImage(FloatProcessor ip, File filename, Roi[] labels) throws DependencyException, ServiceException, FormatException, IOException {
         String id = filename.getAbsolutePath();
 
-        int w = ip.getWidth(), h = ip.getHeight(), c = 1;
-        int pixelType = FormatTools.UINT16;
-        byte[] img = (byte[]) ip.getPixels();
-
+        int w = ip.getWidth(), h = ip.getHeight();
+        int pixelType = FormatTools.FLOAT;
+        float[] floatPix = (float[]) ip.getPixels();
+        byte[] img = new byte[floatPix.length * 4];
+        for (int i = 0; i < floatPix.length; i++) {
+            byte[] currentPix = ByteBuffer.allocate(4).putFloat(floatPix[i]).array();
+            for (int j = 0; j < 4; j++) {
+                img[i * 4 + j] = currentPix[j];
+            }
+        }
         ServiceFactory factory = new ServiceFactory();
         OMEXMLService service = factory.getInstance(OMEXMLService.class);
         IMetadata meta = service.createOMEXMLMetadata();
 
-        MetadataTools.populateMetadata(meta, 0, null, false, "XYZCT",
-                FormatTools.getPixelTypeString(pixelType), w, h, 1, c, 1, c);
+        MetadataTools.populateMetadata(meta, 0, filename.getName(), false, "XYZCT",
+                FormatTools.getPixelTypeString(pixelType), w, h, 1, 1, 1, 1);
 //        RoiManager rm = RoiManager.getInstance2();
 //        if (rm == null) {
 //            rm = new RoiManager();
 //        }
 //        ROIHandler.saveROIs(meta);
 
-        IFormatWriter writer = new ImageWriter();
+//        if (labels != null) {
+//            RoiManager rm = new RoiManager();
+//            for (Roi r : labels) {
+//                rm.addRoi(r);
+//            }
+//            ROIHandler.saveROIs(meta);
+//        }
+        TiffWriter writer = new TiffWriter();
         writer.setMetadataRetrieve(meta);
-
+        writer.setValidBitsPerPixel(32);
         writer.setId(id);
         writer.setCompression("LZW");
         writer.saveBytes(0, img);
