@@ -24,7 +24,6 @@
  */
 package IO.BioFormats;
 
-import ij.gui.Roi;
 import ij.process.FloatProcessor;
 import java.io.File;
 import java.io.IOException;
@@ -49,7 +48,7 @@ public class BioFormatsImageWriter {
 
     }
 
-    public static void saveImage(FloatProcessor ip, File filename, Roi[] labels) throws DependencyException, ServiceException, FormatException, IOException {
+    public static void saveImage(FloatProcessor ip, File filename) throws DependencyException, ServiceException, FormatException, IOException {
         String id = filename.getAbsolutePath();
 
         int w = ip.getWidth(), h = ip.getHeight();
@@ -68,19 +67,7 @@ public class BioFormatsImageWriter {
 
         MetadataTools.populateMetadata(meta, 0, filename.getName(), false, "XYZCT",
                 FormatTools.getPixelTypeString(pixelType), w, h, 1, 1, 1, 1);
-//        RoiManager rm = RoiManager.getInstance2();
-//        if (rm == null) {
-//            rm = new RoiManager();
-//        }
-//        ROIHandler.saveROIs(meta);
 
-//        if (labels != null) {
-//            RoiManager rm = new RoiManager();
-//            for (Roi r : labels) {
-//                rm.addRoi(r);
-//            }
-//            ROIHandler.saveROIs(meta);
-//        }
         TiffWriter writer = new TiffWriter();
         writer.setMetadataRetrieve(meta);
         writer.setValidBitsPerPixel(32);
