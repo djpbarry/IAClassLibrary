@@ -156,8 +156,7 @@ public class FluorescenceAnalyser {
         dists[1] = new FloatProcessor(width, height);
         FloatBlitter meanBlitter = new FloatBlitter(dists[0]);
         FloatBlitter stdBlitter = new FloatBlitter(dists[1]);
-        Mean mean = new Mean();
-        StandardDeviation std = new StandardDeviation();
+        DescriptiveStatistics stats = new DescriptiveStatistics();
         for (int i = start; i <= end; i++) {
             Region r = regions[i - 1];
             if (r == null) {
@@ -170,12 +169,11 @@ public class FluorescenceAnalyser {
             while (current.morphFilter(stepSize, false, index, key) && s++ < steps) {
                 float[][] pix = current.buildMapCol(stack.getProcessor(i), height, 3);
                 if (pix != null) {
-                    double[] pixVals = new double[pix.length];
                     for (int j = 0; j < height; j++) {
-                        pixVals[j] = pix[j][2];
+                        stats.addValue(pix[j][2]);
                     }
-                    means.add(mean.evaluate(pixVals, 0, height));
-                    stds.add(std.evaluate(pixVals));
+                    means.add(stats.getMean());
+                    stds.add(stats.getStandardDeviation());
                     index++;
                 }
             }
