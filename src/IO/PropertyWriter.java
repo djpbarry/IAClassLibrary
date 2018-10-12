@@ -23,12 +23,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import org.apache.commons.io.FilenameUtils;
 
 public class PropertyWriter {
 
     public static void printProperties(Properties props, String outputDir, String comment, boolean XML) throws IOException {
+        props.put("Time and Date", DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").format(LocalDateTime.now()));
         String filename = XML ? "properties.xml" : "properties.txt";
         File outputFile = new File(String.format("%s%s%s", outputDir, File.separator, filename));
         FileOutputStream stream = new FileOutputStream(outputFile);
