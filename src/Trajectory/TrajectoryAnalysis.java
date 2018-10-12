@@ -119,7 +119,6 @@ public class TrajectoryAnalysis implements PlugIn {
             return;
         }
         try {
-            IJ.log("Calculating instananeous velocities...");
             double[][][] processedInputData = processData(inputData);
             double[][][] interData = processedInputData;
             if (interpolate) {
@@ -419,9 +418,7 @@ public class TrajectoryAnalysis implements PlugIn {
         ArrayList<String> headings = new ArrayList();
         ArrayList<String> labels = labelledData ? new ArrayList() : null;
         try {
-            IJ.log(String.format("Reading %s...", inputFile.getAbsolutePath()));
             DataReader.readCSVFile(inputFile, CSVFormat.DEFAULT, headings, labels);
-            IJ.log("Parsing data...");
         } catch (Exception e) {
             GenUtils.error("Cannot read input file.");
             return null;

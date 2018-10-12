@@ -158,6 +158,7 @@ public class FluorescenceAnalyser {
         FloatBlitter stdBlitter = new FloatBlitter(dists[1]);
         DescriptiveStatistics stats = new DescriptiveStatistics();
         for (int i = start; i <= end; i++) {
+            IJ.showProgress(start, end);
             Region r = regions[i - 1];
             if (r == null) {
                 continue;
