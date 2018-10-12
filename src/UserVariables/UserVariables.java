@@ -28,16 +28,16 @@ public class UserVariables {
     private double blebDurThresh = 0.0; // minimum duration (in frames) of bleb to be considered in analysis
     private int curveRange = 10;
     private boolean useSigThresh = true;
-    private double spatialRes = 1.0; //timeRes in frames/minute, spatialRes in microns/pixel;
+    private double spatialRes = 1.5; //timeRes in frames/minute, spatialRes in microns/pixel;
     private double cutOffTime = 120.0;
-    private double cortexDepth = 1.0;
+    private double cortexDepth = 5.0;
     private boolean autoThreshold = true; // User-specifed threshold is used if set to false
     private double tempFiltRad = 5.0; // radius of Gaussian filters used to smooth velocity and signal maps
     private double sigThreshFact = 0.0;
     private double spatFiltRad = 5.0; // radius of Gaussian filters used to smooth velocity and signal maps
     private int erosion = 4;
-    private boolean getMorph = false;
-    private double timeRes = 1.0; // temporal resolution in frames per minute
+    private boolean getMorph = true;
+    private double timeRes = 0.06; // temporal resolution in frames per minute
     private double blebLenThresh = 0.0; // minimum normalised length of bleb to be considered in analysis
     private double minCurveThresh = 0.0;
 //    private double maxCurveThresh = 0.0;
@@ -47,17 +47,15 @@ public class UserVariables {
     private final boolean usedSmoothedVels = true;
     private final int ovalRadius = 2;
 //    private boolean simple = true;
-    private int minLength = 0;
-    private String threshMethod = AutoThresholder.Method.Default.toString();
+    private int minLength = 10;
+    private String threshMethod = AutoThresholder.Method.Huang.toString();
     private boolean blebDetect = true;
     private double filoSizeMax = 4;
-    private boolean getFluorDist = false;
-    private double morphSizeMin = 500.0;
+    private boolean getFluorDist = true;
+    private double morphSizeMin = 100.0;
     private double filoSizeMin = 1.0;
     private int visLineWidth = 2;
     private boolean displayPlots = true;
-    private double maxVel = 1.0;
-    private double minVel = -1.0;
 
     /**
      * Get the radius of circles drawn on bleb detection output movies
@@ -548,22 +546,6 @@ public class UserVariables {
 
     public void setFiloSizeMin(double filoSizeMin) {
         this.filoSizeMin = filoSizeMin;
-    }
-
-    public double getMaxVel() {
-        return maxVel;
-    }
-
-    public void setMaxVel(double maxVel) {
-        this.maxVel = maxVel;
-    }
-
-    public double getMinVel() {
-        return minVel;
-    }
-
-    public void setMinVel(double minVel) {
-        this.minVel = minVel;
     }
 
     public Object clone() {
