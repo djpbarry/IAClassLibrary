@@ -41,14 +41,14 @@ public class UserVariables {
     private double blebLenThresh = 0.0; // minimum normalised length of bleb to be considered in analysis
     private double minCurveThresh = 0.0;
 //    private double maxCurveThresh = 0.0;
-    private boolean analyseProtrusions = false;
+    private boolean analyseProtrusions = true;
     private double sigRecoveryThresh = 0.25;
     private double gaussRad = 1.0;
     private final boolean usedSmoothedVels = true;
     private final int ovalRadius = 2;
 //    private boolean simple = true;
     private int minLength = 10;
-    private String threshMethod = AutoThresholder.Method.Huang.toString();
+    private String threshMethod = AutoThresholder.Method.Default.toString();
     private boolean blebDetect = true;
     private double filoSizeMax = 4;
     private boolean getFluorDist = true;

@@ -158,7 +158,7 @@ public class FluorescenceAnalyser {
         FloatBlitter stdBlitter = new FloatBlitter(dists[1]);
         DescriptiveStatistics stats = new DescriptiveStatistics();
         for (int i = start; i <= end; i++) {
-            IJ.showProgress(start, end);
+            IJ.showStatus(String.format("Quantifying fluorescence localisation %d%%",(int)Math.round((i-start) * 100.0 / (end-start))));
             Region r = regions[i - 1];
             if (r == null) {
                 continue;
