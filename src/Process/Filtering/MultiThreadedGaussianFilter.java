@@ -48,7 +48,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
     }
 
     public void run() {
-        img.setImg(series, channel);
+        img.setImg(series, channel, channel);
         ImagePlus imp = img.getImg();
         (new StackConverter(imp)).convertToGray32();
         GaussianBlur3D.blur(imp, sigma[0], sigma[1], sigma[2]);

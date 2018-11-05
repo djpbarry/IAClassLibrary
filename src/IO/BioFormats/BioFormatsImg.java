@@ -42,6 +42,7 @@ public class BioFormatsImg {
     private String id;
     private ImagePlus img = new ImagePlus();
     private ImagePlus tempImg;
+    private boolean validID;
 
     public BioFormatsImg() {
         this(null);
@@ -103,21 +104,29 @@ public class BioFormatsImg {
 
     public void setId(String id) {
         this.id = id;
+        validID = false;
         try {
             this.io.setId(id);
             this.reader.setId(id);
         } catch (IOException e) {
             GenUtils.logError(e, String.format("Problem encountered opening %s.", id));
+            return;
         } catch (FormatException e) {
             GenUtils.logError(e, String.format("%s is not a supported format.", id));
+            return;
         }
+        validID = true;
     }
 
-    public void setImg(int series, int channel) {
+    public void setImg(int series) {
+        setImg(series, 0, this.getChannelCount());
+    }
+    
+    public void setImg(int series, int cBegin, int cEnd) {
         try {
             io.setSeriesOn(series, true);
-            io.setCBegin(series, channel);
-            io.setCEnd(series, channel);
+            io.setCBegin(series, cBegin);
+            io.setCEnd(series, cBegin);
             img = BF.openImagePlus(io)[0];
         } catch (Exception e) {
             GenUtils.logError(e, "There seems to be a problem opening that image!");
@@ -150,6 +159,10 @@ public class BioFormatsImg {
             output[i] = (float[]) pixels[i];
         }
         return output;
+    }
+
+    public boolean isValidID() {
+        return validID;
     }
 
 }
