@@ -18,7 +18,13 @@ package IO.BioFormats;
 
 import UtilClasses.GenUtils;
 import ij.ImagePlus;
+import ij.ImageStack;
+import ij.plugin.HyperStackConverter;
+import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
+import ij.process.ShortProcessor;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import loci.common.services.DependencyException;
 import loci.common.services.ServiceException;
 import loci.common.services.ServiceFactory;
@@ -26,7 +32,6 @@ import loci.formats.FormatException;
 import loci.formats.ImageReader;
 import loci.formats.meta.IMetadata;
 import loci.formats.services.OMEXMLService;
-import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
 import ome.units.quantity.Length;
 
@@ -121,13 +126,36 @@ public class BioFormatsImg {
     public void setImg(int series) {
         setImg(series, 0, this.getChannelCount());
     }
-    
+
     public void setImg(int series, int cBegin, int cEnd) {
         try {
-            io.setSeriesOn(series, true);
-            io.setCBegin(series, cBegin);
-            io.setCEnd(series, cBegin);
-            img = BF.openImagePlus(io)[0];
+            reader.setSeries(series);
+            int sizeZ = reader.getSizeZ();
+            int width = reader.getSizeX();
+            int height = reader.getSizeY();
+            int sizeC = reader.getSizeC();
+            int bitDepth = reader.getBitsPerPixel();
+            ImageStack stack = new ImageStack(width, height);
+            for (int c = 0; c < sizeC; c++) {
+                for (int z = 0; z < sizeZ; z++) {
+                    ImageProcessor ip;
+                    if (bitDepth == 16) {
+                        byte[] bytePix = reader.openBytes(c * sizeZ + z);
+                        short[] shortPix = new short[width * height];
+                        for (int i = 0; i < shortPix.length; i++) {
+                            shortPix[i] = ByteBuffer.wrap(new byte[]{bytePix[2 * i + 1], bytePix[2 * i]}).getShort();
+                        }
+                        ip = new ShortProcessor(width, height);
+                        ip.setPixels(shortPix);
+                    } else {
+                        ip = new ByteProcessor(width, height);
+                        ip.setPixels(reader.openBytes(z));
+                    }
+                    stack.addSlice(ip);
+                }
+            }
+            ImagePlus stackImp = new ImagePlus(id, stack);
+            img = HyperStackConverter.toHyperStack(stackImp, sizeC, sizeZ, 1, "xyzct", "composite");
         } catch (Exception e) {
             GenUtils.logError(e, "There seems to be a problem opening that image!");
         }
