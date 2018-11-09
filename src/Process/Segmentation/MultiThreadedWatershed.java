@@ -53,7 +53,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
 
     public void run() {
         ImagePlus maxima = img.getTempImg().duplicate();
-        img.setImg(series, channel, channel);
+        img.setImg(series, channel, channel, null);
         ImagePlus cells = img.getImg();
         (new StackConverter(cells)).convertToGray32();
 

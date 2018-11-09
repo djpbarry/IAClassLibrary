@@ -91,6 +91,10 @@ public class BioFormatsImg {
         return reader.getSizeC();
     }
 
+    public int getSizeZ(){
+        return reader.getSizeZ();
+    }
+    
     public Length getXYSpatialRes(int series) {
         return meta.getPixelsPhysicalSizeX(series);
     }
@@ -124,41 +128,118 @@ public class BioFormatsImg {
     }
 
     public void setImg(int series) {
-        setImg(series, 0, this.getChannelCount());
+        setImg(series, 0, this.getChannelCount(), reader.getDimensionOrder());
     }
 
-    public void setImg(int series, int cBegin, int cEnd) {
+    public void setImg(int series, int cBegin, int cEnd, String dimOrder) {
         try {
             reader.setSeries(series);
-            int sizeZ = reader.getSizeZ();
+            int[] limits = getLimits(dimOrder, cBegin, cEnd);
             int width = reader.getSizeX();
             int height = reader.getSizeY();
-            int sizeC = reader.getSizeC();
             int bitDepth = reader.getBitsPerPixel();
             ImageStack stack = new ImageStack(width, height);
-            for (int c = 0; c < sizeC; c++) {
-                for (int z = 0; z < sizeZ; z++) {
-                    ImageProcessor ip;
-                    if (bitDepth == 16) {
-                        byte[] bytePix = reader.openBytes(c * sizeZ + z);
-                        short[] shortPix = new short[width * height];
-                        for (int i = 0; i < shortPix.length; i++) {
-                            shortPix[i] = ByteBuffer.wrap(new byte[]{bytePix[2 * i + 1], bytePix[2 * i]}).getShort();
+            for (int k = limits[6]; k < limits[7]; k++) {
+                for (int j = limits[3]; j < limits[4]; j++) {
+                    for (int i = limits[0]; i < limits[1]; i++) {
+                        ImageProcessor ip;
+                        byte[] bytePix = reader.openBytes(k * limits[5] * limits[2] + j * limits[2] + i);
+                        if (bitDepth == 16) {
+                            short[] shortPix = new short[width * height];
+                            for (int index = 0; index < shortPix.length; index++) {
+                                shortPix[index] = ByteBuffer.wrap(new byte[]{bytePix[2 * index + 1], bytePix[2 * index]}).getShort();
+                            }
+                            ip = new ShortProcessor(width, height);
+                            ip.setPixels(shortPix);
+                        } else {
+                            ip = new ByteProcessor(width, height);
+                            ip.setPixels(bytePix);
                         }
-                        ip = new ShortProcessor(width, height);
-                        ip.setPixels(shortPix);
-                    } else {
-                        ip = new ByteProcessor(width, height);
-                        ip.setPixels(reader.openBytes(z));
+                        stack.addSlice(ip);
                     }
-                    stack.addSlice(ip);
                 }
             }
             ImagePlus stackImp = new ImagePlus(id, stack);
-            img = HyperStackConverter.toHyperStack(stackImp, sizeC, sizeZ, 1, "xyzct", "composite");
+            img = stackImp;
         } catch (Exception e) {
             GenUtils.logError(e, "There seems to be a problem opening that image!");
         }
+    }
+
+    private int[] getLimits(String dimOrder, int cBegin, int cEnd) {
+        if (dimOrder == null) {
+            dimOrder = reader.getDimensionOrder();
+        }
+        int[] limits = new int[9];
+        switch (dimOrder) {
+            case "XYZCT":
+                limits[0] = 0;
+                limits[1] = reader.getSizeZ();
+                limits[2] = reader.getSizeZ();
+                limits[3] = cBegin;
+                limits[4] = cEnd;
+                limits[5] = reader.getSizeC();
+                limits[6] = 0;
+                limits[7] = reader.getSizeT();
+                limits[8] = reader.getSizeT();
+                break;
+            case "XYCTZ":
+                limits[0] = cBegin;
+                limits[1] = cEnd;
+                limits[2] = reader.getSizeC();
+                limits[3] = 0;
+                limits[4] = reader.getSizeT();
+                limits[5] = reader.getSizeT();
+                limits[6] = 0;
+                limits[7] = reader.getSizeZ();
+                limits[8] = reader.getSizeZ();
+                break;
+            case "XYCZT":
+                limits[0] = cBegin;
+                limits[1] = cEnd;
+                limits[2] = reader.getSizeC();
+                limits[3] = 0;
+                limits[4] = reader.getSizeZ();
+                limits[5] = reader.getSizeZ();
+                limits[6] = 0;
+                limits[7] = reader.getSizeT();
+                limits[8] = reader.getSizeT();
+                break;
+            case "XYTCZ":
+                limits[0] = 0;
+                limits[1] = reader.getSizeT();
+                limits[2] = reader.getSizeT();
+                limits[3] = cBegin;
+                limits[4] = cEnd;
+                limits[5] = reader.getSizeC();
+                limits[6] = 0;
+                limits[7] = reader.getSizeZ();
+                limits[8] = reader.getSizeZ();
+                break;
+            case "XYTZC":
+                limits[0] = 0;
+                limits[1] = reader.getSizeT();
+                limits[2] = reader.getSizeT();
+                limits[3] = 0;
+                limits[4] = reader.getSizeZ();
+                limits[5] = reader.getSizeZ();
+                limits[6] = cBegin;
+                limits[7] = cEnd;
+                limits[8] = reader.getSizeC();
+                break;
+            case "XYZTC":
+                limits[0] = 0;
+                limits[1] = reader.getSizeZ();
+                limits[2] = reader.getSizeZ();
+                limits[3] = 0;
+                limits[4] = reader.getSizeT();
+                limits[5] = reader.getSizeT();
+                limits[6] = cBegin;
+                limits[7] = cEnd;
+                limits[8] = reader.getSizeC();
+                break;
+        }
+        return limits;
     }
 
     public void setTempImg(ImagePlus tempImg) {
