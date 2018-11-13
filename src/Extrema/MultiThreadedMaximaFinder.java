@@ -35,22 +35,19 @@ import java.util.concurrent.TimeUnit;
  */
 public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
-    private final ArrayList<int[]> maxima;
+    private ArrayList<int[]> maxima;
     private int[] radii;
     private ImageStack stack;
     private float thresh;
-    private final boolean varyBG;
-    private final boolean absolute;
+    private boolean varyBG;
+    private boolean absolute;
 
-    public MultiThreadedMaximaFinder(BioFormatsImg img, Properties props, String[] propLabels) {
-        super(img, props, propLabels);
-        maxima = new ArrayList();
-        varyBG = true;
-        absolute = true;
+    public MultiThreadedMaximaFinder() {
+        super();
     }
 
     public MultiThreadedMaximaFinder(BioFormatsImg img, int[] radii, float thresh, boolean[] criteria, Properties props) {
-        super(img, props, null);
+        super();
         this.radii = radii;
         this.thresh = thresh;
         this.varyBG = criteria[0];
@@ -58,7 +55,13 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         this.maxima = new ArrayList();
     }
 
-    protected void setup() {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+        this.img = img;
+        this.propLabels = propLabels;
+        this.props = props;
+        maxima = new ArrayList();
+        varyBG = true;
+        absolute = true;
         int series = Integer.parseInt(props.getProperty(propLabels[0]));
         radii = getIntSigma(series, propLabels[1], propLabels[1], propLabels[2]);
         thresh = Float.parseFloat(props.getProperty(propLabels[3]));
@@ -86,7 +89,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     public void run() {
-        setup();
         this.stack = img.getProcessedImage().getImageStack();
         if (stack == null) {
             return;
@@ -94,7 +96,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         int width = stack.getWidth();
         int height = stack.getHeight();
         int depth = stack.getSize();
-        float[][] stackPix = img.getTempStackPixels();
+        float[][] stackPix = img.getProcessedStackPixels();
         int threadCount = 0;
         for (int z = radii[2]; z < depth - radii[2]; z++) {
             for (int x = radii[0]; x < width - radii[0]; x++) {
@@ -112,10 +114,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             GenUtils.logError(e, "Error detecting local maxima.");
             return;
         }
-        ImagePlus maxima = makeLocalMaximaImage((byte) 0);
-//        maxima.show();
-        img.setProcessedImage(maxima);
-        IJ.log("Maxima finder done.");
+        img.setProcessedImage(makeLocalMaximaImage((byte) 0));
     }
 
     public ArrayList<int[]> getMaxima() {

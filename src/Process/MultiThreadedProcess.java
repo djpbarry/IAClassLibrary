@@ -21,8 +21,8 @@ import UtilClasses.GenUtils;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import ome.units.quantity.Length;
 
 /**
  *
@@ -32,17 +32,14 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
 
     protected ExecutorService exec;
     protected BioFormatsImg img;
-    protected final Properties props;
-    protected final String[] propLabels;
+    protected Properties props;
+    protected String[] propLabels;
 
-    public MultiThreadedProcess(BioFormatsImg img, Properties props, String[] propLabels) {
-        this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
-        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    public MultiThreadedProcess() {
+
     }
 
-    protected abstract void setup();
+    public abstract void setup(BioFormatsImg img, Properties props, String[] propLabels);
 
     public abstract void run();
 
@@ -64,7 +61,8 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
 
     protected double[] getDoubleSigma(int series, String xLabel, String yLabel, String zLabel) {
         double xySpatialRes = img.getXYSpatialRes(series).value().doubleValue();
-        double zSpatialRes = img.getZSpatialRes(series).value().doubleValue();
+        Length zLength = img.getZSpatialRes(series);
+        double zSpatialRes = zLength != null ? zLength.value().doubleValue() : Double.parseDouble(props.getProperty(zLabel));
         return new double[]{Double.parseDouble(props.getProperty(xLabel)) / xySpatialRes,
             Double.parseDouble(props.getProperty(yLabel)) / xySpatialRes,
             Double.parseDouble(props.getProperty(zLabel)) / zSpatialRes};

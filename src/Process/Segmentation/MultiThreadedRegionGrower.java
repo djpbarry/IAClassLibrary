@@ -19,6 +19,7 @@ package Process.Segmentation;
 import Binary.BinaryMaker;
 import Binary.EDMMaker;
 import IAClasses.Region;
+import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
@@ -47,14 +48,14 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
      * @param threshold The grey level threshold to employ during region growing
      */
     public MultiThreadedRegionGrower(ShortProcessor regionImage, ImageProcessor inputImage, ArrayList<Region> singleImageRegions, double threshold, Properties props) {
-        super(null, props, null);
+        super();
         this.regionImage = regionImage;
         this.inputImage = inputImage;
         this.singleImageRegions = singleImageRegions;
         this.threshold = threshold;
     }
 
-    public void setup() {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
 
     }
 

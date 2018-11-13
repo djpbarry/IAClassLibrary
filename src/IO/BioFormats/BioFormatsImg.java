@@ -19,7 +19,6 @@ package IO.BioFormats;
 import UtilClasses.GenUtils;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.plugin.HyperStackConverter;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
@@ -262,7 +261,7 @@ public class BioFormatsImg {
         }
     }
 
-    public float[][] getTempStackPixels() {
+    public float[][] getProcessedStackPixels() {
         if (processedImage == null) {
             return null;
         }

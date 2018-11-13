@@ -16,6 +16,7 @@
  */
 package Process.Measure;
 
+import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
 import ij.gui.Roi;
 import java.util.ArrayList;
@@ -31,12 +32,12 @@ public class MultiThreadedMeasureROI extends MultiThreadedProcess {
     int measurements;
 
     public MultiThreadedMeasureROI(ArrayList<ArrayList<Roi>> allRois, int measurements, Properties props) {
-        super(null, props, null);
+        super();
         this.allRois = allRois;
         this.measurements = measurements;
     }
 
-    public void setup() {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
 
     }
 

@@ -35,11 +35,14 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     private int series, channel;
     private double thresh;
 
-    public MultiThreadedWatershed(BioFormatsImg img, Properties props, String[] propLabels) {
-        super(img, props, propLabels);
+    public MultiThreadedWatershed() {
+        super();
     }
 
-    protected void setup() {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+        this.img = img;
+        this.props = props;
+        this.propLabels = propLabels;
         this.series = Integer.parseInt(props.getProperty(propLabels[0]));
         this.channel = Integer.parseInt(props.getProperty(propLabels[1]));
         this.thresh = Double.parseDouble(props.getProperty(propLabels[2]));
@@ -47,7 +50,6 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     }
 
     public void run() {
-        setup();
         ImagePlus maxima = img.getProcessedImage().duplicate();
         img.loadPixelData(series, channel, channel + 1, null);
         ImagePlus cells = img.getLoadedImage();
@@ -56,8 +58,6 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         GaussianBlur3D.blur(cells, sigma[0], sigma[1], sigma[2]);
         Watershed3D water = new Watershed3D(cells.getImageStack(), maxima.getImageStack(), thresh, 0);
         water.setLabelSeeds(true);
-//        water.getWatershedImage3D().show();
-
         img.setProcessedImage(water.getWatershedImage3D().getImagePlus());
     }
 }
