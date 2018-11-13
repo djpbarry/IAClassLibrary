@@ -36,7 +36,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     Objects3DPopulation objectPop;
 
     public MultiThreadedROIConstructor(BioFormatsImg img, Properties props) {
-        super(img, props);
+        super(img, props, null);
         this.allRois = new ArrayList();
     }
 

@@ -18,11 +18,11 @@ package Process.Segmentation;
 
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.GaussianBlur3D;
 import ij.process.StackConverter;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
 import mcib3d.image3d.regionGrowing.Watershed3D;
 
 /**
@@ -31,36 +31,32 @@ import mcib3d.image3d.regionGrowing.Watershed3D;
  */
 public class MultiThreadedWatershed extends MultiThreadedProcess {
 
-    private final double[] sigma;
-    private final int series, channel;
-    private final double thresh;
+    private double[] sigma;
+    private int series, channel;
+    private double thresh;
 
-    public MultiThreadedWatershed(BioFormatsImg img, Properties props) {
-        this(img, null, null, 0, 0, 0f, props);
+    public MultiThreadedWatershed(BioFormatsImg img, Properties props, String[] propLabels) {
+        super(img, props, propLabels);
     }
 
-    public MultiThreadedWatershed(BioFormatsImg img, ExecutorService exec, double[] sigma, int series, int channel, double thresh, Properties props) {
-        super(img, props);
-        this.sigma = sigma;
-        this.series = series;
-        this.channel = channel;
-        this.thresh = thresh;
-    }
-
-    public void setup() {
-
+    protected void setup() {
+        this.series = Integer.parseInt(props.getProperty(propLabels[0]));
+        this.channel = Integer.parseInt(props.getProperty(propLabels[1]));
+        this.thresh = Double.parseDouble(props.getProperty(propLabels[2]));
+        this.sigma = getDoubleSigma(series, propLabels[3], propLabels[3], propLabels[4]);
     }
 
     public void run() {
+        setup();
         ImagePlus maxima = img.getTempImg().duplicate();
-        img.setImg(series, channel, channel, null);
+        img.setImg(series, channel, channel + 1, null);
         ImagePlus cells = img.getImg();
         (new StackConverter(cells)).convertToGray32();
 
         GaussianBlur3D.blur(cells, sigma[0], sigma[1], sigma[2]);
         Watershed3D water = new Watershed3D(cells.getImageStack(), maxima.getImageStack(), thresh, 0);
         water.setLabelSeeds(true);
-        water.getWatershedImage3D().show();
+//        water.getWatershedImage3D().show();
 
         img.setTempImg(water.getWatershedImage3D().getImagePlus());
     }

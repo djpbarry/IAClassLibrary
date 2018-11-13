@@ -62,21 +62,4 @@ public class LayerPanel extends JPanel implements GUIMethods {
             process.interrupt();
         }
     }
-
-    protected int[] getIntSigma(String seriesLabel, String xLabel, String yLabel, String zLabel) {
-        double[] sigma = getDoubleSigma(seriesLabel, xLabel, yLabel, zLabel);
-        return new int[]{(int) Math.round(sigma[0]),
-            (int) Math.round(sigma[1]),
-            (int) Math.round(sigma[2])};
-    }
-
-    protected double[] getDoubleSigma(String seriesLabel, String xLabel, String yLabel, String zLabel) {
-        int series = Integer.parseInt(props.getProperty(seriesLabel));
-        double xySpatialRes = img.getXYSpatialRes(series).value().doubleValue();
-        double zSpatialRes = img.getZSpatialRes(series).value().doubleValue();
-        return new double[]{Double.parseDouble(props.getProperty(xLabel)) / xySpatialRes,
-            Double.parseDouble(props.getProperty(yLabel)) / xySpatialRes,
-            Double.parseDouble(props.getProperty(zLabel)) / zSpatialRes};
-    }
-
 }

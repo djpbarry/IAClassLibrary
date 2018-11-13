@@ -91,10 +91,10 @@ public class BioFormatsImg {
         return reader.getSizeC();
     }
 
-    public int getSizeZ(){
+    public int getSizeZ() {
         return reader.getSizeZ();
     }
-    
+
     public Length getXYSpatialRes(int series) {
         return meta.getPixelsPhysicalSizeX(series);
     }
@@ -251,11 +251,15 @@ public class BioFormatsImg {
     }
 
     public String getInfo(int s) {
-        return String.format("%s\n"
-                + "XY Spatial Res: %f\n"
-                + "Z Spatial Res: %f", getId(),
-                getXYSpatialRes(s).value().floatValue(),
-                getZSpatialRes(s).value().floatValue());
+        if (isValidID()) {
+            return String.format("%s\n"
+                    + "XY Spatial Res: %f\n"
+                    + "Z Spatial Res: %f", getId(),
+                    getXYSpatialRes(s).value().floatValue(),
+                    getZSpatialRes(s).value().floatValue());
+        } else {
+            return "Invalid image ID";
+        }
     }
 
     public float[][] getTempStackPixels() {

@@ -19,13 +19,14 @@ package Extrema;
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
 import UtilClasses.GenUtils;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
 import ij.process.StackConverter;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -35,26 +36,33 @@ import java.util.concurrent.TimeUnit;
 public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     private final ArrayList<int[]> maxima;
-    final int[] radii;
-    final ImageStack stack;
-    final float thresh;
-    final boolean[] criteria;
+    private int[] radii;
+    private ImageStack stack;
+    private float thresh;
+    private final boolean varyBG;
+    private final boolean absolute;
 
-    public MultiThreadedMaximaFinder(BioFormatsImg img, Properties props) {
-        this(img, null, null, 0f, null, props);
+    public MultiThreadedMaximaFinder(BioFormatsImg img, Properties props, String[] propLabels) {
+        super(img, props, propLabels);
+        maxima = new ArrayList();
+        varyBG = true;
+        absolute = true;
     }
 
-    public MultiThreadedMaximaFinder(BioFormatsImg img, ExecutorService exec, int[] radii, float thresh, boolean[] criteria, Properties props) {
-        super(img, props);
+    public MultiThreadedMaximaFinder(BioFormatsImg img, int[] radii, float thresh, boolean[] criteria, Properties props) {
+        super(img, props, null);
         this.radii = radii;
         this.thresh = thresh;
-        this.criteria = criteria;
+        this.varyBG = criteria[0];
+        this.absolute = criteria[1];
         this.maxima = new ArrayList();
-        this.stack = img.getTempImg().getImageStack();
     }
 
-    public void setup() {
-
+    protected void setup() {
+        int series = Integer.parseInt(props.getProperty(propLabels[0]));
+        radii = getIntSigma(series, propLabels[1], propLabels[1], propLabels[2]);
+        thresh = Float.parseFloat(props.getProperty(propLabels[3]));
+        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 
     public ImagePlus makeLocalMaximaImage(byte background) {
@@ -78,6 +86,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     public void run() {
+        setup();
+        this.stack = img.getTempImg().getImageStack();
         if (stack == null) {
             return;
         }
@@ -89,7 +99,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         for (int z = radii[2]; z < depth - radii[2]; z++) {
             for (int x = radii[0]; x < width - radii[0]; x++) {
                 for (int y = radii[1]; y < height - radii[1]; y++) {
-                    exec.submit(new RunnableMaximaFinder(stackPix, criteria[0], criteria[1],
+                    exec.submit(new RunnableMaximaFinder(stackPix, varyBG, absolute,
                             thresh, maxima, new int[]{x, y, z}, new int[]{width, height, depth},
                             radii, "MaxFinder-" + threadCount++));
                 }
@@ -103,8 +113,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             return;
         }
         ImagePlus maxima = makeLocalMaximaImage((byte) 0);
-        maxima.show();
+//        maxima.show();
         img.setTempImg(maxima);
+        IJ.log("Maxima finder done.");
     }
 
     public ArrayList<int[]> getMaxima() {

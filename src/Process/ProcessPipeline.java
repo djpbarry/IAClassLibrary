@@ -16,13 +16,14 @@
  */
 package Process;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class ProcessPipeline {
+public class ProcessPipeline implements Iterable<MultiThreadedProcess> {
 
     private final LinkedList<MultiThreadedProcess> pipeline;
 
@@ -50,5 +51,9 @@ public class ProcessPipeline {
 
     public int getSize() {
         return pipeline.size();
+    }
+
+    public Iterator<MultiThreadedProcess> iterator() {
+        return pipeline.iterator();
     }
 }

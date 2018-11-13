@@ -31,7 +31,7 @@ public class MultiThreadedMeasureROI extends MultiThreadedProcess {
     int measurements;
 
     public MultiThreadedMeasureROI(ArrayList<ArrayList<Roi>> allRois, int measurements, Properties props) {
-        super(null, props);
+        super(null, props, null);
         this.allRois = allRois;
         this.measurements = measurements;
     }

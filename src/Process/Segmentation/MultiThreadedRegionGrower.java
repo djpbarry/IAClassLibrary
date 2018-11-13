@@ -47,7 +47,7 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
      * @param threshold The grey level threshold to employ during region growing
      */
     public MultiThreadedRegionGrower(ShortProcessor regionImage, ImageProcessor inputImage, ArrayList<Region> singleImageRegions, double threshold, Properties props) {
-        super(null, props);
+        super(null, props, null);
         this.regionImage = regionImage;
         this.inputImage = inputImage;
         this.singleImageRegions = singleImageRegions;
