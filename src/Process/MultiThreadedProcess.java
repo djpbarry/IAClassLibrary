@@ -19,6 +19,7 @@ package Process;
 import IO.BioFormats.BioFormatsImg;
 import UtilClasses.GenUtils;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public abstract class MultiThreadedProcess extends Thread {
+public abstract class MultiThreadedProcess extends Thread implements Callable<BioFormatsImg> {
 
     protected ExecutorService exec;
     protected BioFormatsImg img;
@@ -73,8 +74,7 @@ public abstract class MultiThreadedProcess extends Thread {
         return propLabels;
     }
 
-    public void setImg(BioFormatsImg img) {
-        this.img = img;
+    public BioFormatsImg call() {
+        return img;
     }
-
 }

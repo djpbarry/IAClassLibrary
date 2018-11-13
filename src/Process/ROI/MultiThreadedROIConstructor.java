@@ -46,7 +46,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 
     @Override
     public void run() {
-        ImagePlus labels = img.getTempImg();
+        ImagePlus labels = img.getProcessedImage();
         objectPop = new Objects3DPopulation(ImageInt.wrap(labels), 1);
         Object3D[] objects = objectPop.getObjectsArray();
         int[] dims = new int[]{labels.getWidth(), labels.getHeight(), labels.getNSlices()};

@@ -46,7 +46,7 @@ public class BioFormatsImg {
     private IMetadata meta;
     private String id;
     private ImagePlus img = new ImagePlus();
-    private ImagePlus tempImg;
+    private ImagePlus processedImage;
     private boolean validID;
 
     public BioFormatsImg() {
@@ -103,7 +103,7 @@ public class BioFormatsImg {
         return meta.getPixelsPhysicalSizeZ(series);
     }
 
-    public ImagePlus getImg() {
+    public ImagePlus getLoadedImage() {
         return img;
     }
 
@@ -127,11 +127,11 @@ public class BioFormatsImg {
         validID = true;
     }
 
-    public void setImg(int series) {
-        setImg(series, 0, this.getChannelCount(), reader.getDimensionOrder());
+    public void loadPixelData(int series) {
+        loadPixelData(series, 0, this.getChannelCount(), reader.getDimensionOrder());
     }
 
-    public void setImg(int series, int cBegin, int cEnd, String dimOrder) {
+    public void loadPixelData(int series, int cBegin, int cEnd, String dimOrder) {
         try {
             reader.setSeries(series);
             int[] limits = getLimits(dimOrder, cBegin, cEnd);
@@ -242,12 +242,12 @@ public class BioFormatsImg {
         return limits;
     }
 
-    public void setTempImg(ImagePlus tempImg) {
-        this.tempImg = tempImg;
+    public void setProcessedImage(ImagePlus processedImage) {
+        this.processedImage = processedImage;
     }
 
-    public ImagePlus getTempImg() {
-        return tempImg;
+    public ImagePlus getProcessedImage() {
+        return processedImage;
     }
 
     public String getInfo(int s) {
@@ -263,10 +263,10 @@ public class BioFormatsImg {
     }
 
     public float[][] getTempStackPixels() {
-        if (tempImg == null) {
+        if (processedImage == null) {
             return null;
         }
-        Object[] pixels = tempImg.getImageStack().getImageArray();
+        Object[] pixels = processedImage.getImageStack().getImageArray();
         float[][] output = new float[pixels.length][];
         for (int i = 0; i < pixels.length; i++) {
             output[i] = (float[]) pixels[i];

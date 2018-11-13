@@ -48,9 +48,9 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
 
     public void run() {
         setup();
-        ImagePlus maxima = img.getTempImg().duplicate();
-        img.setImg(series, channel, channel + 1, null);
-        ImagePlus cells = img.getImg();
+        ImagePlus maxima = img.getProcessedImage().duplicate();
+        img.loadPixelData(series, channel, channel + 1, null);
+        ImagePlus cells = img.getLoadedImage();
         (new StackConverter(cells)).convertToGray32();
 
         GaussianBlur3D.blur(cells, sigma[0], sigma[1], sigma[2]);
@@ -58,6 +58,6 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         water.setLabelSeeds(true);
 //        water.getWatershedImage3D().show();
 
-        img.setTempImg(water.getWatershedImage3D().getImagePlus());
+        img.setProcessedImage(water.getWatershedImage3D().getImagePlus());
     }
 }

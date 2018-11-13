@@ -66,7 +66,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     public ImagePlus makeLocalMaximaImage(byte background) {
-        ImagePlus imp = img.getTempImg();
+        ImagePlus imp = img.getProcessedImage();
         (new StackConverter(imp)).convertToGray32();
         int width = imp.getWidth();
         int height = imp.getHeight();
@@ -87,7 +87,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public void run() {
         setup();
-        this.stack = img.getTempImg().getImageStack();
+        this.stack = img.getProcessedImage().getImageStack();
         if (stack == null) {
             return;
         }
@@ -114,7 +114,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         }
         ImagePlus maxima = makeLocalMaximaImage((byte) 0);
 //        maxima.show();
-        img.setTempImg(maxima);
+        img.setProcessedImage(maxima);
         IJ.log("Maxima finder done.");
     }
 

@@ -47,17 +47,17 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         int series = Integer.parseInt(props.getProperty(propLabels[0]));
         sigma = getDoubleSigma(series, propLabels[2], propLabels[2], propLabels[3]);
 //        img.setImg(series, channel, channel, null);
-        ImagePlus image = img.getImg();
+        ImagePlus image = img.getLoadedImage();
         (new StackConverter(image)).convertToGray32();
     }
 
     public void run() {
         setup();
-        ImagePlus imp = img.getImg();
+        ImagePlus imp = img.getLoadedImage();
         (new StackConverter(imp)).convertToGray32();
         GaussianBlur3D.blur(imp, sigma[0], sigma[1], sigma[2]);
 //        imp.show();
-        img.setTempImg(imp);
+        img.setProcessedImage(imp);
         IJ.log("Gaussian filtering done.");
     }
 }
