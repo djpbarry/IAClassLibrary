@@ -18,6 +18,7 @@ package Process;
 
 import IO.BioFormats.BioFormatsImg;
 import UtilClasses.GenUtils;
+import ij.ImagePlus;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -34,12 +35,14 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     protected BioFormatsImg img;
     protected Properties props;
     protected String[] propLabels;
+    protected MultiThreadedProcess[] inputs;
+    protected ImagePlus output;
 
     public MultiThreadedProcess() {
 
     }
 
-    public abstract void setup(BioFormatsImg img, Properties props, String[] propLabels);
+    public abstract void setup(BioFormatsImg img, Properties props, String[] propLabels, MultiThreadedProcess ... inputs);
 
     public abstract void run();
 
@@ -94,4 +97,9 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     public BioFormatsImg call() {
         return img;
     }
+
+    public ImagePlus getOutput() {
+        return output.duplicate();
+    }
+
 }

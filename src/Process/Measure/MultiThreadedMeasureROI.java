@@ -37,7 +37,7 @@ public class MultiThreadedMeasureROI extends MultiThreadedProcess {
         this.measurements = measurements;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels, MultiThreadedProcess ... link) {
 
     }
 

@@ -43,7 +43,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         this.allRois = new ArrayList();
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels, MultiThreadedProcess ... link) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;

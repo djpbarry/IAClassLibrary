@@ -32,16 +32,17 @@ public class LayerPanel extends JPanel implements GUIMethods {
     protected ExecutorService exec;
     protected final BioFormatsImg img;
     protected final Properties props;
-    protected MultiThreadedProcess process;
+    protected final MultiThreadedProcess process;
 
     public LayerPanel() {
-        this(null, null);
+        this(null, null, null);
     }
 
-    public LayerPanel(Properties props, BioFormatsImg img) {
+    public LayerPanel(Properties props, BioFormatsImg img, MultiThreadedProcess process) {
         super();
         this.props = props;
         this.img = img;
+        this.process = process;
     }
 
     public void setProperties(Properties p, Container container) {

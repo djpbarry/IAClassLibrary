@@ -18,7 +18,6 @@ package Process.Filtering;
 
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
-import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.GaussianBlur3D;
 import ij.process.StackConverter;
@@ -44,16 +43,18 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
      * @param propLabels SERIES_SELECT_LABEL, CHANNEL_SELECT_LABEL,
      * FILT_RAD_XY_LABEL, FILT_RAD_XY_LABEL, FILT_RAD_Z_LABEL.
      */
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels, MultiThreadedProcess... inputs) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
         this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         int series = Integer.parseInt(props.getProperty(propLabels[0]));
+        int channel = Integer.parseInt(props.getProperty(propLabels[1]));
         sigma = getCalibratedDoubleSigma(series, propLabels[2], propLabels[2], propLabels[3]);
-//        img.setImg(series, channel, channel, null);
-        ImagePlus image = img.getLoadedImage();
-        (new StackConverter(image)).convertToGray32();
+        this.inputs = inputs;
+        img.loadPixelData(series, channel, channel + 1, null);
+//        ImagePlus image = img.getLoadedImage();
+//        (new StackConverter(img.getProcessedImage())).convertToGray32();
     }
 
     public void run() {
@@ -61,6 +62,6 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         (new StackConverter(imp)).convertToGray32();
         GaussianBlur3D.blur(imp, sigma[0], sigma[1], sigma[2]);
 //        imp.show();
-        img.setProcessedImage(imp);
+        output = imp;
     }
 }

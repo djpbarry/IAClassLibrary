@@ -55,7 +55,7 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
         this.threshold = threshold;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels, MultiThreadedProcess ... link) {
 
     }
 
