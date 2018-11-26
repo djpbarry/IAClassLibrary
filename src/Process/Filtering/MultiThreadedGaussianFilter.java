@@ -50,7 +50,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         this.propLabels = propLabels;
         this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         int series = Integer.parseInt(props.getProperty(propLabels[0]));
-        sigma = getDoubleSigma(series, propLabels[2], propLabels[2], propLabels[3]);
+        sigma = getCalibratedDoubleSigma(series, propLabels[2], propLabels[2], propLabels[3]);
 //        img.setImg(series, channel, channel, null);
         ImagePlus image = img.getLoadedImage();
         (new StackConverter(image)).convertToGray32();

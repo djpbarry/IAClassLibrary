@@ -52,20 +52,39 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
         }
     }
 
-    protected int[] getIntSigma(int series, String xLabel, String yLabel, String zLabel) {
-        double[] sigma = getDoubleSigma(series, xLabel, yLabel, zLabel);
+    protected int[] getCalibratedIntSigma(int series, String xLabel, String yLabel, String zLabel) {
+        double[] sigma = getCalibratedDoubleSigma(series, xLabel, yLabel, zLabel);
         return new int[]{(int) Math.round(sigma[0]),
             (int) Math.round(sigma[1]),
             (int) Math.round(sigma[2])};
     }
 
-    protected double[] getDoubleSigma(int series, String xLabel, String yLabel, String zLabel) {
+    protected double[] getCalibratedDoubleSigma(int series, String xLabel, String yLabel, String zLabel) {
+        double[] calibration = getCalibration(series);
+        double[] sigma = getUncalibratedDoubleSigma(series, xLabel, yLabel, zLabel);
+        return new double[]{sigma[0] / calibration[0],
+            sigma[1] / calibration[1],
+            sigma[2] / calibration[2]};
+    }
+
+    protected int[] getUncalibratedIntSigma(int series, String xLabel, String yLabel, String zLabel) {
+        double[] sigma = getUncalibratedDoubleSigma(series, xLabel, yLabel, zLabel);
+        return new int[]{(int) Math.round(sigma[0]),
+            (int) Math.round(sigma[1]),
+            (int) Math.round(sigma[2])};
+    }
+
+    protected double[] getUncalibratedDoubleSigma(int series, String xLabel, String yLabel, String zLabel) {
+        return new double[]{Double.parseDouble(props.getProperty(xLabel)),
+            Double.parseDouble(props.getProperty(yLabel)),
+            Double.parseDouble(props.getProperty(zLabel))};
+    }
+
+    protected double[] getCalibration(int series) {
         double xySpatialRes = img.getXYSpatialRes(series).value().doubleValue();
         Length zLength = img.getZSpatialRes(series);
-        double zSpatialRes = zLength != null ? zLength.value().doubleValue() : Double.parseDouble(props.getProperty(zLabel));
-        return new double[]{Double.parseDouble(props.getProperty(xLabel)) / xySpatialRes,
-            Double.parseDouble(props.getProperty(yLabel)) / xySpatialRes,
-            Double.parseDouble(props.getProperty(zLabel)) / zSpatialRes};
+        double zSpatialRes = zLength != null ? zLength.value().doubleValue() : 1.0;
+        return new double[]{xySpatialRes, xySpatialRes, zSpatialRes};
     }
 
     public String[] getPropLabels() {

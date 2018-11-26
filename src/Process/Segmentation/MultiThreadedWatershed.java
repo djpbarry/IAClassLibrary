@@ -46,7 +46,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         this.series = Integer.parseInt(props.getProperty(propLabels[0]));
         this.channel = Integer.parseInt(props.getProperty(propLabels[1]));
         this.thresh = Double.parseDouble(props.getProperty(propLabels[2]));
-        this.sigma = getDoubleSigma(series, propLabels[3], propLabels[3], propLabels[4]);
+        this.sigma = getCalibratedDoubleSigma(series, propLabels[3], propLabels[3], propLabels[4]);
     }
 
     public void run() {

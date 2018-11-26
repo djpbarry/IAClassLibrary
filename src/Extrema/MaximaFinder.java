@@ -128,7 +128,7 @@ public class MaximaFinder {
         MultiThreadedMaximaFinder mf = new MultiThreadedMaximaFinder(null, 
                 new int[]{xyRadius, xyRadius, zRadius}, maxThresh, new boolean[]{varyBG, absolute}, null);
         mf.start();
-        return mf.makeLocalMaximaImage(background);
+        return mf.makeLocalMaximaImage(background,xyRadius);
     }
 
     /**
