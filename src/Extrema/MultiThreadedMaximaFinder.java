@@ -48,12 +48,12 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     private boolean varyBG;
     private boolean absolute;
 
-    public MultiThreadedMaximaFinder() {
-        super();
+    public MultiThreadedMaximaFinder(MultiThreadedProcess[] inputs) {
+        super(inputs);
     }
 
     public MultiThreadedMaximaFinder(BioFormatsImg img, int[] radii, float thresh, boolean[] criteria, Properties props) {
-        super();
+        super(null);
         this.radii = radii;
         this.thresh = thresh;
         this.varyBG = criteria[0];
@@ -61,7 +61,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         this.maxima = new ArrayList();
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels, MultiThreadedProcess ... inputs) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.propLabels = propLabels;
         this.props = props;
@@ -69,16 +69,16 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         varyBG = true;
         absolute = true;
         int series = Integer.parseInt(props.getProperty(propLabels[0]));
+        int channel = Integer.parseInt(props.getProperty(propLabels[1]));
         calibration = getCalibration(series);
-        radii = getUncalibratedIntSigma(series, propLabels[1], propLabels[1], propLabels[2]);
-        thresh = Float.parseFloat(props.getProperty(propLabels[3]));
-        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        this.inputs = inputs;
+        radii = getUncalibratedIntSigma(series, propLabels[2], propLabels[2], propLabels[3]);
+        thresh = Float.parseFloat(props.getProperty(propLabels[4]));
+        img.loadPixelData(series, channel, channel + 1, null);
     }
 
     public ImagePlus makeLocalMaximaImage(byte background, int radius) {
         ImagePlus imp = img.getLoadedImage();
-        (new StackConverter(imp)).convertToGray32();
+//        (new StackConverter(imp)).convertToGray32();
         int width = imp.getWidth();
         int height = imp.getHeight();
         ImageStack output = new ImageStack(width, height);

@@ -20,8 +20,6 @@ import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.plugin.GaussianBlur3D;
-import ij.process.StackConverter;
 import java.util.Properties;
 import mcib3d.image3d.regionGrowing.Watershed3D;
 
@@ -35,11 +33,11 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     private int series, channel;
     private double thresh;
 
-    public MultiThreadedWatershed() {
-        super();
+    public MultiThreadedWatershed(MultiThreadedProcess[] inputs) {
+        super(inputs);
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels, MultiThreadedProcess ... inputs) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
@@ -47,12 +45,10 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         this.channel = Integer.parseInt(props.getProperty(propLabels[1]));
         this.thresh = Double.parseDouble(props.getProperty(propLabels[2]));
         this.sigma = getCalibratedDoubleSigma(series, propLabels[3], propLabels[3], propLabels[4]);
-        this.inputs = inputs;
     }
 
     public void run() {
         ImagePlus maxima = inputs[0].getOutput();
-        img.loadPixelData(series, channel, channel + 1, null);
         ImagePlus cells = inputs[1].getOutput();
         Watershed3D water = new Watershed3D(cells.getImageStack(), maxima.getImageStack(), thresh, 0);
         water.setLabelSeeds(true);

@@ -35,14 +35,14 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     protected BioFormatsImg img;
     protected Properties props;
     protected String[] propLabels;
-    protected MultiThreadedProcess[] inputs;
+    protected final MultiThreadedProcess[] inputs;
     protected ImagePlus output;
 
-    public MultiThreadedProcess() {
-
+    public MultiThreadedProcess(MultiThreadedProcess[] inputs) {
+        this.inputs = inputs;
     }
 
-    public abstract void setup(BioFormatsImg img, Properties props, String[] propLabels, MultiThreadedProcess ... inputs);
+    public abstract void setup(BioFormatsImg img, Properties props, String[] propLabels);
 
     public abstract void run();
 

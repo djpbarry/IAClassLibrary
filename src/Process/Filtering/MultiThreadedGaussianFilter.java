@@ -32,8 +32,8 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
 
     private double[] sigma;
 
-    public MultiThreadedGaussianFilter() {
-        super();
+    public MultiThreadedGaussianFilter(MultiThreadedProcess[] inputs) {
+        super(inputs);
     }
 
     /**
@@ -43,7 +43,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
      * @param propLabels SERIES_SELECT_LABEL, CHANNEL_SELECT_LABEL,
      * FILT_RAD_XY_LABEL, FILT_RAD_XY_LABEL, FILT_RAD_Z_LABEL.
      */
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels, MultiThreadedProcess... inputs) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
@@ -51,7 +51,6 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         int series = Integer.parseInt(props.getProperty(propLabels[0]));
         int channel = Integer.parseInt(props.getProperty(propLabels[1]));
         sigma = getCalibratedDoubleSigma(series, propLabels[2], propLabels[2], propLabels[3]);
-        this.inputs = inputs;
         img.loadPixelData(series, channel, channel + 1, null);
 //        ImagePlus image = img.getLoadedImage();
 //        (new StackConverter(img.getProcessedImage())).convertToGray32();

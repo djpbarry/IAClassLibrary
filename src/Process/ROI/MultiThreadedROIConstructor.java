@@ -38,12 +38,12 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     final ArrayList<ArrayList<Roi>> allRois;
     Objects3DPopulation objectPop;
 
-    public MultiThreadedROIConstructor() {
-        super();
+    public MultiThreadedROIConstructor(MultiThreadedProcess[] inputs) {
+        super(inputs);
         this.allRois = new ArrayList();
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels, MultiThreadedProcess ... link) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
@@ -52,7 +52,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 
     @Override
     public void run() {
-        ImagePlus labels = img.getProcessedImage();
+        ImagePlus labels = inputs[0].getOutput();
         objectPop = new Objects3DPopulation(ImageInt.wrap(labels), 1);
         ArrayList<Object3D> objects = objectPop.getObjectsList();
         int[] dims = new int[]{labels.getWidth(), labels.getHeight(), labels.getNSlices()};
@@ -73,6 +73,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         }
         rt.updateResults();
         rt.show("Measures");
+        output = labels;
     }
 
     public ArrayList<ArrayList<Roi>> getAllRois() {

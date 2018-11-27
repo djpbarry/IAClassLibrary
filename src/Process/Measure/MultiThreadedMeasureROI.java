@@ -32,12 +32,12 @@ public class MultiThreadedMeasureROI extends MultiThreadedProcess {
     int measurements;
 
     public MultiThreadedMeasureROI(ArrayList<ArrayList<Roi>> allRois, int measurements, Properties props) {
-        super();
+        super(null);
         this.allRois = allRois;
         this.measurements = measurements;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels, MultiThreadedProcess ... link) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
 
     }
 
