@@ -18,7 +18,6 @@ package Process.Segmentation;
 
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
-import ij.IJ;
 import ij.ImagePlus;
 import java.util.Properties;
 import mcib3d.image3d.regionGrowing.Watershed3D;
@@ -29,8 +28,6 @@ import mcib3d.image3d.regionGrowing.Watershed3D;
  */
 public class MultiThreadedWatershed extends MultiThreadedProcess {
 
-    private double[] sigma;
-    private int series, channel;
     private double thresh;
 
     public MultiThreadedWatershed(MultiThreadedProcess[] inputs) {
@@ -41,10 +38,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
-        this.series = Integer.parseInt(props.getProperty(propLabels[0]));
-        this.channel = Integer.parseInt(props.getProperty(propLabels[1]));
-        this.thresh = Double.parseDouble(props.getProperty(propLabels[2]));
-        this.sigma = getCalibratedDoubleSigma(series, propLabels[3], propLabels[3], propLabels[4]);
+        this.thresh = Double.parseDouble(props.getProperty(propLabels[0]));
     }
 
     public void run() {
