@@ -37,6 +37,8 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 
     final ArrayList<ArrayList<Roi>> allRois;
     Objects3DPopulation objectPop;
+    int selectedChannels;
+    int series;
 
     public MultiThreadedROIConstructor(MultiThreadedProcess[] inputs) {
         super(inputs);
@@ -47,6 +49,8 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
+        this.series = Integer.parseInt(props.getProperty(propLabels[0]));
+        this.selectedChannels = Integer.parseInt(props.getProperty(propLabels[1]));
         this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 
@@ -62,13 +66,20 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             exec.submit(new RunnableRoiConstructor(allRois, object, dims, i));
         }
         terminate("Error encountered building ROIs.");
-        ArrayList<double[]> measures = objectPop.getMeasuresStats(img.getLoadedImage().getImageStack());
         ResultsTable rt = Analyzer.getResultsTable();
-        String[] headings = {"Index", "Mean Pixel Value", "Pixel Standard Deviation", "Min Pixel Value", "Max Pixel Value", "Integrated Density"};
-        for (double[] m : measures) {
-            rt.incrementCounter();
-            for (int i = 0; i < m.length; i++) {
-                rt.addValue(headings[i], m[i]);
+        String[] headings = {"Channel", "Index", "Mean Pixel Value", "Pixel Standard Deviation", "Min Pixel Value", "Max Pixel Value", "Integrated Density"};
+        int nChan = img.getChannelCount();
+        for (int c = 0; c < nChan; c++) {
+            if (((int) Math.pow(2, c) & selectedChannels) != 0) {
+                img.loadPixelData(series, c, c + 1, null);
+                ArrayList<double[]> measures = objectPop.getMeasuresStats(img.getLoadedImage().getImageStack());
+                for (double[] m : measures) {
+                    rt.incrementCounter();
+                    rt.addValue(headings[0], c);
+                    for (int i = 1; i <= m.length; i++) {
+                        rt.addValue(headings[i], m[i - 1]);
+                    }
+                }
             }
         }
         rt.updateResults();

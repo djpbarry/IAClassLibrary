@@ -18,11 +18,15 @@ package UIClasses;
 
 import java.awt.Component;
 import java.awt.Container;
+import static java.util.Collections.list;
 import java.util.Properties;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+import javax.swing.ListModel;
 
 /**
  *
@@ -37,10 +41,28 @@ public class PropertyExtractor {
                 setProperties(props, (Container) c);
             }
             if (c instanceof JLabel) {
-                if (((JLabel) c).getLabelFor() instanceof JTextField) {
-                    props.setProperty(((JLabel) c).getText(), ((JTextField) ((JLabel) c).getLabelFor()).getText());
-                } else if (((JLabel) c).getLabelFor() instanceof JComboBox) {
-                    props.setProperty(((JLabel) c).getText(), ((JComboBox) ((JLabel) c).getLabelFor()).getSelectedItem().toString());
+                JLabel label = ((JLabel) c);
+                Component currentComponent = label.getLabelFor();
+                if (currentComponent instanceof JTextField) {
+                    props.setProperty(label.getText(), ((JTextField) currentComponent).getText());
+                } else if (currentComponent instanceof JComboBox) {
+                    props.setProperty(label.getText(), ((JComboBox) currentComponent).getSelectedItem().toString());
+                } else if (currentComponent instanceof JScrollPane) {
+                    Component[] scrollPaneComps = ((JScrollPane) currentComponent).getViewport().getComponents();
+                    if (!(scrollPaneComps.length > 1)) {
+                        if (scrollPaneComps[0] instanceof JList) {
+                            JList list = ((JList) scrollPaneComps[0]);
+                            ListModel listModel = ((JList) scrollPaneComps[0]).getModel();
+                            int n = listModel.getSize();
+                            int p = 0;
+                            for (int i = 0; i < n; i++) {
+                                if (list.isSelectedIndex(i)) {
+                                    p += (int) Math.pow(2, i);
+                                }
+                            }
+                            props.setProperty(label.getText(), String.valueOf(p));
+                        }
+                    }
                 }
             } else if (c instanceof JToggleButton) {
                 props.setProperty(((JToggleButton) c).getText(), String.format("%b", ((JToggleButton) c).isSelected()));
