@@ -99,7 +99,9 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     }
 
     public ImagePlus getOutput() {
-        return output.duplicate();
+        ImagePlus dup = output.duplicate();
+        dup.setTitle(output.getTitle());
+        return dup;
     }
 
 }

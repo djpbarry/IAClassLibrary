@@ -32,9 +32,11 @@ import mcib3d.image3d.regionGrowing.Watershed3D;
 public class MultiThreadedWatershed extends MultiThreadedProcess {
 
     private double thresh;
+    private final String objectName;
 
-    public MultiThreadedWatershed(MultiThreadedProcess[] inputs) {
+    public MultiThreadedWatershed(MultiThreadedProcess[] inputs, String objectName) {
         super(inputs);
+        this.objectName = objectName;
     }
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
@@ -45,12 +47,13 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     }
 
     public void run() {
-        ImagePlus maxima = inputs[0].getOutput();
-        ImagePlus cells = inputs[1].getOutput();
+        ImagePlus seeds = inputs[0].getOutput();
+        ImagePlus image = inputs[1].getOutput();
         IJ.log(String.format("Watershedding with threshold of %f", thresh));
-        Watershed3D water = new Watershed3D(cells.getImageStack(), maxima.getImageStack(), thresh, 0);
+        Watershed3D water = new Watershed3D(image.getImageStack(), seeds.getImageStack(), thresh, 0);
         water.setLabelSeeds(true);
         output = water.getWatershedImage3D().getImagePlus();
+        output.setTitle(objectName);
     }
 
     private double getThreshold() {

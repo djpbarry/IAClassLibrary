@@ -51,12 +51,17 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         this.propLabels = propLabels;
         this.series = Integer.parseInt(props.getProperty(propLabels[0]));
         this.selectedChannels = Integer.parseInt(props.getProperty(propLabels[1]));
-        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 
     @Override
     public void run() {
-        ImagePlus labels = inputs[0].getOutput();
+        for (MultiThreadedProcess p : inputs) {
+            processLabeledImage(p.getOutput());
+        }
+    }
+
+    private void processLabeledImage(ImagePlus labels) {
+        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         objectPop = new Objects3DPopulation(ImageInt.wrap(labels), 1);
         ArrayList<Object3D> objects = objectPop.getObjectsList();
         int[] dims = new int[]{labels.getWidth(), labels.getHeight(), labels.getNSlices()};
@@ -75,6 +80,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
                 ArrayList<double[]> measures = objectPop.getMeasuresStats(img.getLoadedImage().getImageStack());
                 for (double[] m : measures) {
                     rt.incrementCounter();
+                    rt.addLabel(labels.getTitle());
                     rt.addValue(headings[0], c);
                     for (int i = 1; i <= m.length; i++) {
                         rt.addValue(headings[i], m[i - 1]);
