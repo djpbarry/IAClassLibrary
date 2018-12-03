@@ -18,7 +18,10 @@ package Process.Segmentation;
 
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
+import ij.IJ;
 import ij.ImagePlus;
+import ij.process.AutoThresholder;
+import ij.process.StackStatistics;
 import java.util.Properties;
 import mcib3d.image3d.regionGrowing.Watershed3D;
 
@@ -38,14 +41,21 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
-        this.thresh = Double.parseDouble(props.getProperty(propLabels[0]));
+        this.thresh = getThreshold();
     }
 
     public void run() {
         ImagePlus maxima = inputs[0].getOutput();
         ImagePlus cells = inputs[1].getOutput();
+        IJ.log(String.format("Watershedding with threshold of %f", thresh));
         Watershed3D water = new Watershed3D(cells.getImageStack(), maxima.getImageStack(), thresh, 0);
         water.setLabelSeeds(true);
         output = water.getWatershedImage3D().getImagePlus();
+    }
+
+    private double getThreshold() {
+        StackStatistics stats = new StackStatistics(inputs[1].getOutput());
+        int tIndex = (new AutoThresholder()).getThreshold(AutoThresholder.Method.valueOf(props.getProperty(propLabels[0])), stats.histogram);
+        return stats.histMin + stats.binSize * tIndex;
     }
 }
