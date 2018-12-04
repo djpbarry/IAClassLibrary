@@ -56,8 +56,9 @@ public class MapPixels extends MultiThreadedProcess {
             for (int y = 0; y < height; y++) {
                 for (int x = 0; x < width; x++) {
                     int p1 = ip1.getPixel(x, y);
-                    if (p1 > 0) {
-                        map.put(ip2.getPixel(x, y), ip1.getPixel(x, y));
+                    int p2 = ip2.getPixel(x, y);
+                    if (p1 > 0 && p2 > 0) {
+                        map.put(p2, p1);
                     }
                 }
             }

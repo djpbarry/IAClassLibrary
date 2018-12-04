@@ -28,10 +28,12 @@ import java.util.Properties;
 public class MultiThreadedImageCalculator extends MultiThreadedProcess {
 
     private final String outputName;
+    private final String operation;
     
-    public MultiThreadedImageCalculator(MultiThreadedProcess[] inputs, String outputName) {
+    public MultiThreadedImageCalculator(MultiThreadedProcess[] inputs, String outputName, String operation) {
         super(inputs);
         this.outputName = outputName;
+        this.operation = operation;
     }
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
@@ -39,7 +41,7 @@ public class MultiThreadedImageCalculator extends MultiThreadedProcess {
     }
 
     public void run() {
-        this.output = (new ImageCalculator()).run("Difference create stack", inputs[0].getOutput(), inputs[1].getOutput());
+        this.output = (new ImageCalculator()).run(String.format("%s create stack", operation), inputs[0].getOutput(), inputs[1].getOutput());
         this.output.setTitle(outputName);
     }
 

@@ -17,12 +17,14 @@
 package Process.Segmentation;
 
 import IO.BioFormats.BioFormatsImg;
+import Process.Calculate.MultiThreadedImageCalculator;
 import Process.Mapping.MapPixels;
 import Process.MultiThreadedProcess;
 import UtilClasses.GenUtils;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.AutoThresholder;
+import ij.process.StackProcessor;
 import ij.process.StackStatistics;
 import java.util.Properties;
 import mcib3d.image3d.regionGrowing.Watershed3D;
@@ -33,26 +35,34 @@ import mcib3d.image3d.regionGrowing.Watershed3D;
  */
 public class MultiThreadedWatershed extends MultiThreadedProcess {
 
-    private double thresh;
     private final String objectName;
     private final boolean remap;
+    private boolean volumeMarker;
+    private final boolean combine;
 
-    public MultiThreadedWatershed(MultiThreadedProcess[] inputs, String objectName, boolean remap) {
+    public MultiThreadedWatershed(MultiThreadedProcess[] inputs, String objectName, boolean remap, boolean combine) {
         super(inputs);
         this.objectName = objectName;
         this.remap = remap;
+        this.combine = combine;
     }
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
-        this.thresh = getThreshold();
+        this.volumeMarker = Boolean.parseBoolean(props.getProperty(propLabels[1]));
     }
 
     public void run() {
         ImagePlus seeds = inputs[0].getOutput();
         ImagePlus image = inputs[1].getOutput();
+        IJ.saveAs(image, "TIF", "D:/debugging/pre-invert");
+        if (!volumeMarker) {
+            (new StackProcessor(image.getImageStack())).invert();
+            IJ.saveAs(image, "TIF", "D:/debugging/post-invert");
+        }
+        double thresh = getThreshold();
         IJ.log(String.format("Watershedding with threshold of %f", thresh));
         Watershed3D water = new Watershed3D(image.getImageStack(), seeds.getImageStack(), thresh, 0);
         water.setLabelSeeds(true);
@@ -68,6 +78,17 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         } catch (InterruptedException e) {
             GenUtils.logError(e, "Unable to remap pixels.");
         }
+        try {
+            if (combine) {
+                MultiThreadedImageCalculator ic = new MultiThreadedImageCalculator(new MultiThreadedProcess[]{inputs[0], this}, objectName, "Max");
+                ic.start();
+                ic.join();
+                output = ic.getOutput();
+            }
+        } catch (InterruptedException e) {
+            GenUtils.logError(e, "Unable to remap pixels.");
+        }
+
     }
 
     private double getThreshold() {
