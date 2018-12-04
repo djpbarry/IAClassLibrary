@@ -117,16 +117,14 @@ public class MaximaFinder {
 
     @Deprecated
     public static ArrayList<int[]> findLocalMaxima(int xyRadius, ImageStack stack, float maxThresh, boolean varyBG, boolean absolute, int zRadius) {
-        MultiThreadedMaximaFinder mf = new MultiThreadedMaximaFinder(null, 
-                new int[]{xyRadius, xyRadius, zRadius}, maxThresh, new boolean[]{varyBG, absolute}, null);
+        MultiThreadedMaximaFinder mf = new MultiThreadedMaximaFinder(                new int[]{xyRadius, xyRadius, zRadius}, maxThresh, new boolean[]{varyBG, absolute});
         mf.start();
         return mf.getMaxima();
     }
 
     @Deprecated
     public static ImagePlus makeLocalMaximaImage(int xyRadius, ImagePlus imp, float maxThresh, boolean varyBG, boolean absolute, int zRadius, byte background) {
-        MultiThreadedMaximaFinder mf = new MultiThreadedMaximaFinder(null, 
-                new int[]{xyRadius, xyRadius, zRadius}, maxThresh, new boolean[]{varyBG, absolute}, null);
+        MultiThreadedMaximaFinder mf = new MultiThreadedMaximaFinder(                new int[]{xyRadius, xyRadius, zRadius}, maxThresh, new boolean[]{varyBG, absolute});
         mf.start();
         return mf.makeLocalMaximaImage(background,xyRadius);
     }

@@ -103,7 +103,7 @@ public class BioFormatsImg {
     }
 
     public ImagePlus getLoadedImage() {
-        return img;
+        return img.duplicate();
     }
 
     public String getId() {

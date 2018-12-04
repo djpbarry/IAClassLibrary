@@ -23,11 +23,9 @@ import fiji.plugin.trackmate.detection.LogDetector;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
-import ij.process.StackConverter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Executors;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.FloatType;
@@ -52,7 +50,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         super(inputs);
     }
 
-    public MultiThreadedMaximaFinder(BioFormatsImg img, int[] radii, float thresh, boolean[] criteria, Properties props) {
+    public MultiThreadedMaximaFinder(int[] radii, float thresh, boolean[] criteria) {
         super(null);
         this.radii = radii;
         this.thresh = thresh;
