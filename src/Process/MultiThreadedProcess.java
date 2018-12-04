@@ -99,6 +99,14 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     }
 
     public ImagePlus getOutput() {
+        try {
+            if (output == null) {
+                this.start();
+                this.join();
+            }
+        } catch (InterruptedException | IllegalThreadStateException e) {
+            GenUtils.logError(e, "Failed to obtain process output.");
+        }
         ImagePlus dup = output.duplicate();
         dup.setTitle(output.getTitle());
         return dup;

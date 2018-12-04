@@ -17,7 +17,9 @@
 package Process.Segmentation;
 
 import IO.BioFormats.BioFormatsImg;
+import Process.Mapping.MapPixels;
 import Process.MultiThreadedProcess;
+import UtilClasses.GenUtils;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.AutoThresholder;
@@ -33,10 +35,12 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
 
     private double thresh;
     private final String objectName;
+    private final boolean remap;
 
-    public MultiThreadedWatershed(MultiThreadedProcess[] inputs, String objectName) {
+    public MultiThreadedWatershed(MultiThreadedProcess[] inputs, String objectName, boolean remap) {
         super(inputs);
         this.objectName = objectName;
+        this.remap = remap;
     }
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
@@ -54,6 +58,16 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         water.setLabelSeeds(true);
         output = water.getWatershedImage3D().getImagePlus();
         output.setTitle(objectName);
+        try {
+            if (remap) {
+                MapPixels mp = new MapPixels(new MultiThreadedProcess[]{inputs[0], this});
+                mp.start();
+                mp.join();
+                output = mp.getOutput();
+            }
+        } catch (InterruptedException e) {
+            GenUtils.logError(e, "Unable to remap pixels.");
+        }
     }
 
     private double getThreshold() {
