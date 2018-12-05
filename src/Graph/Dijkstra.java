@@ -102,6 +102,6 @@ public class Dijkstra {
                 }
             }
         }
-        IJ.saveAs(new ImagePlus("", bp), "PNG", "C:\\Users\\barryd\\debugging\\anamorf_debug\\graph_" + index++);
+//        IJ.saveAs(new ImagePlus("", bp), "PNG", "D:/debugging/anamorf_debug/graph_" + index++);
     }
 }

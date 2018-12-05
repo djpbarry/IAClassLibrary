@@ -35,7 +35,9 @@ public class Node {
     Map<Node, int[][]> adjacentNodes = new HashMap<>();
 
     public void addDestination(Node destination, int[][] path) {
-        adjacentNodes.put(destination, path);
+        if (this.getSimpleDist(destination.getX(), destination.getY()) > 0) {
+            adjacentNodes.put(destination, path);
+        }
     }
 
     public Node(Node n) {
