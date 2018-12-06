@@ -86,7 +86,7 @@ public class Node {
     }
 
     public int getSimpleDist(int x, int y) {
-        return Math.abs(this.x - x) + Math.abs(this.y - y);
+        return Math.max(Math.abs(this.x - x), Math.abs(this.y - y));
     }
 
     public Map<Node, int[][]> getAdjacentNodes() {

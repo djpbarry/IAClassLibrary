@@ -88,7 +88,7 @@ public class Dijkstra {
         bp.setColor(0);
         Set<Node> nodes = graph.getNodes();
         for (Node n1 : nodes) {
-//            bp.drawString(String.valueOf(n1.getDistance()), n1.getX(), n1.getY());
+            bp.drawString(String.valueOf(n1.getDistance()), n1.getX(), n1.getY());
             for (Entry<Node, int[][]> e : n1.getAdjacentNodes().entrySet()) {
                 Node n2 = e.getKey();
                 int[][] path = e.getValue();
@@ -102,6 +102,6 @@ public class Dijkstra {
                 }
             }
         }
-//        IJ.saveAs(new ImagePlus("", bp), "PNG", "D:/debugging/anamorf_debug/graph_" + index++);
+        IJ.saveAs(new ImagePlus("", bp), "PNG", "D:/debugging/anamorf_debug/graph_" + index++);
     }
 }

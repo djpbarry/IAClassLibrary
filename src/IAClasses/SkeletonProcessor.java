@@ -17,6 +17,7 @@ public class SkeletonProcessor {
      * found.
      */
     public final static int BRANCH = -1;
+    private static int[] branchpoint;
 
     /**
      * Determines whether (<i>xLoc</i>, <i>yLoc</i>) is an 'end-point' on a
@@ -231,6 +232,7 @@ public class SkeletonProcessor {
      */
     public static boolean getNextPixel(int xpix[], int ypix[], ImageProcessor processor,
             int length, int foreground) {
+        branchpoint = null;
         int x, y, move, fgPix = 0, search;
         int width = processor.getWidth(), height = processor.getHeight();
         int current = length - 1;
@@ -284,6 +286,7 @@ public class SkeletonProcessor {
                     return false;
                 }
             } else {
+                branchpoint = new int[]{xpix[next] , ypix[next]};
                 xpix[next] = ypix[next] = BRANCH;
                 return false;
             }
@@ -304,4 +307,10 @@ public class SkeletonProcessor {
         }
         return vals.toArray(new double[][]{});
     }
+
+    public static int[] getLatestBranchpoint() {
+        return branchpoint;
+    }
+    
+    
 }
