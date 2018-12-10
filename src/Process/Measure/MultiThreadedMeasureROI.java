@@ -16,6 +16,7 @@
  */
 package Process.Measure;
 
+import Extrema.MultiThreadedMaximaFinder;
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
 import ij.gui.Roi;
@@ -46,4 +47,9 @@ public class MultiThreadedMeasureROI extends MultiThreadedProcess {
 
     }
 
+    public MultiThreadedMeasureROI duplicate() {
+        MultiThreadedMeasureROI newProcess = new MultiThreadedMeasureROI(allRois, measurements, props);
+        this.updateOutputDests(newProcess);
+        return newProcess;
+    }
 }

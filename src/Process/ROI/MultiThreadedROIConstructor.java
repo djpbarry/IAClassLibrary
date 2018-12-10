@@ -100,4 +100,10 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     public Objects3DPopulation getObjectPop() {
         return objectPop;
     }
+
+    public MultiThreadedROIConstructor duplicate() {
+        MultiThreadedROIConstructor newProcess = new MultiThreadedROIConstructor(inputs);
+        this.updateOutputDests(newProcess);
+        return newProcess;
+    }
 }

@@ -96,4 +96,10 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         int tIndex = (new AutoThresholder()).getThreshold(AutoThresholder.Method.valueOf(props.getProperty(propLabels[0])), stats.histogram);
         return stats.histMin + stats.binSize * tIndex;
     }
+
+    public MultiThreadedWatershed duplicate() {
+        MultiThreadedWatershed newProcess = new MultiThreadedWatershed(inputs, objectName, remap, combine);
+        this.updateOutputDests(newProcess);
+        return newProcess;
+    }
 }

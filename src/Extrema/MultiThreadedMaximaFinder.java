@@ -17,6 +17,7 @@
 package Extrema;
 
 import IO.BioFormats.BioFormatsImg;
+import Process.Calculate.MultiThreadedImageCalculator;
 import Process.MultiThreadedProcess;
 import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.detection.LogDetector;
@@ -128,6 +129,12 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public ArrayList<int[]> getMaxima() {
         return maxima;
+    }
+
+    public MultiThreadedMaximaFinder duplicate() {
+        MultiThreadedMaximaFinder newProcess = new MultiThreadedMaximaFinder(inputs);
+        this.updateOutputDests(newProcess);
+        return newProcess;
     }
 
 }

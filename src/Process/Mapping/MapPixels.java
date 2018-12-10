@@ -16,6 +16,7 @@
  */
 package Process.Mapping;
 
+import Extrema.MultiThreadedMaximaFinder;
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
 import ij.ImagePlus;
@@ -74,4 +75,9 @@ public class MapPixels extends MultiThreadedProcess {
         output = imp2;
     }
 
+    public MapPixels duplicate() {
+        MapPixels newProcess = new MapPixels(inputs);
+        this.updateOutputDests(newProcess);
+        return newProcess;
+    }
 }

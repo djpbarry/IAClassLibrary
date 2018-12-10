@@ -21,6 +21,7 @@ import Binary.EDMMaker;
 import IAClasses.Region;
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
+import Process.ROI.MultiThreadedROIConstructor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 import java.util.ArrayList;
@@ -85,5 +86,11 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
             }
         }
         terminate("Error detecting cells.");
+    }
+
+    public MultiThreadedRegionGrower duplicate() {
+        MultiThreadedRegionGrower newProcess = new MultiThreadedRegionGrower(regionImage, inputImage, singleImageRegions, threshold, props);
+        this.updateOutputDests(newProcess);
+        return newProcess;
     }
 }

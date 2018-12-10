@@ -32,8 +32,8 @@ public class LayerPanel extends JPanel implements GUIMethods {
     protected ExecutorService exec;
     protected final BioFormatsImg img;
     protected final Properties props;
-    protected final MultiThreadedProcess process;
-    protected String[] propLabels = new String[]{"","","","",""};
+    protected MultiThreadedProcess process;
+    protected String[] propLabels = new String[]{"", "", "", "", ""};
 
     public LayerPanel() {
         this(null, null, null, null);
@@ -66,5 +66,9 @@ public class LayerPanel extends JPanel implements GUIMethods {
         if (process != null) {
             process.interrupt();
         }
+    }
+
+    protected void restartProcess() {
+        this.process = process.duplicate();
     }
 }

@@ -16,9 +16,11 @@
  */
 package Process;
 
+import Extrema.MultiThreadedMaximaFinder;
 import IO.BioFormats.BioFormatsImg;
 import UtilClasses.GenUtils;
 import ij.ImagePlus;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -35,11 +37,14 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     protected BioFormatsImg img;
     protected Properties props;
     protected String[] propLabels;
-    protected final MultiThreadedProcess[] inputs;
+    protected MultiThreadedProcess[] inputs;
+    protected final LinkedList<MultiThreadedProcess> outputDests;
     protected ImagePlus output;
 
     public MultiThreadedProcess(MultiThreadedProcess[] inputs) {
         this.inputs = inputs;
+        this.outputDests = new LinkedList();
+        updateInputsWithOutput();
     }
 
     public abstract void setup(BioFormatsImg img, Properties props, String[] propLabels);
@@ -110,6 +115,36 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
         ImagePlus dup = output.duplicate();
         dup.setTitle(output.getTitle());
         return dup;
+    }
+
+    public abstract MultiThreadedProcess duplicate();
+
+    final protected void updateInputsWithOutput() {
+        if (inputs == null) {
+            return;
+        }
+        for (MultiThreadedProcess input : inputs) {
+            input.addOutputDest(this);
+        }
+    }
+
+    final protected void updateOutputDests(MultiThreadedProcess newProcess) {
+        for (MultiThreadedProcess outputDest : outputDests) {
+            outputDest.updateInput(this, newProcess);
+        }
+    }
+
+    final protected void addOutputDest(MultiThreadedProcess output) {
+        this.outputDests.add(output);
+    }
+
+    final protected void updateInput(MultiThreadedProcess oldProcess, MultiThreadedProcess newProcess) {
+        for (int i = 0; i < inputs.length; i++) {
+            if (inputs[i].equals(oldProcess)) {
+                inputs[i] = newProcess;
+                newProcess.addOutputDest(this);
+            }
+        }
     }
 
 }
