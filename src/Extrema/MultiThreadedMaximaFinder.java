@@ -17,10 +17,10 @@
 package Extrema;
 
 import IO.BioFormats.BioFormatsImg;
-import Process.Calculate.MultiThreadedImageCalculator;
 import Process.MultiThreadedProcess;
 import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.detection.LogDetector;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
@@ -70,8 +70,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         int series = Integer.parseInt(props.getProperty(propLabels[0]));
         int channel = Integer.parseInt(props.getProperty(propLabels[1]));
         calibration = getCalibration(series);
-        radii = getUncalibratedIntSigma(series, propLabels[2], propLabels[2], propLabels[3]);
-        thresh = Float.parseFloat(props.getProperty(propLabels[4]));
+        radii = getUncalibratedIntSigma(series, propLabels[2], propLabels[2], propLabels[2]);
+        thresh = Float.parseFloat(props.getProperty(propLabels[3]));
         img.loadPixelData(series, channel, channel + 1, null);
     }
 
@@ -107,6 +107,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         if (stack == null) {
             return;
         }
+        IJ.log(String.format("Searching for blobs %d pixels in diameter above a threshold of %f...", (2 * radii[0]), thresh));
         long[] min = new long[]{0, 0, 0};
         long[] max = new long[]{stack.getWidth() - 1, stack.getHeight() - 1, stack.getSize() - 1};
         Img<FloatType> sip = ImagePlusAdapter.wrap(imp);
@@ -116,7 +117,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         log.setNumThreads();
         log.process();
         List<Spot> maximas = log.getResult();
-
+        IJ.log(String.format("Found %d blobs.", maximas.size()));
         for (Spot s : maximas) {
             int[] pos = new int[3];
             for (int d = 0; d < 3; d++) {

@@ -16,7 +16,6 @@
  */
 package Process;
 
-import Extrema.MultiThreadedMaximaFinder;
 import IO.BioFormats.BioFormatsImg;
 import UtilClasses.GenUtils;
 import ij.ImagePlus;
