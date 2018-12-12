@@ -34,6 +34,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
 
     private double[] sigma;
     private int channel;
+    private int series;
 
     public MultiThreadedGaussianFilter(MultiThreadedProcess[] inputs) {
         super(inputs);
@@ -51,7 +52,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         this.props = props;
         this.propLabels = propLabels;
         this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        int series = Integer.parseInt(props.getProperty(propLabels[0]));
+        this.series = Integer.parseInt(props.getProperty(propLabels[0]));
         this.channel = Integer.parseInt(props.getProperty(propLabels[1]));
         sigma = getCalibratedDoubleSigma(series, propLabels[2], propLabels[2], propLabels[3]);
         img.loadPixelData(series, channel, channel + 1, null);
@@ -62,10 +63,11 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
     public void run() {
         ImagePlus imp = img.getLoadedImage();
         (new StackConverter(imp)).convertToGray32();
-        IJ.log(String.format("Filtering channel %d with a sigma of %f pixels in XY and %f in Z.", channel, sigma[0], sigma[2]));
+        IJ.log(String.format("Filtering \"%s\" with a sigma of %f pixels in XY and %f in Z.", imp.getTitle(), sigma[0], sigma[2]));
         GaussianBlur3D.blur(imp, sigma[0], sigma[1], sigma[2]);
 //        imp.show();
         output = imp;
+        output.setTitle(String.format("%s_Filtered", imp.getTitle()));
     }
 
     public MultiThreadedGaussianFilter duplicate() {

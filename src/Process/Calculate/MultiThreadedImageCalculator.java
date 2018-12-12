@@ -17,7 +17,6 @@
 package Process.Calculate;
 
 import IO.BioFormats.BioFormatsImg;
-import Process.Filtering.MultiThreadedGaussianFilter;
 import Process.MultiThreadedProcess;
 import ij.plugin.ImageCalculator;
 import java.util.Properties;
@@ -43,7 +42,7 @@ public class MultiThreadedImageCalculator extends MultiThreadedProcess {
 
     public void run() {
         this.output = (new ImageCalculator()).run(String.format("%s create stack", operation), inputs[0].getOutput(), inputs[1].getOutput());
-        this.output.setTitle(outputName);
+        this.output.setTitle(String.format("%s_%s", inputs[0].getOutput().getTitle(), outputName));
     }
 
     public MultiThreadedImageCalculator duplicate() {

@@ -77,7 +77,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public ImagePlus makeLocalMaximaImage(byte background, int radius) {
         ImagePlus imp = img.getLoadedImage();
-//        (new StackConverter(imp)).convertToGray32();
         int width = imp.getWidth();
         int height = imp.getHeight();
         ImageStack output = new ImageStack(width, height);
@@ -91,10 +90,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
         Object[] stackPix = output.getImageArray();
         for (int[] pix : maxima) {
-//            ImageProcessor slice = output.getProcessor(pix[2] + 1);
-//            slice.setValue(255);
-//            slice.setLineWidth(3);
-//            slice.drawOval(pix[0] - radius, pix[1] - radius, 2 * radius + 1, 2 * radius + 1);
             ((byte[]) stackPix[pix[2]])[pix[0] + pix[1] * width] = foreground;
         }
         return new ImagePlus(String.format("%s - Local Maxima", imp.getTitle()), output);
@@ -107,7 +102,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         if (stack == null) {
             return;
         }
-        IJ.log(String.format("Searching for blobs %d pixels in diameter above a threshold of %f...", (2 * radii[0]), thresh));
+        IJ.log(String.format("Searching for blobs %d pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0]), thresh, imp.getTitle()));
         long[] min = new long[]{0, 0, 0};
         long[] max = new long[]{stack.getWidth() - 1, stack.getHeight() - 1, stack.getSize() - 1};
         Img<FloatType> sip = ImagePlusAdapter.wrap(imp);
@@ -126,6 +121,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             maxima.add(pos);
         }
         output = makeLocalMaximaImage((byte) 0, (int) Math.round(radii[0] / calibration[0]));
+        output.setTitle(String.format("%s_Blobs", imp.getTitle()));
     }
 
     public ArrayList<int[]> getMaxima() {

@@ -33,6 +33,7 @@ import loci.formats.meta.IMetadata;
 import loci.formats.services.OMEXMLService;
 import loci.plugins.in.ImporterOptions;
 import ome.units.quantity.Length;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
@@ -103,7 +104,9 @@ public class BioFormatsImg {
     }
 
     public ImagePlus getLoadedImage() {
-        return img.duplicate();
+        ImagePlus dup = img.duplicate();
+        dup.setTitle(img.getTitle());
+        return dup;
     }
 
     public String getId() {
@@ -160,6 +163,7 @@ public class BioFormatsImg {
             }
             ImagePlus stackImp = new ImagePlus(id, stack);
             img = stackImp;
+            img.setTitle(String.format("%s-S%d-C%d", FilenameUtils.getBaseName(getId()), series, cBegin));
         } catch (Exception e) {
             GenUtils.logError(e, "There seems to be a problem opening that image!");
         }

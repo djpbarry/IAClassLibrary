@@ -61,11 +61,10 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
             (new StackProcessor(image.getImageStack())).invert();
         }
         double thresh = getThreshold();
-        IJ.log(String.format("Watershedding %s with a threshold of %f, using %s as seeds...", image.getTitle(), thresh, image.getTitle()));
+        IJ.log(String.format("Watershedding \"%s\" with a threshold of %f, using \"%s\" as seeds...", image.getTitle(), thresh, seeds.getTitle()));
         Watershed3D water = new Watershed3D(image.getImageStack(), seeds.getImageStack(), thresh, 0);
         water.setLabelSeeds(true);
         output = water.getWatershedImage3D().getImagePlus();
-        output.setTitle(objectName);
         try {
             if (remap) {
                 MapPixels mp = new MapPixels(new MultiThreadedProcess[]{inputs[0], this});
@@ -86,7 +85,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         } catch (InterruptedException e) {
             GenUtils.logError(e, "Unable to remap pixels.");
         }
-
+        output.setTitle(String.format("%s_%s", image.getTitle(), objectName));
     }
 
     private double getThreshold() {

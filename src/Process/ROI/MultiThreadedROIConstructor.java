@@ -18,6 +18,7 @@ package Process.ROI;
 
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.measure.ResultsTable;
@@ -77,7 +78,9 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         for (int c = 0; c < nChan; c++) {
             if (((int) Math.pow(2, c) & selectedChannels) != 0) {
                 img.loadPixelData(series, c, c + 1, null);
-                ArrayList<double[]> measures = objectPop.getMeasuresStats(img.getLoadedImage().getImageStack());
+                ImagePlus imp = img.getLoadedImage();
+                IJ.log(String.format("Measuring %s defined by %s.", imp.getTitle(), labels.getTitle()));
+                ArrayList<double[]> measures = objectPop.getMeasuresStats(imp.getImageStack());
                 for (double[] m : measures) {
                     rt.incrementCounter();
                     rt.addLabel(labels.getTitle());

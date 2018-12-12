@@ -16,7 +16,6 @@
  */
 package Process.Measure;
 
-import Extrema.MultiThreadedMaximaFinder;
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
 import ij.gui.Roi;
