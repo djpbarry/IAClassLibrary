@@ -19,6 +19,7 @@ package Process.Filtering;
 import IO.BioFormats.BioFormatsImg;
 import Process.Mapping.MapPixels;
 import Process.MultiThreadedProcess;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.GaussianBlur3D;
 import ij.process.StackConverter;
@@ -32,6 +33,7 @@ import java.util.concurrent.Executors;
 public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
 
     private double[] sigma;
+    private int channel;
 
     public MultiThreadedGaussianFilter(MultiThreadedProcess[] inputs) {
         super(inputs);
@@ -50,7 +52,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         this.propLabels = propLabels;
         this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         int series = Integer.parseInt(props.getProperty(propLabels[0]));
-        int channel = Integer.parseInt(props.getProperty(propLabels[1]));
+        this.channel = Integer.parseInt(props.getProperty(propLabels[1]));
         sigma = getCalibratedDoubleSigma(series, propLabels[2], propLabels[2], propLabels[3]);
         img.loadPixelData(series, channel, channel + 1, null);
 //        ImagePlus image = img.getLoadedImage();
@@ -60,6 +62,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
     public void run() {
         ImagePlus imp = img.getLoadedImage();
         (new StackConverter(imp)).convertToGray32();
+        IJ.log(String.format("Filtering channel %d with a sigma of %f pixels in XY and %f in Z.", channel, sigma[0], sigma[2]));
         GaussianBlur3D.blur(imp, sigma[0], sigma[1], sigma[2]);
 //        imp.show();
         output = imp;

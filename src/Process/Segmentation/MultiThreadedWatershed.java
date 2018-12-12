@@ -57,13 +57,11 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     public void run() {
         ImagePlus seeds = inputs[0].getOutput();
         ImagePlus image = inputs[1].getOutput();
-        IJ.saveAs(image, "TIF", "D:/debugging/pre-invert");
         if (!volumeMarker) {
             (new StackProcessor(image.getImageStack())).invert();
-            IJ.saveAs(image, "TIF", "D:/debugging/post-invert");
         }
         double thresh = getThreshold();
-        IJ.log(String.format("Watershedding with threshold of %f", thresh));
+        IJ.log(String.format("Watershedding %s with a threshold of %f, using %s as seeds...", image.getTitle(), thresh, image.getTitle()));
         Watershed3D water = new Watershed3D(image.getImageStack(), seeds.getImageStack(), thresh, 0);
         water.setLabelSeeds(true);
         output = water.getWatershedImage3D().getImagePlus();
