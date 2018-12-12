@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -76,7 +77,11 @@ public class Utilities {
 
     public static File getFile(File currentDirectory, String title, boolean addExitOption) throws InterruptedException, InvocationTargetException {
         InputFileOpener fo = new InputFileOpener(title, currentDirectory, addExitOption);
-        EventQueue.invokeAndWait(fo);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            EventQueue.invokeAndWait(fo);
+        } else {
+            fo.run();
+        }
         return fo.getFile();
     }
 

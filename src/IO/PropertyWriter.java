@@ -18,7 +18,6 @@ package IO;
 
 import TimeAndDate.TimeAndDate;
 import UtilClasses.Utilities;
-import ij.IJ;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -42,7 +41,7 @@ public class PropertyWriter {
     }
 
     public static void loadProperties(Properties props, String label) throws IOException, InterruptedException, InvocationTargetException {
-        File file = Utilities.getFile(new File(IJ.getDir("current")), label, false);
+        File file = Utilities.getFile(null, label, false);
         FileInputStream stream = new FileInputStream(file);
         String ext = FilenameUtils.getExtension(file.getName());
         boolean XML = ext.contains("xml") || ext.contains("XML");
