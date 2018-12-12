@@ -25,6 +25,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import ome.units.quantity.Length;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -39,6 +40,7 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     protected MultiThreadedProcess[] inputs;
     protected final LinkedList<MultiThreadedProcess> outputDests;
     protected ImagePlus output;
+    protected final String OUTPUT_SEP = "_";
 
     public MultiThreadedProcess(MultiThreadedProcess[] inputs) {
         this.inputs = inputs;
@@ -144,6 +146,10 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
                 newProcess.addOutputDest(this);
             }
         }
+    }
+
+    protected void labelOutput(String basename, String label) {
+        output.setTitle(String.format("%s%s%s", StringUtils.substringBefore(basename, OUTPUT_SEP), OUTPUT_SEP, label));
     }
 
 }

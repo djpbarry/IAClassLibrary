@@ -85,7 +85,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         } catch (InterruptedException e) {
             GenUtils.logError(e, "Unable to remap pixels.");
         }
-        output.setTitle(String.format("%s_%s", image.getTitle(), objectName));
+        labelOutput(image.getTitle(), objectName);
     }
 
     private double getThreshold() {

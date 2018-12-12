@@ -91,8 +91,6 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
                 }
             }
         }
-        rt.updateResults();
-        rt.show("Measures");
         output = labels;
     }
 

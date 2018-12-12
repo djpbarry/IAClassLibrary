@@ -17,7 +17,6 @@
 package Process.Filtering;
 
 import IO.BioFormats.BioFormatsImg;
-import Process.Mapping.MapPixels;
 import Process.MultiThreadedProcess;
 import ij.IJ;
 import ij.ImagePlus;
@@ -67,7 +66,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         GaussianBlur3D.blur(imp, sigma[0], sigma[1], sigma[2]);
 //        imp.show();
         output = imp;
-        output.setTitle(String.format("%s_Filtered", imp.getTitle()));
+        labelOutput(imp.getTitle(), "Filtered");
     }
 
     public MultiThreadedGaussianFilter duplicate() {

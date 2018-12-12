@@ -121,7 +121,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             maxima.add(pos);
         }
         output = makeLocalMaximaImage((byte) 0, (int) Math.round(radii[0] / calibration[0]));
-        output.setTitle(String.format("%s_Blobs", imp.getTitle()));
+        labelOutput(imp.getTitle(), "Blobs");
     }
 
     public ArrayList<int[]> getMaxima() {

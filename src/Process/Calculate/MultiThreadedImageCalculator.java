@@ -42,7 +42,7 @@ public class MultiThreadedImageCalculator extends MultiThreadedProcess {
 
     public void run() {
         this.output = (new ImageCalculator()).run(String.format("%s create stack", operation), inputs[0].getOutput(), inputs[1].getOutput());
-        this.output.setTitle(String.format("%s_%s", inputs[0].getOutput().getTitle(), outputName));
+        labelOutput(inputs[0].getOutput().getTitle(), outputName);
     }
 
     public MultiThreadedImageCalculator duplicate() {
