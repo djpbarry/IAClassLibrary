@@ -18,7 +18,6 @@ package UIClasses;
 
 import java.awt.Component;
 import java.awt.Container;
-import static java.util.Collections.list;
 import java.util.Properties;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -34,19 +33,29 @@ import javax.swing.ListModel;
  */
 public class PropertyExtractor {
 
-    public static void setProperties(final Properties props, Container container) {
+    public static final int READ = 0, WRITE = 1;
+
+    public static void setProperties(final Properties props, Container container, int readWrite) {
         Component[] comps = container.getComponents();
         for (Component c : comps) {
             if (c instanceof Container) {
-                setProperties(props, (Container) c);
+                setProperties(props, (Container) c, readWrite);
             }
             if (c instanceof JLabel) {
                 JLabel label = ((JLabel) c);
                 Component currentComponent = label.getLabelFor();
                 if (currentComponent instanceof JTextField) {
-                    props.setProperty(label.getText(), ((JTextField) currentComponent).getText());
+                    if (readWrite == PropertyExtractor.WRITE) {
+                        props.setProperty(label.getText(), ((JTextField) currentComponent).getText());
+                    } else if (readWrite == PropertyExtractor.READ) {
+                        ((JTextField) currentComponent).setText(props.getProperty(label.getText()));
+                    }
                 } else if (currentComponent instanceof JComboBox) {
-                    props.setProperty(label.getText(), ((JComboBox) currentComponent).getSelectedItem().toString());
+                    if (readWrite == PropertyExtractor.WRITE) {
+                        props.setProperty(label.getText(), ((JComboBox) currentComponent).getSelectedItem().toString());
+                    } else if (readWrite == PropertyExtractor.READ) {
+                        ((JComboBox) currentComponent).setSelectedItem(props.getProperty(label.getText()));
+                    }
                 } else if (currentComponent instanceof JScrollPane) {
                     Component[] scrollPaneComps = ((JScrollPane) currentComponent).getViewport().getComponents();
                     if (!(scrollPaneComps.length > 1)) {
@@ -60,12 +69,18 @@ public class PropertyExtractor {
                                     p += (int) Math.pow(2, i);
                                 }
                             }
-                            props.setProperty(label.getText(), String.valueOf(p));
+                            if (readWrite == PropertyExtractor.WRITE) {
+                                props.setProperty(label.getText(), String.valueOf(p));
+                            }
                         }
                     }
                 }
             } else if (c instanceof JToggleButton) {
-                props.setProperty(((JToggleButton) c).getText(), String.format("%b", ((JToggleButton) c).isSelected()));
+                if (readWrite == PropertyExtractor.WRITE) {
+                    props.setProperty(((JToggleButton) c).getText(), String.format("%b", ((JToggleButton) c).isSelected()));
+                } else if (readWrite == PropertyExtractor.READ) {
+                    ((JToggleButton) c).setSelected(Boolean.parseBoolean(props.getProperty(((JToggleButton) c).getText())));
+                }
             }
         }
     }

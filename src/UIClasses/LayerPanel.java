@@ -50,7 +50,7 @@ public class LayerPanel extends JPanel implements GUIMethods {
     }
 
     public void setProperties(Properties p, Container container) {
-        PropertyExtractor.setProperties(p, container);
+        PropertyExtractor.setProperties(p, container, PropertyExtractor.WRITE);
     }
 
     public boolean setVariables() {
