@@ -17,6 +17,7 @@
 package IO.BioFormats;
 
 import UtilClasses.GenUtils;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
@@ -115,18 +116,20 @@ public class BioFormatsImg {
 
     public void setId(String id) {
         this.id = id;
-        validID = false;
+        validID = checkID(id);
+        if (!validID) {
+            IJ.log(String.format("%s is not a supported format.", id));
+        }
+    }
+
+    public boolean checkID(String id) {
         try {
             this.io.setId(id);
             this.reader.setId(id);
-        } catch (IOException e) {
-            GenUtils.logError(e, String.format("Problem encountered opening %s.", id));
-            return;
-        } catch (FormatException e) {
-            GenUtils.logError(e, String.format("%s is not a supported format.", id));
-            return;
+        } catch (IOException | FormatException e) {
+            return false;
         }
-        validID = true;
+        return true;
     }
 
     public void loadPixelData(int series) {
