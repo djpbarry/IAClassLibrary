@@ -23,6 +23,8 @@ import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
+import ij.plugin.frame.RoiManager;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -36,14 +38,14 @@ import mcib3d.image3d.ImageInt;
  */
 public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 
-    final ArrayList<ArrayList<Roi>> allRois;
+    ArrayList<ArrayList<Roi>> allRois;
     Objects3DPopulation objectPop;
     int selectedChannels;
     int series;
+    private String outputPath;
 
     public MultiThreadedROIConstructor(MultiThreadedProcess[] inputs) {
         super(inputs);
-        this.allRois = new ArrayList();
     }
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
@@ -52,12 +54,15 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         this.propLabels = propLabels;
         this.series = Integer.parseInt(props.getProperty(propLabels[0]));
         this.selectedChannels = Integer.parseInt(props.getProperty(propLabels[1]));
+        this.outputPath = props.getProperty(propLabels[2]);
     }
 
     @Override
     public void run() {
         for (MultiThreadedProcess p : inputs) {
+            allRois = new ArrayList();
             processLabeledImage(p.getOutput());
+            saveAllRois(outputPath, p.getOutput().getTitle());
         }
     }
 
@@ -106,5 +111,21 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         MultiThreadedROIConstructor newProcess = new MultiThreadedROIConstructor(inputs);
         this.updateOutputDests(newProcess);
         return newProcess;
+    }
+
+    private void saveAllRois(String path, String name) {
+        RoiManager manager = RoiManager.getInstance();
+        if (manager == null) {
+            manager = new RoiManager();
+        }
+        for (ArrayList<Roi> roiCollection : allRois) {
+            for (Roi r : roiCollection) {
+                if (r != null) {
+                    manager.addRoi(r);
+                }
+            }
+        }
+        manager.runCommand("Save", String.format("%s%s%s.zip", path, File.separator, name));
+        manager.reset();
     }
 }

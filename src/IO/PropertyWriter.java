@@ -31,10 +31,11 @@ public class PropertyWriter {
     public static void printProperties(Properties props, String outputDir, String comment, boolean XML) throws IOException {
         props.put("Time and Date", TimeAndDate.getCurrentTimeAndDate());
         String filename = XML ? "properties.xml" : "properties.txt";
-        File outputFile = new File(String.format("%s%s%s", outputDir, File.separator, filename));
-        if (!outputFile.exists()) {
+        File dir = new File(outputDir);
+        if (!dir.exists() && !dir.isDirectory()) {
             return;
         }
+        File outputFile = new File(String.format("%s%s%s", outputDir, File.separator, filename));
         FileOutputStream stream = new FileOutputStream(outputFile);
         if (XML) {
             props.storeToXML(stream, comment);

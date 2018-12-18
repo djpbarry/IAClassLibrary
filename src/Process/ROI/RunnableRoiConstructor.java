@@ -61,7 +61,11 @@ public class RunnableRoiConstructor extends RunnableProcess {
             ThresholdToSelection tts = new ThresholdToSelection();
             tts.setup("", maskPlus);
             tts.run(maskSlice);
-            objRois.add(maskPlus.getRoi());
+            Roi r = maskPlus.getRoi();
+            if (r != null) {
+                r.setPosition(z + 1);
+                objRois.add(r);
+            }
         }
         allRois.set(index, objRois);
     }
