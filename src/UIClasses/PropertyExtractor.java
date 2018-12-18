@@ -39,6 +39,9 @@ public class PropertyExtractor {
         Component[] comps = container.getComponents();
         for (Component c : comps) {
             if (c instanceof Container) {
+                if (c instanceof Updateable) {
+                    ((Updateable) c).update();
+                }
                 setProperties(props, (Container) c, readWrite);
             }
             if (!c.isEnabled()) {
