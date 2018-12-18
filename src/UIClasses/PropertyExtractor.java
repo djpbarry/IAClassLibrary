@@ -41,6 +41,9 @@ public class PropertyExtractor {
             if (c instanceof Container) {
                 setProperties(props, (Container) c, readWrite);
             }
+            if (!c.isEnabled()) {
+                continue;
+            }
             if (c instanceof JLabel) {
                 JLabel label = ((JLabel) c);
                 Component currentComponent = label.getLabelFor();
@@ -52,7 +55,10 @@ public class PropertyExtractor {
                     }
                 } else if (currentComponent instanceof JComboBox) {
                     if (readWrite == PropertyExtractor.WRITE) {
-                        props.setProperty(label.getText(), ((JComboBox) currentComponent).getSelectedItem().toString());
+                        Object selectedItem = ((JComboBox) currentComponent).getSelectedItem();
+                        if (selectedItem != null) {
+                            props.setProperty(label.getText(), selectedItem.toString());
+                        }
                     } else if (readWrite == PropertyExtractor.READ) {
                         ((JComboBox) currentComponent).setSelectedItem(props.getProperty(label.getText()));
                     }

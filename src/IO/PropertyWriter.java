@@ -32,12 +32,16 @@ public class PropertyWriter {
         props.put("Time and Date", TimeAndDate.getCurrentTimeAndDate());
         String filename = XML ? "properties.xml" : "properties.txt";
         File outputFile = new File(String.format("%s%s%s", outputDir, File.separator, filename));
+        if (!outputFile.exists()) {
+            return;
+        }
         FileOutputStream stream = new FileOutputStream(outputFile);
         if (XML) {
             props.storeToXML(stream, comment);
         } else {
             props.store(stream, comment);
         }
+        stream.close();
     }
 
     public static void loadProperties(Properties props, String label) throws IOException, InterruptedException, InvocationTargetException {
