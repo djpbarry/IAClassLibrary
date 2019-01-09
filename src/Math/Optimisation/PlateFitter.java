@@ -5,7 +5,7 @@
  */
 package Math.Optimisation;
 
-import Math.Correlation;
+import Math.Correlation.Correlation;
 import static Math.Optimisation.Fitter.IterFactor;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
