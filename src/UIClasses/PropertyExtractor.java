@@ -39,10 +39,9 @@ public class PropertyExtractor {
         Component[] comps = container.getComponents();
         for (Component c : comps) {
             if (c instanceof Container) {
-                if (c instanceof GUIMethods) {
+                if (readWrite == PropertyExtractor.WRITE && c instanceof GUIMethods) {
                     ((GUIMethods) c).setVariables();
-                }
-                if (c instanceof Updateable) {
+                } else if (readWrite == PropertyExtractor.READ && c instanceof Updateable) {
                     ((Updateable) c).update();
                 }
                 setProperties(props, (Container) c, readWrite);
