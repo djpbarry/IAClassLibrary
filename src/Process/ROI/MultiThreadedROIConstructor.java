@@ -114,6 +114,9 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     }
 
     private void saveAllRois(String path, String name) {
+        if (path == null || !new File(path).exists()) {
+            return;
+        }
         RoiManager manager = RoiManager.getInstance();
         if (manager == null) {
             manager = new RoiManager();
