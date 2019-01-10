@@ -68,6 +68,7 @@ public class PropertyExtractor {
                         ((JComboBox) currentComponent).setSelectedItem(props.getProperty(label.getText()));
                     }
                 } else if (currentComponent instanceof JScrollPane) {
+                    //TODO: Extract selections from property file
                     Component[] scrollPaneComps = ((JScrollPane) currentComponent).getViewport().getComponents();
                     if (!(scrollPaneComps.length > 1)) {
                         if (scrollPaneComps[0] instanceof JList) {

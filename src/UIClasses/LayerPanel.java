@@ -55,9 +55,14 @@ public class LayerPanel extends JPanel implements GUIMethods {
 
     public boolean setVariables() {
         setProperties(props, this);
+        setupProcess();
         return true;
     }
 
+    protected void setupProcess(){
+        
+    }
+    
     public MultiThreadedProcess getProcess() {
         return process;
     }
