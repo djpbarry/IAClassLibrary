@@ -20,6 +20,7 @@ import IO.BioFormats.BioFormatsImg;
 import Process.Calculate.MultiThreadedImageCalculator;
 import Process.Mapping.MapPixels;
 import Process.MultiThreadedProcess;
+import Stacks.StackThresholder;
 import UtilClasses.GenUtils;
 import ij.IJ;
 import ij.ImagePlus;
@@ -39,12 +40,14 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     private final boolean remap;
     private boolean volumeMarker;
     private final boolean combine;
+    private final boolean binaryImage;
 
-    public MultiThreadedWatershed(MultiThreadedProcess[] inputs, String objectName, boolean remap, boolean combine) {
+    public MultiThreadedWatershed(MultiThreadedProcess[] inputs, String objectName, boolean remap, boolean combine, boolean binaryImage) {
         super(inputs);
         this.objectName = objectName;
         this.remap = remap;
         this.combine = combine;
+        this.binaryImage = binaryImage;
     }
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
@@ -60,8 +63,12 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         if (!volumeMarker) {
             (new StackProcessor(image.getImageStack())).invert();
         }
-        double thresh = getThreshold();
-        IJ.log(String.format("Watershedding \"%s\" with a threshold of %f, using \"%s\" as seeds...", image.getTitle(), thresh, seeds.getTitle()));
+        int thresh = getThreshold();
+        IJ.log(String.format("Watershedding \"%s\" with a threshold of %d, using \"%s\" as seeds...", image.getTitle(), thresh, seeds.getTitle()));
+        if (binaryImage) {
+            StackThresholder.thresholdStack(image, thresh);
+            thresh = 0;
+        }
         Watershed3D water = new Watershed3D(image.getImageStack(), seeds.getImageStack(), thresh, 0);
         water.setLabelSeeds(true);
         output = water.getWatershedImage3D().getImagePlus();
@@ -88,14 +95,14 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         labelOutput(image.getTitle(), objectName);
     }
 
-    private double getThreshold() {
+    private int getThreshold() {
         StackStatistics stats = new StackStatistics(inputs[1].getOutput());
         int tIndex = (new AutoThresholder()).getThreshold(AutoThresholder.Method.valueOf(props.getProperty(propLabels[0])), stats.histogram);
-        return stats.histMin + stats.binSize * tIndex;
+        return (int) Math.round(stats.histMin + stats.binSize * tIndex);
     }
 
     public MultiThreadedWatershed duplicate() {
-        MultiThreadedWatershed newProcess = new MultiThreadedWatershed(inputs, objectName, remap, combine);
+        MultiThreadedWatershed newProcess = new MultiThreadedWatershed(inputs, objectName, remap, combine, binaryImage);
         this.updateOutputDests(newProcess);
         return newProcess;
     }
