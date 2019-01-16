@@ -71,7 +71,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 
     private void processLabeledImage(ImagePlus labels) {
         this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        objectPop = new Objects3DPopulation(ImageInt.wrap(labels), 1);
+        objectPop = new Objects3DPopulation(ImageInt.wrap(labels), 0);
         ArrayList<Object3D> objects = objectPop.getObjectsList();
         int[] dims = new int[]{labels.getWidth(), labels.getHeight(), labels.getNSlices()};
         for (int i = 0; i < objects.size(); i++) {
