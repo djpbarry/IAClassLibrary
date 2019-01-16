@@ -17,6 +17,7 @@
 package Process.ROI;
 
 import IO.BioFormats.BioFormatsImg;
+import Process.Calculate.MultiThreadedImageCalculator;
 import Process.MultiThreadedProcess;
 import ij.IJ;
 import ij.ImagePlus;
@@ -59,6 +60,8 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 
     @Override
     public void run() {
+        inputs = new MultiThreadedProcess[]{inputs[0], inputs[1],
+            new MultiThreadedImageCalculator(inputs, "Cytoplasm", "Difference")};
         for (MultiThreadedProcess p : inputs) {
             allRois = new ArrayList();
             processLabeledImage(p.getOutput());
