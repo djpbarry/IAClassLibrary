@@ -50,16 +50,16 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
-        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        this.series = Integer.parseInt(props.getProperty(propLabels[0]));
-        this.channel = Integer.parseInt(props.getProperty(propLabels[1]));
-        sigma = getCalibratedDoubleSigma(series, propLabels[2], propLabels[2], propLabels[3]);
-        img.loadPixelData(series, channel, channel + 1, null);
 //        ImagePlus image = img.getLoadedImage();
 //        (new StackConverter(img.getProcessedImage())).convertToGray32();
     }
 
     public void run() {
+        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        this.series = Integer.parseInt(props.getProperty(propLabels[0]));
+        this.channel = Integer.parseInt(props.getProperty(propLabels[1]));
+        sigma = getCalibratedDoubleSigma(series, propLabels[2], propLabels[2], propLabels[3]);
+        img.loadPixelData(series, channel, channel + 1, null);
         ImagePlus imp = img.getLoadedImage();
         (new StackConverter(imp)).convertToGray32();
         IJ.log(String.format("Filtering \"%s\" with a sigma of %f pixels in XY and %f in Z.", imp.getTitle(), sigma[0], sigma[2]));

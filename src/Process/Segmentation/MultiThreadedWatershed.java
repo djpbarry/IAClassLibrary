@@ -65,10 +65,10 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         }
         int thresh = getThreshold();
         IJ.log(String.format("Watershedding \"%s\" with a threshold of %d, using \"%s\" as seeds...", image.getTitle(), thresh, seeds.getTitle()));
-        if (binaryImage) {
+//        if (binaryImage) {
             StackThresholder.thresholdStack(image, thresh);
             thresh = 0;
-        }
+//        }
         Watershed3D water = new Watershed3D(image.getImageStack(), seeds.getImageStack(), thresh, 0);
         water.setLabelSeeds(true);
         output = water.getWatershedImage3D().getImagePlus();

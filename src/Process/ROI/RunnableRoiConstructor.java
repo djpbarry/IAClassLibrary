@@ -57,11 +57,7 @@ public class RunnableRoiConstructor extends RunnableProcess {
         for (int z = 0; z < dims[2]; z++) {
             ByteProcessor maskSlice = new ByteProcessor(dims[0], dims[1], (byte[]) labelImage.getArray1D(z));
             maskSlice.setThreshold(1, 255, ImageProcessor.NO_LUT_UPDATE);
-            ImagePlus maskPlus = new ImagePlus("mask " + z, maskSlice);
-            ThresholdToSelection tts = new ThresholdToSelection();
-            tts.setup("", maskPlus);
-            tts.run(maskSlice);
-            Roi r = maskPlus.getRoi();
+            Roi r = ThresholdToSelection.run(new ImagePlus("mask " + z, maskSlice));
             if (r != null) {
                 r.setPosition(z + 1);
                 objRois.add(r);

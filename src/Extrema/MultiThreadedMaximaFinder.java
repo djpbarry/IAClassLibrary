@@ -64,15 +64,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         this.img = img;
         this.propLabels = propLabels;
         this.props = props;
-        maxima = new ArrayList();
-        varyBG = true;
-        absolute = true;
-        int series = Integer.parseInt(props.getProperty(propLabels[0]));
-        int channel = Integer.parseInt(props.getProperty(propLabels[1]));
-        calibration = getCalibration(series);
-        radii = getUncalibratedIntSigma(series, propLabels[2], propLabels[2], propLabels[2]);
-        thresh = Float.parseFloat(props.getProperty(propLabels[3]));
-        img.loadPixelData(series, channel, channel + 1, null);
     }
 
     public ImagePlus makeLocalMaximaImage(byte background, int radius) {
@@ -96,6 +87,15 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     public void run() {
+        maxima = new ArrayList();
+        varyBG = true;
+        absolute = true;
+        int series = Integer.parseInt(props.getProperty(propLabels[0]));
+        int channel = Integer.parseInt(props.getProperty(propLabels[1]));
+        calibration = getCalibration(series);
+        radii = getUncalibratedIntSigma(series, propLabels[2], propLabels[2], propLabels[2]);
+        thresh = Float.parseFloat(props.getProperty(propLabels[3]));
+        img.loadPixelData(series, channel, channel + 1, null);
         ImagePlus imp = img.getLoadedImage();
 
         this.stack = imp.getImageStack();
