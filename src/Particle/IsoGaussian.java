@@ -27,7 +27,7 @@ public class IsoGaussian extends Particle {
     }
 
     public IsoGaussian(int t, double x0, double y0, double a, double xsig, double ysig, double fit, Particle link, int iD, Particle colocalisedParticle) {
-        super(t, x0, y0, a, link, colocalisedParticle, iD, null);
+        super(t, x0, y0, a, link, colocalisedParticle, iD, null, xsig, fit);
         this.xSigma = xsig;
         this.ySigma = ysig;
         this.fit = fit;
@@ -55,34 +55,5 @@ public class IsoGaussian extends Particle {
         return new IsoGaussian(t, x, y, magnitude, xSigma, ySigma, fit,
                 link != null ? link.makeCopy() : null, iD,
                 colocalisedParticle != null ? colocalisedParticle.makeCopy() : null);
-    }
-
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final IsoGaussian other = (IsoGaussian) obj;
-        if (Double.doubleToLongBits(this.x) != Double.doubleToLongBits(other.x)) {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.y) != Double.doubleToLongBits(other.y)) {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.magnitude) != Double.doubleToLongBits(other.magnitude)) {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.xSigma) != Double.doubleToLongBits(other.xSigma)) {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.ySigma) != Double.doubleToLongBits(other.ySigma)) {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.fit) != Double.doubleToLongBits(other.fit)) {
-            return false;
-        }
-        return true;
     }
 }

@@ -1,6 +1,7 @@
 package Particle;
 
 import IAClasses.Region;
+import fiji.plugin.trackmate.Spot;
 import ij.process.ImageProcessor;
 
 /**
@@ -9,7 +10,7 @@ import ij.process.ImageProcessor;
  * @author David J Barry
  * @version 2.0, FEB 2011
  */
-public class Particle {
+public class Particle extends Spot {
 
     protected int iD;
     protected int t;
@@ -23,10 +24,11 @@ public class Particle {
     }
 
     public Particle(int t, double x, double y, double magnitude) {
-        this(t, x, y, magnitude, null, null, -1, null);
+        this(t, x, y, magnitude, null, null, -1, null, Double.NaN, Double.NaN);
     }
 
-    public Particle(int t, double x, double y, double magnitude, Particle newLink, Particle cP, int iD, Region region) {
+    public Particle(int t, double x, double y, double magnitude, Particle newLink, Particle cP, int iD, Region region, double radius, double quality) {
+        super(x, y, 0, radius, quality);
         this.t = t;
         this.x = x;
         this.y = y;
@@ -83,7 +85,7 @@ public class Particle {
         return new Particle(t, x, y, magnitude,
                 link != null ? link.makeCopy() : null,
                 colocalisedParticle != null ? colocalisedParticle.makeCopy() : null,
-                iD, region);
+                iD, region, this.getFeature(Spot.RADIUS), this.getFeature(Spot.QUALITY));
     }
 
     public Particle getColocalisedParticle() {
@@ -107,11 +109,11 @@ public class Particle {
         int y0 = (int) Math.round(this.y / res) - blobRadius;
         int width = blobRadius * 2;
         double sumX = 0.0, sumY = 0.0, sum = 0.0;
-        for (int y = y0; y <= y0 + width; y++) {
-            for (int x = x0; x <= x0 + width; x++) {
-                double p = image.getPixelValue(x, y);
-                sumX += p * x;
-                sumY += p * y;
+        for (int yc = y0; yc <= y0 + width; yc++) {
+            for (int xc = x0; xc <= x0 + width; xc++) {
+                double p = image.getPixelValue(xc, yc);
+                sumX += p * xc;
+                sumY += p * yc;
                 sum += p;
             }
         }

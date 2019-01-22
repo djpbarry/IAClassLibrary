@@ -74,14 +74,14 @@ public class PropertyExtractor {
                         if (scrollPaneComps[0] instanceof JList) {
                             JList list = ((JList) scrollPaneComps[0]);
                             ListModel listModel = ((JList) scrollPaneComps[0]).getModel();
-                            int n = listModel.getSize();
-                            int p = 0;
-                            for (int i = 0; i < n; i++) {
-                                if (list.isSelectedIndex(i)) {
-                                    p += (int) Math.pow(2, i);
-                                }
-                            }
                             if (readWrite == PropertyExtractor.WRITE) {
+                                int n = listModel.getSize();
+                                int p = 0;
+                                for (int i = 0; i < n; i++) {
+                                    if (list.isSelectedIndex(i)) {
+                                        p += (int) Math.pow(2, i);
+                                    }
+                                }
                                 props.setProperty(label.getText(), String.valueOf(p));
                             }
                         }
