@@ -24,7 +24,6 @@ import ij.ImagePlus;
 import ij.gui.Roi;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
-import ij.plugin.frame.RoiManager;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -89,12 +88,14 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
                 ImagePlus imp = img.getLoadedImage();
                 IJ.log(String.format("Measuring %s defined by %s.", imp.getTitle(), labels.getTitle()));
                 ArrayList<double[]> measures = objectPop.getMeasuresStats(imp.getImageStack());
-                for (double[] m : measures) {
+                for (int i = 0; i < measures.size(); i++) {
+                    double[] m = measures.get(i);
                     rt.incrementCounter();
                     rt.addLabel(labels.getTitle());
                     rt.addValue(headings[0], c);
-                    for (int i = 1; i <= m.length; i++) {
-                        rt.addValue(headings[i], m[i - 1]);
+                    rt.addValue(headings[1], i + 1);
+                    for (int j = 2; j <= m.length; j++) {
+                        rt.addValue(headings[j], m[j - 1]);
                     }
                 }
             }
@@ -120,18 +121,6 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         if (path == null || !new File(path).exists()) {
             return;
         }
-        RoiManager manager = RoiManager.getInstance();
-        if (manager == null) {
-            manager = new RoiManager();
-        }
-        for (ArrayList<Roi> roiCollection : allRois) {
-            for (Roi r : roiCollection) {
-                if (r != null) {
-                    manager.addRoi(r);
-                }
-            }
-        }
-        manager.runCommand("Save", String.format("%s%s%s.zip", path, File.separator, name));
-        manager.reset();
+        objectPop.saveObjects(String.format("%s%s%s.zip", path, File.separator, name));
     }
 }
