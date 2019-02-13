@@ -27,10 +27,9 @@ import ij.plugin.filter.Analyzer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.concurrent.Executors;
-import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.image3d.ImageInt;
+import org.apache.commons.math3.linear.ArrayRealVector;
 
 /**
  *
@@ -43,6 +42,9 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     int selectedChannels;
     int series;
     private String outputPath;
+    private final String[] PIX_HEADINGS = {"Channel", "Index", "Mean Pixel Value",
+        "Pixel Standard Deviation", "Min Pixel Value", "Max Pixel Value", "Integrated Density"};
+    private final String LOCAT_HEAD = "Normalised Distance to Centre";
 
     public MultiThreadedROIConstructor(MultiThreadedProcess[] inputs) {
         super(inputs);
@@ -69,34 +71,34 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     }
 
     private void processLabeledImage(ImagePlus labels) {
-        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         objectPop = new Objects3DPopulation(ImageInt.wrap(labels), 0);
-        ArrayList<Object3D> objects = objectPop.getObjectsList();
-        int[] dims = new int[]{labels.getWidth(), labels.getHeight(), labels.getNSlices()};
-        for (int i = 0; i < objects.size(); i++) {
-            Object3D object = objects.get(i);
-            allRois.add(new ArrayList());
-            exec.submit(new RunnableRoiConstructor(allRois, object, dims, i));
-        }
-        terminate("Error encountered building ROIs.");
+        String calUnit = img.getXYSpatialRes(series).unit().getSymbol();
+        String[] geomHeadings = getGeomHeadings(calUnit);
+        objectPop.setCalibration(img.getXYSpatialRes(series).value().doubleValue(), img.getZSpatialRes(series).value().doubleValue(), calUnit);
         ResultsTable rt = Analyzer.getResultsTable();
-        String[] headings = {"Channel", "Index", "Mean Pixel Value", "Pixel Standard Deviation", "Min Pixel Value", "Max Pixel Value", "Integrated Density"};
         int nChan = img.getChannelCount();
         for (int c = 0; c < nChan; c++) {
             if (((int) Math.pow(2, c) & selectedChannels) != 0) {
                 img.loadPixelData(series, c, c + 1, null);
                 ImagePlus imp = img.getLoadedImage();
                 IJ.log(String.format("Measuring %s defined by %s.", imp.getTitle(), labels.getTitle()));
-                ArrayList<double[]> measures = objectPop.getMeasuresStats(imp.getImageStack());
-                for (int i = 0; i < measures.size(); i++) {
-                    double[] m = measures.get(i);
+                ArrayList<double[]> pixMeasures = objectPop.getMeasuresStats(imp.getImageStack());
+                ArrayList<double[]> geomMeasures = objectPop.getMeasuresGeometrical();
+                double[] distMeasures = getLocationMetrics();
+                for (int i = 0; i < pixMeasures.size(); i++) {
+                    double[] pixM = pixMeasures.get(i);
+                    double[] geomM = geomMeasures.get(i);
                     rt.incrementCounter();
                     rt.addLabel(labels.getTitle());
-                    rt.addValue(headings[0], c);
-                    rt.addValue(headings[1], i + 1);
-                    for (int j = 2; j <= m.length; j++) {
-                        rt.addValue(headings[j], m[j - 1]);
+                    rt.addValue(PIX_HEADINGS[0], c);
+                    rt.addValue(PIX_HEADINGS[1], i + 1);
+                    for (int j = 2; j <= pixM.length; j++) {
+                        rt.addValue(PIX_HEADINGS[j], pixM[j - 1]);
                     }
+                    for (int j = pixM.length + 1; j < pixM.length + geomM.length; j++) {
+                        rt.addValue(geomHeadings[j - pixM.length], geomM[j - pixM.length]);
+                    }
+                    rt.addValue(LOCAT_HEAD, distMeasures[i]);
                 }
             }
         }
@@ -122,5 +124,38 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             return;
         }
         objectPop.saveObjects(String.format("%s%s%s.zip", path, File.separator, name));
+    }
+
+    private String[] getGeomHeadings(String calUnit) {
+        return new String[]{"Index", "Volume (Voxels)",
+            String.format("Volume (%s^3)", calUnit),
+            "Surface Area (Voxels)",
+            String.format("Surface Area (%s^2)", calUnit)};
+    }
+
+    private double[] getLocationMetrics() {
+        double xSum = 0.0;
+        double ySum = 0.0;
+        double zSum = 0.0;
+        ArrayList<double[]> centroids = objectPop.getMeasureCentroid();
+        for (double[] c : centroids) {
+            xSum += c[1];
+            ySum += c[2];
+            zSum += c[3];
+        }
+        ArrayRealVector volumeCentroid = new ArrayRealVector(new double[]{xSum / centroids.size(), ySum / centroids.size(), zSum / centroids.size()});
+        double[] distances = new double[centroids.size()];
+        double maxDist = -Double.MAX_VALUE;
+        for (int i = 0; i < centroids.size(); i++) {
+            double[] c = centroids.get(i);
+            distances[i] = volumeCentroid.getDistance(new ArrayRealVector(new double[]{c[1], c[2], c[3]}));
+            if (distances[i] > maxDist) {
+                maxDist = distances[i];
+            }
+        }
+        for (int i = 0; i < distances.length; i++) {
+            distances[i] = distances[i] / maxDist;
+        }
+        return distances;
     }
 }
