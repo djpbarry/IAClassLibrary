@@ -24,7 +24,9 @@
  */
 package IO.BioFormats;
 
+import ij.ImageStack;
 import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
 import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.io.IOException;
@@ -81,4 +83,77 @@ public class BioFormatsImageWriter {
         writer.close();
     }
 
+    public static void saveStack(ImageStack stack, File filename, IndexColorModel lut, int pixelType, String dimOrder, int[] dims) throws DependencyException, ServiceException, FormatException, IOException {
+        String id = filename.getAbsolutePath();
+
+        int bitDepth;
+        switch (pixelType) {
+            case FormatTools.FLOAT:
+                bitDepth = 32;
+                break;
+            case FormatTools.UINT16:
+                bitDepth = 16;
+                break;
+            default:
+                bitDepth = 8;
+        }
+
+        ServiceFactory factory = new ServiceFactory();
+        OMEXMLService service = factory.getInstance(OMEXMLService.class);
+        IMetadata meta = service.createOMEXMLMetadata();
+        int nSlices = stack.getSize();
+        for (int s = 0; s < nSlices; s++) {
+            MetadataTools.populateMetadata(meta, s, filename.getName(), false, dimOrder,
+                    FormatTools.getPixelTypeString(pixelType), dims[0], dims[1], dims[2], dims[3], dims[4], 1);
+        }
+        TiffWriter writer = new TiffWriter();
+        writer.setMetadataRetrieve(meta);
+        writer.setValidBitsPerPixel(bitDepth);
+        writer.setId(id);
+        if (lut != null) {
+            writer.setColorModel(lut);
+        }
+        writer.setCompression("LZW");
+        for (int s = 0; s < nSlices; s++) {
+            MetadataTools.populateMetadata(meta, s, filename.getName(), false, dimOrder,
+                    FormatTools.getPixelTypeString(pixelType), dims[0], dims[1], dims[2], dims[3], dims[4], 1);
+            byte[] img;
+            switch (pixelType) {
+                case (FormatTools.FLOAT):
+                    img = getFloatPix(stack.getProcessor(s + 1));
+                    break;
+                case (FormatTools.UINT16):
+                    img = getShortPix(stack.getProcessor(s + 1));
+                    break;
+                default:
+                    img = (byte[]) ((stack.getProcessor(s + 1)).getPixels());
+            }
+            writer.saveBytes(s, img);
+        }
+        writer.close();
+    }
+
+    static byte[] getFloatPix(ImageProcessor ip) {
+        float[] floatPix = (float[]) ip.getPixels();
+        byte[] img = new byte[floatPix.length * 4];
+        for (int i = 0; i < floatPix.length; i++) {
+            byte[] currentPix = ByteBuffer.allocate(4).putFloat(floatPix[i]).array();
+            for (int j = 0; j < 4; j++) {
+                img[i * 4 + j] = currentPix[j];
+            }
+        }
+        return img;
+    }
+
+    static byte[] getShortPix(ImageProcessor ip) {
+        short[] shortPix = (short[]) ip.getPixels();
+        byte[] img = new byte[shortPix.length * 2];
+        for (int i = 0; i < shortPix.length; i++) {
+            byte[] currentPix = ByteBuffer.allocate(2).putShort(shortPix[i]).array();
+            for (int j = 0; j < 2; j++) {
+                img[i * 2 + j] = currentPix[j];
+            }
+        }
+        return img;
+    }
 }

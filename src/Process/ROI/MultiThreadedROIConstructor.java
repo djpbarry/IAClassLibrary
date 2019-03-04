@@ -76,7 +76,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         String[] geomHeadings = getGeomHeadings(calUnit);
         objectPop.setCalibration(img.getXYSpatialRes(series).value().doubleValue(), img.getZSpatialRes(series).value().doubleValue(), calUnit);
         ResultsTable rt = Analyzer.getResultsTable();
-        int nChan = img.getChannelCount();
+        int nChan = img.getSizeC();
         for (int c = 0; c < nChan; c++) {
             if (((int) Math.pow(2, c) & selectedChannels) != 0) {
                 img.loadPixelData(series, c, c + 1, null);

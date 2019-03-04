@@ -28,6 +28,7 @@ import java.nio.ByteBuffer;
 import loci.common.services.DependencyException;
 import loci.common.services.ServiceException;
 import loci.common.services.ServiceFactory;
+import loci.formats.FileInfo;
 import loci.formats.FormatException;
 import loci.formats.ImageReader;
 import loci.formats.meta.IMetadata;
@@ -84,11 +85,15 @@ public class BioFormatsImg {
         return reader.getSeriesCount();
     }
 
-    private String getDimOrder() {
+    public String getDimOrder() {
         return reader.getDimensionOrder();
     }
 
-    public int getChannelCount() {
+    public int getPixelType() {
+        return reader.getPixelType();
+    }
+
+    public int getSizeC() {
         return reader.getSizeC();
     }
 
@@ -129,11 +134,12 @@ public class BioFormatsImg {
         } catch (IOException | FormatException e) {
             return false;
         }
+        this.id = id;
         return true;
     }
 
     public void loadPixelData(int series) {
-        loadPixelData(series, 0, this.getChannelCount(), reader.getDimensionOrder());
+        loadPixelData(series, 0, this.getSizeC(), reader.getDimensionOrder());
     }
 
     public void loadPixelData(int series, int cBegin, int cEnd, String dimOrder) {
@@ -284,4 +290,28 @@ public class BioFormatsImg {
         return validID;
     }
 
+    public IMetadata getMeta() {
+        return meta;
+    }
+
+    public int getSizeX() {
+        return reader.getSizeX();
+    }
+
+    public int getSizeY() {
+        return reader.getSizeY();
+    }
+
+    public int getSizeT() {
+        return reader.getSizeT();
+    }
+
+    public String[] getFileList() {
+        FileInfo[] files = reader.getAdvancedUsedFiles(false);
+        String[] output = new String[files.length];
+        for (int f = 0; f < files.length; f++) {
+            output[f] = files[f].filename;
+        }
+        return output;
+    }
 }
