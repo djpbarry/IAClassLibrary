@@ -16,6 +16,7 @@
  */
 package Extrema;
 
+import Cell3D.SpotFeatures;
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
 import fiji.plugin.trackmate.Spot;
@@ -40,6 +41,7 @@ import net.imglib2.view.Views;
 public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     private ArrayList<int[]> maxima;
+    private List<Spot> spotMaxima;
     private int[] radii;
     private double[] calibration;
     private ImageStack stack;
@@ -114,18 +116,24 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         List<Spot> maximas = log.getResult();
         IJ.log(String.format("Found %d blobs.", maximas.size()));
         for (Spot s : maximas) {
+            s.putFeature(SpotFeatures.CHANNEL, new Double(channel));
             int[] pos = new int[3];
             for (int d = 0; d < 3; d++) {
                 pos[d] = (int) Math.round(s.getFloatPosition(d) / calibration[d]);
             }
             maxima.add(pos);
         }
+        this.spotMaxima = maximas;
         output = makeLocalMaximaImage((byte) 0, (int) Math.round(radii[0] / calibration[0]));
         labelOutput(imp.getTitle(), "Blobs");
     }
 
     public ArrayList<int[]> getMaxima() {
         return maxima;
+    }
+
+    public List<Spot> getSpotMaxima() {
+        return spotMaxima;
     }
 
     public MultiThreadedMaximaFinder duplicate() {

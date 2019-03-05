@@ -5,7 +5,7 @@
  */
 package Cell3D;
 
-import Particle.Particle;
+import fiji.plugin.trackmate.Spot;
 import java.util.ArrayList;
 import java.util.Comparator;
 import mcib3d.geom.Object3DVoxels;
@@ -16,7 +16,7 @@ import mcib3d.geom.Object3DVoxels;
  */
 public class Cell3D extends Object3DVoxels implements Comparator<Cell3D> {
 
-    private ArrayList<Particle> particles;
+    private ArrayList<Spot> spots;
     private ArrayList<CellRegion3D> regions;
     private ArrayList<Cell3D> links;
     private int ID;
@@ -61,15 +61,15 @@ public class Cell3D extends Object3DVoxels implements Comparator<Cell3D> {
         return cell1.getID() - cell2.getID();
     }
 
-    public void addParticle(Particle p) {
-        if (particles == null) {
-            particles = new ArrayList<>();
+    public void addSpot(Spot p) {
+        if (spots == null) {
+            spots = new ArrayList<>();
         }
-        particles.add(p);
+        spots.add(p);
     }
 
-    public ArrayList<Particle> getParticles() {
-        return particles;
+    public ArrayList<Spot> getSpots() {
+        return spots;
     }
 
     public final boolean addCellRegion(CellRegion3D region) {
