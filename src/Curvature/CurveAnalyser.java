@@ -17,6 +17,7 @@
 package Curvature;
 
 import IAClasses.Utils;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -25,7 +26,7 @@ import java.util.Arrays;
  */
 public class CurveAnalyser {
 
-    public static double[] calcCurvature(int[][] pix, int step, boolean loop) {
+    public static double[] calcCurvature(int[][] pix, int step, boolean loop, ArrayList<ArrayList<Double>> cumulativeCurveStats) {
 
 //        int index = 0;
         int n = pix.length;
@@ -62,6 +63,12 @@ public class CurveAnalyser {
                     }
                 }
                 curvature[j] = theta1 - theta2;
+                if (cumulativeCurveStats != null) {
+                    cumulativeCurveStats.get(0).add(new Double(pix[j][0]));
+                    cumulativeCurveStats.get(1).add(new Double(pix[j][1]));
+                    cumulativeCurveStats.get(2).add(theta1);
+                    cumulativeCurveStats.get(3).add(theta2);
+                }
             }
         }
         if (!loop && n > 2 * step) {
@@ -80,6 +87,6 @@ public class CurveAnalyser {
                 intPix[i][j] = p[j];
             }
         }
-        return calcCurvature(intPix, step, true);
+        return calcCurvature(intPix, step, true, null);
     }
 }
