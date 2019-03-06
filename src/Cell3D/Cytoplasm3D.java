@@ -6,6 +6,7 @@
 package Cell3D;
 
 import ij.gui.Roi;
+import mcib3d.geom.Object3D;
 
 /**
  *
@@ -15,6 +16,10 @@ public class Cytoplasm3D extends CellRegion3D {
 
     public Cytoplasm3D(){
         super();
+    }
+    
+    public Cytoplasm3D(Object3D object){
+        super(object);
     }
     
     public Cytoplasm3D(Roi roi) {

@@ -6,6 +6,7 @@
 package Cell3D;
 
 import ij.gui.Roi;
+import mcib3d.geom.Object3D;
 
 /**
  *
@@ -17,6 +18,10 @@ public class Nucleus3D extends CellRegion3D {
 
     public Nucleus3D() {
 
+    }
+    
+    public Nucleus3D(Object3D object){
+        super(object);
     }
 
     public Nucleus3D(Roi roi, double[] centroid) {

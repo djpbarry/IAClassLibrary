@@ -8,6 +8,7 @@ package Cell3D;
 import Cell.Cell;
 import ij.gui.Roi;
 import ij.process.ImageStatistics;
+import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 
 /**
@@ -24,6 +25,10 @@ public class CellRegion3D extends Object3DVoxels{
 
     }
 
+    public CellRegion3D(Object3D object){
+        super(object);
+    }
+    
     public CellRegion3D(Roi roi) {
         this.roi = roi;
     }
