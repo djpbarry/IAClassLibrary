@@ -8,6 +8,7 @@ package Cell3D;
 import fiji.plugin.trackmate.Spot;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import mcib3d.geom.Object3DVoxels;
 
 /**
@@ -16,10 +17,11 @@ import mcib3d.geom.Object3DVoxels;
  */
 public class Cell3D extends Object3DVoxels implements Comparator<Cell3D> {
 
-    private ArrayList<Spot> spots;
+    private ArrayList<ArrayList<Spot>> spots;
     private ArrayList<CellRegion3D> regions;
     private ArrayList<Cell3D> links;
     private int ID;
+    LinkedHashMap<Integer, Integer> spotIndexToChannelMap = new LinkedHashMap();
 
     public Cell3D() {
 
@@ -61,14 +63,20 @@ public class Cell3D extends Object3DVoxels implements Comparator<Cell3D> {
         return cell1.getID() - cell2.getID();
     }
 
-    public void addSpot(Spot p) {
+    public void addSpot(Spot s, int channel) {
         if (spots == null) {
             spots = new ArrayList<>();
         }
-        spots.add(p);
+        Integer spotIndex = spotIndexToChannelMap.get(channel);
+        if (spotIndex == null) {
+            spotIndexToChannelMap.put(channel, spots.size());
+            spotIndex = spotIndexToChannelMap.get(channel);
+            spots.add(new ArrayList<>());
+        }
+        spots.get(spotIndex).add(s);
     }
 
-    public ArrayList<Spot> getSpots() {
+    public ArrayList<ArrayList<Spot>> getSpots() {
         return spots;
     }
 

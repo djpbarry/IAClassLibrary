@@ -48,7 +48,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     }
 
     public void run() {
-        assignParticlesToCells(((MultiThreadedMaximaFinder) inputs[0]).getSpotMaxima(), inputs[1].getOutput(), inputs[2].getOutput());
+        assignParticlesToCells(((MultiThreadedMaximaFinder) inputs[0]).getSpotMaxima(), inputs[1].getOutput(), inputs[2].getOutput(),-1);
     }
 
     public MultiThreadedColocalise duplicate() {
@@ -57,7 +57,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         return newProcess;
     }
 
-    void assignParticlesToCells(List<Spot> spots, ImagePlus cellLabelImage, ImagePlus nucLabelImage) {
+    void assignParticlesToCells(List<Spot> spots, ImagePlus cellLabelImage, ImagePlus nucLabelImage, int channel) {
         ImageStack cellLabelStack = cellLabelImage.getImageStack();
         ImageStack nucLabelStack = nucLabelImage.getImageStack();
         int series = Integer.parseInt(props.getProperty(propLabels[0]));
@@ -81,7 +81,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                 } else {
                     p.putFeature(SpotFeatures.NUCLEAR, 0.0);
                 }
-                cells.get(cellLabelValue).addSpot(p);
+                cells.get(cellLabelValue).addSpot(p,channel);
             }
         }
     }
@@ -91,14 +91,40 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         for (int i = 0; i < N; i++) {
             Cell3D c = cells.get(i);
             double[] nucCentroid = c.getNucleus().getCentroid();
-            ArrayList<Spot> spots = c.getSpots();
-            if (spots != null) {
-                int M = spots.size();
+            ArrayList<ArrayList<Spot>> allSpots = c.getSpots();
+            if (allSpots != null) {
+                int M = allSpots.size();
                 for (int j = 0; j < M; j++) {
-                    Spot s = spots.get(j);
-                    double[] spotPosition = new double[3];
-                    s.localize(spotPosition);
-                    s.putFeature(SpotFeatures.DIST_TO_NUC_CENTRE, Utils.calcEuclidDist(nucCentroid, spotPosition));
+                    ArrayList<Spot> spots = allSpots.get(j);
+                    int L = spots.size();
+                    for (int k = 0; k < L; k++) {
+                        Spot s = spots.get(k);
+                        double[] spotPosition = new double[3];
+                        s.localize(spotPosition);
+                        s.putFeature(SpotFeatures.DIST_TO_NUC_CENTRE, Utils.calcEuclidDist(nucCentroid, spotPosition));
+                    }
+                }
+            }
+        }
+    }
+    
+    void calcNearestNeighbours() {
+        int N = cells.size();
+        for (int i = 0; i < N; i++) {
+            Cell3D c = cells.get(i);
+            double[] nucCentroid = c.getNucleus().getCentroid();
+            ArrayList<ArrayList<Spot>> allSpots = c.getSpots();
+            if (allSpots != null) {
+                int M = allSpots.size();
+                for (int j = 0; j < M; j++) {
+                    ArrayList<Spot> spots = allSpots.get(j);
+                    int L = spots.size();
+                    for (int k = 0; k < L; k++) {
+                        Spot s = spots.get(k);
+                        double[] spotPosition = new double[3];
+                        s.localize(spotPosition);
+                        s.putFeature(SpotFeatures.DIST_TO_NUC_CENTRE, Utils.calcEuclidDist(nucCentroid, spotPosition));
+                    }
                 }
             }
         }
