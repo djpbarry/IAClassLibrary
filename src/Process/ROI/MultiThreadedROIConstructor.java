@@ -81,6 +81,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             subPops[1].addObject(cyto);
             Cell3D combinedCell = new Cell3D();
             combinedCell.addVoxelsUnion(nuc, cyto);
+            combinedCell.setName(constructOutputName(inputs[0].getOutput().getTitle(), "Cells"));
             subPops[2].addObject(combinedCell);
         }
         for (Objects3DPopulation pop : subPops) {

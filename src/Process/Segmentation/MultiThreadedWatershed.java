@@ -109,41 +109,42 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         } catch (InterruptedException e) {
             GenUtils.logError(e, "Unable to remap pixels.");
         }
-        labelOutput(image.getTitle(), objectName);
         switch (segmentationType) {
             case CELLS:
-                addCytoplasmToCells();
+                labelOutput(image.getTitle(), "Cytoplasm");
+                addCytoplasmToCells(output.getTitle());
                 break;
             case NUCLEI:
-                initialiseCellsWithNuclei();
+                labelOutput(image.getTitle(), "Nuclei");
+                initialiseCellsWithNuclei(output.getTitle());
                 break;
             default:
                 addSpotsToCells();
         }
     }
 
-    void initialiseCellsWithNuclei() {
+    void initialiseCellsWithNuclei(String label) {
         Objects3DPopulation nucleiPop = new Objects3DPopulation(ImageInt.wrap(output), 0);
         ArrayList<Object3D> nuclei = nucleiPop.getObjectsList();
         for (Object3D nucleus : nuclei) {
             Cell3D cell = new Cell3D();
             Nucleus3D nuc3D = new Nucleus3D(nucleus);
-            nuc3D.setName(String.format("%s_%s", output.getTitle(), NUC_LABEL));
+            nuc3D.setName(label);
             cell.addCellRegion(nuc3D);
-            cell.setName(String.format("%s_%s", output.getTitle(), CELL_LABEL));
+            cell.setName(label);
             cell.setID(nucleus.getValue());
             cells.addObject(cell);
         }
     }
 
-    void addCytoplasmToCells() {
+    void addCytoplasmToCells(String label) {
         Objects3DPopulation cellPop = new Objects3DPopulation(ImageInt.wrap(output), 0);
         ArrayList<Object3D> cellObjects = cellPop.getObjectsList();
         for (int i = 0; i < cellObjects.size(); i++) {
             Cell3D cell = (Cell3D) cells.getObject(i);
             Cytoplasm3D cyto = new Cytoplasm3D(cellObjects.get(i));
             cyto.substractObject(cell.getNucleus());
-            cyto.setName(String.format("%s_%s", output.getTitle(), CYTO_LABEL));
+            cyto.setName(label);
             cell.addCellRegion(cyto);
         }
     }
