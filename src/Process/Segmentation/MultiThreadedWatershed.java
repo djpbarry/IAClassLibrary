@@ -124,14 +124,17 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     }
 
     void initialiseCellsWithNuclei(String label) {
+        while (cells.getNbObjects() > 0) {
+            cells.removeObject(0);
+        }
         Objects3DPopulation nucleiPop = new Objects3DPopulation(ImageInt.wrap(output), 0);
         ArrayList<Object3D> nuclei = nucleiPop.getObjectsList();
         for (Object3D nucleus : nuclei) {
             Cell3D cell = new Cell3D();
             Nucleus3D nuc3D = new Nucleus3D(nucleus);
-            nuc3D.setName(label);
-            cell.addCellRegion(nuc3D);
-            cell.setName(label);
+            nuc3D.setName(String.format("%s_%d", label, nucleus.getValue()));
+            cell.setNucleus(nuc3D);
+            cell.setName(String.format("%s_%d", label, nucleus.getValue()));
             cell.setID(nucleus.getValue());
             cells.addObject(cell);
         }
@@ -144,8 +147,12 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
             Cell3D cell = (Cell3D) cells.getObject(i);
             Cytoplasm3D cyto = new Cytoplasm3D(cellObjects.get(i));
             cyto.substractObject(cell.getNucleus());
-            cyto.setName(label);
-            cell.addCellRegion(cyto);
+            cyto.setName(String.format("%s_%d", label, cyto.getValue()));
+            if (cyto.getVoxels().size() > 0) {
+                cell.setCytoplasm(cyto);
+            } else {
+                cell.setCytoplasm(null);
+            }
         }
     }
 

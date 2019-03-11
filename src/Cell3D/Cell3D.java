@@ -18,10 +18,11 @@ import mcib3d.geom.Object3DVoxels;
 public class Cell3D extends Object3DVoxels implements Comparator<Cell3D> {
 
     private ArrayList<ArrayList<Spot>> spots;
-    private ArrayList<CellRegion3D> regions;
+    private Nucleus3D nucleus;
+    private Cytoplasm3D cytoplasm;
     private ArrayList<Cell3D> links;
     private int ID;
-    LinkedHashMap<Integer, Integer> spotIndexToChannelMap = new LinkedHashMap();
+    LinkedHashMap<Integer, Integer> spotIndexToChannelMap = new LinkedHashMap<>();
 
     public Cell3D() {
 
@@ -29,10 +30,6 @@ public class Cell3D extends Object3DVoxels implements Comparator<Cell3D> {
 
     public Cell3D(int ID) {
         this.ID = ID;
-    }
-
-    public Cell3D(CellRegion3D region) {
-        this.addCellRegion(region);
     }
 
     public int getID() {
@@ -80,29 +77,20 @@ public class Cell3D extends Object3DVoxels implements Comparator<Cell3D> {
         return spots;
     }
 
-    public final boolean addCellRegion(CellRegion3D region) {
-        if (regions == null) {
-            regions = new ArrayList<>();
-        }
-        return regions.add(region);
-    }
-
     public Nucleus3D getNucleus() {
-        for (CellRegion3D region : regions) {
-            if (region instanceof Nucleus3D) {
-                return (Nucleus3D) region;
-            }
-        }
-        return null;
+        return nucleus;
     }
 
-    public CellRegion3D getRegion(CellRegion3D regionType) {
-        for (CellRegion3D region : regions) {
-            if (regionType.getClass().isInstance(region)) {
-                return region;
-            }
-        }
-        return null;
+    public void setNucleus(Nucleus3D nucleus) {
+        this.nucleus = nucleus;
+    }
+
+    public Cytoplasm3D getCytoplasm() {
+        return cytoplasm;
+    }
+
+    public void setCytoplasm(Cytoplasm3D cytoplasm) {
+        this.cytoplasm = cytoplasm;
     }
 
     public void addLink(Cell3D c) {
