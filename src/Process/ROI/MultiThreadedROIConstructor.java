@@ -87,7 +87,8 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             } else {
                 combinedCell.addVoxels(nuc.getVoxels());
             }
-            combinedCell.setName(constructOutputName(inputs[0].getOutput().getTitle(), "Cells"));
+            combinedCell.setName(String.format("%s_%d", constructOutputName(inputs[0].getOutput().getTitle(), "Cells"), nuc.getValue()));
+            combinedCell.setValue(nuc.getValue());
             subPops[2].addObject(combinedCell);
         }
         for (Objects3DPopulation pop : subPops) {
@@ -114,9 +115,9 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
                     double[] pixM = pixMeasures.get(i);
                     double[] geomM = geomMeasures.get(i);
                     rt.incrementCounter();
-                    rt.addLabel(cells.getObject(0).getName());
+                    rt.addLabel(cells.getObject(i).getName());
                     rt.addValue(PIX_HEADINGS[0], c);
-                    rt.addValue(PIX_HEADINGS[1], i + 1);
+                    rt.addValue(PIX_HEADINGS[1], cells.getObject(i).getValue());
                     for (int j = 2; j <= pixM.length; j++) {
                         rt.addValue(PIX_HEADINGS[j], pixM[j - 1]);
                     }
