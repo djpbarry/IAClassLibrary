@@ -143,6 +143,10 @@ public class BioFormatsImg {
     }
 
     public void loadPixelData(int series, int cBegin, int cEnd, String dimOrder) {
+        if (series >= getSeriesCount() || cBegin >= getSizeC() || cEnd > getSizeC()) {
+            img = null;
+            return;
+        }
         try {
             reader.setSeries(series);
             int[] limits = getLimits(dimOrder, cBegin, cEnd);

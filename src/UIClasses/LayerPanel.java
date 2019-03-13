@@ -27,7 +27,7 @@ import javax.swing.JPanel;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class LayerPanel extends JPanel implements GUIMethods {
+public abstract class LayerPanel extends JPanel implements GUIMethods {
 
     protected ExecutorService exec;
     protected final BioFormatsImg img;
@@ -59,9 +59,7 @@ public class LayerPanel extends JPanel implements GUIMethods {
         return true;
     }
 
-    protected void setupProcess(){
-        
-    }
+    protected abstract void setupProcess();
     
     public MultiThreadedProcess getProcess() {
         return process;

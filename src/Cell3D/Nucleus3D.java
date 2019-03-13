@@ -30,7 +30,7 @@ public class Nucleus3D extends CellRegion3D {
     }
 
     public double[] getCentroid() {
-        return centroid;
+        return getCenterAsArray();
     }
 
     public void setCentroid(double[] centroid) {

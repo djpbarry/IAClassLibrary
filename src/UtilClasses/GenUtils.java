@@ -158,10 +158,12 @@ public class GenUtils {
         if (message != null) {
             IJ.log(message);
         }
-        IJ.log(e.getLocalizedMessage());
-        IJ.log(e.getMessage());
-        IJ.log(e.toString());
-        e.printStackTrace();
+        if (e != null) {
+            IJ.log(e.getLocalizedMessage());
+            IJ.log(e.getMessage());
+            IJ.log(e.toString());
+            e.printStackTrace();
+        }
     }
 
     public static void error(String message) {
