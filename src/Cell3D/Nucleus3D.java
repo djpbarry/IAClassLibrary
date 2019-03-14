@@ -24,6 +24,10 @@ public class Nucleus3D extends CellRegion3D {
         super(object);
     }
 
+    public Nucleus3D(Roi roi, double[] centroid) {
+        super(roi);
+        this.centroid = centroid;
+    }
 
     public double[] getCentroid() {
         return getCenterAsArray();

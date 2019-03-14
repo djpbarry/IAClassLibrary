@@ -176,7 +176,7 @@ public class BioFormatsImg {
             }
             ImagePlus stackImp = new ImagePlus(id, stack);
             img = stackImp;
-            img.setTitle(String.format("%s-S%d_C%d", FilenameUtils.getBaseName(getId()), series, cBegin));
+            img.setTitle(String.format("%s-S%d-C%d", FilenameUtils.getBaseName(getId()), series, cBegin));
         } catch (Exception e) {
             GenUtils.logError(e, "There seems to be a problem opening that image!");
         }

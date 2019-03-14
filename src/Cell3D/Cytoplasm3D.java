@@ -22,4 +22,7 @@ public class Cytoplasm3D extends CellRegion3D {
         super(object);
     }
     
+    public Cytoplasm3D(Roi roi) {
+        super(roi);
+    }
 }
