@@ -17,6 +17,7 @@
 package Process.ROI;
 
 import Cell3D.Cell3D;
+import Cell3D.CellRegion3D;
 import Cell3D.Cytoplasm3D;
 import Cell3D.Nucleus3D;
 import IO.BioFormats.BioFormatsImg;
@@ -76,9 +77,11 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         ArrayList<Object3D> cellPop = cells.getObjectsList();
         for (Object3D cell : cellPop) {
             Nucleus3D nuc = ((Cell3D) cell).getNucleus();
+            nuc.setComment(CellRegion3D.NUCLEUS);
             subPops[0].addObject(nuc);
             Cytoplasm3D cyto = ((Cell3D) cell).getCytoplasm();
             if (cyto != null) {
+                cyto.setComment(CellRegion3D.CYTO);
                 subPops[1].addObject(cyto);
             }
             Cell3D combinedCell = new Cell3D();
@@ -89,6 +92,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             }
             combinedCell.setName(String.format("%s_%d", constructOutputName(inputs[0].getOutput().getTitle(), "Cells"), nuc.getValue()));
             combinedCell.setValue(nuc.getValue());
+            combinedCell.setComment(CellRegion3D.CELL);
             subPops[2].addObject(combinedCell);
         }
         for (Objects3DPopulation pop : subPops) {
@@ -110,7 +114,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
                 IJ.log(String.format("Measuring %s defined by %s.", imp.getTitle(), cells.getObject(0).getName()));
                 ArrayList<double[]> pixMeasures = cells.getMeasuresStats(imp.getImageStack());
                 ArrayList<double[]> geomMeasures = cells.getMeasuresGeometrical();
-                double[] distMeasures = getLocationMetrics();
+                double[] distMeasures = getLocationMetrics(cells);
                 for (int i = 0; i < pixMeasures.size(); i++) {
                     double[] pixM = pixMeasures.get(i);
                     double[] geomM = geomMeasures.get(i);
@@ -145,7 +149,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         if (path == null || !new File(path).exists()) {
             return;
         }
-        cells.saveObjects(String.format("%s%s%s.zip", path, File.separator, cells.getObject(0).getName()));
+        cells.saveObjects(String.format("%s%s%s.zip", path, File.separator, constructOutputName(cells.getObject(0).getName(), cells.getObject(0).getComment())));
     }
 
     private String[] getGeomHeadings(String calUnit) {
@@ -155,7 +159,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             String.format("Surface Area (%s^2)", calUnit)};
     }
 
-    private double[] getLocationMetrics() {
+    private double[] getLocationMetrics(Objects3DPopulation cells) {
         double xSum = 0.0;
         double ySum = 0.0;
         double zSum = 0.0;
