@@ -15,22 +15,21 @@ import mcib3d.geom.Object3DVoxels;
  *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
-public class CellRegion3D extends Object3DVoxels{
+public class CellRegion3D extends Object3DVoxels {
 
     protected Cell parent;
     protected Roi roi;
     protected ImageStatistics fluorStats;
+    protected final String regionName;
+    public static final String CELL = "Cell", NUCLEUS = "Nucleus", CYTO = "Cytoplasm", MISC = "Miscellaneous";
 
     public CellRegion3D() {
-
+        this(null);
     }
 
-    public CellRegion3D(Object3D object){
+    public CellRegion3D(Object3D object) {
         super(object);
-    }
-    
-    public CellRegion3D(Roi roi) {
-        this.roi = roi;
+        this.regionName = CellRegion3D.MISC;
     }
 
     public Cell getParent() {
@@ -56,5 +55,9 @@ public class CellRegion3D extends Object3DVoxels{
     public void setFluorStats(ImageStatistics fluorStats) {
         this.fluorStats = fluorStats;
     }
-    
+
+    public String getRegionName() {
+        return regionName;
+    }
+
 }
