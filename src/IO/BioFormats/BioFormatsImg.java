@@ -129,6 +129,7 @@ public class BioFormatsImg {
 
     public boolean checkID(String id) {
         try {
+//            this.reader.isThisType(id);
             this.io.setId(id);
             this.reader.setId(id);
         } catch (IOException | FormatException e) {

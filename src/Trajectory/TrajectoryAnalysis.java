@@ -104,7 +104,7 @@ public class TrajectoryAnalysis implements PlugIn {
         File parentOutputDirectory = openResultsDirectory
                 ? new File(GenUtils.openResultsDirectory(String.format("%s%s%s_%s", inputFile.getParent(), File.separator, TITLE, inputFile.getName())))
                 : new File(inputFile.getParent());
-        String[] headingsArray = getFileHeadings(inputFile, false);
+        String[] headingsArray = getFileHeadings(inputFile, labelledData);
         if (!batch && !showDialog(headingsArray)) {
             return;
         }
