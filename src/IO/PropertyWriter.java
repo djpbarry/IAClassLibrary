@@ -48,8 +48,10 @@ public class PropertyWriter {
         stream.close();
     }
 
-    public static void loadProperties(Properties props, String label) throws IOException, InterruptedException, InvocationTargetException {
-        File file = Utilities.getFile(null, label, false);
+    public static void loadProperties(Properties props, String label, File file) throws IOException, InterruptedException, InvocationTargetException {
+        if (file == null) {
+            file = Utilities.getFile(null, label, false);
+        }
         FileInputStream stream = new FileInputStream(file);
         String ext = FilenameUtils.getExtension(file.getName());
         boolean XML = ext.contains("xml") || ext.contains("XML");
