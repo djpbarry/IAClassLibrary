@@ -34,12 +34,13 @@ public class BinaryMaker {
 
     /**
      * Generates a binary stack from an input stack
-     * 
+     *
      * @param stackImp The input stack
      * @param method The thresholding method to employ
      * @param manualThresh The manual threshold to use, if required
-     * @param holeSize The approximate size of holes to be filled post-thresholding
-     * @return 
+     * @param holeSize The approximate size of holes to be filled
+     * post-thresholding
+     * @return
      */
     public static ImageStack makeBinaryStack(ImagePlus stackImp, String method, int manualThresh, int holeSize) {
         int threshold = manualThresh;
@@ -60,7 +61,7 @@ public class BinaryMaker {
 
     /**
      * Generates a binary image from an input pixels
-     * 
+     *
      * @param pix Input image pixels
      * @param width Input image width
      * @param height Input image height
@@ -77,7 +78,7 @@ public class BinaryMaker {
 
     /**
      * Generates a binary image from an input image
-     * 
+     *
      * @param ip Input image
      * @param method Thresholding method to employ
      * @param manualThresh A manual threshold value
@@ -143,7 +144,7 @@ public class BinaryMaker {
 
     /**
      * Calculates a grey level threshold based on the specified method
-     * 
+     *
      * @param stats Image statistics for the image of interest
      * @param method The tresholding method to employ
      * @return A grey level threshold
@@ -151,5 +152,15 @@ public class BinaryMaker {
     static int getThreshold(ImageStatistics stats, String method) {
         int tIndex = new AutoThresholder().getThreshold(method, stats.histogram);
         return (int) Math.round(stats.min + tIndex * stats.binSize);
+    }
+
+    public static boolean checkIfBinary(ImagePlus imp) {
+        ImageProcessor ip = imp.getProcessor();
+        ImageStatistics stats = ip.getStatistics();
+        if (!(ip instanceof ByteProcessor) || (stats.histogram[0] + stats.histogram[255] != stats.pixelCount)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }
