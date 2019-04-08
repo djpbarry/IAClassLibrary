@@ -142,6 +142,8 @@ public class TrajectoryAnalysis implements PlugIn {
             double[][][] runLengths = calcRunLengths(vels, minVel);
             IJ.log("Analysing mean square displacements...");
             double[][] msds = calcMSDs(smoothedData, minPointsForMSD, framesPerSec);
+            IJ.log("Generating spider plot data...");
+            double[][] spiderPlotData = calcSpiderPlotData(smoothedData);
             IJ.log("Saving outputs...");
             saveData(vels, "Instantaneous_Velocities.csv",
                     new String[]{"Frame No.", String.format("X Vel (%s)", MIC_PER_SEC),
@@ -151,6 +153,7 @@ public class TrajectoryAnalysis implements PlugIn {
             saveMSDs(msds, parentOutputDirectory);
             saveMeanVels(meanVels, parentOutputDirectory);
             saveRunLengths(runLengths, parentOutputDirectory);
+            saveSpiderPlotData(spiderPlotData, parentOutputDirectory);
         } catch (IOException e) {
             GenUtils.logError(e, null);
         }
@@ -353,6 +356,26 @@ public class TrajectoryAnalysis implements PlugIn {
         return msds;
     }
 
+    private double[][] calcSpiderPlotData(double[][][] data) {
+        int totalLength = 0;
+        for (int i = 0; i < data.length; i++) {
+            totalLength += data[i].length;
+        }
+        double[][] output = new double[totalLength][data.length + 1];
+        for (int i = 0; i < output.length; i++) {
+            Arrays.fill(output[i], Double.NaN);
+        }
+        int outIndex = 0;
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data[i].length; j++) {
+                output[outIndex][0] = data[i][j][_X_] - data[i][0][_X_];
+                output[outIndex][i + 1] = data[i][j][_Y_] - data[i][0][_Y_];
+                outIndex++;
+            }
+        }
+        return output;
+    }
+
     private void addRun(DescriptiveStatistics mVel, DescriptiveStatistics xVel, DescriptiveStatistics yVel, double time, ArrayList<double[]> current, int id, double dist, double netDist) {
         double meanMag = mVel.getMean();
         double meanTheta = Utils.arcTan(xVel.getMean(), yVel.getMean());
@@ -412,6 +435,19 @@ public class TrajectoryAnalysis implements PlugIn {
         }
         saveData(new double[][][]{msds}, MSD,
                 headings, parentOutputDirectory);
+    }
+
+    void saveSpiderPlotData(double[][] data, File parentOutputDirectory) throws IOException {
+        String[] headings = new String[data[0].length];
+        headings[0] = String.format("X (%cm)", IJ.micronSymbol);
+        for (int i = 1; i < data[0].length; i++) {
+            headings[i] = String.format("Particle %d Y", i);
+        }
+        File spiderData = new File(String.format("%s%s%s", parentOutputDirectory, File.separator, "Spider_Plot_Data.csv"));
+        if (spiderData.exists()) {
+            spiderData.delete();
+        }
+        DataWriter.saveValues(data, spiderData, headings, null, false);
     }
 
     public String[] getFileHeadings(File inputFile, boolean labelledData) {
