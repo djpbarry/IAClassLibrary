@@ -17,7 +17,6 @@
 package IO.BioFormats;
 
 import UtilClasses.GenUtils;
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.ByteProcessor;
@@ -63,15 +62,17 @@ public class BioFormatsImg {
             OMEXMLService service = factory.getInstance(OMEXMLService.class);
             this.meta = service.createOMEXMLMetadata();
             this.reader.setMetadataStore(meta);
+            if (id != null) {
+                this.setId(id);
+            }
         } catch (IOException e) {
             GenUtils.logError(e, String.format("Problem encountered opening %s.", id));
         } catch (DependencyException e) {
             GenUtils.logError(e, "Problem initialising Bio-Formats services.");
         } catch (ServiceException e) {
             GenUtils.logError(e, "Could not initialise metadata object.");
-        }
-        if (id != null) {
-            this.setId(id);
+        } catch (FormatException e) {
+            GenUtils.logError(e, "Unrecognised image format.");
         }
     }
 
@@ -119,24 +120,14 @@ public class BioFormatsImg {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(String id) throws IOException, FormatException {
         this.id = id;
-        validID = checkID(id);
-        if (!validID) {
-            IJ.log(String.format("%s is not a supported format.", id));
-        }
+        this.io.setId(id);
+        this.reader.setId(id);
     }
 
     public boolean checkID(String id) {
-        try {
-//            this.reader.isThisType(id);
-            this.io.setId(id);
-            this.reader.setId(id);
-        } catch (IOException | FormatException e) {
-            return false;
-        }
-        this.id = id;
-        return true;
+        return this.reader.isThisType(id);
     }
 
     public void loadPixelData(int series) {
