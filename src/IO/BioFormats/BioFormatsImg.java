@@ -167,6 +167,8 @@ public class BioFormatsImg {
                 }
             }
             ImagePlus stackImp = new ImagePlus(id, stack);
+            stackImp.setDimensions(cEnd - cBegin, reader.getSizeZ(), reader.getSizeT());
+            stackImp.setOpenAsHyperStack(true);
             img = stackImp;
             img.setTitle(String.format("%s-S%d_C%d", FilenameUtils.getBaseName(getId()), series, cBegin));
         } catch (Exception e) {
