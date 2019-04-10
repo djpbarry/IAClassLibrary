@@ -79,14 +79,16 @@
             <arg line="$"/>
         </exec>
     </target>
+    <!--
     <target name="-post-init">
-        <echo message="--Deleting ${pluginsDir}\${application.title}*.jar" />
+        <echo message="Deleting ${pluginsDir}\${application.title}*.jar" />
         <delete>
             <fileset dir="${pluginsDir}" includes="${application.title}*.jar"/>
         </delete>
     </target>
     <target name="-post-jar">
-        <echo message="--Copied JAR to pluginsDir: ${pluginsDir}" />
+        <echo message=" Copied JAR to pluginsDir: ${pluginsDir}" />
         <copy file="${basedir}/${dist.jar}" toDir="${pluginsDir}" />
     </target>
+    -->
 </project>

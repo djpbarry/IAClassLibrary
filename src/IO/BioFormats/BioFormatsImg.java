@@ -150,17 +150,23 @@ public class BioFormatsImg {
                 for (int j = limits[3]; j < limits[4]; j++) {
                     for (int i = limits[0]; i < limits[1]; i++) {
                         ImageProcessor ip;
-                        byte[] bytePix = reader.openBytes(k * limits[5] * limits[2] + j * limits[2] + i);
+                        byte[] pix = reader.openBytes(k * limits[5] * limits[2] + j * limits[2] + i);
                         if (bitDepth == 16) {
                             short[] shortPix = new short[width * height];
                             for (int index = 0; index < shortPix.length; index++) {
-                                shortPix[index] = ByteBuffer.wrap(new byte[]{bytePix[2 * index + 1], bytePix[2 * index]}).getShort();
+                                byte[] bytePixel;
+                                if (!reader.isLittleEndian()) {
+                                    bytePixel = new byte[]{pix[2 * index], pix[2 * index + 1]};
+                                } else {
+                                    bytePixel = new byte[]{pix[2 * index + 1], pix[2 * index]};
+                                }
+                                shortPix[index] = ByteBuffer.wrap(bytePixel).getShort();
                             }
                             ip = new ShortProcessor(width, height);
                             ip.setPixels(shortPix);
                         } else {
                             ip = new ByteProcessor(width, height);
-                            ip.setPixels(bytePix);
+                            ip.setPixels(pix);
                         }
                         stack.addSlice(ip);
                     }
