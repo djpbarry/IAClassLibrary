@@ -144,21 +144,26 @@ public class BioFormatsImg {
             int[] limits = getLimits(dimOrder, cBegin, cEnd);
             int width = reader.getSizeX();
             int height = reader.getSizeY();
+            int area = width * height;
             int bitDepth = reader.getBitsPerPixel();
+            boolean littleEndian = reader.isLittleEndian();
             ImageStack stack = new ImageStack(width, height);
             for (int k = limits[6]; k < limits[7]; k++) {
+                int kOffset = k * limits[5] * limits[2];
                 for (int j = limits[3]; j < limits[4]; j++) {
+                    int jOffset = j * limits[2];
                     for (int i = limits[0]; i < limits[1]; i++) {
                         ImageProcessor ip;
-                        byte[] pix = reader.openBytes(k * limits[5] * limits[2] + j * limits[2] + i);
+                        byte[] pix = reader.openBytes(kOffset + jOffset + i);
                         if (bitDepth == 16) {
-                            short[] shortPix = new short[width * height];
+                            short[] shortPix = new short[area];
                             for (int index = 0; index < shortPix.length; index++) {
+                                int index2 = 2 * index;
                                 byte[] bytePixel;
-                                if (!reader.isLittleEndian()) {
-                                    bytePixel = new byte[]{pix[2 * index], pix[2 * index + 1]};
+                                if (!littleEndian) {
+                                    bytePixel = new byte[]{pix[index2], pix[index2 + 1]};
                                 } else {
-                                    bytePixel = new byte[]{pix[2 * index + 1], pix[2 * index]};
+                                    bytePixel = new byte[]{pix[index2 + 1], pix[index2]};
                                 }
                                 shortPix[index] = ByteBuffer.wrap(bytePixel).getShort();
                             }
