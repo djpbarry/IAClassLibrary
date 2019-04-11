@@ -16,14 +16,11 @@
  */
 package IO.BioFormats;
 
+import Process.IO.MultiThreadedImageLoader;
 import UtilClasses.GenUtils;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.process.ByteProcessor;
-import ij.process.ImageProcessor;
-import ij.process.ShortProcessor;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import loci.common.services.DependencyException;
 import loci.common.services.ServiceException;
 import loci.common.services.ServiceFactory;
@@ -144,39 +141,10 @@ public class BioFormatsImg {
             int[] limits = getLimits(dimOrder, cBegin, cEnd);
             int width = reader.getSizeX();
             int height = reader.getSizeY();
-            int area = width * height;
-            int bitDepth = reader.getBitsPerPixel();
-            boolean littleEndian = reader.isLittleEndian();
-            ImageStack stack = new ImageStack(width, height);
-            for (int k = limits[6]; k < limits[7]; k++) {
-                int kOffset = k * limits[5] * limits[2];
-                for (int j = limits[3]; j < limits[4]; j++) {
-                    int jOffset = j * limits[2];
-                    for (int i = limits[0]; i < limits[1]; i++) {
-                        ImageProcessor ip;
-                        byte[] pix = reader.openBytes(kOffset + jOffset + i);
-                        if (bitDepth == 16) {
-                            short[] shortPix = new short[area];
-                            for (int index = 0; index < shortPix.length; index++) {
-                                int index2 = 2 * index;
-                                byte[] bytePixel;
-                                if (!littleEndian) {
-                                    bytePixel = new byte[]{pix[index2], pix[index2 + 1]};
-                                } else {
-                                    bytePixel = new byte[]{pix[index2 + 1], pix[index2]};
-                                }
-                                shortPix[index] = ByteBuffer.wrap(bytePixel).getShort();
-                            }
-                            ip = new ShortProcessor(width, height);
-                            ip.setPixels(shortPix);
-                        } else {
-                            ip = new ByteProcessor(width, height);
-                            ip.setPixels(pix);
-                        }
-                        stack.addSlice(ip);
-                    }
-                }
-            }
+            ImageStack stack = new ImageStack(width, height, (cEnd - cBegin) * reader.getSizeT() * reader.getSizeZ());
+            MultiThreadedImageLoader loader = new MultiThreadedImageLoader(limits, reader, stack);
+            loader.start();
+            loader.join();
             ImagePlus stackImp = new ImagePlus(id, stack);
             stackImp.setDimensions(cEnd - cBegin, reader.getSizeZ(), reader.getSizeT());
             stackImp.setOpenAsHyperStack(true);
