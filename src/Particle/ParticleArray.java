@@ -1,7 +1,12 @@
 package Particle;
 
+import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.SpotCollection;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListMap;
+//import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  *
@@ -11,6 +16,7 @@ public class ParticleArray extends SpotCollection {
 
     private int depth;
     private ArrayList<ArrayList<Particle>> detections;
+    private ConcurrentSkipListMap< Integer, Set< Spot>> content = new ConcurrentSkipListMap<>();
 
     public ParticleArray(int depth) {
         super();
@@ -27,11 +33,20 @@ public class ParticleArray extends SpotCollection {
     }
 
     public boolean addDetection(int level, Particle detection) {
-        add(detection, level);
-        if (detections == null || level > depth - 1) {
-            return false;
+        Set< Spot> spots = content.get(level);
+        if (null == spots) {
+            spots = new HashSet<>();
+            content.put(level, spots);
         }
-        detections.get(level).add(detection);
+        if (detection != null) {
+            spots.add(detection);
+            detection.putFeature(Spot.FRAME, Double.valueOf(level));
+            detection.putFeature(VISIBLITY, ONE);
+            if (detections == null || level > depth - 1) {
+                return false;
+            }
+            detections.get(level).add(detection);
+        }
         return true;
     }
 
@@ -55,4 +70,9 @@ public class ParticleArray extends SpotCollection {
             return null;
         }
     }
+
+    public ConcurrentSkipListMap<Integer, Set<Spot>> getContent() {
+        return content;
+    }
+
 }
