@@ -43,6 +43,8 @@ import mcib3d.image3d.regionGrowing.Watershed3D;
  */
 public class MultiThreadedWatershed extends MultiThreadedProcess {
 
+    private double[] calibration;
+    private int series;
     private final String objectName;
     private final boolean remap;
     private boolean volumeMarker;
@@ -71,7 +73,9 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
-        this.volumeMarker = Boolean.parseBoolean(props.getProperty(propLabels[1]));
+        this.volumeMarker = Boolean.parseBoolean(props.getProperty(propLabels[2]));
+        this.series = Integer.parseInt(props.getProperty(propLabels[0]));
+        calibration = getCalibration(series);
     }
 
     public void run() {
@@ -162,7 +166,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
 
     private int getThreshold() {
         StackStatistics stats = new StackStatistics(inputs[1].getOutput());
-        int tIndex = (new AutoThresholder()).getThreshold(AutoThresholder.Method.valueOf(props.getProperty(propLabels[0])), stats.histogram);
+        int tIndex = (new AutoThresholder()).getThreshold(AutoThresholder.Method.valueOf(props.getProperty(propLabels[1])), stats.histogram);
         return (int) Math.round(stats.histMin + stats.binSize * tIndex);
     }
 
