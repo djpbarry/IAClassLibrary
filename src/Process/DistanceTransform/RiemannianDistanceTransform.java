@@ -17,11 +17,10 @@
 package Process.DistanceTransform;
 
 import ij.IJ;
+import ij.ImagePlus;
 import ij.ImageStack;
-import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
-import java.util.Arrays;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.distanceMap3d.EdtFloat;
@@ -33,7 +32,7 @@ import mcib3d.image3d.processing.FastFilters3D;
  */
 public class RiemannianDistanceTransform extends EdtFloat {
 
-    private float lambda = 1.0f;
+    private float lambda = 500.0f;
     private final byte BACKGROUND = 0, FOREGROUND = 1;
 
     public RiemannianDistanceTransform() {
@@ -62,7 +61,7 @@ public class RiemannianDistanceTransform extends EdtFloat {
         //Transformation 1.  Use s to store g.
         Step1Thread[] s1t = new Step1Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
-            s1t[thread] = new Step1Thread(thread, nbCPUs, w, h, d, thresh, s, greyData, scale, binData, gradData);
+            s1t[thread] = new Step1Thread(thread, nbCPUs, w, h, d, s, scale, binData, gradData);
             s1t[thread].start();
         }
         try {
@@ -74,9 +73,10 @@ public class RiemannianDistanceTransform extends EdtFloat {
         }
         IJ.log("Commencing Stage 2...");
         //Transformation 2.  g (in s) -> h (in s)
+//        IJ.saveAs(new ImagePlus("", outStack), "TIF", "D:\\debugging\\giani_debug\\rdt1.tif");
         Step2Thread[] s2t = new Step2Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
-            s2t[thread] = new Step2Thread(thread, nbCPUs, w, h, d, s, gradData, greyData, thresh);
+            s2t[thread] = new Step2Thread(thread, nbCPUs, w, h, d, s, gradData);
             s2t[thread].start();
         }
         try {
@@ -88,9 +88,10 @@ public class RiemannianDistanceTransform extends EdtFloat {
         }
         //Transformation 3. h (in s) -> s
         IJ.log("Commencing Stage 3...");
+//        IJ.saveAs(new ImagePlus("", outStack), "TIF", "D:\\debugging\\giani_debug\\rdt2.tif");
         Step3Thread[] s3t = new Step3Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
-            s3t[thread] = new Step3Thread(thread, nbCPUs, w, h, d, s, greyData, thresh, scale, gradData);
+            s3t[thread] = new Step3Thread(thread, nbCPUs, w, h, d, s, scale, gradData);
             s3t[thread].start();
         }
         try {
@@ -102,6 +103,7 @@ public class RiemannianDistanceTransform extends EdtFloat {
         }
         //Find the largest distance for scaling
         //Also fill in the background values.
+        IJ.saveAs(new ImagePlus("", outStack), "TIF", "D:\\debugging\\giani_debug\\rdt3.tif");
         float distMax = 0;
         int wh = w * h;
         float dist;
@@ -125,34 +127,48 @@ public class RiemannianDistanceTransform extends EdtFloat {
         return res;
     }
 
-    float calcDistance(int[] limits, float[][] gradPix, double lambda, int width) {
-        float sum = 0.0f;
-        for (int k = limits[4]; k < limits[5]; k++) {
-            for (int j = limits[2]; j < limits[3]; j++) {
-                int jOffset = j * width;
-                for (int i = limits[0]; i < limits[1]; i++) {
-                    sum += (gradPix[k][i + jOffset] + 1.0f + lambda) / (1.0f + lambda);
+    float[] computeXDistances(float[][] gradPix, double lambda, int[] dims) {
+        float[] sums = new float[dims[3]];
+        float[] distances = new float[dims[1] * dims[3]];
+        for (int k = dims[4]; k < dims[5]; k++) {
+            for (int j = dims[2]; j < dims[3]; j++) {
+                int jOffset = j * dims[1];
+                for (int i = dims[0]; i < dims[1]; i++) {
+                    sums[j] += (gradPix[k][i + jOffset] + 1.0f + lambda) / (1.0f + lambda);
+                    distances[i + jOffset] = sums[j];
                 }
             }
         }
-        return sum * sum;
+        return distances;
     }
 
-    float[] computeDistances(int[] limits, float[][] gradPix, double lambda, int width, int dimLength) {
-        float sum = 0.0f;
-        float[] distances = new float[dimLength];
-        int distIndex = 0;
-        for (int k = limits[4]; k < limits[5]; k++) {
-            for (int j = limits[2]; j < limits[3]; j++) {
-                int jOffset = j * width;
-                for (int i = limits[0]; i < limits[1]; i++) {
-                    sum += (gradPix[k][i + jOffset] + 1.0f + lambda) / (1.0f + lambda);
-                    distances[distIndex++] = sum * sum;
+    float[] computeYDistances(float[][] gradPix, double lambda, int[] dims) {
+        float[] sums = new float[dims[1]];
+        float[] distances = new float[dims[1] * dims[3]];
+        for (int k = dims[4]; k < dims[5]; k++) {
+            for (int j = dims[2]; j < dims[3]; j++) {
+                int jOffset = j * dims[1];
+                for (int i = dims[0]; i < dims[1]; i++) {
+                    sums[i] += (gradPix[k][i + jOffset] + 1.0f + lambda) / (1.0f + lambda);
+                    distances[i + jOffset] = sums[i];
                 }
             }
         }
-        for (int d = 0; d < dimLength; d++) {
-            distances[d] -= distances[0];
+        return distances;
+    }
+
+    float[] computeZDistances(float[][] gradPix, double lambda, int[] dims) {
+        float[] sums = new float[dims[1]];
+        float[] distances = new float[dims[1] * dims[5]];
+        for (int j = dims[2]; j < dims[3]; j++) {
+            int jOffset = j * dims[1];
+            for (int i = dims[0]; i < dims[1]; i++) {
+                int iOffset = i * dims[5];
+                for (int k = dims[4]; k < dims[5]; k++) {
+                    sums[i] += (gradPix[k][i + jOffset] + 1.0f + lambda) / (1.0f + lambda);
+                    distances[k + iOffset] = sums[i];
+                }
+            }
         }
         return distances;
     }
@@ -160,21 +176,17 @@ public class RiemannianDistanceTransform extends EdtFloat {
     class Step1Thread extends Thread {
 
         int thread, nThreads, w, h, d;
-        float thresh;
         float[][] s;
-        float[][] greyData;
         float[][] gradData;
         byte[][] binData;
         float scaleZ;
 
-        public Step1Thread(int thread, int nThreads, int w, int h, int d, float thresh, float[][] s, float[][] greyData, float scaleZ, byte[][] binData, float[][] gradData) {
+        public Step1Thread(int thread, int nThreads, int w, int h, int d, float[][] s, float scaleZ, byte[][] binData, float[][] gradData) {
             this.thread = thread;
             this.nThreads = nThreads;
             this.w = w;
             this.h = h;
             this.d = d;
-            this.thresh = thresh;
-            this.greyData = greyData;
             this.binData = binData;
             this.gradData = gradData;
             this.s = s;
@@ -183,7 +195,6 @@ public class RiemannianDistanceTransform extends EdtFloat {
 
         public void run() {
             float[] sk;
-            float[] dk;
             byte[] bk;
             int n = w;
             if (h > n) {
@@ -194,23 +205,17 @@ public class RiemannianDistanceTransform extends EdtFloat {
             }
             float test, min;
             for (int k = thread; k < d; k += nThreads) {
+                float[] distances = computeXDistances(gradData, lambda, new int[]{0, w, 0, h, k, k + 1});
                 sk = s[k];
-                dk = greyData[k];
                 bk = binData[k];
                 for (int j = 0; j < h; j++) {
                     int jOffset = w * j;
-//                    float[] distances = computeDistances(new int[]{0, w, j, j + 1, k, k + 1}, gradData, lambda, w, w);
                     for (int i = 0; i < w; i++) {
-//                        if ((dk[i + jOffset] <= thresh)) {
-//                            continue;
-//                        }
-//                        min = Math.min(calcDistance(new int[]{0, i, j, j + 1, k, k + 1}, gradData, lambda, w),
-//                                calcDistance(new int[]{i, w - 1, j, j + 1, k, k + 1}, gradData, lambda, w));
                         min = Float.MAX_VALUE;
                         for (int x = i; x < w; x++) {
                             if (bk[x + jOffset] == BACKGROUND) {
-                                test = calcDistance(new int[]{i, x, j, j + 1, k, k + 1}, gradData, lambda, w);
-//                                tempBinData[k][i + jOffset] = BACKGROUND;
+//                                test = calcDistance(new int[]{i, x, j, j + 1, k, k + 1}, gradData, lambda, w);
+                                test = (float) Math.pow(distances[x + jOffset] - distances[i + jOffset], 2.0);
                                 if (test < min) {
                                     min = test;
                                 }
@@ -219,8 +224,8 @@ public class RiemannianDistanceTransform extends EdtFloat {
                         }
                         for (int x = i - 1; x >= 0; x--) {
                             if (bk[x + jOffset] == BACKGROUND) {
-                                test = calcDistance(new int[]{x, i, j, j + 1, k, k + 1}, gradData, lambda, w);
-//                                tempBinData[k][i + jOffset] = BACKGROUND;
+//                                test = calcDistance(new int[]{x, i, j, j + 1, k, k + 1}, gradData, lambda, w);
+                                test = (float) Math.pow(distances[x + jOffset] - distances[i + jOffset], 2.0);
                                 if (test < min) {
                                     min = test;
                                 }
@@ -239,15 +244,11 @@ public class RiemannianDistanceTransform extends EdtFloat {
         int thread, nThreads, w, h, d;
         float[][] s;
         float[][] gradData;
-        float thresh;
-        float[][] greyData;
 
-        public Step2Thread(int thread, int nThreads, int w, int h, int d, float[][] s, float[][] gradData, float[][] greyData, float thresh) {
+        public Step2Thread(int thread, int nThreads, int w, int h, int d, float[][] s, float[][] gradData) {
             this.gradData = gradData;
-            this.greyData = greyData;
             this.thread = thread;
             this.nThreads = nThreads;
-            this.thresh = thresh;
             this.w = w;
             this.h = h;
             this.d = d;
@@ -268,9 +269,15 @@ public class RiemannianDistanceTransform extends EdtFloat {
             boolean nonempty;
             float test, min;
             for (int k = thread; k < d; k += nThreads) {
+                float[] distances = computeYDistances(gradData, lambda, new int[]{0, w, 0, h, k, k + 1});
+//                if (k == 19) {
+//                    FloatProcessor fp = new FloatProcessor(w, h, distances);
+//                    IJ.saveAs(new ImagePlus("", fp), "TIF", "D:\\debugging\\giani_debug\\step2.tif");
+//                }
                 sk = s[k];
                 for (int i = 0; i < w; i++) {
                     nonempty = false;
+//                    int iOffset = i * h;
                     for (int j = 0; j < h; j++) {
                         tempS[j] = sk[i + w * j];
                         if (tempS[j] > 0) {
@@ -278,35 +285,21 @@ public class RiemannianDistanceTransform extends EdtFloat {
                         }
                     }
                     if (nonempty) {
-//                        float[] distances = computeDistances(new int[]{i, i + 1, 0, h, k, k + 1}, gradData, lambda, w, h);
                         for (int j = 0; j < h; j++) {
-//                            if (i == 12 && j == 30 && k == 19) {
-//                                IJ.wait(0);
-//                            }
-//                            if ((greyData[k][i + w * j] <= thresh)) {
-//                                tempInt[j] = 0.0f;
-//                                continue;
-//                            }
-//                            min = Math.min(calcDistance(new int[]{i, i + 1, 0, j, k, k + 1}, gradData, lambda, w),
-//                                    calcDistance(new int[]{i, i + 1, j, h - 1, k, k + 1}, gradData, lambda, w));
                             min = Float.MAX_VALUE;
                             for (int y = j; y < h; y++) {
-//                                if (binData[k][i + y * w] == BACKGROUND) {
-                                    test = tempS[y] + calcDistance(new int[]{i, i + 1, j, y, k, k + 1}, gradData, lambda, w);
-//                                    tempBin[j] = BACKGROUND;
-                                    if (test < min) {
-                                        min = test;
-                                    }
-//                                }
+//                                    test = tempS[y] + calcDistance(new int[]{i, i + 1, j, y, k, k + 1}, gradData, lambda, w);
+                                test = tempS[y] + (float) Math.pow(distances[i + y * w] - distances[i + j * w], 2.0);
+                                if (test < min) {
+                                    min = test;
+                                }
                             }
                             for (int y = j - 1; y >= 0; y--) {
-//                                if (binData[k][i + y * w] == BACKGROUND) {
-                                    test = tempS[y] + calcDistance(new int[]{i, i + 1, y, j, k, k + 1}, gradData, lambda, w);
-//                                    tempBin[j] = BACKGROUND;
-                                    if (test < min) {
-                                        min = test;
-                                    }
-//                                }
+//                                    test = tempS[y] + calcDistance(new int[]{i, i + 1, y, j, k, k + 1}, gradData, lambda, w);
+                                test = tempS[y] + (float) Math.pow(distances[y * w + i] - distances[j * w + i], 2.0);
+                                if (test < min) {
+                                    min = test;
+                                }
                             }
                             tempInt[j] = min;
                         }
@@ -322,21 +315,17 @@ public class RiemannianDistanceTransform extends EdtFloat {
     class Step3Thread extends Thread {
 
         int thread, nThreads, w, h, d;
-        float thresh;
         float[][] s;
-        float[][] greyData;
         float[][] gradData;
         float scaleZ;
 
-        public Step3Thread(int thread, int nThreads, int w, int h, int d, float[][] s, float[][] greyData, float thresh, float scaleZ, float[][] gradData) {
-            this.thresh = thresh;
+        public Step3Thread(int thread, int nThreads, int w, int h, int d, float[][] s, float scaleZ, float[][] gradData) {
             this.thread = thread;
             this.nThreads = nThreads;
             this.w = w;
             this.h = h;
             this.d = d;
             this.s = s;
-            this.greyData = greyData;
             this.gradData = gradData;
             this.scaleZ = scaleZ * scaleZ;
         }
@@ -354,7 +343,9 @@ public class RiemannianDistanceTransform extends EdtFloat {
             boolean nonempty;
             float test, min;
             for (int j = thread; j < h; j += nThreads) {
+                float[] distances = computeZDistances(gradData, lambda, new int[]{0, w, j, j + 1, 0, d});
                 for (int i = 0; i < w; i++) {
+                    int iOffset = i * d;
                     nonempty = false;
                     for (int k = 0; k < d; k++) {
                         tempS[k] = s[k][i + w * j];
@@ -363,32 +354,23 @@ public class RiemannianDistanceTransform extends EdtFloat {
                         }
                     }
                     if (nonempty) {
-//                        float[] distances = computeDistances(new int[]{i, i + 1, j, j + 1, zStart, zStop + 1}, gradData, lambda, w, d);
                         for (int k = 0; k < d; k++) {
-//                            if ((greyData[k][i + w * j] > thresh)) {
-//                                min = scaleZ * Math.min(calcDistance(new int[]{i, i + 1, j, j + 1, 0, k}, gradData, lambda, w),
-//                                        calcDistance(new int[]{i, i + 1, j, j + 1, k, d - 1}, gradData, lambda, w));// bug fixed
-                                min = Float.MAX_VALUE;
-                                for (int z = k; z < d; z++) {
-//                                    if (binData[z][i + j * w] == BACKGROUND) {
-                                        test = tempS[z] + scaleZ * calcDistance(new int[]{i, i + 1, j, j + 1, k, z}, gradData, lambda, w);
-                                        if (test < min) {
-                                            min = test;
-                                        }
-//                                    }
+                            min = Float.MAX_VALUE;
+                            for (int z = k; z < d; z++) {
+//                                test = tempS[z] + scaleZ * calcDistance(new int[]{i, i + 1, j, j + 1, k, z}, gradData, lambda, w);
+                                test = tempS[z] + scaleZ * (float) Math.pow(distances[z + iOffset] - distances[k + iOffset], 2.0);
+                                if (test < min) {
+                                    min = test;
                                 }
-                                for (int z = k - 1; z >= 0; z--) {
-//                                    if (binData[z][i + j * w] == BACKGROUND) {
-                                        test = tempS[z] + scaleZ * calcDistance(new int[]{i, i + 1, j, j + 1, z, k}, gradData, lambda, w);
-                                        if (test < min) {
-                                            min = test;
-                                        }
-//                                    }
+                            }
+                            for (int z = k - 1; z >= 0; z--) {
+//                                        test = tempS[z] + scaleZ * calcDistance(new int[]{i, i + 1, j, j + 1, z, k}, gradData, lambda, w);
+                                test = tempS[z] + scaleZ * (float) Math.pow(distances[z + iOffset] - distances[k + iOffset], 2.0);
+                                if (test < min) {
+                                    min = test;
                                 }
-                                tempInt[k] = min;
-//                            } else {
-//                                tempInt[k] = 0.0f;
-//                            }
+                            }
+                            tempInt[k] = min;
                         }
                         for (int k = 0; k < d; k++) {
                             s[k][i + w * j] = tempInt[k];
