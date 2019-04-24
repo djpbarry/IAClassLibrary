@@ -16,6 +16,8 @@
  */
 package Process.DistanceTransform;
 
+import Process.Filtering.MultiThreadedSobelFilter;
+import UtilClasses.GenUtils;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -45,6 +47,15 @@ public class RiemannianDistanceTransform extends EdtFloat {
         int d = greyImp.sizeZ;
         float scale = scaleZ / scaleXY;
         ImageStack gradStack = FastFilters3D.filterImageStack(greyImp.getImageStack(), FastFilters3D.SOBEL, 1, 1, (int) Math.round(scale), nbCPUs, false);
+        MultiThreadedSobelFilter sobel = new MultiThreadedSobelFilter(null, new ImageFloat(greyImp));
+        sobel.start();
+        try {
+            sobel.join();
+        } catch (InterruptedException e) {
+            GenUtils.logError(e, "Failed to generate sobel-filtered input.");
+            return null;
+        }
+        IJ.saveAs(sobel.getOutput(), "TIF", "D://debugging//giani_debug//GradStack.tif");
         float[][] greyData = greyImp.pixels;
         float[][] gradData = (new ImageFloat(gradStack)).pixels;
         byte[][] binData = binImp.pixels;
