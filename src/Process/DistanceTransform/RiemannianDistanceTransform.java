@@ -26,7 +26,6 @@ import ij.process.ImageProcessor;
 import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.distanceMap3d.EdtFloat;
-import mcib3d.image3d.processing.FastFilters3D;
 
 /**
  *
@@ -34,7 +33,7 @@ import mcib3d.image3d.processing.FastFilters3D;
  */
 public class RiemannianDistanceTransform extends EdtFloat {
 
-    private float lambda = 5.0f;
+    private float lambda = 50.0f;
     private final byte BACKGROUND = 0;
 
     public RiemannianDistanceTransform() {
@@ -46,18 +45,9 @@ public class RiemannianDistanceTransform extends EdtFloat {
         int h = greyImp.sizeY;
         int d = greyImp.sizeZ;
         float scale = scaleZ / scaleXY;
-        ImageStack gradStack = FastFilters3D.filterImageStack(greyImp.getImageStack(), FastFilters3D.SOBEL, 1, 1, (int) Math.round(scale), nbCPUs, false);
-        MultiThreadedSobelFilter sobel = new MultiThreadedSobelFilter(null, new ImageFloat(greyImp));
-        sobel.start();
-        try {
-            sobel.join();
-        } catch (InterruptedException e) {
-            GenUtils.logError(e, "Failed to generate sobel-filtered input.");
-            return null;
-        }
-        IJ.saveAs(sobel.getOutput(), "TIF", "D://debugging//giani_debug//GradStack.tif");
         float[][] greyData = greyImp.pixels;
-        float[][] gradData = (new ImageFloat(gradStack)).pixels;
+        IJ.log("Generating gradient image.");
+        float[][] gradData = getGradImage(greyImp.getImagePlus()).pixels;
         byte[][] binData = binImp.pixels;
         //Create 32 bit floating point stack for output, s.  Will also use it for g in Transormation 1.
         ImageStack outStack = new ImageStack(w, h);
@@ -150,6 +140,18 @@ public class RiemannianDistanceTransform extends EdtFloat {
         res.setOffset(greyImp);
         res.setMinAndMax(0, distMax);
         return res;
+    }
+
+    ImageFloat getGradImage(ImagePlus greyImp) {
+        MultiThreadedSobelFilter sobel = new MultiThreadedSobelFilter(null, new ImageFloat(greyImp));
+        sobel.start();
+        try {
+            sobel.join();
+        } catch (InterruptedException e) {
+            GenUtils.logError(e, "Failed to generate sobel-filtered input.");
+            return null;
+        }
+        return new ImageFloat(sobel.getOutput());
     }
 
     float[] computeXDistances(float[][] gradPix, double lambda, int[] dims) {
