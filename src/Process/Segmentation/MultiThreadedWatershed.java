@@ -21,6 +21,7 @@ import Cell3D.Cytoplasm3D;
 import Cell3D.Nucleus3D;
 import IO.BioFormats.BioFormatsImg;
 import Process.Calculate.MultiThreadedImageCalculator;
+import Process.DistanceTransform.RiemannianDistanceTransform;
 import Process.Mapping.MapPixels;
 import Process.MultiThreadedProcess;
 import Stacks.StackThresholder;
@@ -28,13 +29,15 @@ import UtilClasses.GenUtils;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.AutoThresholder;
-import ij.process.StackProcessor;
 import ij.process.StackStatistics;
+import inra.ijpb.watershed.MarkerControlledWatershedTransform3D;
 import java.util.ArrayList;
 import java.util.Properties;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
+import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageInt;
+import mcib3d.image3d.ImageShort;
 import mcib3d.image3d.regionGrowing.Watershed3D;
 
 /**
@@ -81,18 +84,28 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     public void run() {
         ImagePlus seeds = inputs[0].getOutput();
         ImagePlus image = inputs[1].getOutput();
-        if (!volumeMarker) {
-            (new StackProcessor(image.getImageStack())).invert();
-        }
+//        if (!volumeMarker) {
+//            (new StackProcessor(image.getImageStack())).invert();
+//        }
         int thresh = getThreshold();
         IJ.log(String.format("Watershedding \"%s\" with a threshold of %d, using \"%s\" as seeds...", image.getTitle(), thresh, seeds.getTitle()));
 //        if (binaryImage) {
-        StackThresholder.thresholdStack(image, thresh);
-        thresh = 0;
+        if (volumeMarker) {
+            StackThresholder.thresholdStack(image, thresh);
+            thresh = 0;
 //        }
-        Watershed3D water = new Watershed3D(image.getImageStack(), seeds.getImageStack(), thresh, 0);
-        water.setLabelSeeds(true);
-        output = water.getWatershedImage3D().getImagePlus();
+            Watershed3D water = new Watershed3D(image.getImageStack(), seeds.getImageStack(), thresh, 0);
+            water.setLabelSeeds(true);
+            output = water.getWatershedImage3D().getImagePlus();
+        } else {
+            ImageFloat rdt = (new RiemannianDistanceTransform()).run(new ImageFloat(image), new ImageShort(seeds), thresh, (float) calibration[0], (float) calibration[2]);
+            IJ.saveAs(rdt.getImagePlus(), "TIF", "D:\\debugging\\giani_debug\\rdt.tif");
+            IJ.saveAs(image, "TIF", "D:\\debugging\\giani_debug\\image.tif");
+            IJ.saveAs(seeds, "TIF", "D:\\debugging\\giani_debug\\seeds.tif");
+            MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(rdt.getImagePlus(), seeds, null);
+            output = watershed.applyWithPriorityQueue();
+            IJ.saveAs(output, "TIF", "D:\\debugging\\giani_debug\\watershed.tif");
+        }
         try {
             if (remap) {
                 MapPixels mp = new MapPixels(new MultiThreadedProcess[]{inputs[0], this});

@@ -23,8 +23,8 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
-import mcib3d.image3d.ImageByte;
 import mcib3d.image3d.ImageFloat;
+import mcib3d.image3d.ImageShort;
 import mcib3d.image3d.distanceMap3d.EdtFloat;
 
 /**
@@ -40,7 +40,8 @@ public class RiemannianDistanceTransform extends EdtFloat {
         super();
     }
 
-    public ImageFloat run(ImageFloat greyImp, ImageByte binImp, float thresh, float scaleXY, float scaleZ, int nbCPUs) {
+    public ImageFloat run(ImageFloat greyImp, ImageShort binImp, float thresh, float scaleXY, float scaleZ) {
+        int nbCPUs = Runtime.getRuntime().availableProcessors();
         int w = greyImp.sizeX;
         int h = greyImp.sizeY;
         int d = greyImp.sizeZ;
@@ -48,7 +49,7 @@ public class RiemannianDistanceTransform extends EdtFloat {
         float[][] greyData = greyImp.pixels;
         IJ.log("Generating gradient image.");
         float[][] gradData = getGradImage(greyImp.getImagePlus()).pixels;
-        byte[][] binData = binImp.pixels;
+        short[][] binData = binImp.pixels;
         //Create 32 bit floating point stack for output, s.  Will also use it for g in Transormation 1.
         ImageStack outStack = new ImageStack(w, h);
         float[][] s = new float[d][];
@@ -205,10 +206,10 @@ public class RiemannianDistanceTransform extends EdtFloat {
         int thread, nThreads, w, h, d;
         float[][] s;
         float[][] gradData;
-        byte[][] binData;
+        short[][] binData;
         float scaleZ;
 
-        public Step1Thread(int thread, int nThreads, int w, int h, int d, float[][] s, float scaleZ, byte[][] binData, float[][] gradData) {
+        public Step1Thread(int thread, int nThreads, int w, int h, int d, float[][] s, float scaleZ, short[][] binData, float[][] gradData) {
             this.thread = thread;
             this.nThreads = nThreads;
             this.w = w;
@@ -222,7 +223,7 @@ public class RiemannianDistanceTransform extends EdtFloat {
 
         public void run() {
             float[] sk;
-            byte[] bk;
+            short[] bk;
             int n = w;
             if (h > n) {
                 n = h;
@@ -240,7 +241,7 @@ public class RiemannianDistanceTransform extends EdtFloat {
                     for (int i = 0; i < w; i++) {
                         min = Float.MAX_VALUE;
                         for (int x = i; x < w; x++) {
-                            if (bk[x + jOffset] == BACKGROUND) {
+                            if (bk[x + jOffset] != BACKGROUND) {
                                 test = (float) Math.pow(distances[x + jOffset] - distances[i + jOffset], 2.0);
                                 if (test < min) {
                                     min = test;
@@ -249,7 +250,7 @@ public class RiemannianDistanceTransform extends EdtFloat {
                             }
                         }
                         for (int x = i - 1; x >= 0; x--) {
-                            if (bk[x + jOffset] == BACKGROUND) {
+                            if (bk[x + jOffset] != BACKGROUND) {
                                 test = (float) Math.pow(distances[x + jOffset] - distances[i + jOffset], 2.0);
                                 if (test < min) {
                                     min = test;
