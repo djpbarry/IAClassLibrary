@@ -96,7 +96,7 @@ public class MultiThreadedSobelFilter extends MultiThreadedProcess {
             for (int k = thread; k < input.sizeZ; k += nThreads) {
                 for (int j = 0; j < input.sizeY; j++) {
                     for (int i = 0; i < input.sizeX; i++) {
-                        nei = input.getNeighborhood3x3x3(i, j, k);
+                        nei = getNeighborhood(input, i, j, k);
                         ex = nei.convolve(edgeX, 1.0f);
                         ey = nei.convolve(edgeY, 1.0f);
                         ez = nei.convolve(edgeZ, 1.0f);
@@ -105,6 +105,27 @@ public class MultiThreadedSobelFilter extends MultiThreadedProcess {
                     }
                 }
             }
+        }
+
+        public ArrayUtil getNeighborhood(ImageFloat input, int x, int y, int z) {
+            ArrayUtil res = new ArrayUtil(27);
+            int idx = 0;
+            for (int k = z - 1; k <= z + 1; k++) {
+                k = k < 0 ? 0 : k;
+                k = k < input.sizeZ ? k : input.sizeZ - 1;
+                for (int j = y - 1; j <= y + 1; j++) {
+                    j = j < 0 ? 0 : j;
+                    j = j < input.sizeY ? j : input.sizeY - 1;
+                    for (int i = x - 1; i <= x + 1; i++) {
+                        i = i < 0 ? 0 : i;
+                        i = i < input.sizeX ? i : input.sizeX - 1;
+                        res.putValue(idx, input.getPixel(i, j, k));
+                        idx++;
+                    }
+                }
+            }
+            res.setSize(idx);
+            return res;
         }
     }
 }
