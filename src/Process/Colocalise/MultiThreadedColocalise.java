@@ -160,7 +160,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                 for (ArrayList<Spot> spots : allSpots) {
                     for (Spot s : spots) {
                         rt.incrementCounter();
-                        rt.addValue("Cell ID", c.getValue());
+                        rt.addValue("Cell ID", ((Cell3D) c).getID());
                         rt.addValue(SpotFeatures.CHANNEL, s.getFeature(SpotFeatures.CHANNEL));
                         rt.addValue(SpotFeatures.NUCLEAR, s.getFeature(SpotFeatures.NUCLEAR));
                         rt.addValue(SpotFeatures.DIST_TO_NUC_CENTRE, s.getFeature(SpotFeatures.DIST_TO_NUC_CENTRE));

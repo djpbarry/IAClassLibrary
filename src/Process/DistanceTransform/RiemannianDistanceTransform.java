@@ -33,7 +33,7 @@ import mcib3d.image3d.distanceMap3d.EdtFloat;
  */
 public class RiemannianDistanceTransform extends EdtFloat {
 
-    private float lambda = 0.5f;
+    private float lambda = 0.4f;
     private final byte BACKGROUND = 0;
 
     public RiemannianDistanceTransform() {
