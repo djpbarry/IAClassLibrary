@@ -84,27 +84,19 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     public void run() {
         ImagePlus seeds = inputs[0].getOutput();
         ImagePlus image = inputs[1].getOutput();
-//        if (!volumeMarker) {
-//            (new StackProcessor(image.getImageStack())).invert();
-//        }
         int thresh = getThreshold();
         IJ.log(String.format("Watershedding \"%s\" with a threshold of %d, using \"%s\" as seeds...", image.getTitle(), thresh, seeds.getTitle()));
-//        if (binaryImage) {
+        ImagePlus binaryImp = image.duplicate();
+        StackThresholder.thresholdStack(binaryImp, thresh);
         if (volumeMarker) {
-            StackThresholder.thresholdStack(image, thresh);
             thresh = 0;
-//        }
-            Watershed3D water = new Watershed3D(image.getImageStack(), seeds.getImageStack(), thresh, 0);
+            Watershed3D water = new Watershed3D(binaryImp.getImageStack(), seeds.getImageStack(), thresh, 0);
             water.setLabelSeeds(true);
             output = water.getWatershedImage3D().getImagePlus();
         } else {
             ImageFloat rdt = (new RiemannianDistanceTransform()).run(new ImageFloat(image), new ImageShort(seeds), thresh, (float) calibration[0], (float) calibration[2]);
-            IJ.saveAs(rdt.getImagePlus(), "TIF", "D:\\debugging\\giani_debug\\rdt.tif");
-            IJ.saveAs(image, "TIF", "D:\\debugging\\giani_debug\\image.tif");
-            IJ.saveAs(seeds, "TIF", "D:\\debugging\\giani_debug\\seeds.tif");
-            MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(rdt.getImagePlus(), seeds, null);
-            output = watershed.applyWithPriorityQueue();
-            IJ.saveAs(output, "TIF", "D:\\debugging\\giani_debug\\watershed.tif");
+            MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(rdt.getImagePlus(), seeds, binaryImp);
+            output = watershed.applyWithPriorityQueueAndDams();
         }
         try {
             if (remap) {

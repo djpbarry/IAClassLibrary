@@ -5,6 +5,7 @@
         <group>
             <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IAClassLibrary/src/Process/DistanceTransform/RiemannianDistanceTransform.java</file>
             <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IAClassLibrary/src/Process/Segmentation/MultiThreadedWatershed.java</file>
+            <file>file:/C:/Users/barryd/Documents/Netbeans_Projects/IAClassLibrary/src/Process/Filtering/MultiThreadedSobelFilter.java</file>
         </group>
     </open-files>
 </project-private>
