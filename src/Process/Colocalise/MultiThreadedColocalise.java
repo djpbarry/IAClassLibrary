@@ -108,69 +108,36 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     }
 
     void calcNucParticleDistances() {
+        int nThreads = Runtime.getRuntime().availableProcessors();
         ArrayList<Object3D> cells = cellPop.getObjectsList();
-        int N = cells.size();
-        for (int i = 0; i < N; i++) {
-            Cell3D c = (Cell3D) cells.get(i);
-            double[] nucCentroid = c.getNucleus().getCenterAsArray();
-            ArrayList<ArrayList<Spot>> allSpots = c.getSpots();
-            if (allSpots != null) {
-                int M = allSpots.size();
-                for (int j = 0; j < M; j++) {
-                    ArrayList<Spot> spots = allSpots.get(j);
-                    int L = spots.size();
-                    for (int k = 0; k < L; k++) {
-                        Spot s = spots.get(k);
-                        double[] spotPosition = new double[3];
-                        s.localize(spotPosition);
-                        s.putFeature(SpotFeatures.DIST_TO_NUC_CENTRE, Utils.calcEuclidDist(nucCentroid, spotPosition));
-                    }
-                }
+        SpotNucDistanceCalc[] distanceCalcs = new SpotNucDistanceCalc[nThreads];
+        for (int thread = 0; thread < nThreads; thread++) {
+            distanceCalcs[thread] = new SpotNucDistanceCalc(cells, thread, nThreads);
+            distanceCalcs[thread].start();
+        }
+        try {
+            for (int thread = 0; thread < nThreads; thread++) {
+                distanceCalcs[thread].join();
             }
+        } catch (InterruptedException ie) {
+            GenUtils.logError(ie, "Problem encountered calculating cell-spot distances.");
         }
     }
 
     void calcNearestNeighbours() {
         ArrayList<Object3D> cells = cellPop.getObjectsList();
-        int nCells = cells.size();
-        for (int cellIndex = 0; cellIndex < nCells; cellIndex++) {
-            Cell3D cuurentCell = (Cell3D) cells.get(cellIndex);
-            ArrayList<ArrayList<Spot>> allSpots = cuurentCell.getSpots();
-            if (allSpots != null) {
-                int nAllSpots = allSpots.size();
-                for (int allSpotsIndex = 0; allSpotsIndex < nAllSpots; allSpotsIndex++) {
-                    ArrayList<Spot> parentSpots = allSpots.get(allSpotsIndex);
-                    int nParentSpots = parentSpots.size();
-                    for (int parentSpotIndex = 0; parentSpotIndex < nParentSpots; parentSpotIndex++) {
-                        Spot parentSpot = parentSpots.get(parentSpotIndex);
-                        double[] parentSpotPos = new double[3];
-                        parentSpot.localize(parentSpotPos);
-                        for (int allSpotsColocIndex = 0; allSpotsColocIndex < nAllSpots; allSpotsColocIndex++) {
-                            if (allSpotsColocIndex == allSpotsIndex) {
-                                continue;
-                            }
-                            ArrayList<Spot> colocSpots = allSpots.get(allSpotsColocIndex);
-                            int nColocSpots = colocSpots.size();
-                            double minDist = Double.MAX_VALUE;
-                            int channel = -1;
-                            for (int colocSpotIndex = 0; colocSpotIndex < nColocSpots; colocSpotIndex++) {
-                                Spot colocSpot = colocSpots.get(colocSpotIndex);
-                                double[] colocSpotPos = new double[3];
-                                colocSpot.localize(colocSpotPos);
-                                double dist = Utils.calcEuclidDist(parentSpotPos, colocSpotPos);
-                                if (dist < minDist) {
-                                    minDist = dist;
-                                    channel = (int) Math.round(colocSpot.getFeature(SpotFeatures.CHANNEL));
-                                }
-                            }
-                            if (!(minDist < Double.MAX_VALUE)) {
-                                minDist = -1.0;
-                            }
-                            parentSpot.putFeature(String.format("%s_C%d", SpotFeatures.DIST_TO_NEAREST_NEIGHBOUR, channel), minDist);
-                        }
-                    }
-                }
+        int nThreads = Runtime.getRuntime().availableProcessors();
+        SpotSpotDistanceCalc[] distanceCalcs = new SpotSpotDistanceCalc[nThreads];
+        for (int thread = 0; thread < nThreads; thread++) {
+            distanceCalcs[thread] = new SpotSpotDistanceCalc(cells, thread, nThreads);
+            distanceCalcs[thread].start();
+        }
+        try {
+            for (int thread = 0; thread < nThreads; thread++) {
+                distanceCalcs[thread].join();
             }
+        } catch (InterruptedException ie) {
+            GenUtils.logError(ie, "Problem encountered calculating cell-spot distances.");
         }
     }
 
@@ -194,5 +161,98 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
             }
         }
         DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", props.getProperty(propLabels[1]), File.separator, "Spot_Data.csv")));
+    }
+
+    class SpotNucDistanceCalc extends Thread {
+
+        private final ArrayList<Object3D> cells;
+        private final int thread;
+        private final int nThreads;
+
+        public SpotNucDistanceCalc(ArrayList<Object3D> cells, int thread, int nThreads) {
+            this.cells = cells;
+            this.thread = thread;
+            this.nThreads = nThreads;
+        }
+
+        public void run() {
+            for (int t = thread; t < cells.size(); t += nThreads) {
+                Cell3D c = (Cell3D) cells.get(t);
+                double[] nucCentroid = c.getNucleus().getCenterAsArray();
+                ArrayList<ArrayList<Spot>> allSpots = c.getSpots();
+                if (allSpots != null) {
+                    int M = allSpots.size();
+                    for (int j = 0; j < M; j++) {
+                        ArrayList<Spot> spots = allSpots.get(j);
+                        int L = spots.size();
+                        for (int k = 0; k < L; k++) {
+                            Spot s = spots.get(k);
+                            double[] spotPosition = new double[3];
+                            s.localize(spotPosition);
+                            s.putFeature(SpotFeatures.DIST_TO_NUC_CENTRE, Utils.calcEuclidDist(nucCentroid, spotPosition));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    class SpotSpotDistanceCalc extends Thread {
+
+        private final ArrayList<Object3D> cells;
+        private final int thread;
+        private final int nThreads;
+
+        public SpotSpotDistanceCalc(ArrayList<Object3D> cells, int thread, int nThreads) {
+            this.cells = cells;
+            this.thread = thread;
+            this.nThreads = nThreads;
+        }
+
+        public void run() {
+            for (int t = thread; t < cells.size(); t += nThreads) {
+                Cell3D c = (Cell3D) cells.get(t);
+                ArrayList<ArrayList<Spot>> allSpots = c.getSpots();
+                if (allSpots != null) {
+                    int nAllSpots = allSpots.size();
+                    for (int allSpotsIndex = 0; allSpotsIndex < nAllSpots; allSpotsIndex++) {
+                        calcSpotSpotDistances(allSpots, allSpots.get(allSpotsIndex), allSpotsIndex);
+                    }
+                }
+            }
+        }
+
+        void calcSpotSpotDistances(ArrayList<ArrayList<Spot>> allSpots, ArrayList<Spot> parentSpots, int allSpotsIndex) {
+            int nAllSpots = allSpots.size();
+            int nParentSpots = parentSpots.size();
+            for (int parentSpotIndex = 0; parentSpotIndex < nParentSpots; parentSpotIndex++) {
+                Spot parentSpot = parentSpots.get(parentSpotIndex);
+                double[] parentSpotPos = new double[3];
+                parentSpot.localize(parentSpotPos);
+                for (int allSpotsColocIndex = 0; allSpotsColocIndex < nAllSpots; allSpotsColocIndex++) {
+                    if (allSpotsColocIndex == allSpotsIndex) {
+                        continue;
+                    }
+                    ArrayList<Spot> colocSpots = allSpots.get(allSpotsColocIndex);
+                    int nColocSpots = colocSpots.size();
+                    double minDist = Double.MAX_VALUE;
+                    int channel = -1;
+                    for (int colocSpotIndex = 0; colocSpotIndex < nColocSpots; colocSpotIndex++) {
+                        Spot colocSpot = colocSpots.get(colocSpotIndex);
+                        double[] colocSpotPos = new double[3];
+                        colocSpot.localize(colocSpotPos);
+                        double dist = Utils.calcEuclidDist(parentSpotPos, colocSpotPos);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            channel = (int) Math.round(colocSpot.getFeature(SpotFeatures.CHANNEL));
+                        }
+                    }
+                    if (!(minDist < Double.MAX_VALUE)) {
+                        minDist = -1.0;
+                    }
+                    parentSpot.putFeature(String.format("%s_C%d", SpotFeatures.DIST_TO_NEAREST_NEIGHBOUR, channel), minDist);
+                }
+            }
+        }
     }
 }
