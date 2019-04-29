@@ -21,8 +21,10 @@ package Cell3D;
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class SpotFeatures {
-    public static String CHANNEL = "Channel";
-    public static String NUCLEAR  ="Nuclear";
-    public static String DIST_TO_NUC_CENTRE= "Distance to nucleus";
-    
+
+    public static String CHANNEL = "CHANNEL";
+    public static String NUCLEAR = "NUCLEAR";
+    public static String DIST_TO_NUC_CENTRE = "DISTANCE_TO_NUCLEUS";
+    public static String DIST_TO_NEAREST_NEIGHBOUR = "DISTANCE_TO_NEAREST_NEIGHBOUR";
+
 }

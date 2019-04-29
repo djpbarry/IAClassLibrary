@@ -31,6 +31,7 @@ import ij.measure.ResultsTable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
@@ -62,6 +63,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
             assignParticlesToCells(((MultiThreadedMaximaFinder) inputs[i]).getSpotMaxima(), inputs[lInputs - 2].getOutput(), inputs[lInputs - 1].getOutput());
         }
         calcNucParticleDistances();
+        calcNearestNeighbours();
         try {
             saveData();
         } catch (Exception e) {
@@ -130,21 +132,42 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
 
     void calcNearestNeighbours() {
         ArrayList<Object3D> cells = cellPop.getObjectsList();
-        int N = cells.size();
-        for (int i = 0; i < N; i++) {
-            Cell3D c = (Cell3D) cells.get(i);
-            double[] nucCentroid = c.getNucleus().getCentroid();
-            ArrayList<ArrayList<Spot>> allSpots = c.getSpots();
+        int nCells = cells.size();
+        for (int cellIndex = 0; cellIndex < nCells; cellIndex++) {
+            Cell3D cuurentCell = (Cell3D) cells.get(cellIndex);
+            ArrayList<ArrayList<Spot>> allSpots = cuurentCell.getSpots();
             if (allSpots != null) {
-                int M = allSpots.size();
-                for (int j = 0; j < M; j++) {
-                    ArrayList<Spot> spots = allSpots.get(j);
-                    int L = spots.size();
-                    for (int k = 0; k < L; k++) {
-                        Spot s = spots.get(k);
-                        double[] spotPosition = new double[3];
-                        s.localize(spotPosition);
-                        s.putFeature(SpotFeatures.DIST_TO_NUC_CENTRE, Utils.calcEuclidDist(nucCentroid, spotPosition));
+                int nAllSpots = allSpots.size();
+                for (int allSpotsIndex = 0; allSpotsIndex < nAllSpots; allSpotsIndex++) {
+                    ArrayList<Spot> parentSpots = allSpots.get(allSpotsIndex);
+                    int nParentSpots = parentSpots.size();
+                    for (int parentSpotIndex = 0; parentSpotIndex < nParentSpots; parentSpotIndex++) {
+                        Spot parentSpot = parentSpots.get(parentSpotIndex);
+                        double[] parentSpotPos = new double[3];
+                        parentSpot.localize(parentSpotPos);
+                        for (int allSpotsColocIndex = 0; allSpotsColocIndex < nAllSpots; allSpotsColocIndex++) {
+                            if (allSpotsColocIndex == allSpotsIndex) {
+                                continue;
+                            }
+                            ArrayList<Spot> colocSpots = allSpots.get(allSpotsColocIndex);
+                            int nColocSpots = colocSpots.size();
+                            double minDist = Double.MAX_VALUE;
+                            int channel = -1;
+                            for (int colocSpotIndex = 0; colocSpotIndex < nColocSpots; colocSpotIndex++) {
+                                Spot colocSpot = colocSpots.get(colocSpotIndex);
+                                double[] colocSpotPos = new double[3];
+                                colocSpot.localize(colocSpotPos);
+                                double dist = Utils.calcEuclidDist(parentSpotPos, colocSpotPos);
+                                if (dist < minDist) {
+                                    minDist = dist;
+                                    channel = (int) Math.round(colocSpot.getFeature(SpotFeatures.CHANNEL));
+                                }
+                            }
+                            if (!(minDist < Double.MAX_VALUE)) {
+                                minDist = -1.0;
+                            }
+                            parentSpot.putFeature(String.format("%s_C%d", SpotFeatures.DIST_TO_NEAREST_NEIGHBOUR, channel), minDist);
+                        }
                     }
                 }
             }
@@ -161,9 +184,11 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                     for (Spot s : spots) {
                         rt.incrementCounter();
                         rt.addValue("Cell ID", ((Cell3D) c).getID());
-                        rt.addValue(SpotFeatures.CHANNEL, s.getFeature(SpotFeatures.CHANNEL));
-                        rt.addValue(SpotFeatures.NUCLEAR, s.getFeature(SpotFeatures.NUCLEAR));
-                        rt.addValue(SpotFeatures.DIST_TO_NUC_CENTRE, s.getFeature(SpotFeatures.DIST_TO_NUC_CENTRE));
+                        Iterator<String> keyIter = s.getFeatures().keySet().iterator();
+                        while (keyIter.hasNext()) {
+                            String k = keyIter.next();
+                            rt.addValue(k, s.getFeature(k));
+                        }
                     }
                 }
             }
