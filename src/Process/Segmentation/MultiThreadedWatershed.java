@@ -55,8 +55,8 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     private final boolean binaryImage;
     private final Objects3DPopulation cells;
     private final int segmentationType;
+    private float lambda;
     public final static int CELLS = 0, NUCLEI = 1, SPOTS = 2;
-    private final static String CELL_LABEL = "Cell", NUC_LABEL = "Nucleus", CYTO_LABEL = "Cytoplasm", SPOT_LABEL = "Spot";
 
     public MultiThreadedWatershed(MultiThreadedProcess[] inputs, String objectName, boolean remap, boolean combine, boolean binaryImage, Objects3DPopulation cells) {
         this(inputs, objectName, remap, combine, binaryImage, cells, -1);
@@ -78,6 +78,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         this.propLabels = propLabels;
         this.volumeMarker = Boolean.parseBoolean(props.getProperty(propLabels[2]));
         this.series = Integer.parseInt(props.getProperty(propLabels[0]));
+        this.lambda = Float.parseFloat(props.getProperty(propLabels[4]));
         calibration = getCalibration(series);
     }
 
@@ -94,7 +95,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
             water.setLabelSeeds(true);
             output = water.getWatershedImage3D().getImagePlus();
         } else {
-            ImageFloat rdt = (new RiemannianDistanceTransform()).run(new ImageFloat(image), new ImageShort(seeds), thresh, (float) calibration[0], (float) calibration[2]);
+            ImageFloat rdt = (new RiemannianDistanceTransform()).run(new ImageFloat(image), new ImageShort(seeds), thresh, (float) calibration[0], (float) calibration[2], lambda);
             MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(rdt.getImagePlus(), seeds, binaryImp);
             output = watershed.applyWithPriorityQueueAndDams();
         }

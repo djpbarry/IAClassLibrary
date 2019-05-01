@@ -33,14 +33,15 @@ import mcib3d.image3d.distanceMap3d.EdtFloat;
  */
 public class RiemannianDistanceTransform extends EdtFloat {
 
-    private float lambda = 0.4f;
+    private float lambda;
     private final byte BACKGROUND = 0;
 
     public RiemannianDistanceTransform() {
         super();
     }
 
-    public ImageFloat run(ImageFloat greyImp, ImageShort binImp, float thresh, float scaleXY, float scaleZ) {
+    public ImageFloat run(ImageFloat greyImp, ImageShort binImp, float thresh, float scaleXY, float scaleZ, float lambda) {
+        this.lambda = lambda;
         int nbCPUs = Runtime.getRuntime().availableProcessors();
         int w = greyImp.sizeX;
         int h = greyImp.sizeY;

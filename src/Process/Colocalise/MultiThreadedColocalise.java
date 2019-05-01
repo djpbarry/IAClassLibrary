@@ -137,7 +137,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                 distanceCalcs[thread].join();
             }
         } catch (InterruptedException ie) {
-            GenUtils.logError(ie, "Problem encountered calculating cell-spot distances.");
+            GenUtils.logError(ie, "Problem encountered calculating spot-spot distances.");
         }
     }
 
