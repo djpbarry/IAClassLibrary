@@ -241,6 +241,9 @@ public class TrajectoryAnalysis implements PlugIn {
                 }
             }
             double theta = Utils.arcTan(xVel.getMean(), yVel.getMean());
+            if(theta > 180.0){
+                theta -= 360.0;
+            }
             meanVels[i][0] = mVel.getMean();
             meanVels[i][1] = theta;
         }
