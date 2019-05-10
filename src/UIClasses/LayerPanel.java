@@ -41,7 +41,11 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
 
     public LayerPanel(Properties props, BioFormatsImg img, MultiThreadedProcess process, String[] propLabels) {
         super();
-        this.props = props;
+        if (props != null) {
+            this.props = props;
+        } else {
+            this.props = new Properties();
+        }
         this.img = img;
         this.process = process;
         if (propLabels != null) {
@@ -60,7 +64,7 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
     }
 
     protected abstract void setupProcess();
-    
+
     public MultiThreadedProcess getProcess() {
         return process;
     }

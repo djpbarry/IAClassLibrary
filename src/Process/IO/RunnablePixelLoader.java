@@ -20,7 +20,7 @@ import Process.RunnableProcess;
 import UtilClasses.GenUtils;
 import ij.ImageStack;
 import java.nio.ByteBuffer;
-import loci.formats.ImageReader;
+import loci.formats.IFormatReader;
 
 /**
  *
@@ -28,42 +28,61 @@ import loci.formats.ImageReader;
  */
 public class RunnablePixelLoader extends RunnableProcess {
 
-    private final ImageReader reader;
+    private final IFormatReader reader;
     private final ImageStack stack;
-    private final int byteIndex;
-    private final int outSliceIndex;
+    private final int[] limits;
+    private final int thread;
+    private final int nThreads;
+    private final int[] incs;
 
-    public RunnablePixelLoader(ImageReader reader, ImageStack stack, int byteIndex, int outSliceIndex) {
+    public RunnablePixelLoader(IFormatReader reader, ImageStack stack, int[] limits, int thread, int nThreads, int[] incs) {
         super(null);
         this.reader = reader;
         this.stack = stack;
-        this.byteIndex = byteIndex;
-        this.outSliceIndex = outSliceIndex;
+        this.limits = limits;
+        this.thread = thread;
+        this.nThreads = nThreads;
+        this.incs = incs;
     }
 
     public void run() {
+        int bitDepth = reader.getBitsPerPixel();
+        boolean littleEndian = reader.isLittleEndian();
+        int width = reader.getSizeX();
+        int height = reader.getSizeY();
+        int area = width * height;
+        int k0 = incs[0] > 1 ? limits[6] + thread : limits[6];
+        int j0 = incs[1] > 1 ? limits[3] + thread : limits[3];
+        int i0 = incs[2] > 1 ? limits[0] + thread : limits[0];
         try {
-            int bitDepth = reader.getBitsPerPixel();
-            boolean littleEndian = reader.isLittleEndian();
-            int width = reader.getSizeX();
-            int height = reader.getSizeY();
-            int area = width * height;
-            byte[] pix = reader.openBytes(byteIndex);
-            if (bitDepth == 16) {
-                short[] shortPix = new short[area];
-                for (int index = 0; index < shortPix.length; index++) {
-                    int index2 = 2 * index;
-                    byte[] bytePixel;
-                    if (!littleEndian) {
-                        bytePixel = new byte[]{pix[index2], pix[index2 + 1]};
-                    } else {
-                        bytePixel = new byte[]{pix[index2 + 1], pix[index2]};
+            for (int k = k0; k < limits[7]; k += incs[0]) {
+                int kOffset = k * limits[5] * limits[2];
+                for (int j = j0; j < limits[4]; j += incs[1]) {
+                    int jOffset = j * limits[2];
+                    for (int i = i0; i < limits[1]; i += incs[2]) {
+                        int outSliceIndex = 1 + (k - limits[6]) * limits[1] * limits[4]
+                                + (j - limits[3]) * limits[1]
+                                + (i - limits[0]);
+                        byte[] pix = new byte[area * bitDepth / 8];
+                        reader.openBytes(kOffset + jOffset + i, pix);
+                        if (bitDepth == 16) {
+                            short[] shortPix = new short[area];
+                            for (int index = 0; index < shortPix.length; index++) {
+                                int index2 = 2 * index;
+                                byte[] bytePixel;
+                                if (!littleEndian) {
+                                    bytePixel = new byte[]{pix[index2], pix[index2 + 1]};
+                                } else {
+                                    bytePixel = new byte[]{pix[index2 + 1], pix[index2]};
+                                }
+                                shortPix[index] = ByteBuffer.wrap(bytePixel).getShort();
+                            }
+                            stack.setPixels(shortPix, outSliceIndex);
+                        } else {
+                            stack.setPixels(pix, outSliceIndex);
+                        }
                     }
-                    shortPix[index] = ByteBuffer.wrap(bytePixel).getShort();
                 }
-                stack.setPixels(shortPix, outSliceIndex);
-            } else {
-                stack.setPixels(pix, outSliceIndex);
             }
         } catch (Exception e) {
             GenUtils.logError(e, "Failed to load image plane.");

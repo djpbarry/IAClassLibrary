@@ -18,9 +18,12 @@ package Process.IO;
 
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
+import ij.IJ;
 import ij.ImageStack;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Executors;
+import loci.formats.FormatException;
 import loci.formats.ImageReader;
 
 /**
@@ -46,18 +49,29 @@ public class MultiThreadedImageLoader extends MultiThreadedProcess {
 
     @Override
     public void run() {
-        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        int outSliceIndex = 1;
-        for (int k = limits[6]; k < limits[7]; k++) {
-            int kOffset = k * limits[5] * limits[2];
-            for (int j = limits[3]; j < limits[4]; j++) {
-                int jOffset = j * limits[2];
-                for (int i = limits[0]; i < limits[1]; i++) {
-                    exec.submit(new RunnablePixelLoader(reader, stack, kOffset + jOffset + i, outSliceIndex++));
-                }
+        int nThreads = 1;
+        this.exec = Executors.newFixedThreadPool(nThreads);
+        try {
+            int[] incs = new int[3];
+            int kdiff = limits[7] - limits[6];
+            int jdiff = limits[4] - limits[3];
+            int idiff = limits[1] - limits[0];
+            incs[0] = (kdiff > jdiff) && (kdiff > idiff) ? nThreads : 1;
+            incs[1] = (jdiff > kdiff) && (jdiff > idiff) ? nThreads : 1;
+            incs[2] = (idiff > jdiff) && (idiff > kdiff) ? nThreads : 1;
+            RunnablePixelLoader[] loaders = new RunnablePixelLoader[nThreads];
+            for (int t = 0; t < nThreads; t++) {
+                loaders[t] = new RunnablePixelLoader(reader, stack, limits, t, nThreads, incs);
+                loaders[t].start();
+                //exec.submit(new RunnablePixelLoader(readers[t], stack, limits, t, nThreads, incs));
             }
+            for (int thread = 0; thread < nThreads; thread++) {
+                loaders[thread].join();
+            }
+        } catch (InterruptedException ie) {
+            IJ.error("Error loading image.");
         }
-        terminate("Error loading image.");
+        //terminate("Error loading image.");
     }
 
     public MultiThreadedImageLoader duplicate() {
