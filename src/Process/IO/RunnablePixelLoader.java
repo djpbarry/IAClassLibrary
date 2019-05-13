@@ -60,8 +60,8 @@ public class RunnablePixelLoader extends RunnableProcess {
                 for (int j = j0; j < limits[4]; j += incs[1]) {
                     int jOffset = j * limits[2];
                     for (int i = i0; i < limits[1]; i += incs[2]) {
-                        int outSliceIndex = 1 + (k - limits[6]) * limits[1] * limits[4]
-                                + (j - limits[3]) * limits[1]
+                        int outSliceIndex = 1 + (k - limits[6]) * (limits[1] - limits[0]) * (limits[4] - limits[3])
+                                + (j - limits[3]) * (limits[1] - limits[0])
                                 + (i - limits[0]);
                         byte[] pix = new byte[area * bitDepth / 8];
                         reader.openBytes(kOffset + jOffset + i, pix);

@@ -149,7 +149,11 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         if (path == null || !new File(path).exists()) {
             return;
         }
-        cells.saveObjects(String.format("%s%s%s.zip", path, File.separator, constructOutputName(cells.getObject(0).getName(), cells.getObject(0).getComment())));
+        String outputName = constructOutputName(cells.getObject(0).getName(), cells.getObject(0).getComment());
+        for (int c = 0; c < cells.getNbObjects(); c++) {
+            cells.getObject(c).setComment("");
+        }
+        cells.saveObjects(String.format("%s%s%s.zip", path, File.separator, outputName));
     }
 
     private String[] getGeomHeadings(String calUnit) {

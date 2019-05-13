@@ -62,8 +62,8 @@ public class DataReader {
                     }
                     data.get(line).add(d);
                 }
-                if (j > maxM) {
-                    maxM = j;
+                if (j - 1 > maxM) {
+                    maxM = j - 1;
                 }
             }
         }
