@@ -46,6 +46,9 @@ public class BioFormatsImg {
     private ImagePlus img = new ImagePlus();
     private ImagePlus processedImage;
     private boolean validID;
+    public static char SERIES_SEP = '-';
+    public static char LABEL_SEP = '_';
+    public static char REPLACEMENT_SEP = '.';
 
     public BioFormatsImg() {
         this(null);
@@ -149,10 +152,14 @@ public class BioFormatsImg {
             stackImp.setDimensions(cEnd - cBegin, reader.getSizeZ(), reader.getSizeT());
             stackImp.setOpenAsHyperStack(true);
             img = stackImp;
-            img.setTitle(String.format("%s-S%d_C%d", FilenameUtils.getBaseName(getId()), series, cBegin));
+            img.setTitle(String.format("%s-S%d_C%d", reformatFileName(FilenameUtils.getName(getId())), series, cBegin));
         } catch (Exception e) {
             GenUtils.logError(e, "There seems to be a problem opening that image!");
         }
+    }
+
+    String reformatFileName(String originalFileName) {
+        return originalFileName.replace(LABEL_SEP, REPLACEMENT_SEP).replace(SERIES_SEP, REPLACEMENT_SEP);
     }
 
     private int[] getLimits(String dimOrder, int cBegin, int cEnd) {

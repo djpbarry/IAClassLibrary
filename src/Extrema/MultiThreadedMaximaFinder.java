@@ -24,7 +24,7 @@ import fiji.plugin.trackmate.detection.LogDetector;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.process.ByteProcessor;
+import ij.process.ShortProcessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -46,19 +46,16 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     private double[] calibration;
     private ImageStack stack;
     private float thresh;
-    private boolean varyBG;
-    private boolean absolute;
+    public static short BACKGROUND = 0;
 
     public MultiThreadedMaximaFinder(MultiThreadedProcess[] inputs) {
         super(inputs);
     }
 
-    public MultiThreadedMaximaFinder(int[] radii, float thresh, boolean[] criteria) {
+    public MultiThreadedMaximaFinder(int[] radii, float thresh) {
         super(null);
         this.radii = radii;
         this.thresh = thresh;
-        this.varyBG = criteria[0];
-        this.absolute = criteria[1];
         this.maxima = new ArrayList();
     }
 
@@ -68,30 +65,27 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         this.props = props;
     }
 
-    public ImagePlus makeLocalMaximaImage(byte background, int radius) {
+    public ImagePlus makeLocalMaximaImage(short background, int radius) {
         ImagePlus imp = img.getLoadedImage();
         int width = imp.getWidth();
         int height = imp.getHeight();
         ImageStack output = new ImageStack(width, height);
-        byte foreground = (byte) ~background;
         for (int n = 0; n < imp.getNSlices(); n++) {
-            ByteProcessor bp = new ByteProcessor(width, height);
-            bp.setValue(background);
-            bp.fill();
-            output.addSlice(bp);
+            ShortProcessor sp = new ShortProcessor(width, height);
+            sp.setValue(background);
+            sp.fill();
+            output.addSlice(sp);
         }
-
         Object[] stackPix = output.getImageArray();
-        for (int[] pix : maxima) {
-            ((byte[]) stackPix[pix[2]])[pix[0] + pix[1] * width] = foreground;
+        for (int i = 0; i < maxima.size(); i++) {
+            int[] pix = maxima.get(i);
+            ((short[]) stackPix[pix[2]])[pix[0] + pix[1] * width] = (short) (i + 1);
         }
         return new ImagePlus(String.format("%s - Local Maxima", imp.getTitle()), output);
     }
 
     public void run() {
         maxima = new ArrayList();
-        varyBG = true;
-        absolute = true;
         int series = Integer.parseInt(props.getProperty(propLabels[0]));
         int channel = Integer.parseInt(props.getProperty(propLabels[1]));
         calibration = getCalibration(series);
@@ -124,7 +118,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             maxima.add(pos);
         }
         this.spotMaxima = maximas;
-        output = makeLocalMaximaImage((byte) 0, (int) Math.round(radii[0] / calibration[0]));
+        output = makeLocalMaximaImage(BACKGROUND, (int) Math.round(radii[0] / calibration[0]));
         labelOutput(imp.getTitle(), "Blobs");
     }
 
