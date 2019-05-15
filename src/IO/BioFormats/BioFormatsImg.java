@@ -158,6 +158,10 @@ public class BioFormatsImg {
         }
     }
 
+    public String reformatFileName() {
+        return reformatFileName(FilenameUtils.getName(id));
+    }
+
     String reformatFileName(String originalFileName) {
         return originalFileName.replace(LABEL_SEP, REPLACEMENT_SEP).replace(SERIES_SEP, REPLACEMENT_SEP);
     }

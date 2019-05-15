@@ -28,12 +28,14 @@ import org.apache.commons.io.FilenameUtils;
 
 public class PropertyWriter {
 
-    public static void printProperties(Properties props, String outputDir, String comment, boolean XML) throws IOException {
+    public static String FILENAME = "properties";
+
+    public static void saveProperties(Properties props, String outputDir, String comment, boolean XML) throws IOException {
         if (props == null || outputDir == null) {
             return;
         }
         props.put("Time and Date", TimeAndDate.getCurrentTimeAndDate());
-        String filename = XML ? "properties.xml" : "properties.txt";
+        String filename = XML ? String.format("%s.xml", FILENAME) : String.format("%s.txt", FILENAME);
         File dir = new File(outputDir);
         if (!dir.exists() && !dir.isDirectory()) {
             return;
