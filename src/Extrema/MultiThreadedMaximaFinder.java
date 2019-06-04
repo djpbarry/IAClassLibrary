@@ -17,17 +17,29 @@
 package Extrema;
 
 import Cell3D.SpotFeatures;
+import IAClasses.Utils;
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
+import Stacks.StackThresholder;
 import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.detection.LogDetector;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.plugin.GaussianBlur3D;
+import ij.process.AutoThresholder;
+import ij.process.ByteProcessor;
 import ij.process.ShortProcessor;
+import ij.process.StackStatistics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import mcib3d.geom.Object3D;
+import mcib3d.geom.Objects3DPopulation;
+import mcib3d.image3d.ImageFloat;
+import mcib3d.image3d.ImageHandler;
+import mcib3d.image3d.ImageLabeller;
+import mcib3d.image3d.distanceMap3d.EDT;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.FloatType;
@@ -46,7 +58,12 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     private double[] calibration;
     private ImageStack stack;
     private float thresh;
+    private boolean simple = false;
+    private int series;
+    private int channel;
     public static short BACKGROUND = 0;
+    public static int THRESHOLD_PROP = 4;
+    public static int SERIES_PROP = 0;
 
     public MultiThreadedMaximaFinder(MultiThreadedProcess[] inputs) {
         super(inputs);
@@ -86,40 +103,156 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public void run() {
         maxima = new ArrayList();
-        int series = Integer.parseInt(props.getProperty(propLabels[0]));
-        int channel = Integer.parseInt(props.getProperty(propLabels[1]));
+        series = Integer.parseInt(props.getProperty(propLabels[SERIES_PROP]));
+        channel = Integer.parseInt(props.getProperty(propLabels[1]));
         calibration = getCalibration(series);
         radii = getUncalibratedIntSigma(series, propLabels[2], propLabels[2], propLabels[2]);
         thresh = Float.parseFloat(props.getProperty(propLabels[3]));
         img.loadPixelData(series, channel, channel + 1, null);
         ImagePlus imp = img.getLoadedImage();
-
         this.stack = imp.getImageStack();
         if (stack == null) {
             return;
         }
-        IJ.log(String.format("Searching for blobs %d pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0]), thresh, imp.getTitle()));
-        long[] min = new long[]{0, 0, 0};
-        long[] max = new long[]{stack.getWidth() - 1, stack.getHeight() - 1, stack.getSize() - 1};
-        Img<FloatType> sip = ImagePlusAdapter.wrap(imp);
-        LogDetector<FloatType> log = new LogDetector<FloatType>(Views.interval(sip, min, max),
-                Intervals.createMinMax(min[0], min[1], min[2], max[0], max[1], max[2]),
-                calibration, radii[0], thresh, false, false);
-        log.setNumThreads();
-        log.process();
-        List<Spot> maximas = log.getResult();
-        IJ.log(String.format("Found %d blobs.", maximas.size()));
-        for (Spot s : maximas) {
-            s.putFeature(SpotFeatures.CHANNEL, new Double(channel));
-            int[] pos = new int[3];
-            for (int d = 0; d < 3; d++) {
-                pos[d] = (int) Math.round(s.getFloatPosition(d) / calibration[d]);
+        if (simple) {
+            simpleDetection(imp);
+        } else {
+            IJ.log(String.format("Searching for blobs %d pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0]), thresh, imp.getTitle()));
+            long[] min = new long[]{0, 0, 0};
+            long[] max = new long[]{stack.getWidth() - 1, stack.getHeight() - 1, stack.getSize() - 1};
+            Img<FloatType> sip = ImagePlusAdapter.wrap(imp);
+            LogDetector<FloatType> log = new LogDetector<FloatType>(Views.interval(sip, min, max),
+                    Intervals.createMinMax(min[0], min[1], min[2], max[0], max[1], max[2]),
+                    calibration, radii[0], thresh, false, false);
+            log.setNumThreads();
+            log.process();
+            List<Spot> maximas = log.getResult();
+            IJ.log(String.format("Found %d blobs.", maximas.size()));
+            for (Spot s : maximas) {
+                s.putFeature(SpotFeatures.CHANNEL, new Double(channel));
+                int[] pos = new int[3];
+                for (int d = 0; d < 3; d++) {
+                    pos[d] = (int) Math.round(s.getFloatPosition(d) / calibration[d]);
+                }
+                maxima.add(pos);
             }
-            maxima.add(pos);
+            this.spotMaxima = maximas;
         }
-        this.spotMaxima = maximas;
         output = makeLocalMaximaImage(BACKGROUND, (int) Math.round(radii[0] / calibration[0]));
         labelOutput(imp.getTitle(), "Blobs");
+    }
+
+    public void simpleDetection(ImagePlus image) {
+        ArrayList<int[]> tempMaxima = new ArrayList();
+        radii = getUncalibratedIntSigma(series, propLabels[2], propLabels[2], propLabels[2]);
+        GaussianBlur3D.blur(image, 0.1 * radii[0] / calibration[0], 0.1 * radii[1] / calibration[1], 0.1 * radii[2] / calibration[2]);
+        int greyThresh = getThreshold(image);
+        IJ.log(String.format("Searching for objects %d pixels in diameter in \"%s\"...", (2 * radii[0]), image.getTitle()));
+        ImagePlus binaryImp = image.duplicate();
+        StackThresholder.thresholdStack(binaryImp, greyThresh);
+//        IJ.saveAs(binaryImp, "TIF", "D:\\debugging\\giani_debug\\binaryImp.tif");
+        ImageFloat distanceMap = EDT.run(ImageHandler.wrap(binaryImp), 1, (float) calibration[0], (float) calibration[2], false, -1);
+//        IJ.saveAs(distanceMap.getImagePlus(), "TIF", "D:\\debugging\\giani_debug\\distanceMap.tif");
+        int nThreads = Runtime.getRuntime().availableProcessors();
+        RunnableMaximaFinder[] mf = new RunnableMaximaFinder[nThreads];
+        for (int thread = 0; thread < nThreads; thread++) {
+            mf[thread] = new RunnableMaximaFinder(distanceMap.getImageStack().getImageArray(), (int) Math.round(radii[0]), tempMaxima, new int[]{image.getWidth(), image.getHeight(), image.getNSlices()}, thread, nThreads, new int[]{2, 2, 2});
+            mf[thread].start();
+        }
+        try {
+            for (int thread = 0; thread < nThreads; thread++) {
+                mf[thread].join();
+            }
+        } catch (Exception e) {
+            IJ.error("A thread was interrupted in step 3 .");
+        }
+        ImageStack maxStack = new ImageStack(image.getWidth(), image.getHeight());
+        for (int n = 0; n < image.getNSlices(); n++) {
+            ByteProcessor bp = new ByteProcessor(image.getWidth(), image.getHeight());
+            bp.setValue(0.0);
+            bp.fill();
+            maxStack.addSlice(bp);
+        }
+        Object[] maxPix = maxStack.getImageArray();
+        for (int[] m : tempMaxima) {
+            ((byte[]) maxPix[m[2]])[m[0] + m[1] * image.getWidth()] = 1;
+        }
+//        IJ.saveAs(new ImagePlus("", maxStack), "TIF", "D:\\debugging\\giani_debug\\maxObjects.tif");
+        Objects3DPopulation objects = new Objects3DPopulation(new ImageLabeller().getLabels(ImageHandler.wrap(new ImagePlus("", maxStack))));
+        for (int i = 0; i < objects.getNbObjects(); i++) {
+            Object3D o = objects.getObject(i);
+            double[] centre = o.getCenterAsArray();
+            maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
+        }
+        consolidatePointsOnDistance(radii[0], calibration);
+        consolidatePointsOnIntensity(greyThresh, thresh, calibration, ImageHandler.wrap(image));
+    }
+
+    void consolidatePointsOnDistance(double thresh, double[] calibration) {
+        boolean change = true;
+        while (change) {
+            change = false;
+            for (int i = 0; i < maxima.size(); i++) {
+                int[] m1 = maxima.get(i);
+                for (int j = 0; j < maxima.size(); j++) {
+                    if (i == j) {
+                        continue;
+                    }
+                    int[] m2 = maxima.get(j);
+                    double dist = Utils.calcEuclidDist(new double[]{m1[0] * calibration[0], m1[1] * calibration[1], m1[2] * calibration[2]},
+                            new double[]{m2[0] * calibration[0], m2[1] * calibration[1], m2[2] * calibration[2]});
+                    if (dist < thresh) {
+                        int x = (int) Math.round((m1[0] + m2[0]) / 2.0);
+                        int y = (int) Math.round((m1[1] + m2[1]) / 2.0);
+                        int z = (int) Math.round((m1[2] + m2[2]) / 2.0);
+                        maxima.remove(m1);
+                        maxima.remove(m2);
+                        maxima.add(new int[]{x, y, z});
+                        i = -1;
+                        j = maxima.size();
+                    }
+                }
+            }
+        }
+    }
+
+    void consolidatePointsOnIntensity(double intensThresh, double distThresh, double[] calibration, ImageHandler stack) {
+        boolean change = true;
+        while (change) {
+            change = false;
+            for (int i = 0; i < maxima.size(); i++) {
+                int[] m1 = maxima.get(i);
+                for (int j = 0; j < maxima.size(); j++) {
+                    if (i == j) {
+                        continue;
+                    }
+                    int[] m2 = maxima.get(j);
+                    double dist = Utils.calcEuclidDist(new double[]{m1[0] * calibration[0], m1[1] * calibration[1], m1[2] * calibration[2]},
+                            new double[]{m2[0] * calibration[0], m2[1] * calibration[1], m2[2] * calibration[2]});
+                    if (dist > distThresh) {
+                        continue;
+                    }
+                    double[] profile = stack.extractLine(m1[0], m1[1], m1[2], m2[0], m2[1], m2[2], true);
+                    boolean remove = true;
+                    for (double p : profile) {
+                        if (p < intensThresh) {
+                            remove = false;
+                            break;
+                        }
+                    }
+                    if (remove) {
+                        int x = (int) Math.round((m1[0] + m2[0]) / 2.0);
+                        int y = (int) Math.round((m1[1] + m2[1]) / 2.0);
+                        int z = (int) Math.round((m1[2] + m2[2]) / 2.0);
+                        maxima.remove(m1);
+                        maxima.remove(m2);
+                        maxima.add(new int[]{x, y, z});
+                        i = -1;
+                        j = maxima.size();
+                    }
+                }
+            }
+        }
     }
 
     public ArrayList<int[]> getMaxima() {
@@ -128,6 +261,12 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public List<Spot> getSpotMaxima() {
         return spotMaxima;
+    }
+
+    private int getThreshold(ImagePlus image) {
+        StackStatistics stats = new StackStatistics(image);
+        int tIndex = (new AutoThresholder()).getThreshold(AutoThresholder.Method.Li, stats.histogram);
+        return (int) Math.round(stats.histMin + stats.binSize * tIndex);
     }
 
     public MultiThreadedMaximaFinder duplicate() {
