@@ -52,18 +52,26 @@ import net.imglib2.view.Views;
  */
 public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
+    public static int BLOB_DETECT = 6;
+    public static int EDM_MIN_SIZE = 4;
+    public static int BLOB_SIZE = 1;
+    public static int CHANNEL_SELECT = 0;
+    public static int EDM_MAX_SIZE = 5;
+    public static int BLOB_THRESH = 2;
+    public static int EDM_THRESH = 3;
+    public static int SERIES_SELECT = 7;
+    public static int EDM_DETECT = 8;
+    public static int N_PROP_LABELS = 9;
+    
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
     private int[] radii;
     private double[] calibration;
     private ImageStack stack;
     private float thresh;
-    private boolean simple = false;
     private int series;
     private int channel;
     public static short BACKGROUND = 0;
-    public static int THRESHOLD_PROP = 4;
-    public static int SERIES_PROP = 0;
 
     public MultiThreadedMaximaFinder(MultiThreadedProcess[] inputs) {
         super(inputs);
@@ -103,19 +111,19 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public void run() {
         maxima = new ArrayList();
-        series = Integer.parseInt(props.getProperty(propLabels[SERIES_PROP]));
-        channel = Integer.parseInt(props.getProperty(propLabels[1]));
+        series = Integer.parseInt(props.getProperty(propLabels[SERIES_SELECT]));
+        channel = Integer.parseInt(props.getProperty(propLabels[CHANNEL_SELECT]));
         calibration = getCalibration(series);
-        radii = getUncalibratedIntSigma(series, propLabels[2], propLabels[2], propLabels[2]);
-        thresh = Float.parseFloat(props.getProperty(propLabels[3]));
+        radii = getUncalibratedIntSigma(series, propLabels[BLOB_SIZE], propLabels[BLOB_SIZE], propLabels[BLOB_SIZE]);
+        thresh = Float.parseFloat(props.getProperty(propLabels[BLOB_THRESH]));
         img.loadPixelData(series, channel, channel + 1, null);
         ImagePlus imp = img.getLoadedImage();
         this.stack = imp.getImageStack();
         if (stack == null) {
             return;
         }
-        if (simple) {
-            simpleDetection(imp);
+        if (!Boolean.parseBoolean(props.getProperty(propLabels[BLOB_DETECT]))) {
+            edmDetection(imp);
         } else {
             IJ.log(String.format("Searching for blobs %d pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0]), thresh, imp.getTitle()));
             long[] min = new long[]{0, 0, 0};
@@ -142,9 +150,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         labelOutput(imp.getTitle(), "Blobs");
     }
 
-    public void simpleDetection(ImagePlus image) {
+    public void edmDetection(ImagePlus image) {
         ArrayList<int[]> tempMaxima = new ArrayList();
-        radii = getUncalibratedIntSigma(series, propLabels[2], propLabels[2], propLabels[2]);
+        radii = getUncalibratedIntSigma(series, propLabels[EDM_MIN_SIZE], propLabels[EDM_MIN_SIZE], propLabels[EDM_MIN_SIZE]);
         GaussianBlur3D.blur(image, 0.1 * radii[0] / calibration[0], 0.1 * radii[1] / calibration[1], 0.1 * radii[2] / calibration[2]);
         int greyThresh = getThreshold(image);
         IJ.log(String.format("Searching for objects %d pixels in diameter in \"%s\"...", (2 * radii[0]), image.getTitle()));
@@ -185,7 +193,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
         }
         consolidatePointsOnDistance(radii[0], calibration);
-        consolidatePointsOnIntensity(greyThresh, thresh, calibration, ImageHandler.wrap(image));
+        consolidatePointsOnIntensity(greyThresh, Double.parseDouble(props.getProperty(propLabels[EDM_MAX_SIZE])), calibration, ImageHandler.wrap(image));
     }
 
     void consolidatePointsOnDistance(double thresh, double[] calibration) {
