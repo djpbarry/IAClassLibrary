@@ -46,9 +46,9 @@ public class PropertyExtractor {
                 }
                 setProperties(props, (Container) c, readWrite);
             }
-            if (!c.isEnabled()) {
-                continue;
-            }
+//            if (!c.isEnabled()) {
+//                continue;
+//            }
             if (c instanceof JLabel) {
                 JLabel label = ((JLabel) c);
                 Component currentComponent = label.getLabelFor();

@@ -18,6 +18,7 @@ package IO.BioFormats;
 
 import Process.IO.MultiThreadedImageLoader;
 import UtilClasses.GenUtils;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import java.io.IOException;

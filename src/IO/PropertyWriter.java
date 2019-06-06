@@ -51,8 +51,8 @@ public class PropertyWriter {
     }
 
     public static void loadProperties(Properties props, String label, File file) throws IOException, InterruptedException, InvocationTargetException {
-        if (file == null) {
-            file = Utilities.getFile(null, label, false);
+        if (file == null || file.isDirectory()) {
+            file = Utilities.getFile(file, label, false);
         }
         FileInputStream stream = new FileInputStream(file);
         String ext = FilenameUtils.getExtension(file.getName());
