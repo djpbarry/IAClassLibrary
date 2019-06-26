@@ -51,7 +51,7 @@ public class TrajectoryAnalysis implements PlugIn {
     private static int minPointsForMSD = 10;
     private static int smoothingWindow = 1;
     private static boolean smooth = false, interpolate = false;
-    private static int INPUT_X_INDEX = 3, INPUT_Y_INDEX = 4, INPUT_ID_INDEX = 1, INPUT_FRAME_INDEX = 7;
+    private static int INPUT_X_INDEX = 2, INPUT_Y_INDEX = 3, INPUT_ID_INDEX = 10, INPUT_FRAME_INDEX = 0;
     private final int _X_ = 0, _Y_ = 1, _T_ = 2, _ID_ = 3;
     private final int V_Fr = 0, V_X = 1, V_Y = 2, V_M = 3, V_Th = 4, V_F = 5, V_ID = 6, V_D = 7, V_T = 8;
     private final String TITLE = "Trajectory Analysis";
@@ -167,38 +167,41 @@ public class TrajectoryAnalysis implements PlugIn {
     }
 
     double[][][] processData(double[][] inputData) {
-        int count = 1;
-        int id = (int) Math.round(inputData[0][INPUT_ID_INDEX]);
         ArrayList<Integer> lengths = new ArrayList();
-        int l = 0;
         idIndexMap = new LinkedHashMap();
+        LinkedHashMap<Double, Integer> localMap = new LinkedHashMap();
         for (int i = 0; i < inputData.length; i++) {
-            if (inputData[i][INPUT_ID_INDEX] > id) {
-                id = (int) Math.round(inputData[i][INPUT_ID_INDEX]);
-                count++;
-                lengths.add(l);
-                l = 0;
+            double thisID = inputData[i][INPUT_ID_INDEX];
+            if (Double.isNaN(thisID)) {
+                continue;
             }
-            l++;
+            if (localMap.get(thisID) == null) {
+                localMap.put(thisID, localMap.size());
+                lengths.add(1);
+            } else {
+                int currentLength = lengths.get(localMap.get(thisID));
+                currentLength++;
+                lengths.set(localMap.get(thisID), currentLength);
+            }
         }
-        lengths.add(l);
-        double[][][] output = new double[count][][];
-        output[0] = new double[lengths.get(0)][4];
-        id = (int) Math.round(inputData[0][INPUT_ID_INDEX]);
-        idIndexMap.put(0, id);
-        for (int j = 0, k = 0, index = 0; j < inputData.length; j++) {
-            if (inputData[j][INPUT_ID_INDEX] > id) {
-                id = (int) Math.round(inputData[j][INPUT_ID_INDEX]);
-                k++;
-                index = 0;
-                output[k] = new double[lengths.get(k)][4];
-                idIndexMap.put(k, id);
+        double[][][] output = new double[localMap.size()][][];
+        int[] outputRowNumbers = new int[output.length];
+        for (int inputIndex = 0; inputIndex < inputData.length; inputIndex++) {
+            double thisID = inputData[inputIndex][INPUT_ID_INDEX];
+            if (Double.isNaN(thisID)) {
+                continue;
             }
-            output[k][index][_X_] = inputData[j][INPUT_X_INDEX];
-            output[k][index][_Y_] = inputData[j][INPUT_Y_INDEX];
-            output[k][index][_T_] = inputData[j][INPUT_FRAME_INDEX];
-            output[k][index][_ID_] = inputData[j][INPUT_ID_INDEX];
-            index++;
+            int outputIndex = localMap.get(thisID);
+            if (output[outputIndex] == null) {
+                outputRowNumbers[outputIndex] = 0;
+                output[outputIndex] = new double[lengths.get(outputIndex)][4];
+                idIndexMap.put(outputIndex, (int) Math.round(thisID));
+            }
+            output[outputIndex][outputRowNumbers[outputIndex]][_X_] = inputData[inputIndex][INPUT_X_INDEX];
+            output[outputIndex][outputRowNumbers[outputIndex]][_Y_] = inputData[inputIndex][INPUT_Y_INDEX];
+            output[outputIndex][outputRowNumbers[outputIndex]][_T_] = inputData[inputIndex][INPUT_FRAME_INDEX];
+            output[outputIndex][outputRowNumbers[outputIndex]][_ID_] = inputData[inputIndex][INPUT_ID_INDEX];
+            outputRowNumbers[outputIndex]++;
         }
         return output;
     }
