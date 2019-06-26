@@ -60,7 +60,7 @@ public class TrajectoryAnalysis implements PlugIn {
     private LinkedHashMap<Integer, Integer> idIndexMap;
     private final boolean batch;
     public static final String MSD = "Mean_Square_Displacements.csv";
-    private static boolean labelledData = true;
+    private static boolean labelledData = false;
     private boolean openResultsDirectory = true;
 
     public TrajectoryAnalysis(double minVel, double minDist, double framesPerSec, int smoothingWindow, boolean smooth, boolean interpolate, boolean labelledData, boolean batch, boolean openResultsDirectory, int[] cols) {
@@ -104,11 +104,17 @@ public class TrajectoryAnalysis implements PlugIn {
         File parentOutputDirectory = openResultsDirectory
                 ? new File(GenUtils.openResultsDirectory(String.format("%s%s%s_%s", inputFile.getParent(), File.separator, TITLE, inputFile.getName())))
                 : new File(inputFile.getParent());
-        String[] headingsArray = getFileHeadings(inputFile, labelledData);
+        String[] headingsArray = getFileHeadings(inputFile, false);
         if (!batch && !showDialog(headingsArray)) {
             return;
         }
         headingsArray = getFileHeadings(inputFile, labelledData);
+        if (labelledData) {
+            TrajectoryAnalysis.INPUT_X_INDEX--;
+            TrajectoryAnalysis.INPUT_Y_INDEX--;
+            TrajectoryAnalysis.INPUT_FRAME_INDEX--;
+            TrajectoryAnalysis.INPUT_ID_INDEX--;
+        }
         ArrayList<String> labels = labelledData ? new ArrayList() : null;
         try {
             IJ.log(String.format("Reading %s...", inputFile.getAbsolutePath()));
@@ -241,7 +247,7 @@ public class TrajectoryAnalysis implements PlugIn {
                 }
             }
             double theta = Utils.arcTan(xVel.getMean(), yVel.getMean());
-            if(theta > 180.0){
+            if (theta > 180.0) {
                 theta -= 360.0;
             }
             meanVels[i][0] = mVel.getMean();
@@ -455,9 +461,8 @@ public class TrajectoryAnalysis implements PlugIn {
 
     public String[] getFileHeadings(File inputFile, boolean labelledData) {
         ArrayList<String> headings = new ArrayList();
-        ArrayList<String> labels = labelledData ? new ArrayList() : null;
         try {
-            DataReader.readCSVFile(inputFile, CSVFormat.DEFAULT, headings, labels);
+            DataReader.readFileHeadings(inputFile, CSVFormat.DEFAULT, headings, labelledData);
         } catch (Exception e) {
             GenUtils.error("Cannot read input file.");
             return null;

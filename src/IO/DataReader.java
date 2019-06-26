@@ -62,10 +62,13 @@ public class DataReader {
                     }
                     data.get(line).add(d);
                 }
-                if (j - 1 > maxM) {
-                    maxM = j - 1;
+                if (j > maxM) {
+                    maxM = j;
                 }
             }
+        }
+        if (rowLabels != null) {
+            maxM--;
         }
 //        colHeadings = headings.toArray(colHeadings);
 //        rowLabels = rows.toArray(rowLabels);
@@ -128,4 +131,13 @@ public class DataReader {
         }
         return output;
     }
+
+    public static void readFileHeadings(File file, CSVFormat format, ArrayList<String> colHeadings, boolean labelled) throws IOException {
+        CSVParser parser = CSVParser.parse(file, GenVariables.UTF8, format);
+        CSVRecord record = parser.getRecords().get(0);
+        for (int j = labelled ? 1 : 0; j < record.size(); j++) {
+            colHeadings.add(record.get(j));
+        }
+    }
+
 }
