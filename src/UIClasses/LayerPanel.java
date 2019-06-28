@@ -18,7 +18,11 @@ package UIClasses;
 
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
+import UtilClasses.GenUtils;
 import java.awt.Container;
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import javax.swing.JPanel;
@@ -33,13 +37,14 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
     protected final BioFormatsImg img;
     protected final Properties props;
     protected MultiThreadedProcess process;
-    protected String[] propLabels = new String[]{"","","","","","","","", ""};
+    protected String[] propLabels = new String[]{"", "", "", "", "", "", "", "", ""};
+    protected URI helpURI;
 
     public LayerPanel() {
-        this(null, null, null, null);
+        this(null, null, null, null, null);
     }
 
-    public LayerPanel(Properties props, BioFormatsImg img, MultiThreadedProcess process, String[] propLabels) {
+    public LayerPanel(Properties props, BioFormatsImg img, MultiThreadedProcess process, String[] propLabels, URI helpURI) {
         super();
         if (props != null) {
             this.props = props;
@@ -51,6 +56,7 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
         if (propLabels != null) {
             this.propLabels = propLabels;
         }
+        this.helpURI = helpURI;
     }
 
     public void setProperties(Properties p, Container container) {
@@ -64,6 +70,18 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
     }
 
     protected abstract void setupProcess();
+
+    protected boolean openHelpPage(String errorMessage) {
+        try {
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(helpURI);
+            }
+        } catch (IOException e) {
+            GenUtils.error(errorMessage);
+            return false;
+        }
+        return true;
+    }
 
     public MultiThreadedProcess getProcess() {
         return process;
