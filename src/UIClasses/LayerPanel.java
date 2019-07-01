@@ -69,7 +69,7 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
         return true;
     }
 
-    protected abstract void setupProcess();
+    public abstract void setupProcess();
 
     protected boolean openHelpPage(String errorMessage) {
         try {

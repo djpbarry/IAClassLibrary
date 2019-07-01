@@ -90,7 +90,11 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     }
 
     protected double[] getCalibration(int series) {
-        double xySpatialRes = img.getXYSpatialRes(series).value().doubleValue();
+        Length xyLength = img.getXYSpatialRes(series);
+        double xySpatialRes = 1.0;
+        if (xyLength != null) {
+            xySpatialRes = xyLength.value().doubleValue();
+        }
         Length zLength = img.getZSpatialRes(series);
         double zSpatialRes = zLength != null ? zLength.value().doubleValue() : 1.0;
         return new double[]{xySpatialRes, xySpatialRes, zSpatialRes};

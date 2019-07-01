@@ -18,7 +18,6 @@ package IO.BioFormats;
 
 import Process.IO.MultiThreadedImageLoader;
 import UtilClasses.GenUtils;
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import java.io.IOException;
@@ -84,7 +83,11 @@ public class BioFormatsImg {
     }
 
     public int getSeriesCount() {
-        return reader.getSeriesCount();
+        try {
+            return reader.getSeriesCount();
+        } catch (IllegalStateException e) {
+            return -1;
+        }
     }
 
     public String getDimOrder() {
@@ -104,10 +107,16 @@ public class BioFormatsImg {
     }
 
     public Length getXYSpatialRes(int series) {
+        if (series >= getSeriesCount()) {
+            return null;
+        }
         return meta.getPixelsPhysicalSizeX(series);
     }
 
     public Length getZSpatialRes(int series) {
+        if (series >= getSeriesCount()) {
+            return null;
+        }
         return meta.getPixelsPhysicalSizeZ(series);
     }
 
