@@ -46,6 +46,12 @@ import mcib3d.image3d.regionGrowing.Watershed3D;
  */
 public class MultiThreadedWatershed extends MultiThreadedProcess {
 
+    public static int SERIES_LABEL = 0;
+    public static int THRESHOLD_LABEL = 1;
+    public static int VOL_MARKER_LABEL = 2;
+    public static int MEMB_MARKER_LABEL = 3;
+    public static int LAMBDA_LABEL = 4;
+    public static int N_PROP_LABELS = 5;
     private double[] calibration;
     private int series;
     private final String objectName;
@@ -56,7 +62,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     private final Objects3DPopulation cells;
     private final int segmentationType;
     private float lambda;
-    public final static int CELLS = 0, NUCLEI = 1, SPOTS = 2;
+    public final static int CELLS = 10, NUCLEI = 11, SPOTS = 12;
 
     public MultiThreadedWatershed(MultiThreadedProcess[] inputs, String objectName, boolean remap, boolean combine, boolean binaryImage, Objects3DPopulation cells) {
         this(inputs, objectName, remap, combine, binaryImage, cells, -1);
@@ -76,9 +82,9 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
-        this.volumeMarker = Boolean.parseBoolean(props.getProperty(propLabels[2]));
-        this.series = Integer.parseInt(props.getProperty(propLabels[0]));
-        this.lambda = Float.parseFloat(props.getProperty(propLabels[4]));
+        this.volumeMarker = Boolean.parseBoolean(props.getProperty(propLabels[VOL_MARKER_LABEL]));
+        this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
+        this.lambda = Float.parseFloat(props.getProperty(propLabels[LAMBDA_LABEL]));
         calibration = getCalibration(series);
     }
 
@@ -172,7 +178,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
 
     private int getThreshold() {
         StackStatistics stats = new StackStatistics(inputs[1].getOutput());
-        int tIndex = (new AutoThresholder()).getThreshold(AutoThresholder.Method.valueOf(props.getProperty(propLabels[1])), stats.histogram);
+        int tIndex = (new AutoThresholder()).getThreshold(AutoThresholder.Method.valueOf(props.getProperty(propLabels[THRESHOLD_LABEL])), stats.histogram);
         return (int) Math.round(stats.histMin + stats.binSize * tIndex);
     }
 

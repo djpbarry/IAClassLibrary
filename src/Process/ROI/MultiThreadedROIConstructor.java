@@ -39,6 +39,11 @@ import org.apache.commons.math3.linear.ArrayRealVector;
  */
 public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 
+    public static int SERIES_LABEL = 0;
+    public static int CHANNELS_LABEL = 1;
+    public static int OUTPUT_LABEL = 2;
+    public static int LOCALISE_LABEL = 3;
+    public static int N_PROP_LABELS = 4;
     private final Objects3DPopulation cells;
     int selectedChannels;
     int series;
@@ -60,9 +65,9 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
-        this.series = Integer.parseInt(props.getProperty(propLabels[0]));
-        this.selectedChannels = Integer.parseInt(props.getProperty(propLabels[1]));
-        this.outputPath = props.getProperty(propLabels[2]);
+        this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
+        this.selectedChannels = Integer.parseInt(props.getProperty(propLabels[CHANNELS_LABEL]));
+        this.outputPath = props.getProperty(propLabels[OUTPUT_LABEL]);
     }
 
     @Override
