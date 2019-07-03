@@ -64,7 +64,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int EDM_THRESH = 3;
     public static int SERIES_SELECT = 7;
     public static int EDM_DETECT = 8;
-    public static int N_PROP_LABELS = 9;
+    public static int EDM_FILTER = 9;
+    public static int N_PROP_LABELS = 10;
 
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
@@ -157,8 +158,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public void edmDetection(ImagePlus image) {
         ArrayList<int[]> tempMaxima = new ArrayList();
         radii = getUncalibratedIntSigma(series, propLabels[EDM_MIN_SIZE], propLabels[EDM_MIN_SIZE], propLabels[EDM_MIN_SIZE]);
-        GaussianBlur3D.blur(image, 0.1 * radii[0] / calibration[0], 0.1 * radii[1] / calibration[1], 0.1 * radii[2] / calibration[2]);
-        int greyThresh = getThreshold(image);
+        double[] sigma = getCalibratedDoubleSigma(series, propLabels[EDM_FILTER], propLabels[EDM_FILTER], propLabels[EDM_FILTER]);
+        GaussianBlur3D.blur(image, sigma[0], sigma[1], sigma[2]);
+        int greyThresh = getThreshold(image, AutoThresholder.Method.valueOf(props.getProperty(propLabels[EDM_THRESH])));
         IJ.log(String.format("Searching for objects %d pixels in diameter in \"%s\"...", (2 * radii[0]), image.getTitle()));
         ImagePlus binaryImp = image.duplicate();
         StackThresholder.thresholdStack(binaryImp, greyThresh);
@@ -293,9 +295,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         return edmThresholdOutline;
     }
 
-    private int getThreshold(ImagePlus image) {
+    private int getThreshold(ImagePlus image, AutoThresholder.Method method) {
         StackStatistics stats = new StackStatistics(image);
-        int tIndex = (new AutoThresholder()).getThreshold(AutoThresholder.Method.Li, stats.histogram);
+        int tIndex = (new AutoThresholder()).getThreshold(method, stats.histogram);
         return (int) Math.round(stats.histMin + stats.binSize * tIndex);
     }
 
