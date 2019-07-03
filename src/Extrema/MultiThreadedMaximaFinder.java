@@ -26,9 +26,12 @@ import fiji.plugin.trackmate.detection.LogDetector;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.gui.Roi;
 import ij.plugin.GaussianBlur3D;
+import ij.plugin.filter.ThresholdToSelection;
 import ij.process.AutoThresholder;
 import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 import ij.process.StackStatistics;
 import java.util.ArrayList;
@@ -62,7 +65,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int SERIES_SELECT = 7;
     public static int EDM_DETECT = 8;
     public static int N_PROP_LABELS = 9;
-    
+
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
     private int[] radii;
@@ -72,6 +75,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     private int series;
     private int channel;
     public static short BACKGROUND = 0;
+    private Roi[] edmThresholdOutline;
 
     public MultiThreadedMaximaFinder(MultiThreadedProcess[] inputs) {
         super(inputs);
@@ -158,6 +162,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         IJ.log(String.format("Searching for objects %d pixels in diameter in \"%s\"...", (2 * radii[0]), image.getTitle()));
         ImagePlus binaryImp = image.duplicate();
         StackThresholder.thresholdStack(binaryImp, greyThresh);
+        createThresholdOutline(binaryImp);
 //        IJ.saveAs(binaryImp, "TIF", "D:\\debugging\\giani_debug\\binaryImp.tif");
         ImageFloat distanceMap = EDT.run(ImageHandler.wrap(binaryImp), 1, (float) calibration[0], (float) calibration[2], false, -1);
 //        IJ.saveAs(distanceMap.getImagePlus(), "TIF", "D:\\debugging\\giani_debug\\distanceMap.tif");
@@ -263,12 +268,29 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         }
     }
 
+    private void createThresholdOutline(ImagePlus imp) {
+        ImageStack stack = imp.getImageStack();
+        edmThresholdOutline = new Roi[stack.size()];
+        ThresholdToSelection tts = new ThresholdToSelection();
+        for (int i = 1; i <= stack.size(); i++) {
+            ImageProcessor ip = stack.getProcessor(i);
+            ip.setThreshold(1, 255, ImageProcessor.NO_LUT_UPDATE);
+            tts.setup(null, imp);
+            tts.run(ip);
+            edmThresholdOutline[i - 1] = imp.getRoi();
+        }
+    }
+
     public ArrayList<int[]> getMaxima() {
         return maxima;
     }
 
     public List<Spot> getSpotMaxima() {
         return spotMaxima;
+    }
+
+    public Roi[] getEdmThresholdOutline() {
+        return edmThresholdOutline;
     }
 
     private int getThreshold(ImagePlus image) {
