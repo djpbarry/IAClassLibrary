@@ -95,7 +95,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             } else {
                 combinedCell.addVoxels(nuc.getVoxels());
             }
-            combinedCell.setName(String.format("%s_%d", constructOutputName(inputs[0].getOutput().getTitle(), "Cells"), nuc.getValue()));
+            combinedCell.setName(String.format("%s_%d", constructOutputName(inputs[0].getOutput().getTitle(), CellRegion3D.CELL), nuc.getValue()));
             combinedCell.setValue(nuc.getValue());
             combinedCell.setComment(CellRegion3D.CELL);
             subPops[2].addObject(combinedCell);

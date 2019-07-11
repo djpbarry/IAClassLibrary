@@ -17,6 +17,7 @@
 package Process.Segmentation;
 
 import Cell3D.Cell3D;
+import Cell3D.CellRegion3D;
 import Cell3D.Cytoplasm3D;
 import Cell3D.Nucleus3D;
 import IO.BioFormats.BioFormatsImg;
@@ -127,11 +128,11 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         }
         switch (segmentationType) {
             case CELLS:
-                labelOutput(image.getTitle(), "Cytoplasm");
+                labelOutput(image.getTitle(), CellRegion3D.CYTO);
                 addCytoplasmToCells(output.getTitle());
                 break;
             case NUCLEI:
-                labelOutput(image.getTitle(), "Nuclei");
+                labelOutput(image.getTitle(), CellRegion3D.NUCLEUS);
                 initialiseCellsWithNuclei(output.getTitle());
                 break;
             default:

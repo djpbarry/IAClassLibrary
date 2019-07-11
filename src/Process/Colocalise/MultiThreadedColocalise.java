@@ -17,12 +17,12 @@
 package Process.Colocalise;
 
 import Cell3D.Cell3D;
+import Cell3D.CellRegion3D;
 import Cell3D.Spot3D;
 import Cell3D.SpotFeatures;
 import Extrema.MultiThreadedMaximaFinder;
 import IAClasses.Utils;
 import IO.BioFormats.BioFormatsImg;
-import IO.DataWriter;
 import Process.MultiThreadedProcess;
 import Process.ROI.MultiThreadedROIConstructor;
 import Process.ROI.OverlayDrawer;
@@ -31,7 +31,6 @@ import fiji.plugin.trackmate.Spot;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.ResultsTable;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -90,7 +89,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     }
 
     void assignParticlesToCells(List<Spot> spots, ImagePlus cellLabelImage, ImagePlus nucLabelImage) {
-        labelOutput(cellLabelImage.getTitle(), "Spots");
+        labelOutput(cellLabelImage.getTitle(), CellRegion3D.SPOT);
         ImageStack cellLabelStack = cellLabelImage.getImageStack();
         ImageStack nucLabelStack = nucLabelImage.getImageStack();
         double xySpatialRes = img.getXYSpatialRes(series).value().doubleValue();
@@ -119,6 +118,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                     continue;
                 }
                 Spot3D spot = new Spot3D(p, vox);
+                spot.setComment(CellRegion3D.SPOT);
                 spot.setName(String.format("%s_%d", output.getTitle(), i + 1));
                 ((Cell3D) cells.get(cellLabelValue)).addSpot(spot, (int) Math.round(p.getFeature(SpotFeatures.CHANNEL)));
             }
@@ -162,25 +162,17 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     void saveData() throws IOException {
         ResultsTable rt = new ResultsTable();
         ArrayList<Object3D> cells = cellPop.getObjectsList();
+        Objects3DPopulation spotsPop = new Objects3DPopulation();
         for (Object3D c : cells) {
             ArrayList<ArrayList<Object3D>> allSpots = ((Cell3D) c).getSpots();
             if (allSpots != null) {
                 for (ArrayList<Object3D> spots : allSpots) {
-                    MultiThreadedROIConstructor.processObjectPop(new Objects3DPopulation(spots), series, selectedChannels, img);
-                    MultiThreadedROIConstructor.saveAllRois(props.getProperty(propLabels[OUTPUT_LABEL]), cellPop);
-//                    for (Spot3D s : spots) {
-//                        rt.incrementCounter();
-//                        rt.addValue("Cell ID", ((Cell3D) c).getID());
-//                        Iterator<String> keyIter = s.getSpot().getFeatures().keySet().iterator();
-//                        while (keyIter.hasNext()) {
-//                            String k = keyIter.next();
-//                            rt.addValue(k, s.getSpot().getFeature(k));
-//                        }
-//                    }
+                    spotsPop.addObjects(spots);
                 }
             }
         }
-//        DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", props.getProperty(propLabels[1]), File.separator, "Spot_Data.csv")));
+        MultiThreadedROIConstructor.processObjectPop(spotsPop, series, selectedChannels, img);
+        MultiThreadedROIConstructor.saveAllRois(props.getProperty(propLabels[OUTPUT_LABEL]), spotsPop);
     }
 
     class SpotNucDistanceCalc extends Thread {
