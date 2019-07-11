@@ -304,6 +304,12 @@ public class BioFormatsImg {
         return reader.getSizeT();
     }
 
+    public double[] getCalibration(int series) {
+        return new double[]{getXYSpatialRes(series).value().doubleValue(),
+            getXYSpatialRes(series).value().doubleValue(),
+            getZSpatialRes(series).value().doubleValue()};
+    }
+
     public String[] getFileList() {
         FileInfo[] files = reader.getAdvancedUsedFiles(false);
         String[] output = new String[files.length];

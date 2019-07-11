@@ -48,9 +48,9 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     int selectedChannels;
     int series;
     private String outputPath;
-    private final String[] PIX_HEADINGS = {"Channel", "Index", "Mean Pixel Value",
+    public static String[] PIX_HEADINGS = {"Channel", "Index", "Mean Pixel Value",
         "Pixel Standard Deviation", "Min Pixel Value", "Max Pixel Value", "Integrated Density"};
-    private final String LOCAT_HEAD = "Normalised Distance to Centre";
+    public static String LOCAT_HEAD = "Normalised Distance to Centre";
 
     public MultiThreadedROIConstructor(MultiThreadedProcess[] inputs) {
         this(inputs, null);
@@ -101,12 +101,12 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             subPops[2].addObject(combinedCell);
         }
         for (Objects3DPopulation pop : subPops) {
-            processObjectPop(pop);
+            processObjectPop(pop, series, selectedChannels, img);
             saveAllRois(outputPath, pop);
         }
     }
 
-    private void processObjectPop(Objects3DPopulation cells) {
+    public static void processObjectPop(Objects3DPopulation cells, int series, int selectedChannels, BioFormatsImg img) {
         String calUnit = img.getXYSpatialRes(series).unit().getSymbol();
         String[] geomHeadings = getGeomHeadings(calUnit);
         cells.setCalibration(img.getXYSpatialRes(series).value().doubleValue(), img.getZSpatialRes(series).value().doubleValue(), calUnit);
@@ -150,7 +150,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         return newProcess;
     }
 
-    private void saveAllRois(String path, Objects3DPopulation cells) {
+    public static void saveAllRois(String path, Objects3DPopulation cells) {
         if (path == null || !new File(path).exists()) {
             return;
         }
@@ -161,14 +161,14 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         cells.saveObjects(String.format("%s%s%s.zip", path, File.separator, outputName));
     }
 
-    private String[] getGeomHeadings(String calUnit) {
+    public static String[] getGeomHeadings(String calUnit) {
         return new String[]{"Index", "Volume (Voxels)",
             String.format("Volume (%s^3)", calUnit),
             "Surface Area (Voxels)",
             String.format("Surface Area (%s^2)", calUnit)};
     }
 
-    private double[] getLocationMetrics(Objects3DPopulation cells) {
+    public static double[] getLocationMetrics(Objects3DPopulation cells) {
         double xSum = 0.0;
         double ySum = 0.0;
         double zSum = 0.0;

@@ -40,7 +40,7 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     protected MultiThreadedProcess[] inputs;
     protected final LinkedList<MultiThreadedProcess> outputDests;
     protected ImagePlus output;
-    protected final String OUTPUT_SEP = "_";
+    public static String OUTPUT_SEP = "_";
 
     public MultiThreadedProcess(MultiThreadedProcess[] inputs) {
         this.inputs = inputs;
@@ -153,10 +153,13 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     }
 
     protected void labelOutput(String basename, String label) {
+        if (output == null) {
+            output = new ImagePlus();
+        }
         output.setTitle(constructOutputName(basename, label));
     }
 
-    protected String constructOutputName(String basename, String label) {
+    public static String constructOutputName(String basename, String label) {
         return String.format("%s%s%s", StringUtils.substringBefore(basename, OUTPUT_SEP), OUTPUT_SEP, label);
     }
 

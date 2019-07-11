@@ -8,8 +8,10 @@ package Cell3D;
 import Cell.Cell;
 import ij.gui.Roi;
 import ij.process.ImageStatistics;
+import java.util.LinkedList;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
+import mcib3d.geom.Voxel3D;
 
 /**
  *
@@ -20,12 +22,16 @@ public class CellRegion3D extends Object3DVoxels{
     protected Cell parent;
     protected Roi roi;
     protected ImageStatistics fluorStats;
-    public static final String NUCLEUS = "Nucleus", CYTO = "Cytoplasm", CELL = "Cell", MISC = "Miscellaneous";
+    public static final String NUCLEUS = "Nucleus", CYTO = "Cytoplasm", CELL = "Cell", SPOT = "Spot", MISC = "Miscellaneous";
 
     public CellRegion3D() {
 
     }
 
+    public CellRegion3D(LinkedList<Voxel3D> voxels){
+        super(voxels);
+    }
+    
     public CellRegion3D(Object3D object){
         super(object);
     }

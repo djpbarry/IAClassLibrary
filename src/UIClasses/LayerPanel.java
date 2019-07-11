@@ -37,7 +37,7 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
     protected final BioFormatsImg img;
     protected final Properties props;
     protected MultiThreadedProcess process;
-    protected String[] propLabels = new String[]{"", "", "", "", "", "", "", "", ""};
+    protected String[] propLabels = new String[]{"", "", "", "", "", "", "", "", "", ""};
     protected URI helpURI;
 
     public LayerPanel() {
