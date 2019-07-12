@@ -18,6 +18,7 @@ public class Particle extends Spot {
     protected Particle link;
     protected Particle colocalisedParticle;
     protected Region region;
+    public static String COLOCALISED = "Colocalised";
 
     public Particle() {
         this(0, 0.0, 0.0, 0.0);
