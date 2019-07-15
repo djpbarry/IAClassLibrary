@@ -304,6 +304,10 @@ public class BioFormatsImg {
         return reader.getSizeT();
     }
 
+    public String getSeriesName(int series){
+        return meta.getImageName(series);
+    }
+    
     public double[] getCalibration(int series) {
         return new double[]{getXYSpatialRes(series).value().doubleValue(),
             getXYSpatialRes(series).value().doubleValue(),
