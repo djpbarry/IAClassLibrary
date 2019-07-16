@@ -65,7 +65,20 @@ public class RunnablePixelLoader extends RunnableProcess {
                                 + (i - limits[0]);
                         byte[] pix = new byte[area * bitDepth / 8];
                         reader.openBytes(kOffset + jOffset + i, pix);
-                        if (bitDepth == 16) {
+                        if (bitDepth == 32) {
+                            float[] floatPix = new float[area];
+                            for (int index = 0; index < floatPix.length; index++) {
+                                int index4 = 4 * index;
+                                byte[] bytePixel;
+                                if (!littleEndian) {
+                                    bytePixel = new byte[]{pix[index4], pix[index4 + 1], pix[index4 + 2], pix[index4 + 3]};
+                                } else {
+                                    bytePixel = new byte[]{pix[index4 + 3], pix[index4 + 2], pix[index4 + 1], pix[index4]};
+                                }
+                                floatPix[index] = ByteBuffer.wrap(bytePixel).getFloat();
+                            }
+                            stack.setPixels(floatPix, outSliceIndex);
+                        } else if (bitDepth == 16) {
                             short[] shortPix = new short[area];
                             for (int index = 0; index < shortPix.length; index++) {
                                 int index2 = 2 * index;
