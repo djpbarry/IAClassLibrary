@@ -111,6 +111,20 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         String[] geomHeadings = getGeomHeadings(calUnit);
         cells.setCalibration(img.getXYSpatialRes(series).value().doubleValue(), img.getZSpatialRes(series).value().doubleValue(), calUnit);
         ResultsTable rt = Analyzer.getResultsTable();
+        ArrayList<double[]> geomMeasures = cells.getMeasuresGeometrical();
+        double[] distMeasures = getLocationMetrics(cells);
+        int firstRow = rt.getCounter();
+        IJ.log(String.format("Measuring geometry of %s.", cells.getObject(0).getName()));
+        for (int i = 0; i < geomMeasures.size(); i++) {
+            int row = firstRow + i;
+            double[] geomM = geomMeasures.get(i);
+            rt.setValue(PIX_HEADINGS[1], row, cells.getObject(i).getValue());
+            for (int j = 0; j < geomM.length; j++) {
+                rt.setValue(geomHeadings[j], row, geomM[j]);
+            }
+            rt.setValue(LOCAT_HEAD, row, distMeasures[i]);
+            rt.setLabel(cells.getObject(i).getName(), row);
+        }
         int nChan = img.getSizeC();
         for (int c = 0; c < nChan; c++) {
             if (((int) Math.pow(2, c) & selectedChannels) != 0) {
@@ -118,26 +132,19 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
                 ImagePlus imp = img.getLoadedImage();
                 IJ.log(String.format("Measuring %s defined by %s.", imp.getTitle(), cells.getObject(0).getName()));
                 ArrayList<double[]> pixMeasures = cells.getMeasuresStats(imp.getImageStack());
-                ArrayList<double[]> geomMeasures = cells.getMeasuresGeometrical();
-                double[] distMeasures = getLocationMetrics(cells);
                 for (int i = 0; i < pixMeasures.size(); i++) {
+                    int row = firstRow + i;
                     double[] pixM = pixMeasures.get(i);
-                    double[] geomM = geomMeasures.get(i);
-                    rt.incrementCounter();
-                    rt.addLabel(cells.getObject(i).getName());
-                    rt.addValue(PIX_HEADINGS[0], c);
-                    rt.addValue(PIX_HEADINGS[1], cells.getObject(i).getValue());
+//                    rt.incrementCounter();
+//                    rt.addLabel(cells.getObject(i).getName());
+                    rt.setValue(PIX_HEADINGS[0], row, c);
+                    rt.setValue(PIX_HEADINGS[1], row, cells.getObject(i).getValue());
                     for (int j = 2; j <= pixM.length; j++) {
-                        rt.addValue(PIX_HEADINGS[j], pixM[j - 1]);
+                        rt.setValue(PIX_HEADINGS[j], row, pixM[j - 1]);
                     }
-                    for (int j = pixM.length + 1; j < pixM.length + geomM.length; j++) {
-                        rt.addValue(geomHeadings[j - pixM.length], geomM[j - pixM.length]);
-                    }
-                    rt.addValue(LOCAT_HEAD, distMeasures[i]);
                 }
             }
         }
-//        output = labels;
     }
 
     public Objects3DPopulation getObjectPop() {

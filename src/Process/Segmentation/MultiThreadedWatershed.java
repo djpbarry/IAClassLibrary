@@ -16,6 +16,7 @@
  */
 package Process.Segmentation;
 
+import Binary.BinaryMaker;
 import Cell3D.Cell3D;
 import Cell3D.CellRegion3D;
 import Cell3D.Cytoplasm3D;
@@ -30,7 +31,6 @@ import UtilClasses.GenUtils;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.AutoThresholder;
-import ij.process.StackStatistics;
 import inra.ijpb.watershed.MarkerControlledWatershedTransform3D;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -177,10 +177,10 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
 
     }
 
+    @Deprecated
     private int getThreshold() {
-        StackStatistics stats = new StackStatistics(inputs[1].getOutput());
-        int tIndex = (new AutoThresholder()).getThreshold(AutoThresholder.Method.valueOf(props.getProperty(propLabels[THRESHOLD_LABEL])), stats.histogram);
-        return (int) Math.round(stats.histMin + stats.binSize * tIndex);
+        return BinaryMaker.getThreshold(inputs[1].getOutput(),
+                AutoThresholder.Method.valueOf(props.getProperty(propLabels[MultiThreadedWatershed.THRESHOLD_LABEL])));
     }
 
     public MultiThreadedWatershed duplicate() {

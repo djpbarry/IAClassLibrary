@@ -153,6 +153,9 @@ public class DataWriter {
     }
 
     public static void saveResultsTable(ResultsTable rt, File file) throws IOException {
+        if (rt.getCounter() < 1) {
+            return;
+        }
         String[] headings = rt.getHeadings();
         boolean labels = headings[0].contentEquals("Label");
         int nCols = headings.length;

@@ -16,6 +16,7 @@
  */
 package Binary;
 
+import Process.Segmentation.MultiThreadedWatershed;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.process.AutoThresholder;
@@ -162,5 +163,11 @@ public class BinaryMaker {
         } else {
             return true;
         }
+    }
+
+    public static int getThreshold(ImagePlus imp, AutoThresholder.Method method) {
+        StackStatistics stats = new StackStatistics(imp);
+        int tIndex = (new AutoThresholder()).getThreshold(method, stats.histogram);
+        return (int) Math.round(stats.histMin + stats.binSize * tIndex);
     }
 }
