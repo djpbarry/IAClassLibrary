@@ -20,17 +20,23 @@ import Cell3D.Cell3D;
 import Cell3D.CellRegion3D;
 import Cell3D.Cytoplasm3D;
 import Cell3D.Nucleus3D;
+import Cell3D.Spot3D;
+import Cell3D.SpotFeatures;
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
+import fiji.plugin.trackmate.Spot;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Properties;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
+import mcib3d.geom.Vector3D;
 import org.apache.commons.math3.linear.ArrayRealVector;
 
 /**
@@ -51,6 +57,9 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     public static String[] PIX_HEADINGS = {"Channel", "Index", "Mean Pixel Value",
         "Pixel Standard Deviation", "Min Pixel Value", "Max Pixel Value", "Integrated Density"};
     public static String LOCAT_HEAD = "Normalised Distance to Centre";
+    public static String X_CENTROID = "Centroid X";
+    public static String Y_CENTROID = "Centroid Y";
+    public static String Z_CENTROID = "Centroid Z";
 
     public MultiThreadedROIConstructor(MultiThreadedProcess[] inputs) {
         this(inputs, null);
@@ -107,6 +116,9 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     }
 
     public static void processObjectPop(Objects3DPopulation cells, int series, int selectedChannels, BioFormatsImg img) {
+        if (cells.getNbObjects() < 1) {
+            return;
+        }
         String calUnit = img.getXYSpatialRes(series).unit().getSymbol();
         String[] geomHeadings = getGeomHeadings(calUnit);
         cells.setCalibration(img.getXYSpatialRes(series).value().doubleValue(), img.getZSpatialRes(series).value().doubleValue(), calUnit);
@@ -118,11 +130,28 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         for (int i = 0; i < geomMeasures.size(); i++) {
             int row = firstRow + i;
             double[] geomM = geomMeasures.get(i);
-            rt.setValue(PIX_HEADINGS[1], row, cells.getObject(i).getValue());
+            Object3D object = cells.getObject(i);
+            rt.setValue(PIX_HEADINGS[1], row, object.getValue());
             for (int j = 0; j < geomM.length; j++) {
                 rt.setValue(geomHeadings[j], row, geomM[j]);
             }
+            Vector3D centre = object.getCenterAsVectorUnit();
+            rt.setValue(X_CENTROID, row, centre.x);
+            rt.setValue(Y_CENTROID, row, centre.y);
+            rt.setValue(Z_CENTROID, row, centre.z);
             rt.setValue(LOCAT_HEAD, row, distMeasures[i]);
+            if (object instanceof Spot3D) {
+                Spot s = ((Spot3D) object).getSpot();
+                Iterator<Entry<String, Double>> iter = s.getFeatures().entrySet().iterator();
+                while (iter.hasNext()) {
+                    Entry<String, Double> e = iter.next();
+                    if (e.getKey().contains(SpotFeatures.DIST_TO_NUC_CENTRE)) {
+                        rt.setValue(e.getKey(), row, e.getValue());
+                    } else if (e.getKey().contains(SpotFeatures.DIST_TO_NEAREST_NEIGHBOUR)) {
+                        rt.setValue(e.getKey(), row, e.getValue());
+                    }
+                }
+            }
             rt.setLabel(cells.getObject(i).getName(), row);
         }
         int nChan = img.getSizeC();
@@ -158,7 +187,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     }
 
     public static void saveAllRois(String path, Objects3DPopulation cells) {
-        if (path == null || !new File(path).exists()) {
+        if (path == null || !new File(path).exists() || cells.getNbObjects() < 1) {
             return;
         }
         String outputName = constructOutputName(cells.getObject(0).getName(), cells.getObject(0).getComment());

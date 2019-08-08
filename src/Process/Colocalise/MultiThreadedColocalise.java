@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Properties;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
+import mcib3d.geom.Vector3D;
 import mcib3d.geom.Voxel3D;
 
 /**
@@ -54,6 +55,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     private Objects3DPopulation cellPop;
     private int series;
     private int selectedChannels;
+    private int spotIndex;
 
     public MultiThreadedColocalise(MultiThreadedProcess[] inputs, Objects3DPopulation cellPop) {
         super(inputs);
@@ -69,6 +71,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     }
 
     public void run() {
+        this.spotIndex = 1;
         int lInputs = inputs.length;
         for (int i = 0; i < inputs.length - 2; i++) {
             assignParticlesToCells(((MultiThreadedMaximaFinder) inputs[i]).getSpotMaxima(), inputs[lInputs - 2].getOutput(), inputs[lInputs - 1].getOutput());
@@ -119,7 +122,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                 }
                 Spot3D spot = new Spot3D(p, vox);
                 spot.setComment(CellRegion3D.SPOT);
-                spot.setName(String.format("%s_%d", output.getTitle(), i + 1));
+                spot.setName(String.format("%s_%d", output.getTitle(), spotIndex++));
                 ((Cell3D) cells.get(cellLabelValue)).addSpot(spot, (int) Math.round(p.getFeature(SpotFeatures.CHANNEL)));
             }
         }
@@ -190,7 +193,8 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         public void run() {
             for (int t = thread; t < cells.size(); t += nThreads) {
                 Cell3D c = (Cell3D) cells.get(t);
-                double[] nucCentroid = c.getNucleus().getCenterAsArray();
+                Vector3D centroid = c.getNucleus().getCenterAsVectorUnit();
+                double[] nucCentroid = new double[]{centroid.x, centroid.y, centroid.z};
                 ArrayList<ArrayList<Object3D>> allSpots = c.getSpots();
                 if (allSpots != null) {
                     int M = allSpots.size();

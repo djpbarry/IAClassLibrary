@@ -24,7 +24,7 @@ public class SpotFeatures {
 
     public static String CHANNEL = "CHANNEL";
     public static String NUCLEAR = "NUCLEAR";
-    public static String DIST_TO_NUC_CENTRE = "DISTANCE_TO_NUCLEUS";
-    public static String DIST_TO_NEAREST_NEIGHBOUR = "DISTANCE_TO_NEAREST_NEIGHBOUR";
+    public static String DIST_TO_NUC_CENTRE = "Distance To Nuclear Centre (microns)";
+    public static String DIST_TO_NEAREST_NEIGHBOUR = "Distance To Nearest Neighbour (microns)";
 
 }
