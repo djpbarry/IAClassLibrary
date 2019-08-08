@@ -23,6 +23,7 @@ import Cell3D.SpotFeatures;
 import Extrema.MultiThreadedMaximaFinder;
 import IAClasses.Utils;
 import IO.BioFormats.BioFormatsImg;
+import IO.DataWriter;
 import Process.MultiThreadedProcess;
 import Process.ROI.MultiThreadedROIConstructor;
 import Process.ROI.OverlayDrawer;
@@ -31,16 +32,20 @@ import fiji.plugin.trackmate.Spot;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.ResultsTable;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.geom.Vector3D;
 import mcib3d.geom.Voxel3D;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 /**
  *
@@ -56,6 +61,11 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     private int series;
     private int selectedChannels;
     private int spotIndex;
+    public static String CELL_INDEX = "Cell_Index";
+    public static String N_SPOTS = "Number_of_Spots";
+    public static String MEAN_NUC_DIST = "Mean_Distance_To_Nuclear_Centre_Microns";
+    public static String MEAN_NEIGHBOUR_DIST = "Mean_Distance_To_Nearest_Neighbour_Microns";
+    public static String MEAN_INTENS = "Mean_Intensity";
 
     public MultiThreadedColocalise(MultiThreadedProcess[] inputs, Objects3DPopulation cellPop) {
         super(inputs);
@@ -168,14 +178,42 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         Objects3DPopulation spotsPop = new Objects3DPopulation();
         for (Object3D c : cells) {
             ArrayList<ArrayList<Object3D>> allSpots = ((Cell3D) c).getSpots();
+            int row = rt.getCounter();
+            rt.setValue(CELL_INDEX, row, ((Cell3D) c).getID());
             if (allSpots != null) {
                 for (ArrayList<Object3D> spots : allSpots) {
+                    if (spots.size() < 1) {
+                        continue;
+                    }
                     spotsPop.addObjects(spots);
+                    LinkedHashMap<String, DescriptiveStatistics> map = new LinkedHashMap<>();
+                    for (Object3D spot : spots) {
+                        Spot s = ((Spot3D) spot).getSpot();
+                        Iterator<Entry<String, Double>> iter = s.getFeatures().entrySet().iterator();
+                        while (iter.hasNext()) {
+                            Entry<String, Double> e = iter.next();
+                            DescriptiveStatistics stats = map.get(e.getKey());
+                            if (stats == null) {
+                                stats = new DescriptiveStatistics();
+                                map.put(e.getKey(), stats);
+                            }
+                            stats.addValue(e.getValue());
+                        }
+                    }
+                    Iterator<Entry<String, DescriptiveStatistics>> iter = map.entrySet().iterator();
+                    rt.setValue(String.format("%s_C%d", N_SPOTS, (int) Math.round(((Spot3D) spots.get(0)).getSpot().getFeature(SpotFeatures.CHANNEL))), row, spots.size());
+                    while (iter.hasNext()) {
+                        Entry<String, DescriptiveStatistics> e = iter.next();
+                        DescriptiveStatistics stats = e.getValue();
+                        rt.setValue(String.format("Mean_%s_C%d", e.getKey(), (int) Math.round(((Spot3D) spots.get(0)).getSpot().getFeature(SpotFeatures.CHANNEL))), row, stats.getMean());
+                    }
                 }
             }
         }
+        String outputDir = props.getProperty(propLabels[OUTPUT_LABEL]);
+        DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", outputDir, File.separator, "spot_summary_data.csv")));
         MultiThreadedROIConstructor.processObjectPop(spotsPop, series, selectedChannels, img);
-        MultiThreadedROIConstructor.saveAllRois(props.getProperty(propLabels[OUTPUT_LABEL]), spotsPop);
+        MultiThreadedROIConstructor.saveAllRois(outputDir, spotsPop);
     }
 
     class SpotNucDistanceCalc extends Thread {
