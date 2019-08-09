@@ -54,12 +54,12 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     int selectedChannels;
     int series;
     private String outputPath;
-    public static String[] PIX_HEADINGS = {"Channel", "Index", "Mean Pixel Value",
-        "Pixel Standard Deviation", "Min Pixel Value", "Max Pixel Value", "Integrated Density"};
-    public static String LOCAT_HEAD = "Normalised Distance to Centre";
-    public static String X_CENTROID = "Centroid X";
-    public static String Y_CENTROID = "Centroid Y";
-    public static String Z_CENTROID = "Centroid Z";
+    public static String[] PIX_HEADINGS = {"Channel", "Cell_Index", "Mean_Pixel_Value",
+        "Pixel_Standard_Deviation", "Min_Pixel_Value", "Max_Pixel_Value", "Integrated_Density"};
+    public static String LOCAT_HEAD = "Normalised_Distance_to_Centre";
+    public static String X_CENTROID = "Centroid_X";
+    public static String Y_CENTROID = "Centroid_Y";
+    public static String Z_CENTROID = "Centroid_Z";
 
     public MultiThreadedROIConstructor(MultiThreadedProcess[] inputs) {
         this(inputs, null);
@@ -142,6 +142,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             rt.setValue(LOCAT_HEAD, row, distMeasures[i]);
             if (object instanceof Spot3D) {
                 Spot s = ((Spot3D) object).getSpot();
+                rt.setValue(SpotFeatures.NUCLEAR, row, (int) Math.round(s.getFeature(SpotFeatures.NUCLEAR)));
                 Iterator<Entry<String, Double>> iter = s.getFeatures().entrySet().iterator();
                 while (iter.hasNext()) {
                     Entry<String, Double> e = iter.next();
@@ -166,10 +167,10 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
                     double[] pixM = pixMeasures.get(i);
 //                    rt.incrementCounter();
 //                    rt.addLabel(cells.getObject(i).getName());
-                    rt.setValue(PIX_HEADINGS[0], row, c);
+//                    rt.setValue(PIX_HEADINGS[0], row, c);
                     rt.setValue(PIX_HEADINGS[1], row, cells.getObject(i).getValue());
                     for (int j = 2; j <= pixM.length; j++) {
-                        rt.setValue(PIX_HEADINGS[j], row, pixM[j - 1]);
+                        rt.setValue(String.format("%s_C%d", PIX_HEADINGS[j], c), row, pixM[j - 1]);
                     }
                 }
             }

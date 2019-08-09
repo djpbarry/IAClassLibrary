@@ -22,9 +22,9 @@ package Cell3D;
  */
 public class SpotFeatures {
 
-    public static String CHANNEL = "CHANNEL";
-    public static String NUCLEAR = "NUCLEAR";
-    public static String DIST_TO_NUC_CENTRE = "Distance To Nuclear Centre (microns)";
-    public static String DIST_TO_NEAREST_NEIGHBOUR = "Distance To Nearest Neighbour (microns)";
+    public static String CHANNEL = "Channel";
+    public static String NUCLEAR = "Nuclear";
+    public static String DIST_TO_NUC_CENTRE = "Distance_To_Nuclear_Centre_Microns";
+    public static String DIST_TO_NEAREST_NEIGHBOUR = "Distance_To_Nearest_Neighbour_Microns";
 
 }
