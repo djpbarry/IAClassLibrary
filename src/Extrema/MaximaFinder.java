@@ -117,21 +117,21 @@ public class MaximaFinder {
 
     @Deprecated
     public static ArrayList<int[]> findLocalMaxima(int xyRadius, ImageStack stack, float maxThresh, boolean varyBG, boolean absolute, int zRadius) {
-        MultiThreadedMaximaFinder mf = new MultiThreadedMaximaFinder(                new int[]{xyRadius, xyRadius, zRadius}, maxThresh);
+        MultiThreadedMaximaFinder mf = new MultiThreadedMaximaFinder(new double[]{xyRadius, xyRadius, zRadius}, maxThresh);
         mf.start();
         return mf.getMaxima();
     }
 
     @Deprecated
     public static ImagePlus makeLocalMaximaImage(int xyRadius, ImagePlus imp, float maxThresh, boolean varyBG, boolean absolute, int zRadius, byte background) {
-        MultiThreadedMaximaFinder mf = new MultiThreadedMaximaFinder(                new int[]{xyRadius, xyRadius, zRadius}, maxThresh);
+        MultiThreadedMaximaFinder mf = new MultiThreadedMaximaFinder(new double[]{xyRadius, xyRadius, zRadius}, maxThresh);
         mf.start();
-        return mf.makeLocalMaximaImage(background,xyRadius);
+        return mf.makeLocalMaximaImage(background, xyRadius);
     }
 
     /**
      * Checks whether the current position is a local maximum.
-     * 
+     *
      * @param x X-Coordinate
      * @param y Y-Coordinate
      * @param kWidth Search radius in X-dimension
