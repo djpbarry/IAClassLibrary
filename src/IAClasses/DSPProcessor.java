@@ -241,7 +241,6 @@ public class DSPProcessor {
         double exponent, cosine, sine;
         double fft[][] = new double[inputLength][2];
 
-        IJ.showStatus("Calculating FFT");
         if (inputLength > 1) {
             int halfInput = inputLength / 2;
             double evenIndices[][] = new double[halfInput][2];
@@ -299,7 +298,6 @@ public class DSPProcessor {
         double exponent, cosine, sine;
         double ifft[][] = new double[inputLength][2];
 
-        IJ.showStatus("Calculating iFFT");
         if (inputLength > 1) {
             int halfInput = inputLength / 2;
             double evenIndices[][] = new double[halfInput][2];
@@ -347,7 +345,6 @@ public class DSPProcessor {
 //        double index[] = new double[inputLength];
 
         for (k = 0; k < inputLength; k++) {
-            IJ.showStatus("Generating Power Spectrum");
             powerSpectrum[k] = Math.pow(fourier[k][0], 2) + Math.pow(fourier[k][1], 2);
 //            index[k] = k;
         }
