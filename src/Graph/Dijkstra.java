@@ -44,7 +44,7 @@ public class Dijkstra {
 //                                drawGraph(graph);
             Node currentNode = getLowestDistanceNode(unsettledNodes);
             unsettledNodes.remove(currentNode);
-            for (Entry< Node, int[][]> adjacencyPair : currentNode.getAdjacentNodes().entrySet()) {
+            for (Entry< Node, short[][]> adjacencyPair : currentNode.getAdjacentNodes().entrySet()) {
                 Node adjacentNode = adjacencyPair.getKey();
                 Integer edgeWeight = adjacencyPair.getValue()[0].length;
                 if (!settledNodes.contains(adjacentNode)) {
@@ -89,9 +89,9 @@ public class Dijkstra {
         Set<Node> nodes = graph.getNodes();
         for (Node n1 : nodes) {
             bp.drawString(String.valueOf(n1.getDistance()), n1.getX(), n1.getY());
-            for (Entry<Node, int[][]> e : n1.getAdjacentNodes().entrySet()) {
+            for (Entry<Node, short[][]> e : n1.getAdjacentNodes().entrySet()) {
                 Node n2 = e.getKey();
-                int[][] path = e.getValue();
+                short[][] path = e.getValue();
                 int d2 = n2.getDistance();
                 if (d2 == Integer.MAX_VALUE) {
                     d2 = -1;

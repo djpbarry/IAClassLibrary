@@ -32,9 +32,9 @@ public class Node {
     private int type, x, y;
     private int distance = Integer.MAX_VALUE;
 
-    Map<Node, int[][]> adjacentNodes = new HashMap<>();
+    Map<Node, short[][]> adjacentNodes = new HashMap<>();
 
-    public void addDestination(Node destination, int[][] path) {
+    public void addDestination(Node destination, short[][] path) {
         if (this.getSimpleDist(destination.getX(), destination.getY()) > 0) {
             adjacentNodes.put(destination, path);
         }
@@ -89,11 +89,11 @@ public class Node {
         return Math.max(Math.abs(this.x - x), Math.abs(this.y - y));
     }
 
-    public Map<Node, int[][]> getAdjacentNodes() {
+    public Map<Node, short[][]> getAdjacentNodes() {
         return adjacentNodes;
     }
 
-    public void setAdjacentNodes(Map<Node, int[][]> adjacentNodes) {
+    public void setAdjacentNodes(Map<Node, short[][]> adjacentNodes) {
         this.adjacentNodes = adjacentNodes;
     }
 

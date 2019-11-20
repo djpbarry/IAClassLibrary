@@ -202,7 +202,7 @@ public class SkeletonProcessor {
      * @return <i>length - index</i> if both <i>key1</i> and <i>key2</i> were
      * located at the same array <i>index</i>, -1 otherwise.
      */
-    public static int pathSearch(int array1[], int array2[], int length, int key1,
+    public static int pathSearch(short array1[], short array2[], int length, int key1,
             int key2) {
         int i;
 
@@ -230,7 +230,7 @@ public class SkeletonProcessor {
      * (<i>xpix[length]</i>, <i>ypix[length]</i>) has already been located (a
      * fail-safe to ensure the loop does not 'double-back' on itself).
      */
-    public static boolean getNextPixel(int xpix[], int ypix[], ImageProcessor processor,
+    public static boolean getNextPixel(short xpix[], short ypix[], ImageProcessor processor,
             int length, int foreground) {
         branchpoint = null;
         int x, y, move, fgPix = 0, search;
@@ -251,8 +251,8 @@ public class SkeletonProcessor {
                 if ((processor.getPixelValue(x, y) == foreground)
                         && !((y == ypix[last]) && (x == xpix[last]))
                         && !((x == xpix[current]) && (y == ypix[current]))) {
-                    xpix[next] = x;
-                    ypix[next] = y;
+                    xpix[next] = (short) x;
+                    ypix[next] = (short) y;
                     fgPix++;
                 }
             }
@@ -270,10 +270,10 @@ public class SkeletonProcessor {
                     processor, foreground);
             if (move != 0) {
                 if (Math.abs(move) > 1) {
-                    ypix[next] = ypix[current] + (move / width);
+                    ypix[next] = (short) (ypix[current] + (move / width));
                     xpix[next] = xpix[current];
                 } else {
-                    xpix[next] = xpix[current] + move;
+                    xpix[next] = (short) (xpix[current] + move);
                     ypix[next] = ypix[current];
                 }
                 /*
@@ -282,11 +282,11 @@ public class SkeletonProcessor {
                  */
                 search = pathSearch(xpix, ypix, next, xpix[next], ypix[next]);
                 if (search > 0) {
-                    xpix[next] = ypix[next] = -search;
+                    xpix[next] = ypix[next] = (short) -search;
                     return false;
                 }
             } else {
-                branchpoint = new int[]{xpix[next] , ypix[next]};
+                branchpoint = new int[]{xpix[next], ypix[next]};
                 xpix[next] = ypix[next] = BRANCH;
                 return false;
             }
@@ -311,6 +311,5 @@ public class SkeletonProcessor {
     public static int[] getLatestBranchpoint() {
         return branchpoint;
     }
-    
-    
+
 }
