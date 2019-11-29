@@ -41,7 +41,7 @@ import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
-import mcib3d.image3d.regionGrowing.Watershed3D;
+import mcib3d.image3d.distanceMap3d.EDT;
 
 /**
  *
@@ -96,17 +96,16 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         ImagePlus image = inputs[1].getOutput();
         int thresh = getThreshold();
         IJ.log(String.format("Watershedding \"%s\" with a threshold of %d, using \"%s\" as seeds...", image.getTitle(), thresh, seeds.getTitle()));
-        ImagePlus binaryImp = image.duplicate();
-        StackThresholder.thresholdStack(binaryImp, thresh);
-        (new StackProcessor(binaryImp.getImageStack())).invert();
+        ImagePlus mask = image.duplicate();
+        StackThresholder.thresholdStack(mask, thresh);
+        (new StackProcessor(mask.getImageStack())).invert();
+        ImageFloat edt = EDT.run(ImageHandler.wrap(seeds), 1, (float) calibration[0], (float) calibration[2], true, Runtime.getRuntime().availableProcessors());
         if (volumeMarker) {
-            thresh = 0;
-            Watershed3D water = new Watershed3D(binaryImp.getImageStack(), seeds.getImageStack(), thresh, 0);
-            water.setLabelSeeds(true);
-            output = water.getWatershedImage3D().getImagePlus();
+            MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(edt.getImagePlus(), seeds, mask);
+            output = watershed.applyWithPriorityQueueAndDams();
         } else {
             ImageFloat rdt = (new RiemannianDistanceTransform()).run(new ImageFloat(image), new ImageShort(seeds), thresh, (float) calibration[0], (float) calibration[2], lambda);
-            MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(rdt.getImagePlus(), seeds, binaryImp);
+            MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(rdt.getImagePlus(), seeds, mask);
             output = watershed.applyWithPriorityQueueAndDams();
         }
         try {
