@@ -88,6 +88,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     private int channel;
     public static short BACKGROUND = 0;
     private Roi[] edmThresholdOutline;
+    private Objects3DPopulation hessianObjects;
 
     public MultiThreadedMaximaFinder(MultiThreadedProcess[] inputs) {
         super(inputs);
@@ -117,10 +118,16 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             sp.fill();
             output.addSlice(sp);
         }
-        Object[] stackPix = output.getImageArray();
-        for (int i = 0; i < maxima.size(); i++) {
-            int[] pix = maxima.get(i);
-            ((short[]) stackPix[pix[2]])[pix[0] + pix[1] * width] = (short) (i + 1);
+        if (!Boolean.parseBoolean(props.getProperty(propLabels[BLOB_DETECT])) && hessianObjects != null) {
+            for (int i = 0; i < hessianObjects.getNbObjects(); i++) {
+                hessianObjects.getObject(i).draw(output, i + 1);
+            }
+        } else {
+            Object[] stackPix = output.getImageArray();
+            for (int i = 0; i < maxima.size(); i++) {
+                int[] pix = maxima.get(i);
+                ((short[]) stackPix[pix[2]])[pix[0] + pix[1] * width] = (short) (i + 1);
+            }
         }
         return new ImagePlus(String.format("%s - Local Maxima", imp.getTitle()), output);
     }
@@ -163,6 +170,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             this.spotMaxima = maximas;
         }
         output = makeLocalMaximaImage(BACKGROUND, (int) Math.round(radii[0] / calibration[0]));
+        IJ.saveAs(output, "TIF", "D:\\debugging\\giani_debug\\watershedOutput.tif");
         labelOutput(imp.getTitle(), "Blobs");
     }
 
@@ -255,9 +263,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         }
 //        IJ.saveAs(blobImps[0], "TIF", "D:\\debugging\\giani_debug\\blob_outputs_post_threshold.tif");
         createThresholdOutline(blobImps[0]);
-        Objects3DPopulation objects = new Objects3DPopulation(new ImageLabeller().getLabels(ImageHandler.wrap(blobImps[0])));
-        for (int i = 0; i < objects.getNbObjects(); i++) {
-            Object3D o = objects.getObject(i);
+        hessianObjects = new Objects3DPopulation(new ImageLabeller().getLabels(ImageHandler.wrap(blobImps[0])));
+        for (int i = 0; i < hessianObjects.getNbObjects(); i++) {
+            Object3D o = hessianObjects.getObject(i);
             double[] centre = o.getCenterAsArray();
             maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
         }
