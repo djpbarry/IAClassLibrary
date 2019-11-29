@@ -20,10 +20,10 @@ import Extrema.MultiThreadedMaximaFinder;
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
 import UtilClasses.GenUtils;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import imagescience.feature.Hessian;
-import imagescience.image.Aspects;
 import imagescience.image.Image;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -79,7 +79,7 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
         final ArrayList< Future< Void>> futures = new ArrayList<>();
 
         for (int t = 0; t < nProcesses; t++) {
-            futures.add(exec.submit(new RunnableHessianFilter(t, nProcesses, scales, abs, result, input), null));
+            futures.add(exec.submit(new RunnableHessianFilter(t, nProcesses, scales, abs, result, input.duplicate()), null));
         }
 
         for (final Future<Void> future : futures) {
@@ -94,8 +94,10 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
 
 //        terminate("Error generating hessian images.");
         ImageStack outStack = new ImageStack(input.imageplus().getWidth(), input.imageplus().getHeight());
+        int count = 0;
         for (Image[] images : result) {
             for (Image i : images) {
+                IJ.saveAs(i.imageplus(), "TIF", "D:\\debugging\\giani_debug\\hessian_output_" + count++ + ".tif");
                 ImageStack stack = i.imageplus().getImageStack();
                 for (int s = 1; s <= stack.size(); s++) {
                     outStack.addSlice(stack.getProcessor(s));
