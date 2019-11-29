@@ -68,6 +68,13 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
             (int) Math.round(sigma[2])};
     }
 
+    protected double[] getCalibratedDoubleSigma(int series, double[] sigmas) {
+        double[] calibration = getCalibration(series);
+        return new double[]{sigmas[0] / calibration[0],
+            sigmas[1] / calibration[1],
+            sigmas[2] / calibration[2]};
+    }
+    
     protected double[] getCalibratedDoubleSigma(int series, String xLabel, String yLabel, String zLabel) {
         double[] calibration = getCalibration(series);
         double[] sigma = getUncalibratedDoubleSigma(series, xLabel, yLabel, zLabel);

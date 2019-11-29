@@ -31,12 +31,14 @@ import UtilClasses.GenUtils;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.AutoThresholder;
+import ij.process.StackProcessor;
 import inra.ijpb.watershed.MarkerControlledWatershedTransform3D;
 import java.util.ArrayList;
 import java.util.Properties;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.image3d.ImageFloat;
+import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
 import mcib3d.image3d.regionGrowing.Watershed3D;
@@ -96,6 +98,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         IJ.log(String.format("Watershedding \"%s\" with a threshold of %d, using \"%s\" as seeds...", image.getTitle(), thresh, seeds.getTitle()));
         ImagePlus binaryImp = image.duplicate();
         StackThresholder.thresholdStack(binaryImp, thresh);
+        (new StackProcessor(binaryImp.getImageStack())).invert();
         if (volumeMarker) {
             thresh = 0;
             Watershed3D water = new Watershed3D(binaryImp.getImageStack(), seeds.getImageStack(), thresh, 0);

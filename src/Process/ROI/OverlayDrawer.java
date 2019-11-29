@@ -49,8 +49,8 @@ public class OverlayDrawer {
             xySpatRes = xyLength.value().doubleValue();
         }
         if (edm) {
-            maxXYRadiusMic = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.EDM_MIN_SIZE]));
-            maxZRadiusMic = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.EDM_MIN_SIZE]));
+            maxXYRadiusMic = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_START_SCALE]));
+            maxZRadiusMic = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_START_SCALE]));
         }
         double maxZRadiusMic2 = Math.pow(maxZRadiusMic, 2.0);
         double maxXYRadiusMic2 = Math.pow(maxXYRadiusMic, 2.0);

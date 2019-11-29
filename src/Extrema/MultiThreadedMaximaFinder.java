@@ -17,9 +17,11 @@
 package Extrema;
 
 import Cell3D.SpotFeatures;
+import Process.Filtering.MultiThreadedHessian;
 import IAClasses.Utils;
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
+import Stacks.StackMath;
 import Stacks.StackThresholder;
 import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.detection.LogDetector;
@@ -28,12 +30,18 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
 import ij.plugin.GaussianBlur3D;
+import ij.plugin.ImageCalculator;
+import ij.plugin.SubstackMaker;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.process.AutoThresholder;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
+import ij.process.StackConverter;
+import ij.process.StackProcessor;
 import ij.process.StackStatistics;
+import imagescience.image.Aspects;
+import imagescience.image.FloatImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -48,6 +56,7 @@ import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 /**
  *
@@ -56,16 +65,18 @@ import net.imglib2.view.Views;
 public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public static int BLOB_DETECT = 6;
-    public static int EDM_MIN_SIZE = 4;
+    public static int HESSIAN_START_SCALE = 4;
     public static int BLOB_SIZE = 1;
     public static int CHANNEL_SELECT = 0;
-    public static int EDM_MAX_SIZE = 5;
+    public static int HESSIAN_STOP_SCALE = 5;
     public static int BLOB_THRESH = 2;
     public static int EDM_THRESH = 3;
     public static int SERIES_SELECT = 7;
-    public static int EDM_DETECT = 8;
+    public static int HESSIAN_DETECT = 8;
     public static int EDM_FILTER = 9;
-    public static int N_PROP_LABELS = 10;
+    public static int HESSIAN_SCALE_STEP = 10;
+    public static int HESSIAN_ABS = 11;
+    public static int N_PROP_LABELS = 12;
 
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
@@ -128,9 +139,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             return;
         }
         if (!Boolean.parseBoolean(props.getProperty(propLabels[BLOB_DETECT]))) {
-            edmDetection(imp);
+            hessianDetection(imp);
         } else {
-            IJ.log(String.format("Searching for blobs %.1f pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0]/calibration[0]), thresh, imp.getTitle()));
+            IJ.log(String.format("Searching for blobs %.1f pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0] / calibration[0]), thresh, imp.getTitle()));
             long[] min = new long[]{0, 0, 0};
             long[] max = new long[]{stack.getWidth() - 1, stack.getHeight() - 1, stack.getSize() - 1};
             Img<FloatType> sip = ImagePlusAdapter.wrap(imp);
@@ -157,11 +168,11 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public void edmDetection(ImagePlus image) {
         ArrayList<int[]> tempMaxima = new ArrayList();
-        radii = getUncalibratedDoubleSigma(series, propLabels[EDM_MIN_SIZE], propLabels[EDM_MIN_SIZE], propLabels[EDM_MIN_SIZE]);
+        radii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE]);
         double[] sigma = getCalibratedDoubleSigma(series, propLabels[EDM_FILTER], propLabels[EDM_FILTER], propLabels[EDM_FILTER]);
         GaussianBlur3D.blur(image, sigma[0], sigma[1], sigma[2]);
         int greyThresh = getThreshold(image, AutoThresholder.Method.valueOf(props.getProperty(propLabels[EDM_THRESH])));
-        IJ.log(String.format("Searching for objects %.1f pixels in diameter in \"%s\"...", (2 * radii[0]/calibration[0]), image.getTitle()));
+        IJ.log(String.format("Searching for objects %.1f pixels in diameter in \"%s\"...", (2 * radii[0] / calibration[0]), image.getTitle()));
         ImagePlus binaryImp = image.duplicate();
         StackThresholder.thresholdStack(binaryImp, greyThresh);
         createThresholdOutline(binaryImp);
@@ -200,7 +211,56 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
         }
         consolidatePointsOnDistance(radii[0], calibration);
-        consolidatePointsOnIntensity(greyThresh, Double.parseDouble(props.getProperty(propLabels[EDM_MAX_SIZE])), calibration, ImageHandler.wrap(image));
+        consolidatePointsOnIntensity(0.8, Double.parseDouble(props.getProperty(propLabels[HESSIAN_STOP_SCALE])), calibration, ImageHandler.wrap(image));
+    }
+
+    public void hessianDetection(ImagePlus image) {
+//        radii = getUncalibratedDoubleSigma(series, propLabels[EDM_MIN_SIZE], propLabels[EDM_MIN_SIZE], propLabels[EDM_MIN_SIZE]);
+//        double[] sigma = getCalibratedDoubleSigma(series, propLabels[EDM_FILTER], propLabels[EDM_FILTER], propLabels[EDM_FILTER]);
+        IJ.log(String.format("Searching for objects %.1f pixels in diameter in \"%s\"...", (2 * radii[0] / calibration[0]), image.getTitle()));
+//        IJ.saveAs(binaryImp, "TIF", "D:\\debugging\\giani_debug\\binaryImp.tif");
+
+        (new StackConverter(image)).convertToGray32();
+        double[] cal = getCalibration(series);
+        FloatImage convertedImage = (FloatImage) FloatImage.wrap(image);
+        Aspects a = new Aspects(cal[0], cal[1], cal[2]);
+        convertedImage.aspects(a);
+
+        MultiThreadedHessian hessian = new MultiThreadedHessian(inputs, convertedImage);
+        hessian.setup(img, props, propLabels);
+        hessian.start();
+        try {
+            hessian.join();
+        } catch (InterruptedException e) {
+            IJ.log("Could not generate hessian images.");
+            return;
+        }
+        ImagePlus hessianOutputs = hessian.getOutput();
+//        IJ.saveAs(hessianOutputs, "TIF", "D:\\debugging\\giani_debug\\hessian_outputs.tif");
+        SubstackMaker ssm = new SubstackMaker();
+        int inputStackSize = image.getImageStackSize();
+        int nScales = hessianOutputs.getImageStackSize() / (3 * inputStackSize);
+        ImagePlus[] blobImps = new ImagePlus[nScales];
+        for (int s = 0; s < nScales; s++) {
+            int index = s * 3 * inputStackSize + 1;
+            blobImps[s] = ssm.makeSubstack(hessianOutputs, String.format("%d-%d", index, index + inputStackSize - 1));
+            StackMath.mutiply(blobImps[s], -1.0);
+//            IJ.saveAs(blobImps[0], "TIF", "D:\\debugging\\giani_debug\\blob_outputs_pre_threshold.tif");
+            StackThresholder.thresholdStack(blobImps[s], 0.001);
+            (new StackProcessor(blobImps[s].getImageStack())).invert();
+        }
+        ImageCalculator ic = new ImageCalculator();
+        for (int s = 0; s < nScales - 1; s++) {
+            blobImps[0] = ic.run("AND create stack", blobImps[s], blobImps[s + 1]);
+        }
+//        IJ.saveAs(blobImps[0], "TIF", "D:\\debugging\\giani_debug\\blob_outputs_post_threshold.tif");
+        createThresholdOutline(blobImps[0]);
+        Objects3DPopulation objects = new Objects3DPopulation(new ImageLabeller().getLabels(ImageHandler.wrap(blobImps[0])));
+        for (int i = 0; i < objects.getNbObjects(); i++) {
+            Object3D o = objects.getObject(i);
+            double[] centre = o.getCenterAsArray();
+            maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
+        }
     }
 
     void consolidatePointsOnDistance(double thresh, double[] calibration) {
@@ -249,8 +309,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
                     }
                     double[] profile = stack.extractLine(m1[0], m1[1], m1[2], m2[0], m2[1], m2[2], true);
                     boolean remove = true;
+                    DescriptiveStatistics ds = new DescriptiveStatistics(profile);
                     for (double p : profile) {
-                        if (p < intensThresh) {
+                        if (p / ds.getMean() < intensThresh) {
                             remove = false;
                             break;
                         }

@@ -16,9 +16,6 @@
  */
 package Graph;
 
-import ij.IJ;
-import ij.ImagePlus;
-import ij.process.ByteProcessor;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map.Entry;
@@ -81,27 +78,27 @@ public class Dijkstra {
         }
     }
 
-    private static void drawGraph(Graph graph) {
-        ByteProcessor bp = new ByteProcessor(640, 480);
-        bp.setColor(255);
-        bp.fill();
-        bp.setColor(0);
-        Set<Node> nodes = graph.getNodes();
-        for (Node n1 : nodes) {
-            bp.drawString(String.valueOf(n1.getDistance()), n1.getX(), n1.getY());
-            for (Entry<Node, short[][]> e : n1.getAdjacentNodes().entrySet()) {
-                Node n2 = e.getKey();
-                short[][] path = e.getValue();
-                int d2 = n2.getDistance();
-                if (d2 == Integer.MAX_VALUE) {
-                    d2 = -1;
-                }
-                bp.drawString(String.valueOf(d2), n2.getX(), n2.getY());
-                for (int i = 0; i < path[0].length; i++) {
-                    bp.drawPixel(path[0][i], path[1][i]);
-                }
-            }
-        }
-        IJ.saveAs(new ImagePlus("", bp), "PNG", "D:/debugging/anamorf_debug/graph_" + index++);
-    }
+//    private static void drawGraph(Graph graph) {
+//        ByteProcessor bp = new ByteProcessor(640, 480);
+//        bp.setColor(255);
+//        bp.fill();
+//        bp.setColor(0);
+//        Set<Node> nodes = graph.getNodes();
+//        for (Node n1 : nodes) {
+//            bp.drawString(String.valueOf(n1.getDistance()), n1.getX(), n1.getY());
+//            for (Entry<Node, Integer> e : n1.getAdjacentNodes().entrySet()) {
+//                Node n2 = e.getKey();
+//                short[][] path = e.getValue();
+//                int d2 = n2.getDistance();
+//                if (d2 == Integer.MAX_VALUE) {
+//                    d2 = -1;
+//                }
+//                bp.drawString(String.valueOf(d2), n2.getX(), n2.getY());
+//                for (int i = 0; i < path[0].length; i++) {
+//                    bp.drawPixel(path[0][i], path[1][i]);
+//                }
+//            }
+//        }
+//        IJ.saveAs(new ImagePlus("", bp), "PNG", "D:/debugging/anamorf_debug/graph_" + index++);
+//    }
 }

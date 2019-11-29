@@ -18,23 +18,22 @@ package Stacks;
 
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.plugin.Thresholder;
 import ij.process.ImageProcessor;
 
 /**
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class StackThresholder {
+public class StackMath {
 
-    public static void thresholdStack(ImagePlus imp, double threshold) {
+    public static void mutiply(ImagePlus imp, double val) {
         ImageStack inputStack = imp.getImageStack();
         int nSlices = inputStack.getSize();
         ImageStack outputStack = new ImageStack(inputStack.getWidth(), inputStack.getHeight());
         for (int i = 1; i <= nSlices; i++) {
             ImageProcessor slice = inputStack.getProcessor(i);
-            slice.setThreshold(-Double.MAX_VALUE, threshold, ImageProcessor.NO_LUT_UPDATE);
-            outputStack.addSlice(Thresholder.createMask(new ImagePlus("", slice)));
+            slice.multiply(val);
+            outputStack.addSlice(slice);
         }
         imp.setStack(outputStack);
     }
