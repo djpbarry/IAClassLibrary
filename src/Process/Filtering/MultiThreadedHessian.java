@@ -94,10 +94,10 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
 
 //        terminate("Error generating hessian images.");
         ImageStack outStack = new ImageStack(input.imageplus().getWidth(), input.imageplus().getHeight());
-        int count = 0;
+//        int count = 0;
         for (Image[] images : result) {
             for (Image i : images) {
-                IJ.saveAs(i.imageplus(), "TIF", "D:\\debugging\\giani_debug\\hessian_output_" + count++ + ".tif");
+//                IJ.saveAs(i.imageplus(), "TIF", "D:\\debugging\\giani_debug\\hessian_output_" + count++ + ".tif");
                 ImageStack stack = i.imageplus().getImageStack();
                 for (int s = 1; s <= stack.size(); s++) {
                     outStack.addSlice(stack.getProcessor(s));

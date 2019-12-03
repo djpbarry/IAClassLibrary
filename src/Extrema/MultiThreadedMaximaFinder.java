@@ -76,7 +76,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int EDM_FILTER = 9;
     public static int HESSIAN_SCALE_STEP = 10;
     public static int HESSIAN_ABS = 11;
-    public static int N_PROP_LABELS = 12;
+    public static int HESSIAN_THRESH = 12;
+    public static int N_PROP_LABELS = 13;
 
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
@@ -223,9 +224,10 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     public void hessianDetection(ImagePlus image) {
-//        radii = getUncalibratedDoubleSigma(series, propLabels[EDM_MIN_SIZE], propLabels[EDM_MIN_SIZE], propLabels[EDM_MIN_SIZE]);
+        double[] minRadii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE]);
+        double[] maxRadii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE]);
 //        double[] sigma = getCalibratedDoubleSigma(series, propLabels[EDM_FILTER], propLabels[EDM_FILTER], propLabels[EDM_FILTER]);
-        IJ.log(String.format("Searching for objects %.1f pixels in diameter in \"%s\"...", (2 * radii[0] / calibration[0]), image.getTitle()));
+        IJ.log(String.format("Searching for objects %.1f - %.1f pixels in diameter in \"%s\"...", (2 * minRadii[0] / calibration[0]), (2 * maxRadii[0] / calibration[0]), image.getTitle()));
 //        IJ.saveAs(binaryImp, "TIF", "D:\\debugging\\giani_debug\\binaryImp.tif");
 
         (new StackConverter(image)).convertToGray32();
@@ -249,17 +251,18 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         int inputStackSize = image.getImageStackSize();
         int nScales = hessianOutputs.getImageStackSize() / (3 * inputStackSize);
         ImagePlus[] blobImps = new ImagePlus[nScales];
+        double hessianThresh = Double.parseDouble(props.getProperty(propLabels[HESSIAN_THRESH]));
         for (int s = 0; s < nScales; s++) {
             int index = s * 3 * inputStackSize + 1;
             blobImps[s] = ssm.makeSubstack(hessianOutputs, String.format("%d-%d", index, index + inputStackSize - 1));
             StackMath.mutiply(blobImps[s], -1.0);
 //            IJ.saveAs(blobImps[0], "TIF", "D:\\debugging\\giani_debug\\blob_outputs_pre_threshold.tif");
-            StackThresholder.thresholdStack(blobImps[s], 0.001);
+            StackThresholder.thresholdStack(blobImps[s], s % 3 == 0 ? hessianThresh : Double.MIN_VALUE);
             (new StackProcessor(blobImps[s].getImageStack())).invert();
         }
         ImageCalculator ic = new ImageCalculator();
-        for (int s = 0; s < nScales - 1; s++) {
-            blobImps[0] = ic.run("AND create stack", blobImps[s], blobImps[s + 1]);
+        for (int s = 1; s < nScales; s++) {
+            blobImps[0] = ic.run("AND create stack", blobImps[0], blobImps[s]);
         }
 //        IJ.saveAs(blobImps[0], "TIF", "D:\\debugging\\giani_debug\\blob_outputs_post_threshold.tif");
         createThresholdOutline(blobImps[0]);
