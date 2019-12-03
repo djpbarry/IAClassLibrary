@@ -33,9 +33,8 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
     
     public static int SERIES_LABEL = 0;
     public static int CHANNEL_LABEL = 1;
-    public static int XY_FILT_LABEL = 2;
-    public static int Z_FILT_LABEL = 3;
-    public static int N_PROP_LABELS = 4;
+    public static int FILT_RAD_LABEL = 2;
+    public static int N_PROP_LABELS = 3;
     
     private double[] sigma;
     private int channel;
@@ -64,7 +63,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
         this.channel = Integer.parseInt(props.getProperty(propLabels[CHANNEL_LABEL]));
-        sigma = getCalibratedDoubleSigma(series, propLabels[XY_FILT_LABEL], propLabels[XY_FILT_LABEL], propLabels[Z_FILT_LABEL]);
+        sigma = getCalibratedDoubleSigma(series, propLabels[FILT_RAD_LABEL], propLabels[FILT_RAD_LABEL], propLabels[FILT_RAD_LABEL]);
         img.loadPixelData(series, channel, channel + 1, null);
         ImagePlus imp = img.getLoadedImage();
         (new StackConverter(imp)).convertToGray32();
