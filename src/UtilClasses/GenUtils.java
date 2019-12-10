@@ -47,6 +47,9 @@ public class GenUtils {
     public static String openResultsDirectory(String directory) {
         if (directory == null) {
             return null;
+        } else if (!(new File(directory)).getParentFile().canWrite()) {
+            GenUtils.error(String.format("Do not have write access to %s.", directory));
+            return null;
         }
         File newDir = new File(directory + "_Output" + File.separator);
         try {
