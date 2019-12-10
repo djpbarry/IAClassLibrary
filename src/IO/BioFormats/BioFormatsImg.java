@@ -90,19 +90,27 @@ public class BioFormatsImg {
         }
     }
 
-    public String getDimOrder() {
+    public int getCurrentSeries() {
+        return reader.getSeries();
+    }
+
+    public String getDimOrder(int series) {
+        reader.setSeries(series);
         return reader.getDimensionOrder();
     }
 
-    public int getPixelType() {
+    public int getPixelType(int series) {
+        reader.setSeries(series);
         return reader.getPixelType();
     }
 
-    public int getSizeC() {
+    public int getSizeC(int series) {
+        reader.setSeries(series);
         return reader.getSizeC();
     }
 
-    public int getSizeZ() {
+    public int getSizeZ(int series) {
+        reader.setSeries(series);
         return reader.getSizeZ();
     }
 
@@ -141,20 +149,25 @@ public class BioFormatsImg {
     }
 
     public void loadPixelData(int series) {
-        loadPixelData(series, 0, this.getSizeC(), reader.getDimensionOrder());
+        loadPixelData(series, 0, this.getSizeC(series), reader.getDimensionOrder());
     }
 
     public void loadPixelData(int series, int cBegin, int cEnd, String dimOrder) {
-        if (series >= getSeriesCount() || cBegin >= getSizeC() || cEnd > getSizeC()) {
+        if (series >= getSeriesCount() || cBegin >= getSizeC(series) || cEnd > getSizeC(series)) {
             img = null;
             return;
         }
         try {
             reader.setSeries(series);
-            int[] limits = getLimits(dimOrder, cBegin, cEnd);
+            int sizeC = reader.getSizeC();
+            if (reader.getRGBChannelCount() > 1) {
+                sizeC = 1;
+                cEnd = 1;
+            }
+            int[] limits = getLimits(dimOrder, cBegin, cEnd, sizeC);
             int width = reader.getSizeX();
             int height = reader.getSizeY();
-            ImageStack stack = new ImageStack(width, height, (cEnd - cBegin) * reader.getSizeT() * reader.getSizeZ());
+            ImageStack stack = new ImageStack(width, height, (cEnd - cBegin) * reader.getSizeT() * reader.getSizeZ() * reader.getRGBChannelCount());
             MultiThreadedImageLoader loader = new MultiThreadedImageLoader(limits, reader, stack);
             loader.start();
             loader.join();
@@ -176,7 +189,7 @@ public class BioFormatsImg {
         return originalFileName.replace(LABEL_SEP, REPLACEMENT_SEP).replace(SERIES_SEP, REPLACEMENT_SEP);
     }
 
-    private int[] getLimits(String dimOrder, int cBegin, int cEnd) {
+    private int[] getLimits(String dimOrder, int cBegin, int cEnd, int sizeC) {
         if (dimOrder == null) {
             dimOrder = reader.getDimensionOrder();
         }
@@ -188,7 +201,7 @@ public class BioFormatsImg {
                 limits[2] = reader.getSizeZ();
                 limits[3] = cBegin;
                 limits[4] = cEnd;
-                limits[5] = reader.getSizeC();
+                limits[5] = sizeC;
                 limits[6] = 0;
                 limits[7] = reader.getSizeT();
                 limits[8] = reader.getSizeT();
@@ -196,7 +209,7 @@ public class BioFormatsImg {
             case "XYCTZ":
                 limits[0] = cBegin;
                 limits[1] = cEnd;
-                limits[2] = reader.getSizeC();
+                limits[2] = sizeC;
                 limits[3] = 0;
                 limits[4] = reader.getSizeT();
                 limits[5] = reader.getSizeT();
@@ -207,7 +220,7 @@ public class BioFormatsImg {
             case "XYCZT":
                 limits[0] = cBegin;
                 limits[1] = cEnd;
-                limits[2] = reader.getSizeC();
+                limits[2] = sizeC;
                 limits[3] = 0;
                 limits[4] = reader.getSizeZ();
                 limits[5] = reader.getSizeZ();
@@ -221,7 +234,7 @@ public class BioFormatsImg {
                 limits[2] = reader.getSizeT();
                 limits[3] = cBegin;
                 limits[4] = cEnd;
-                limits[5] = reader.getSizeC();
+                limits[5] = sizeC;
                 limits[6] = 0;
                 limits[7] = reader.getSizeZ();
                 limits[8] = reader.getSizeZ();
@@ -235,7 +248,7 @@ public class BioFormatsImg {
                 limits[5] = reader.getSizeZ();
                 limits[6] = cBegin;
                 limits[7] = cEnd;
-                limits[8] = reader.getSizeC();
+                limits[8] = sizeC;
                 break;
             case "XYZTC":
                 limits[0] = 0;
@@ -246,7 +259,7 @@ public class BioFormatsImg {
                 limits[5] = reader.getSizeT();
                 limits[6] = cBegin;
                 limits[7] = cEnd;
-                limits[8] = reader.getSizeC();
+                limits[8] = sizeC;
                 break;
         }
         return limits;
@@ -304,10 +317,10 @@ public class BioFormatsImg {
         return reader.getSizeT();
     }
 
-    public String getSeriesName(int series){
+    public String getSeriesName(int series) {
         return meta.getImageName(series);
     }
-    
+
     public double[] getCalibration(int series) {
         return new double[]{getXYSpatialRes(series).value().doubleValue(),
             getXYSpatialRes(series).value().doubleValue(),

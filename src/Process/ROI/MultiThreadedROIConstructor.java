@@ -155,7 +155,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             }
             rt.setLabel(cells.getObject(i).getName(), row);
         }
-        int nChan = img.getSizeC();
+        int nChan = img.getSizeC(series);
         for (int c = 0; c < nChan; c++) {
             if (((int) Math.pow(2, c) & selectedChannels) != 0) {
                 img.loadPixelData(series, c, c + 1, null);

@@ -59,7 +59,7 @@ public class OverlayDrawer {
             (int) Math.round(s.getFeature(Spot.POSITION_Y) / xySpatRes),
             (int) Math.round(s.getFeature(Spot.POSITION_Z) / zSpatRes)};
         int z0 = pix[2] + 1;
-        for (int z = z0 - zRadiusPix < 0 ? 0 : z0 - zRadiusPix; z < z0 + zRadiusPix && z < img.getSizeZ(); z++) {
+        for (int z = z0 - zRadiusPix < 0 ? 0 : z0 - zRadiusPix; z < z0 + zRadiusPix && z < img.getSizeZ(series); z++) {
             double z2 = Math.pow((z - z0) * zSpatRes, 2.0);
             double cr = Math.sqrt((1.0 - z2 / maxZRadiusMic2) * maxXYRadiusMic2);
             int currentRadius = (int) Math.round(cr / xySpatRes);
@@ -73,7 +73,7 @@ public class OverlayDrawer {
             }
         }
         if (edm) {
-            for (int i = 0; i < img.getSizeZ(); i++) {
+            for (int i = 0; i < img.getSizeZ(series); i++) {
                 if (binaryOutline[i] == null) {
                     continue;
                 }
