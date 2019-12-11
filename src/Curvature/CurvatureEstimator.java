@@ -68,7 +68,7 @@ public class CurvatureEstimator {
             System.out.println(String.format("An exception occured - aborting: %s", e.toString()));
             return;
         }
-        IJ.saveAs(new ImagePlus("", output), "TIF", "C:\\Users\\barryd\\debugging\\curve_estimation\\curveEstimation");
+//        IJ.saveAs(new ImagePlus("", output), "TIF", "C:\\Users\\barryd\\debugging\\curve_estimation\\curveEstimation");
     }
 
     private class CurveAnalyser implements Runnable {

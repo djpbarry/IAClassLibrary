@@ -171,7 +171,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             this.spotMaxima = maximas;
         }
         output = makeLocalMaximaImage(BACKGROUND, (int) Math.round(radii[0] / calibration[0]));
-        IJ.saveAs(output, "TIF", "D:\\debugging\\giani_debug\\watershedOutput.tif");
+//        IJ.saveAs(output, "TIF", "D:\\debugging\\giani_debug\\watershedOutput.tif");
         labelOutput(imp.getTitle(), "Blobs");
     }
 
