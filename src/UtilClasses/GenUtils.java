@@ -47,7 +47,7 @@ public class GenUtils {
     public static String openResultsDirectory(String directory) {
         if (directory == null) {
             return null;
-        } else if (!(new File(directory)).getParentFile().canWrite()) {
+        } else if (!checkWriteAccess(new File(directory))) {
             GenUtils.error(String.format("Do not have write access to %s.", directory));
             return null;
         }
@@ -67,6 +67,15 @@ public class GenUtils {
             return null;
         }
         return newDir.getAbsolutePath();
+    }
+
+    public static boolean checkWriteAccess(File directory) {
+        if (directory.exists()) {
+            return directory.canWrite();
+        } else if (directory.getParentFile() != null) {
+            return checkWriteAccess(directory.getParentFile());
+        }
+        return false;
     }
 
     public static String getDelimiter() {
