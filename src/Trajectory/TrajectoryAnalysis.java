@@ -143,7 +143,7 @@ public class TrajectoryAnalysis implements PlugIn {
             IJ.log("Calculating instantaneous velocities...");
             double[][][] vels = calcInstVels(smoothedData, _X_, _Y_, _T_);
             IJ.log("Calculating mean velocities...");
-            double[][] meanVels = calcMeanVels(vels, minVel);
+            double[][] meanVels = calcMeanVels(smoothedData, vels, minVel);
             IJ.log("Analysing runs...");
             double[][][] runLengths = calcRunLengths(vels, minVel);
             IJ.log("Analysing mean square displacements...");
@@ -234,9 +234,9 @@ public class TrajectoryAnalysis implements PlugIn {
         return vels;
     }
 
-    double[][] calcMeanVels(double[][][] vels, double minVel) {
+    double[][] calcMeanVels(double[][][] data, double[][][] vels, double minVel) {
         int a = vels.length;
-        double[][] meanVels = new double[a][2];
+        double[][] meanVels = new double[a][3];
         for (int i = 0; i < a; i++) {
             int b = vels[i].length;
             DescriptiveStatistics xVel = new DescriptiveStatistics();
@@ -256,7 +256,22 @@ public class TrajectoryAnalysis implements PlugIn {
             meanVels[i][0] = mVel.getMean();
             meanVels[i][1] = theta;
         }
+        calcDirectionalities(data, vels, meanVels);
         return meanVels;
+    }
+
+    void calcDirectionalities(double[][][] data, double[][][] instVels, double[][] meanVels) {
+        int a = data.length;
+        for (int i = 0; i < a; i++) {
+            int b = data[i].length;
+            double totalDisplacement = 0.0;
+            for (int j = 0; j < b; j++) {
+                if (instVels[i][j][V_M] > minVel) {
+                    totalDisplacement += instVels[i][j][V_D];
+                }
+            }
+            meanVels[i][2] = Utils.calcDistance(data[i][0][_X_], data[i][0][_Y_], data[i][b - 1][_X_], data[i][b - 1][_Y_]) / totalDisplacement;
+        }
     }
 
     double[][][] calcRunLengths(double[][][] vels, double minVel) {
@@ -419,7 +434,7 @@ public class TrajectoryAnalysis implements PlugIn {
         for (int i = 0; i < meanVels.length; i++) {
             rowLabels[i] = String.valueOf(idIndexMap.get(i));
         }
-        DataWriter.saveValues(meanVels, velData, new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol)}, rowLabels, false);
+        DataWriter.saveValues(meanVels, velData, new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "Directionality"}, rowLabels, false);
     }
 
     void saveRunLengths(double[][][] runs, File dir) throws IOException {
