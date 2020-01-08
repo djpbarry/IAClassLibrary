@@ -269,10 +269,13 @@ public class GenUtils {
         switch (bitDepth) {
             case 8:
                 sc.convertToGray8();
+                break;
             case 16:
                 sc.convertToGray16();
+                break;
             case 32:
                 sc.convertToGray32();
+                break;
             default:
         }
         tempCytoImp.setDimensions(input.getNChannels(), nSlices, nFrames);
