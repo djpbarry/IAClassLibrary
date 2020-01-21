@@ -209,18 +209,19 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         double xSum = 0.0;
         double ySum = 0.0;
         double zSum = 0.0;
-        ArrayList<double[]> centroids = cells.getMeasureCentroid();
-        for (double[] c : centroids) {
-            xSum += c[1];
-            ySum += c[2];
-            zSum += c[3];
+        ArrayList<Object3D> cellObjects = cells.getObjectsList();
+        for (Object3D c : cellObjects) {
+            Vector3D centroid = c.getCenterAsVectorUnit();
+            xSum += centroid.x;
+            ySum += centroid.y;
+            zSum += centroid.z;
         }
-        ArrayRealVector volumeCentroid = new ArrayRealVector(new double[]{xSum / centroids.size(), ySum / centroids.size(), zSum / centroids.size()});
-        double[] distances = new double[centroids.size()];
+        ArrayRealVector volumeCentroid = new ArrayRealVector(new double[]{xSum / cells.getNbObjects(), ySum / cells.getNbObjects(), zSum / cells.getNbObjects()});
+        double[] distances = new double[cells.getNbObjects()];
         double maxDist = -Double.MAX_VALUE;
-        for (int i = 0; i < centroids.size(); i++) {
-            double[] c = centroids.get(i);
-            distances[i] = volumeCentroid.getDistance(new ArrayRealVector(new double[]{c[1], c[2], c[3]}));
+        for (int i = 0; i < cells.getNbObjects(); i++) {
+            Vector3D c = cellObjects.get(i).getCenterAsVectorUnit();
+            distances[i] = volumeCentroid.getDistance(new ArrayRealVector(new double[]{c.x, c.y, c.z}));
             if (distances[i] > maxDist) {
                 maxDist = distances[i];
             }
