@@ -224,16 +224,36 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     public void hessianDetection(ImagePlus image) {
-        double[] minRadii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE]);
-        double[] maxRadii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE]);
+        int nEigenValues;
+        Aspects a = new Aspects();
+        if (calibration == null) {
+            if (img == null) {
+                calibration = new double[3];
+                calibration[0] = image.getCalibration().pixelWidth;
+                calibration[1] = image.getCalibration().pixelHeight;
+                calibration[2] = image.getCalibration().pixelDepth;
+            } else {
+                calibration = getCalibration(series);
+            }
+        }
+        if (maxima == null) {
+            maxima = new ArrayList();
+        }
+//        double[] minRadii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE]);
+//        double[] maxRadii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE]);
 //        double[] sigma = getCalibratedDoubleSigma(series, propLabels[EDM_FILTER], propLabels[EDM_FILTER], propLabels[EDM_FILTER]);
-        IJ.log(String.format("Searching for objects %.1f - %.1f pixels in diameter in \"%s\"...", (2 * minRadii[0] / calibration[0]), (2 * maxRadii[0] / calibration[0]), image.getTitle()));
+//        IJ.log(String.format("Searching for objects %.1f - %.1f pixels in diameter in \"%s\"...", (2 * minRadii[0] / calibration[0]), (2 * maxRadii[0] / calibration[0]), image.getTitle()));
 //        IJ.saveAs(binaryImp, "TIF", "D:\\debugging\\giani_debug\\binaryImp.tif");
 
-        (new StackConverter(image)).convertToGray32();
-        double[] cal = getCalibration(series);
+        if (image.getStackSize() > 1) {
+            nEigenValues = 3;
+            a = new Aspects(calibration[0], calibration[1], calibration[2]);
+            (new StackConverter(image)).convertToGray32();
+        } else {
+            nEigenValues = 2;
+            image.setProcessor(image.getProcessor().convertToFloatProcessor());
+        }
         FloatImage convertedImage = (FloatImage) FloatImage.wrap(image);
-        Aspects a = new Aspects(cal[0], cal[1], cal[2]);
         convertedImage.aspects(a);
 
         MultiThreadedHessian hessian = new MultiThreadedHessian(inputs, convertedImage);
@@ -249,15 +269,15 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 //        IJ.saveAs(hessianOutputs, "TIF", "D:\\debugging\\giani_debug\\hessian_outputs.tif");
         SubstackMaker ssm = new SubstackMaker();
         int inputStackSize = image.getImageStackSize();
-        int nScales = hessianOutputs.getImageStackSize() / (3 * inputStackSize);
+        int nScales = hessianOutputs.getImageStackSize() / (nEigenValues * inputStackSize);
         ImagePlus[] blobImps = new ImagePlus[nScales];
         double hessianThresh = Double.parseDouble(props.getProperty(propLabels[HESSIAN_THRESH]));
         for (int s = 0; s < nScales; s++) {
-            int index = s * 3 * inputStackSize + 1;
+            int index = s * nEigenValues * inputStackSize + 1;
             blobImps[s] = ssm.makeSubstack(hessianOutputs, String.format("%d-%d", index, index + inputStackSize - 1));
             StackMath.mutiply(blobImps[s], -1.0);
 //            IJ.saveAs(blobImps[0], "TIF", "D:\\debugging\\giani_debug\\blob_outputs_pre_threshold.tif");
-            StackThresholder.thresholdStack(blobImps[s], s % 3 == 0 ? hessianThresh : Double.MIN_VALUE);
+            StackThresholder.thresholdStack(blobImps[s], s % nEigenValues == 0 ? hessianThresh : Double.MIN_VALUE);
             (new StackProcessor(blobImps[s].getImageStack())).invert();
         }
         ImageCalculator ic = new ImageCalculator();
@@ -272,6 +292,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             double[] centre = o.getCenterAsArray();
             maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
         }
+        output = blobImps[0];
     }
 
     void consolidatePointsOnDistance(double thresh, double[] calibration) {

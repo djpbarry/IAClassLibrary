@@ -20,7 +20,6 @@ import Extrema.MultiThreadedMaximaFinder;
 import IO.BioFormats.BioFormatsImg;
 import Process.MultiThreadedProcess;
 import UtilClasses.GenUtils;
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import imagescience.feature.Hessian;
@@ -45,7 +44,7 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
     private double stopScale;
     private double scaleStep;
     private boolean abs;
-    private int series;
+//    private int series;
 
     public MultiThreadedHessian(MultiThreadedProcess[] inputs, Image input) {
         super(inputs);
@@ -60,7 +59,7 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
         this.stopScale = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_STOP_SCALE]));
         this.scaleStep = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_SCALE_STEP]));
         this.abs = Boolean.parseBoolean(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_ABS]));
-        this.series = Integer.parseInt(props.getProperty(propLabels[MultiThreadedMaximaFinder.SERIES_SELECT]));
+//        this.series = Integer.parseInt(props.getProperty(propLabels[MultiThreadedMaximaFinder.SERIES_SELECT]));
     }
 
     public void run() {
@@ -97,6 +96,9 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
 //        int count = 0;
         for (Image[] images : result) {
             for (Image i : images) {
+                if (i == null) {
+                    continue;
+                }
 //                IJ.saveAs(i.imageplus(), "TIF", "D:\\debugging\\giani_debug\\hessian_output_" + count++ + ".tif");
                 ImageStack stack = i.imageplus().getImageStack();
                 for (int s = 1; s <= stack.size(); s++) {
