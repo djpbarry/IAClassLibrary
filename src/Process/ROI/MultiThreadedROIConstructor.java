@@ -146,9 +146,11 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
                 Iterator<Entry<String, Double>> iter = s.getFeatures().entrySet().iterator();
                 while (iter.hasNext()) {
                     Entry<String, Double> e = iter.next();
-                    if (e.getKey().contains(SpotFeatures.DIST_TO_NUC_CENTRE)) {
+                    if (e.getKey().contains(SpotFeatures.EUCLID_DIST_TO_NUC_CENTRE)) {
                         rt.setValue(e.getKey(), row, e.getValue());
                     } else if (e.getKey().contains(SpotFeatures.DIST_TO_NEAREST_NEIGHBOUR)) {
+                        rt.setValue(e.getKey(), row, e.getValue());
+                    } else if (e.getKey().contains(SpotFeatures.DIST_TO_NUC_MEMBRANE)) {
                         rt.setValue(e.getKey(), row, e.getValue());
                     }
                 }

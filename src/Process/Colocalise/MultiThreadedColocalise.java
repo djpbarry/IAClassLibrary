@@ -27,11 +27,13 @@ import IO.DataWriter;
 import Process.MultiThreadedProcess;
 import Process.ROI.MultiThreadedROIConstructor;
 import Process.ROI.OverlayDrawer;
+import Stacks.StackThresholder;
 import UtilClasses.GenUtils;
 import fiji.plugin.trackmate.Spot;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.ResultsTable;
+import ij.process.StackProcessor;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,6 +47,9 @@ import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.geom.Vector3D;
 import mcib3d.geom.Voxel3D;
+import mcib3d.image3d.ImageFloat;
+import mcib3d.image3d.ImageHandler;
+import mcib3d.image3d.distanceMap3d.EDT;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 /**
@@ -86,7 +91,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         for (int i = 0; i < inputs.length - 2; i++) {
             assignParticlesToCells(((MultiThreadedMaximaFinder) inputs[i]).getSpotMaxima(), inputs[lInputs - 2].getOutput(), inputs[lInputs - 1].getOutput());
         }
-        calcNucParticleDistances();
+        calcNucParticleDistances(inputs[lInputs - 1].getOutput());
         calcNearestNeighbours();
         try {
             saveData();
@@ -138,12 +143,13 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         }
     }
 
-    void calcNucParticleDistances() {
+    void calcNucParticleDistances(ImagePlus nucLabelImage) {
+        ImagePlus distanceMap = generateNuclearDistanceMap(nucLabelImage);
         int nThreads = Runtime.getRuntime().availableProcessors();
         ArrayList<Object3D> cells = cellPop.getObjectsList();
         SpotNucDistanceCalc[] distanceCalcs = new SpotNucDistanceCalc[nThreads];
         for (int thread = 0; thread < nThreads; thread++) {
-            distanceCalcs[thread] = new SpotNucDistanceCalc(cells, thread, nThreads);
+            distanceCalcs[thread] = new SpotNucDistanceCalc(cells, thread, nThreads, distanceMap);
             distanceCalcs[thread].start();
         }
         try {
@@ -216,19 +222,34 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         MultiThreadedROIConstructor.saveAllRois(outputDir, spotsPop);
     }
 
+    private ImagePlus generateNuclearDistanceMap(ImagePlus nucLabelImage) {
+        double[] calibration = getCalibration(series);
+        ImagePlus mask = nucLabelImage.duplicate();
+        StackThresholder.thresholdStack(mask, 0);
+        ImageFloat edtInner = EDT.run(ImageHandler.wrap(mask), 1, (float) calibration[0], (float) calibration[2], true, Runtime.getRuntime().availableProcessors());
+        (new StackProcessor(mask.getImageStack())).invert();
+        ImageFloat edtOuter = EDT.run(ImageHandler.wrap(mask), 1, (float) calibration[0], (float) calibration[2], true, Runtime.getRuntime().availableProcessors());
+        edtOuter.subtract(edtInner);
+        return edtOuter.getImagePlus();
+    }
+
     class SpotNucDistanceCalc extends Thread {
 
         private final ArrayList<Object3D> cells;
         private final int thread;
         private final int nThreads;
+        private final ImagePlus distanceMap;
 
-        public SpotNucDistanceCalc(ArrayList<Object3D> cells, int thread, int nThreads) {
+        public SpotNucDistanceCalc(ArrayList<Object3D> cells, int thread, int nThreads, ImagePlus distanceMap) {
             this.cells = cells;
             this.thread = thread;
             this.nThreads = nThreads;
+            this.distanceMap = distanceMap;
         }
 
         public void run() {
+            double[] calibration = getCalibration(series);
+            ImageStack distanceMapStack = distanceMap.getImageStack();
             for (int t = thread; t < cells.size(); t += nThreads) {
                 Cell3D c = (Cell3D) cells.get(t);
                 Vector3D centroid = c.getNucleus().getCenterAsVectorUnit();
@@ -243,7 +264,12 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                             Spot3D s = (Spot3D) spots.get(k);
                             double[] spotPosition = new double[3];
                             s.getSpot().localize(spotPosition);
-                            s.getSpot().putFeature(SpotFeatures.DIST_TO_NUC_CENTRE, Utils.calcEuclidDist(nucCentroid, spotPosition));
+                            s.getSpot().putFeature(SpotFeatures.EUCLID_DIST_TO_NUC_CENTRE, Utils.calcEuclidDist(nucCentroid, spotPosition));
+                            s.getSpot().putFeature(SpotFeatures.DIST_TO_NUC_MEMBRANE,
+                                    distanceMapStack.getVoxel(
+                                            (int) Math.round(spotPosition[0] / calibration[0]),
+                                            (int) Math.round(spotPosition[1] / calibration[1]),
+                                            (int) Math.round(spotPosition[2] / calibration[2])));
                         }
                     }
                 }
