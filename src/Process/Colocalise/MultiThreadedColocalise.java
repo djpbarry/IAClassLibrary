@@ -217,7 +217,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
             }
         }
         String outputDir = props.getProperty(propLabels[OUTPUT_LABEL]);
-        DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", outputDir, File.separator, "spot_summary_data.csv")));
+        DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", outputDir, File.separator, "spot_summary_data.csv")), false, true);
         MultiThreadedROIConstructor.processObjectPop(spotsPop, series, selectedChannels, img);
         MultiThreadedROIConstructor.saveAllRois(outputDir, spotsPop);
     }

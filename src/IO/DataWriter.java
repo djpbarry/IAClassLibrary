@@ -19,12 +19,14 @@ package IO;
 import UtilClasses.GenVariables;
 import ij.measure.ResultsTable;
 import ij.text.TextWindow;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -32,7 +34,6 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 public class DataWriter {
 
     /**
-     *
      * @param tw
      * @throws IOException
      */
@@ -152,7 +153,7 @@ public class DataWriter {
         return transposedData;
     }
 
-    public static void saveResultsTable(ResultsTable rt, File file) throws IOException {
+    public static void saveResultsTable(ResultsTable rt, File file, boolean append, boolean useHeadings) throws IOException {
         if (rt.getCounter() < 1) {
             return;
         }
@@ -173,6 +174,6 @@ public class DataWriter {
                 data[j][labels ? i - 1 : i] = rt.getValueAsDouble(rt.getColumnIndex(headings[i]), j);
             }
         }
-        saveValues(data, file, headings, rowLabels, false);
+        saveValues(data, file, useHeadings ? headings : null, rowLabels, append);
     }
 }

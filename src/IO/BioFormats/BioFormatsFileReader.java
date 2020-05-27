@@ -18,13 +18,14 @@ package IO.BioFormats;
 
 import MetaData.ParamsReader;
 import ij.ImagePlus;
-import java.io.IOException;
 import loci.formats.FormatException;
 import loci.formats.ImageReader;
 import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
+
+import java.io.IOException;
 
 /**
  *
