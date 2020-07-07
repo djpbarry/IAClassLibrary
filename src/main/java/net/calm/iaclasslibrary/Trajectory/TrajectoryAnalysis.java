@@ -54,7 +54,7 @@ public class TrajectoryAnalysis implements PlugIn {
     private static int INPUT_X_INDEX = 2, INPUT_Y_INDEX = 3, INPUT_ID_INDEX = 10, INPUT_FRAME_INDEX = 0;
     private final int _X_ = 0, _Y_ = 1, _T_ = 2, _ID_ = 3;
     private final int V_Fr = 0, V_X = 1, V_Y = 2, V_M = 3, V_Th = 4, V_F = 5, V_ID = 6, V_D = 7, V_T = 8;
-    private final String TITLE = "net.calm.iaclasslibrary.Trajectory Analysis";
+    private final String TITLE = "net.calm.iaclasslibrary.net.calm.trackerlibrary.Trajectory Analysis";
     public static final String MIC = String.format("%cm", IJ.micronSymbol);
     private final String MIC_PER_SEC = String.format("%s/s", MIC);
     private LinkedHashMap<Integer, Integer> idIndexMap;

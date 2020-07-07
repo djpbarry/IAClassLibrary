@@ -824,13 +824,13 @@ public class Region2 {
 //            pi.next();
 //            last = new int[]{(int) net.calm.iaclasslibrary.Math.round(current[0]), (int) net.calm.iaclasslibrary.Math.round(current[1])};
 //        }
-//IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_addPath_PreCrop_" + index);
+//IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test net.calm.adapt.Output/Mask_addPath_PreCrop_" + index);
         mask.setRoi(getBounds());
         mask = mask.crop();
         setMaskSize();
 //        System.out.println(index+": "+maskSize);
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_addPath_PostCrop_" + index);
-//IJ.saveAs((new ImagePlus("", mask2)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask2_" + index+"_"+mask2count++);
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test net.calm.adapt.Output/Mask_addPath_PostCrop_" + index);
+//IJ.saveAs((new ImagePlus("", mask2)), "PNG", "/Users/Dave/Desktop/EMSeg Test net.calm.adapt.Output/Mask2_" + index+"_"+mask2count++);
 
     }
 
@@ -868,7 +868,7 @@ public class Region2 {
             last = new int[]{(int) Math.round(current[0]), (int) Math.round(current[1])};
         }
 //        System.out.println(index + ": " + size + " " + count);
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test Output/Mask_getCoorsFromPath_" + index);
+//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test net.calm.adapt.Output/Mask_getCoorsFromPath_" + index);
         return coords;
     }
 
