@@ -22,7 +22,7 @@ public class CellRegion3D extends Object3DVoxels{
     protected Cell parent;
     protected Roi roi;
     protected ImageStatistics fluorStats;
-    public static final String NUCLEUS = "Nucleus", CYTO = "Cytoplasm", CELL = "net/calm/iaclasslibrary/Cell", SPOT = "Spot", MISC = "Miscellaneous";
+    public static final String NUCLEUS = "Nucleus", CYTO = "Cytoplasm", CELL = "Cell", SPOT = "Spot", MISC = "Miscellaneous";
 
     public CellRegion3D() {
 

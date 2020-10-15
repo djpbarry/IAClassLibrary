@@ -252,7 +252,7 @@ public class UserVariables {
 
     /**
      * Get the radius of the smoothing filter applied to
-     * {@link MorphMap MorphMaps} in the temporal dimension
+     * MorphMaps in the temporal dimension
      *
      * @return temporal radius of smoothing filter in seconds
      */
@@ -262,7 +262,7 @@ public class UserVariables {
 
     /**
      * Set the radius of the smoothing filter applied to
-     * {@link MorphMap MorphMaps} in the temporal dimension
+     * MorphMaps} in the temporal dimension
      *
      * @param tempFiltRad temporal radius of smoothing filter in seconds
      */
@@ -294,7 +294,7 @@ public class UserVariables {
 
     /**
      * Get the radius of the smoothing filter applied to
-     * {@link MorphMap MorphMaps} in the spatial dimension
+     * MorphMaps in the spatial dimension
      *
      * @return spatial radius of smoothing filter in seconds
      */
@@ -304,7 +304,7 @@ public class UserVariables {
 
     /**
      * Get the radius of the smoothing filter applied to
-     * {@link MorphMap MorphMaps} in the spatial dimension
+     * MorphMaps in the spatial dimension
      *
      * @param spatFiltRad spatial radius of smoothing filter in seconds
      */
