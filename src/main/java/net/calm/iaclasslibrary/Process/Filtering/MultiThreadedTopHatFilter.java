@@ -19,17 +19,26 @@ package net.calm.iaclasslibrary.Process.Filtering;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import ij.IJ;
+
 import ij.ImagePlus;
-import ij.plugin.GaussianBlur3D;
-import ij.process.StackConverter;
+import inra.ijpb.morphology.Morphology;
+import inra.ijpb.morphology.strel.EllipsoidStrel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Executors;
+import net.imagej.ImageJ;
+import net.imglib2.algorithm.neighborhood.HyperSphereShape;
+import net.imglib2.algorithm.neighborhood.Shape;
+import net.imglib2.img.ImagePlusAdapter;
+import net.imglib2.img.Img;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 
 /**
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
+public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
 
     public static int SERIES_LABEL = 0;
     public static int CHANNEL_LABEL = 1;
@@ -40,7 +49,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
     private int channel;
     private int series;
 
-    public MultiThreadedGaussianFilter(MultiThreadedProcess[] inputs) {
+    public MultiThreadedTopHatFilter(MultiThreadedProcess[] inputs) {
         super(inputs);
     }
 
@@ -64,23 +73,22 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
         this.channel = Integer.parseInt(props.getProperty(propLabels[CHANNEL_LABEL]));
         sigma = getCalibratedDoubleSigma(series, propLabels[FILT_RAD_LABEL], propLabels[FILT_RAD_LABEL], propLabels[FILT_RAD_LABEL]);
-        ImagePlus imp;
-        if (inputs != null) {
-            imp = inputs[0].getOutput();
-        } else {
-            img.loadPixelData(series, channel, channel + 1, null);
-            imp = img.getLoadedImage();
-        }
-        (new StackConverter(imp)).convertToGray32();
-        IJ.log(String.format("Filtering \"%s\" with a sigma of %f pixels in XY and %f in Z.", imp.getTitle(), sigma[0], sigma[2]));
-        GaussianBlur3D.blur(imp, sigma[0], sigma[1], sigma[2]);
+        img.loadPixelData(series, channel, channel + 1, null);
+        ImagePlus imp = img.getLoadedImage();
+        IJ.log(String.format("Top-Hat Filtering \"%s\" with a sigma of %f pixels in XY and %f in Z.", imp.getTitle(), sigma[0], sigma[2]));
+//        List<Shape> shapes = new ArrayList();
+//        shapes.add(new HyperSphereShape((long)Math.round(sigma[0])));
+//        Img<UnsignedShortType> img = ImagePlusAdapter.wrap(imp);
+//        (new ImageJ()).op().morphology().topHat(img, shapes);
+        
+        imp.setStack(Morphology.whiteTopHat(imp.getImageStack(), EllipsoidStrel.fromRadiusList(sigma[0], sigma[1], sigma[2])));
 //        imp.show();
         output = imp;
-        labelOutput(imp.getTitle(), "Filtered");
+        labelOutput(imp.getTitle(), "TopHatFiltered");
     }
 
-    public MultiThreadedGaussianFilter duplicate() {
-        MultiThreadedGaussianFilter newProcess = new MultiThreadedGaussianFilter(inputs);
+    public MultiThreadedTopHatFilter duplicate() {
+        MultiThreadedTopHatFilter newProcess = new MultiThreadedTopHatFilter(inputs);
         this.updateOutputDests(newProcess);
         return newProcess;
     }
