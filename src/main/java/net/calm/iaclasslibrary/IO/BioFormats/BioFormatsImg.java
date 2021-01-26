@@ -16,11 +16,8 @@
  */
 package net.calm.iaclasslibrary.IO.BioFormats;
 
-import net.calm.iaclasslibrary.Process.IO.MultiThreadedImageLoader;
-import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import ij.ImagePlus;
 import ij.ImageStack;
-import java.io.IOException;
 import loci.common.services.DependencyException;
 import loci.common.services.ServiceException;
 import loci.common.services.ServiceFactory;
@@ -30,11 +27,14 @@ import loci.formats.ImageReader;
 import loci.formats.meta.IMetadata;
 import loci.formats.services.OMEXMLService;
 import loci.plugins.in.ImporterOptions;
+import net.calm.iaclasslibrary.Process.IO.MultiThreadedImageLoader;
+import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import ome.units.quantity.Length;
 import org.apache.commons.io.FilenameUtils;
 
+import java.io.IOException;
+
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class BioFormatsImg {
@@ -276,8 +276,8 @@ public class BioFormatsImg {
     public String getInfo(int s) {
         if (isValidID()) {
             return String.format("%s\n"
-                    + "XY Spatial Res: %f\n"
-                    + "Z Spatial Res: %f", getId(),
+                            + "XY Spatial Res: %f\n"
+                            + "Z Spatial Res: %f", getId(),
                     getXYSpatialRes(s).value().floatValue(),
                     getZSpatialRes(s).value().floatValue());
         } else {
@@ -305,15 +305,18 @@ public class BioFormatsImg {
         return meta;
     }
 
-    public int getSizeX() {
+    public int getSizeX(int series) {
+        reader.setSeries(series);
         return reader.getSizeX();
     }
 
-    public int getSizeY() {
+    public int getSizeY(int series) {
+        reader.setSeries(series);
         return reader.getSizeY();
     }
 
-    public int getSizeT() {
+    public int getSizeT(int series) {
+        reader.setSeries(series);
         return reader.getSizeT();
     }
 
@@ -323,8 +326,8 @@ public class BioFormatsImg {
 
     public double[] getCalibration(int series) {
         return new double[]{getXYSpatialRes(series).value().doubleValue(),
-            getXYSpatialRes(series).value().doubleValue(),
-            getZSpatialRes(series).value().doubleValue()};
+                getXYSpatialRes(series).value().doubleValue(),
+                getZSpatialRes(series).value().doubleValue()};
     }
 
     public String[] getFileList() {

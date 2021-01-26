@@ -1172,7 +1172,7 @@ is divided into following sections:
     </target>
     <target depends="init,-do-jar-create-manifest,-do-jar-copy-manifest" if="do.archive+profile.available" name="-do-jar-set-profile">
         <manifest encoding="UTF-8" file="${tmp.manifest.file}" mode="update">
-            <attribute name="Profile" value="${javac.profile}"/>
+            <attribute name="net.calm.iaclasslibrary.Profile" value="${javac.profile}"/>
         </manifest>
     </target>
     <target depends="init,-do-jar-create-manifest,-do-jar-copy-manifest" if="do.archive+splashscreen.available" name="-do-jar-set-splashscreen">
@@ -1180,7 +1180,7 @@ is divided into following sections:
         <mkdir dir="${build.classes.dir}/META-INF"/>
         <copy failonerror="false" file="${application.splash}" todir="${build.classes.dir}/META-INF"/>
         <manifest encoding="UTF-8" file="${tmp.manifest.file}" mode="update">
-            <attribute name="SplashScreen-Image" value="META-INF/${splashscreen.basename}"/>
+            <attribute name="SplashScreen-net.calm.iaclasslibrary.Image" value="META-INF/${splashscreen.basename}"/>
         </manifest>
     </target>
     <target depends="init,-init-macrodef-copylibs,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen" if="do.mkdist" name="-do-jar-copylibs">
@@ -1381,7 +1381,7 @@ is divided into following sections:
     <!--
                 pre NB7.2 profiler integration
             -->
-    <target depends="profile-init,compile" description="Profile a project in the IDE." if="profiler.info.jvmargs.agent" name="-profile-pre72">
+    <target depends="profile-init,compile" description="net.calm.iaclasslibrary.Profile a project in the IDE." if="profiler.info.jvmargs.agent" name="-profile-pre72">
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
         <nbprofiledirect>
             <classpath>
@@ -1390,7 +1390,7 @@ is divided into following sections:
         </nbprofiledirect>
         <profile/>
     </target>
-    <target depends="profile-init,compile-single" description="Profile a selected class in the IDE." if="profiler.info.jvmargs.agent" name="-profile-single-pre72">
+    <target depends="profile-init,compile-single" description="net.calm.iaclasslibrary.Profile a selected class in the IDE." if="profiler.info.jvmargs.agent" name="-profile-single-pre72">
         <fail unless="profile.class">Must select one file in the IDE or set profile.class</fail>
         <fail unless="netbeans.home">This target only works when run from inside the NetBeans IDE.</fail>
         <nbprofiledirect>
@@ -1443,22 +1443,22 @@ is divided into following sections:
             </or>
         </condition>
     </target>
-    <target depends="-profile-check,-profile-pre72" description="Profile a project in the IDE." if="profiler.configured" name="profile" unless="profiler.info.jvmargs.agent">
+    <target depends="-profile-check,-profile-pre72" description="net.calm.iaclasslibrary.Profile a project in the IDE." if="profiler.configured" name="profile" unless="profiler.info.jvmargs.agent">
         <startprofiler/>
         <antcall target="run"/>
     </target>
-    <target depends="-profile-check,-profile-single-pre72" description="Profile a selected class in the IDE." if="profiler.configured" name="profile-single" unless="profiler.info.jvmargs.agent">
+    <target depends="-profile-check,-profile-single-pre72" description="net.calm.iaclasslibrary.Profile a selected class in the IDE." if="profiler.configured" name="profile-single" unless="profiler.info.jvmargs.agent">
         <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
         <startprofiler/>
         <antcall target="run-single"/>
     </target>
-    <target depends="-profile-test-single-pre72" description="Profile a selected test in the IDE." name="profile-test-single"/>
-    <target depends="-profile-check" description="Profile a selected test in the IDE." if="profiler.configured" name="profile-test" unless="profiler.info.jvmargs">
+    <target depends="-profile-test-single-pre72" description="net.calm.iaclasslibrary.Profile a selected test in the IDE." name="profile-test-single"/>
+    <target depends="-profile-check" description="net.calm.iaclasslibrary.Profile a selected test in the IDE." if="profiler.configured" name="profile-test" unless="profiler.info.jvmargs">
         <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
         <startprofiler/>
         <antcall target="test-single"/>
     </target>
-    <target depends="-profile-check" description="Profile a selected class in the IDE." if="profiler.configured" name="profile-test-with-main">
+    <target depends="-profile-check" description="net.calm.iaclasslibrary.Profile a selected class in the IDE." if="profiler.configured" name="profile-test-with-main">
         <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
         <startprofiler/>
         <antcall target="run-test-with-main"/>

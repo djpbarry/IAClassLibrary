@@ -27,10 +27,6 @@ package net.calm.iaclasslibrary.IO.BioFormats;
 import ij.ImageStack;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
-import java.awt.image.IndexColorModel;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import loci.common.services.DependencyException;
 import loci.common.services.ServiceException;
 import loci.common.services.ServiceFactory;
@@ -40,6 +36,12 @@ import loci.formats.MetadataTools;
 import loci.formats.meta.IMetadata;
 import loci.formats.out.TiffWriter;
 import loci.formats.services.OMEXMLService;
+import loci.formats.tiff.TiffCompression;
+
+import java.awt.image.IndexColorModel;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * Demonstrates the minimum amount of metadata necessary to write out an image
@@ -83,7 +85,7 @@ public class BioFormatsImageWriter {
         writer.close();
     }
 
-    public static void saveStack(ImageStack stack, File filename, IndexColorModel lut, int pixelType, String dimOrder, int[] dims) throws DependencyException, ServiceException, FormatException, IOException {
+    public static void saveStack(ImageStack stack, File filename, IndexColorModel lut, int pixelType, String dimOrder, int[] dims, boolean bigTiff) throws DependencyException, ServiceException, FormatException, IOException {
         String id = filename.getAbsolutePath();
 
         int bitDepth;
@@ -113,7 +115,7 @@ public class BioFormatsImageWriter {
         if (lut != null) {
             writer.setColorModel(lut);
         }
-        writer.setCompression("LZW");
+        writer.setCompression(TiffCompression.LZW.toString());
         for (int s = 0; s < nSlices; s++) {
             MetadataTools.populateMetadata(meta, s, filename.getName(), false, dimOrder,
                     FormatTools.getPixelTypeString(pixelType), dims[0], dims[1], dims[2], dims[3], dims[4], 1);
