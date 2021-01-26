@@ -18,21 +18,16 @@ package net.calm.iaclasslibrary.Process.Filtering;
 
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
-import ij.IJ;
 
 import ij.ImagePlus;
+import ij.ImageStack;
+import ij.plugin.ImageCalculator;
+import ij.process.StackProcessor;
 import inra.ijpb.morphology.Morphology;
+import inra.ijpb.morphology.Strel3D;
 import inra.ijpb.morphology.strel.EllipsoidStrel;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Executors;
-import net.imagej.ImageJ;
-import net.imglib2.algorithm.neighborhood.HyperSphereShape;
-import net.imglib2.algorithm.neighborhood.Shape;
-import net.imglib2.img.ImagePlusAdapter;
-import net.imglib2.img.Img;
-import net.imglib2.type.numeric.integer.UnsignedShortType;
 
 /**
  *
@@ -43,7 +38,8 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
     public static int SERIES_LABEL = 0;
     public static int CHANNEL_LABEL = 1;
     public static int FILT_RAD_LABEL = 2;
-    public static int N_PROP_LABELS = 3;
+    public static int RESIZE_FACTOR_LABEL = 3;
+    public static int N_PROP_LABELS = 4;
 
     private double[] sigma;
     private int channel;
@@ -73,16 +69,32 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
         this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
         this.channel = Integer.parseInt(props.getProperty(propLabels[CHANNEL_LABEL]));
         sigma = getCalibratedDoubleSigma(series, propLabels[FILT_RAD_LABEL], propLabels[FILT_RAD_LABEL], propLabels[FILT_RAD_LABEL]);
-        img.loadPixelData(series, channel, channel + 1, null);
-        ImagePlus imp = img.getLoadedImage();
-        IJ.log(String.format("Top-Hat Filtering \"%s\" with a sigma of %f pixels in XY and %f in Z.", imp.getTitle(), sigma[0], sigma[2]));
-//        List<Shape> shapes = new ArrayList();
-//        shapes.add(new HyperSphereShape((long)Math.round(sigma[0])));
-//        Img<UnsignedShortType> img = ImagePlusAdapter.wrap(imp);
-//        (new ImageJ()).op().morphology().topHat(img, shapes);
-        
-        imp.setStack(Morphology.whiteTopHat(imp.getImageStack(), EllipsoidStrel.fromRadiusList(sigma[0], sigma[1], sigma[2])));
-//        imp.show();
+
+        ImagePlus imp;
+        if (inputs != null) {
+            imp = inputs[0].getOutput();
+        } else {
+            img.loadPixelData(series, channel, channel + 1, null);
+            imp = img.getLoadedImage();
+        }
+
+        ImageStack stack = imp.getImageStack();
+
+        int resizeFactor = Integer.parseInt(props.getProperty(propLabels[RESIZE_FACTOR_LABEL]));
+
+        ImageStack smallStack = (new StackProcessor(stack.duplicate())).resize(stack.getWidth() / resizeFactor, stack.getHeight() / resizeFactor, true);
+
+        //IJ.log(String.format("Top-Hat Filtering \"%s\" with a sigma of %f pixels in XY and %f in Z.", imp.getTitle(), sigma[0], sigma[2]));
+        Strel3D ball = EllipsoidStrel.fromRadiusList(sigma[0] / resizeFactor, sigma[1] / resizeFactor, sigma[2]);
+
+        ImageStack eroded = Morphology.erosion(smallStack, ball);
+
+        ImageStack background = (new StackProcessor(Morphology.dilation(eroded, ball))).resize(stack.getWidth(), stack.getHeight(), true);
+
+        (new ImageCalculator()).run("subtract stack", imp, new ImagePlus("Background", background));
+
+        //(new StackProcessor(Morphology.whiteTopHat(imp.getImageStack(), EllipsoidStrel.fromRadiusList(sigma[0]/resizeFactor, sigma[1]/resizeFactor, sigma[2])))).resize(stack.getWidth(), stack.getHeight(), true);
+        //imp.setStack(Morphology.whiteTopHat(imp.getImageStack(), EllipsoidStrel.fromRadiusList(sigma[0]/resizeFactor, sigma[1]/resizeFactor, sigma[2])));
         output = imp;
         labelOutput(imp.getTitle(), "TopHatFiltered");
     }
