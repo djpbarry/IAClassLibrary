@@ -80,7 +80,7 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
 
         ImageStack stack = imp.getImageStack();
 
-        int resizeFactor = Integer.parseInt(props.getProperty(propLabels[RESIZE_FACTOR_LABEL]));
+        int resizeFactor = (int)Math.round(Double.parseDouble(props.getProperty(propLabels[RESIZE_FACTOR_LABEL])));
 
         ImageStack smallStack = (new StackProcessor(stack.duplicate())).resize(stack.getWidth() / resizeFactor, stack.getHeight() / resizeFactor, true);
 

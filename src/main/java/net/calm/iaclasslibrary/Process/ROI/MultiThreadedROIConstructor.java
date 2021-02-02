@@ -27,9 +27,15 @@ import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import fiji.plugin.trackmate.Spot;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
+import ij.process.ImageProcessor;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -37,6 +43,7 @@ import java.util.Properties;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.geom.Vector3D;
+import mcib3d.image3d.ImageInt;
 import org.apache.commons.math3.linear.ArrayRealVector;
 
 /**
@@ -112,6 +119,10 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         for (Objects3DPopulation pop : subPops) {
             processObjectPop(pop, series, selectedChannels, img);
             saveAllRois(outputPath, pop);
+            saveAllMasks(outputPath, pop);
+            for (int c = 0; c < pop.getNbObjects(); c++) {
+                pop.getObject(c).setComment("");
+            }
         }
     }
 
@@ -194,10 +205,28 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             return;
         }
         String outputName = constructOutputName(cells.getObject(0).getName(), cells.getObject(0).getComment());
-        for (int c = 0; c < cells.getNbObjects(); c++) {
-            cells.getObject(c).setComment("");
-        }
         cells.saveObjects(String.format("%s%s%s.zip", path, File.separator, outputName));
+    }
+
+    void saveAllMasks(String path, Objects3DPopulation cells) {
+        if (path == null || !new File(path).exists() || cells.getNbObjects() < 1) {
+            return;
+        }
+        String outputName = constructOutputName(cells.getObject(0).getName(), cells.getObject(0).getComment());
+        ImageInt imInt = cells.drawPopulation(img.getSizeX(series), img.getSizeY(series), img.getSizeZ(series));
+        Path maskDir = Paths.get(path, String.format("%s_masks", outputName));
+        try {
+            Files.createDirectory(maskDir);
+        } catch (IOException e) {
+            IJ.log(String.format("Failed to create %s", maskDir.toFile().getAbsolutePath()));
+            return;
+        }
+        ImageStack stack = imInt.getImageStack();
+        for (int z = 1; z <= stack.getSize(); z++) {
+            ImagePlus mask = new ImagePlus(String.valueOf(z), stack.getProcessor(z));
+            String maskPath = String.format("%s%s%s_%04d.png", maskDir.toFile().getAbsolutePath(), File.separator, outputName, z);
+            IJ.saveAs(mask, "PNG", maskPath);
+        }
     }
 
     public static String[] getGeomHeadings(String calUnit) {

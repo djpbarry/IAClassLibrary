@@ -220,7 +220,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
         }
         consolidatePointsOnDistance(radii[0], calibration);
-        consolidatePointsOnIntensity(0.8, Double.parseDouble(props.getProperty(propLabels[HESSIAN_STOP_SCALE])), calibration, ImageHandler.wrap(image));
+//        consolidatePointsOnIntensity(0.8, Double.parseDouble(props.getProperty(propLabels[HESSIAN_STOP_SCALE])), calibration, ImageHandler.wrap(image));
     }
 
     public void hessianDetection(ImagePlus image) {
