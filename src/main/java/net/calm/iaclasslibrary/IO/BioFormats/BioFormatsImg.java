@@ -16,6 +16,7 @@
  */
 package net.calm.iaclasslibrary.IO.BioFormats;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import loci.common.services.DependencyException;
@@ -125,7 +126,11 @@ public class BioFormatsImg {
         if (series >= getSeriesCount()) {
             return null;
         }
-        return meta.getPixelsPhysicalSizeZ(series);
+        Length zRes = meta.getPixelsPhysicalSizeZ(series);
+        if(zRes == null && getSizeZ(series) >1){
+            zRes = new Length(1.0, getXYSpatialRes(series).unit());
+        }
+        return zRes;
     }
 
     public ImagePlus getLoadedImage() {
