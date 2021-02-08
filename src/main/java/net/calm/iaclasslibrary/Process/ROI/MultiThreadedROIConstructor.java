@@ -16,23 +16,23 @@
  */
 package net.calm.iaclasslibrary.Process.ROI;
 
-import net.calm.iaclasslibrary.Cell3D.Cell3D;
-import net.calm.iaclasslibrary.Cell3D.CellRegion3D;
-import net.calm.iaclasslibrary.Cell3D.Cytoplasm3D;
-import net.calm.iaclasslibrary.Cell3D.Nucleus3D;
-import net.calm.iaclasslibrary.Cell3D.Spot3D;
-import net.calm.iaclasslibrary.Cell3D.SpotFeatures;
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
-import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import fiji.plugin.trackmate.Spot;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.ResultsTable;
+import ij.plugin.PNG_Writer;
 import ij.plugin.filter.Analyzer;
-import ij.process.ImageProcessor;
+import mcib3d.geom.Object3D;
+import mcib3d.geom.Objects3DPopulation;
+import mcib3d.geom.Vector3D;
+import mcib3d.image3d.ImageInt;
+import net.calm.iaclasslibrary.Cell3D.*;
+import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import org.apache.commons.math3.linear.ArrayRealVector;
+
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,14 +40,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
-import mcib3d.geom.Object3D;
-import mcib3d.geom.Objects3DPopulation;
-import mcib3d.geom.Vector3D;
-import mcib3d.image3d.ImageInt;
-import org.apache.commons.math3.linear.ArrayRealVector;
 
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class MultiThreadedROIConstructor extends MultiThreadedProcess {
@@ -62,7 +56,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     int series;
     private String outputPath;
     public static String[] PIX_HEADINGS = {"Channel", "Cell_Index", "Mean_Pixel_Value",
-        "Pixel_Standard_Deviation", "Min_Pixel_Value", "Max_Pixel_Value", "Integrated_Density"};
+            "Pixel_Standard_Deviation", "Min_Pixel_Value", "Max_Pixel_Value", "Integrated_Density"};
     public static String LOCAT_HEAD = "Normalised_Distance_to_Centre";
     public static String X_CENTROID = "Centroid_X";
     public static String Y_CENTROID = "Centroid_Y";
@@ -217,23 +211,24 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         Path maskDir = Paths.get(path, String.format("%s_masks", outputName));
         try {
             Files.createDirectory(maskDir);
-        } catch (IOException e) {
-            IJ.log(String.format("Failed to create %s", maskDir.toFile().getAbsolutePath()));
+            ImageStack stack = imInt.getImageStack();
+            PNG_Writer pngWriter = new PNG_Writer();
+            for (int z = 1; z <= stack.getSize(); z++) {
+                ImagePlus mask = new ImagePlus(String.valueOf(z), stack.getProcessor(z));
+                String maskPath = String.format("%s%s%s_%04d.png", maskDir.toFile().getAbsolutePath(), File.separator, outputName, z);
+                pngWriter.writeImage(mask, maskPath, 0);
+            }
+        } catch (Exception e) {
+            IJ.log(String.format("Failed to save mask images in %s", maskDir.toFile().getAbsolutePath()));
             return;
-        }
-        ImageStack stack = imInt.getImageStack();
-        for (int z = 1; z <= stack.getSize(); z++) {
-            ImagePlus mask = new ImagePlus(String.valueOf(z), stack.getProcessor(z));
-            String maskPath = String.format("%s%s%s_%04d.png", maskDir.toFile().getAbsolutePath(), File.separator, outputName, z);
-            IJ.saveAs(mask, "PNG", maskPath);
         }
     }
 
     public static String[] getGeomHeadings(String calUnit) {
         return new String[]{"Index", "Volume (Voxels)",
-            String.format("Volume (%s^3)", calUnit),
-            "Surface Area (Voxels)",
-            String.format("Surface Area (%s^2)", calUnit)};
+                String.format("Volume (%s^3)", calUnit),
+                "Surface Area (Voxels)",
+                String.format("Surface Area (%s^2)", calUnit)};
     }
 
     public static double[] getLocationMetrics(Objects3DPopulation cells) {
