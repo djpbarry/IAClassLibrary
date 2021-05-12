@@ -16,8 +16,9 @@
  */
 package net.calm.iaclasslibrary.IO.File;
 
+import java.io.File;
+
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class FileName {
@@ -32,5 +33,17 @@ public class FileName {
             output = name.substring(0, period);
         }
         return output.replaceAll("[\\\\/:*?\"<>|]", "");
+    }
+
+    public static String uniqueFileName(String path, String filename, String ext) {
+        File output = new File(path, String.format("%s.%s", filename, ext));
+        if (!output.exists()) return output.getAbsolutePath();
+        int index = 1;
+        File newOutput = output;
+        while (newOutput.exists()) {
+            newOutput = new File(String.format("%s%s%s_%d.%s", path, File.separator, filename, index, ext));
+            index++;
+        }
+        return newOutput.getAbsolutePath();
     }
 }

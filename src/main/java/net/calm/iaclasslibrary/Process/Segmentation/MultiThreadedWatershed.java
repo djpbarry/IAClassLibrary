@@ -16,25 +16,11 @@
  */
 package net.calm.iaclasslibrary.Process.Segmentation;
 
-import net.calm.iaclasslibrary.Binary.BinaryMaker;
-import net.calm.iaclasslibrary.Cell3D.Cell3D;
-import net.calm.iaclasslibrary.Cell3D.CellRegion3D;
-import net.calm.iaclasslibrary.Cell3D.Cytoplasm3D;
-import net.calm.iaclasslibrary.Cell3D.Nucleus3D;
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
-import net.calm.iaclasslibrary.Process.Calculate.MultiThreadedImageCalculator;
-import net.calm.iaclasslibrary.Process.DistanceTransform.RiemannianDistanceTransform;
-import net.calm.iaclasslibrary.Process.Mapping.MapPixels;
-import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
-import net.calm.iaclasslibrary.Stacks.StackThresholder;
-import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.AutoThresholder;
 import ij.process.StackProcessor;
 import inra.ijpb.watershed.MarkerControlledWatershedTransform3D;
-import java.util.ArrayList;
-import java.util.Properties;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.image3d.ImageFloat;
@@ -42,9 +28,24 @@ import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
 import mcib3d.image3d.distanceMap3d.EDT;
+import net.calm.iaclasslibrary.Binary.BinaryMaker;
+import net.calm.iaclasslibrary.Cell3D.Cell3D;
+import net.calm.iaclasslibrary.Cell3D.CellRegion3D;
+import net.calm.iaclasslibrary.Cell3D.Cytoplasm3D;
+import net.calm.iaclasslibrary.Cell3D.Nucleus3D;
+import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.IO.File.FileName;
+import net.calm.iaclasslibrary.Process.Calculate.MultiThreadedImageCalculator;
+import net.calm.iaclasslibrary.Process.DistanceTransform.RiemannianDistanceTransform;
+import net.calm.iaclasslibrary.Process.Mapping.MapPixels;
+import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Stacks.StackThresholder;
+import net.calm.iaclasslibrary.UtilClasses.GenUtils;
+
+import java.util.ArrayList;
+import java.util.Properties;
 
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class MultiThreadedWatershed extends MultiThreadedProcess {
@@ -99,12 +100,14 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         ImagePlus mask = image.duplicate();
         StackThresholder.thresholdStack(mask, thresh);
         (new StackProcessor(mask.getImageStack())).invert();
-        ImageFloat edt = EDT.run(ImageHandler.wrap(seeds), 1, (float) calibration[0], (float) calibration[2], true, Runtime.getRuntime().availableProcessors());
         if (volumeMarker) {
+            ImageFloat edt = EDT.run(ImageHandler.wrap(seeds), 1, (float) calibration[0], (float) calibration[2], true, Runtime.getRuntime().availableProcessors());
+//            IJ.saveAs(edt.getImagePlus(), "TIF", FileName.uniqueFileName("E:/Dropbox (The Francis Crick)/Debugging/Giani/images/outputs", "edt","tif"));
             MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(edt.getImagePlus(), seeds, mask);
             output = watershed.applyWithPriorityQueueAndDams();
         } else {
-            ImageFloat rdt = (new RiemannianDistanceTransform()).run(new ImageFloat(image), new ImageShort(seeds), thresh, (float) calibration[0], (float) calibration[2], lambda);
+            ImageFloat rdt = (new RiemannianDistanceTransform()).run(new ImageFloat(image), new ImageShort(seeds), 0, (float) calibration[0], (float) calibration[2], lambda);
+//            IJ.saveAs(rdt.getImagePlus(), "TIF", FileName.uniqueFileName("E:/Dropbox (The Francis Crick)/Debugging/Giani/images/outputs", "rdt","tif"));
             MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(rdt.getImagePlus(), seeds, mask);
             output = watershed.applyWithPriorityQueueAndDams();
         }

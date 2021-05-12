@@ -92,6 +92,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         ArrayList<Object3D> cellPop = cells.getObjectsList();
         for (Object3D cell : cellPop) {
             Nucleus3D nuc = ((Cell3D) cell).getNucleus();
+//            if (nuc.getVoxels().size() > 100 && nuc.getVoxels().size() < 3000) {
             nuc.setComment(CellRegion3D.NUCLEUS);
             subPops[0].addObject(nuc);
             Cytoplasm3D cyto = ((Cell3D) cell).getCytoplasm();
@@ -109,6 +110,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             combinedCell.setValue(nuc.getValue());
             combinedCell.setComment(CellRegion3D.CELL);
             subPops[2].addObject(combinedCell);
+//            }
         }
         for (Objects3DPopulation pop : subPops) {
             processObjectPop(pop, series, selectedChannels, img);

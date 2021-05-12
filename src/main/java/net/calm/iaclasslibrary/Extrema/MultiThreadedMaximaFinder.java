@@ -16,13 +16,6 @@
  */
 package net.calm.iaclasslibrary.Extrema;
 
-import net.calm.iaclasslibrary.Cell3D.SpotFeatures;
-import net.calm.iaclasslibrary.Process.Filtering.MultiThreadedHessian;
-import net.calm.iaclasslibrary.IAClasses.Utils;
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
-import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
-import net.calm.iaclasslibrary.Stacks.StackMath;
-import net.calm.iaclasslibrary.Stacks.StackThresholder;
 import fiji.plugin.trackmate.Spot;
 import fiji.plugin.trackmate.detection.LogDetector;
 import ij.IJ;
@@ -33,24 +26,22 @@ import ij.plugin.GaussianBlur3D;
 import ij.plugin.ImageCalculator;
 import ij.plugin.SubstackMaker;
 import ij.plugin.filter.ThresholdToSelection;
-import ij.process.AutoThresholder;
-import ij.process.ByteProcessor;
-import ij.process.ImageProcessor;
-import ij.process.ShortProcessor;
-import ij.process.StackConverter;
-import ij.process.StackProcessor;
-import ij.process.StackStatistics;
+import ij.process.*;
 import imagescience.image.Aspects;
 import imagescience.image.FloatImage;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageLabeller;
 import mcib3d.image3d.distanceMap3d.EDT;
+import net.calm.iaclasslibrary.Cell3D.SpotFeatures;
+import net.calm.iaclasslibrary.IAClasses.Utils;
+import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.Process.Filtering.MultiThreadedHessian;
+import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Stacks.StackMath;
+import net.calm.iaclasslibrary.Stacks.StackThresholder;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.FloatType;
@@ -58,8 +49,11 @@ import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
@@ -266,7 +260,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             return;
         }
         ImagePlus hessianOutputs = hessian.getOutput();
-//        IJ.saveAs(hessianOutputs, "TIF", "D:\\debugging\\giani_debug\\hessian_outputs.tif");
+//        IJ.saveAs(hessianOutputs, "TIF", FileName.uniqueFileName("E:/Dropbox (The Francis Crick)/Debugging/Giani/images/outputs", "hessian_outputs", "tif"));
         SubstackMaker ssm = new SubstackMaker();
         int inputStackSize = image.getImageStackSize();
         int nScales = hessianOutputs.getImageStackSize() / (nEigenValues * inputStackSize);
