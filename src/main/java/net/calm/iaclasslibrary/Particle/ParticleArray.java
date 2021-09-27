@@ -41,7 +41,7 @@ public class ParticleArray extends SpotCollection {
         if (detection != null) {
             spots.add(detection);
             detection.putFeature(Spot.FRAME, Double.valueOf(level));
-            detection.putFeature(VISIBLITY, ONE);
+            detection.putFeature(SpotCollection.VISIBILITY, ONE);
             if (detections == null || level > depth - 1) {
                 return false;
             }
