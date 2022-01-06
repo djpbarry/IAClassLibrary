@@ -90,7 +90,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         for (int c = 0; c < subPops.length; c++) {
             subPops[c] = new Objects3DPopulation();
         }
-        ArrayList<Object3D> cellPop = cells.getObjectsList();
+        List<Object3D> cellPop = cells.getObjectsList();
         for (Object3D cell : cellPop) {
             Nucleus3D nuc = ((Cell3D) cell).getNucleus();
 //            if (nuc.getVoxels().size() > 100 && nuc.getVoxels().size() < 3000) {
@@ -238,7 +238,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         double xSum = 0.0;
         double ySum = 0.0;
         double zSum = 0.0;
-        ArrayList<Object3D> cellObjects = cells.getObjectsList();
+        List<Object3D> cellObjects = cells.getObjectsList();
         for (Object3D c : cellObjects) {
             Vector3D centroid = c.getCenterAsVectorUnit();
             xSum += centroid.x;

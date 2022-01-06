@@ -114,7 +114,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         double zSpatialRes = img.getZSpatialRes(series).value().doubleValue();
         int N = spots.size();
         LinkedHashMap<Integer, Integer> idToIndexMap = new LinkedHashMap<Integer, Integer>();
-        ArrayList<Object3D> cells = cellPop.getObjectsList();
+        List<Object3D> cells = cellPop.getObjectsList();
         for (int i = 0; i < cells.size(); i++) {
             idToIndexMap.put(((Cell3D) cells.get(i)).getID(), i);
         }
@@ -146,7 +146,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     void calcNucParticleDistances(ImagePlus nucLabelImage) {
         ImagePlus distanceMap = generateNuclearDistanceMap(nucLabelImage);
         int nThreads = Runtime.getRuntime().availableProcessors();
-        ArrayList<Object3D> cells = cellPop.getObjectsList();
+List<Object3D> cells = cellPop.getObjectsList();
         SpotNucDistanceCalc[] distanceCalcs = new SpotNucDistanceCalc[nThreads];
         for (int thread = 0; thread < nThreads; thread++) {
             distanceCalcs[thread] = new SpotNucDistanceCalc(cells, thread, nThreads, distanceMap);
@@ -162,7 +162,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     }
 
     void calcNearestNeighbours() {
-        ArrayList<Object3D> cells = cellPop.getObjectsList();
+        List<Object3D> cells = cellPop.getObjectsList();
         int nThreads = Runtime.getRuntime().availableProcessors();
         SpotSpotDistanceCalc[] distanceCalcs = new SpotSpotDistanceCalc[nThreads];
         for (int thread = 0; thread < nThreads; thread++) {
@@ -180,7 +180,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
 
     void saveData() throws IOException {
         ResultsTable rt = new ResultsTable();
-        ArrayList<Object3D> cells = cellPop.getObjectsList();
+        List<Object3D> cells = cellPop.getObjectsList();
         Objects3DPopulation spotsPop = new Objects3DPopulation();
         for (Object3D c : cells) {
             ArrayList<ArrayList<Object3D>> allSpots = ((Cell3D) c).getSpots();
@@ -235,12 +235,12 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
 
     class SpotNucDistanceCalc extends Thread {
 
-        private final ArrayList<Object3D> cells;
+        private final List<Object3D> cells;
         private final int thread;
         private final int nThreads;
         private final ImagePlus distanceMap;
 
-        public SpotNucDistanceCalc(ArrayList<Object3D> cells, int thread, int nThreads, ImagePlus distanceMap) {
+        public SpotNucDistanceCalc(List<Object3D> cells, int thread, int nThreads, ImagePlus distanceMap) {
             this.cells = cells;
             this.thread = thread;
             this.nThreads = nThreads;
@@ -279,11 +279,11 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
 
     class SpotSpotDistanceCalc extends Thread {
 
-        private final ArrayList<Object3D> cells;
+        private final List<Object3D> cells;
         private final int thread;
         private final int nThreads;
 
-        public SpotSpotDistanceCalc(ArrayList<Object3D> cells, int thread, int nThreads) {
+        public SpotSpotDistanceCalc(List<Object3D> cells, int thread, int nThreads) {
             this.cells = cells;
             this.thread = thread;
             this.nThreads = nThreads;
