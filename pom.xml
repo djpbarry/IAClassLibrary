@@ -13,7 +13,7 @@
 
     <groupId>net.calm</groupId>
     <artifactId>iaclasslibrary</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
 
     <name>net.calm.iaclasslibrary</name>
     <description>Maven implementation of Image Analysis Class Library.</description>
@@ -96,6 +96,10 @@
             <name>OME Artifactory</name>
             <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
         </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -112,20 +116,9 @@
             <artifactId>TrackMate</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.mcib3d</groupId>
-            <artifactId>mcib3d-plugins</artifactId>
-            <version>3.96.3</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>sc.fiji</groupId>
-                    <artifactId>imageware</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.github.mcib3d</groupId>
+            <groupId>org.framagit.mcib3d</groupId>
             <artifactId>mcib3d-core</artifactId>
-            <version>3.96.3</version>
+            <version>4.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -155,6 +148,11 @@
             <groupId>fr.inra.ijpb</groupId>
             <artifactId>MorphoLibJ_</artifactId>
             <version>1.4.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>sc.fiji</groupId>
+            <artifactId>imagescience</artifactId>
+            <version>3.0.0</version>
         </dependency>
     </dependencies>
 

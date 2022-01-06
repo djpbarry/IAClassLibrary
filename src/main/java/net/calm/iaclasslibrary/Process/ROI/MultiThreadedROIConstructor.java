@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -130,13 +131,13 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         String[] geomHeadings = getGeomHeadings(calUnit);
         cells.setCalibration(img.getXYSpatialRes(series).value().doubleValue(), img.getZSpatialRes(series).value().doubleValue(), calUnit);
         ResultsTable rt = Analyzer.getResultsTable();
-        ArrayList<double[]> geomMeasures = cells.getMeasuresGeometrical();
+        List<Double[]> geomMeasures = cells.getMeasuresGeometrical();
         double[] distMeasures = getLocationMetrics(cells);
         int firstRow = rt.getCounter();
         IJ.log(String.format("Measuring geometry of %s.", cells.getObject(0).getName()));
         for (int i = 0; i < geomMeasures.size(); i++) {
             int row = firstRow + i;
-            double[] geomM = geomMeasures.get(i);
+            Double[] geomM = geomMeasures.get(i);
             Object3D object = cells.getObject(i);
             rt.setValue(PIX_HEADINGS[1], row, object.getValue());
             for (int j = 0; j < geomM.length; j++) {
@@ -170,10 +171,10 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
                 img.loadPixelData(series, c, c + 1, null);
                 ImagePlus imp = img.getLoadedImage();
                 IJ.log(String.format("Measuring %s defined by %s.", imp.getTitle(), cells.getObject(0).getName()));
-                ArrayList<double[]> pixMeasures = cells.getMeasuresStats(imp.getImageStack());
+                List<Double[]> pixMeasures = cells.getMeasuresStats(imp.getImageStack());
                 for (int i = 0; i < pixMeasures.size(); i++) {
                     int row = firstRow + i;
-                    double[] pixM = pixMeasures.get(i);
+                    Double[] pixM = pixMeasures.get(i);
 //                    rt.incrementCounter();
 //                    rt.addLabel(cells.getObject(i).getName());
 //                    rt.setValue(PIX_HEADINGS[0], row, c);
