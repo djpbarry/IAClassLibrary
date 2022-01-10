@@ -96,4 +96,6 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
     protected void restartProcess() {
         this.process = process.duplicate();
     }
+
+    protected abstract void setToolTips();
 }
