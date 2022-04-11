@@ -16,9 +16,6 @@
  */
 package net.calm.iaclasslibrary.Process.Filtering;
 
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
-import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
-
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.ImageCalculator;
@@ -26,11 +23,13 @@ import ij.process.StackProcessor;
 import inra.ijpb.morphology.Morphology;
 import inra.ijpb.morphology.Strel3D;
 import inra.ijpb.morphology.strel.EllipsoidStrel;
+import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+
 import java.util.Properties;
 import java.util.concurrent.Executors;
 
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
@@ -39,7 +38,8 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
     public static int CHANNEL_LABEL = 1;
     public static int FILT_RAD_LABEL = 2;
     public static int RESIZE_FACTOR_LABEL = 3;
-    public static int N_PROP_LABELS = 4;
+    public static int ENABLE_FILTER_LABEL = 4;
+    public static int N_PROP_LABELS = 5;
 
     private double[] sigma;
     private int channel;
@@ -50,11 +50,10 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
     }
 
     /**
-     *
      * @param img
      * @param props
      * @param propLabels SERIES_SELECT_LABEL, CHANNEL_SELECT_LABEL,
-     * FILT_RAD_XY_LABEL, FILT_RAD_XY_LABEL, FILT_RAD_Z_LABEL.
+     *                   FILT_RAD_XY_LABEL, FILT_RAD_XY_LABEL, FILT_RAD_Z_LABEL.
      */
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
@@ -78,23 +77,26 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
             imp = img.getLoadedImage();
         }
 
-        ImageStack stack = imp.getImageStack();
+        if (Boolean.parseBoolean(props.getProperty(propLabels[ENABLE_FILTER_LABEL]))) {
 
-        int resizeFactor = (int)Math.round(Double.parseDouble(props.getProperty(propLabels[RESIZE_FACTOR_LABEL])));
+            ImageStack stack = imp.getImageStack();
 
-        ImageStack smallStack = (new StackProcessor(stack.duplicate())).resize(stack.getWidth() / resizeFactor, stack.getHeight() / resizeFactor, true);
+            int resizeFactor = (int) Math.round(Double.parseDouble(props.getProperty(propLabels[RESIZE_FACTOR_LABEL])));
 
-        //IJ.log(String.format("Top-Hat Filtering \"%s\" with a sigma of %f pixels in XY and %f in Z.", imp.getTitle(), sigma[0], sigma[2]));
-        Strel3D ball = EllipsoidStrel.fromRadiusList(sigma[0] / resizeFactor, sigma[1] / resizeFactor, sigma[2]);
+            ImageStack smallStack = (new StackProcessor(stack.duplicate())).resize(stack.getWidth() / resizeFactor, stack.getHeight() / resizeFactor, true);
 
-        ImageStack eroded = Morphology.erosion(smallStack, ball);
+            //IJ.log(String.format("Top-Hat Filtering \"%s\" with a sigma of %f pixels in XY and %f in Z.", imp.getTitle(), sigma[0], sigma[2]));
+            Strel3D ball = EllipsoidStrel.fromRadiusList(sigma[0] / resizeFactor, sigma[1] / resizeFactor, sigma[2]);
 
-        ImageStack background = (new StackProcessor(Morphology.dilation(eroded, ball))).resize(stack.getWidth(), stack.getHeight(), true);
+            ImageStack eroded = Morphology.erosion(smallStack, ball);
 
-        (new ImageCalculator()).run("subtract stack", imp, new ImagePlus("Background", background));
+            ImageStack background = (new StackProcessor(Morphology.dilation(eroded, ball))).resize(stack.getWidth(), stack.getHeight(), true);
 
-        //(new StackProcessor(Morphology.whiteTopHat(imp.getImageStack(), EllipsoidStrel.fromRadiusList(sigma[0]/resizeFactor, sigma[1]/resizeFactor, sigma[2])))).resize(stack.getWidth(), stack.getHeight(), true);
-        //imp.setStack(Morphology.whiteTopHat(imp.getImageStack(), EllipsoidStrel.fromRadiusList(sigma[0]/resizeFactor, sigma[1]/resizeFactor, sigma[2])));
+            (new ImageCalculator()).run("subtract stack", imp, new ImagePlus("Background", background));
+
+            //(new StackProcessor(Morphology.whiteTopHat(imp.getImageStack(), EllipsoidStrel.fromRadiusList(sigma[0]/resizeFactor, sigma[1]/resizeFactor, sigma[2])))).resize(stack.getWidth(), stack.getHeight(), true);
+            //imp.setStack(Morphology.whiteTopHat(imp.getImageStack(), EllipsoidStrel.fromRadiusList(sigma[0]/resizeFactor, sigma[1]/resizeFactor, sigma[2])));
+        }
         output = imp;
         labelOutput(imp.getTitle(), "TopHatFiltered");
     }
