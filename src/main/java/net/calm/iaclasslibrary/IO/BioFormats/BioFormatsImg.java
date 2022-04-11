@@ -34,6 +34,7 @@ import ome.units.quantity.Length;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
+import ome.units.unit.Unit;
 
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
@@ -342,5 +343,9 @@ public class BioFormatsImg {
             output[f] = files[f].filename;
         }
         return output;
+    }
+    
+    public String getUnits(int series){
+        return getXYSpatialRes(series).unit().getSymbol();
     }
 }

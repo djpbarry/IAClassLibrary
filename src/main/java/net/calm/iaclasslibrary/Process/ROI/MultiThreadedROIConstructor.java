@@ -127,7 +127,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         if (cells.getNbObjects() < 1) {
             return;
         }
-        String calUnit = img.getXYSpatialRes(series).unit().getSymbol();
+        String calUnit = img.getUnits(series);
         String[] geomHeadings = getGeomHeadings(calUnit);
         cells.setCalibration(img.getXYSpatialRes(series).value().doubleValue(), img.getZSpatialRes(series).value().doubleValue(), calUnit);
         ResultsTable rt = Analyzer.getResultsTable();
