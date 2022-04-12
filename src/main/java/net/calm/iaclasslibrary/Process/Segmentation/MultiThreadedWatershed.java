@@ -43,6 +43,7 @@ import net.calm.iaclasslibrary.Stacks.StackThresholder;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -150,7 +151,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
             cells.removeObject(0);
         }
         Objects3DPopulation nucleiPop = new Objects3DPopulation(ImageInt.wrap(output), 0);
-        ArrayList<Object3D> nuclei = nucleiPop.getObjectsList();
+        List<Object3D> nuclei = nucleiPop.getObjectsList();
         for (Object3D nucleus : nuclei) {
             Cell3D cell = new Cell3D();
             Nucleus3D nuc3D = new Nucleus3D(nucleus);
@@ -164,7 +165,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
 
     void addCytoplasmToCells(String label) {
         Objects3DPopulation cellPop = new Objects3DPopulation(ImageInt.wrap(output), 0);
-        ArrayList<Object3D> cellObjects = cellPop.getObjectsList();
+        List<Object3D> cellObjects = cellPop.getObjectsList();
         for (int i = 0; i < cellObjects.size(); i++) {
             Cell3D cell = (Cell3D) cells.getObject(i);
             Cytoplasm3D cyto = new Cytoplasm3D(cellObjects.get(i));

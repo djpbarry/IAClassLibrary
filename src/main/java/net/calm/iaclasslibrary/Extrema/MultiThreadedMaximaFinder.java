@@ -64,10 +64,10 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int CHANNEL_SELECT = 0;
     public static int HESSIAN_STOP_SCALE = 5;
     public static int BLOB_THRESH = 2;
-    public static int EDM_THRESH = 3;
+    //public static int EDM_THRESH = 3;
     public static int SERIES_SELECT = 7;
     public static int HESSIAN_DETECT = 8;
-    public static int EDM_FILTER = 9;
+    //public static int EDM_FILTER = 9;
     public static int HESSIAN_SCALE_STEP = 10;
     public static int HESSIAN_ABS = 11;
     public static int HESSIAN_THRESH = 12;
@@ -169,53 +169,53 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         labelOutput(imp.getTitle(), "Blobs");
     }
 
-    public void edmDetection(ImagePlus image) {
-        ArrayList<int[]> tempMaxima = new ArrayList();
-        radii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE]);
-        double[] sigma = getCalibratedDoubleSigma(series, propLabels[EDM_FILTER], propLabels[EDM_FILTER], propLabels[EDM_FILTER]);
-        GaussianBlur3D.blur(image, sigma[0], sigma[1], sigma[2]);
-        int greyThresh = getThreshold(image, AutoThresholder.Method.valueOf(props.getProperty(propLabels[EDM_THRESH])));
-        IJ.log(String.format("Searching for objects %.1f pixels in diameter in \"%s\"...", (2 * radii[0] / calibration[0]), image.getTitle()));
-        ImagePlus binaryImp = image.duplicate();
-        StackThresholder.thresholdStack(binaryImp, greyThresh);
-        createThresholdOutline(binaryImp);
-//        IJ.saveAs(binaryImp, "TIF", "D:\\debugging\\giani_debug\\binaryImp.tif");
-        ImageFloat distanceMap = EDT.run(ImageHandler.wrap(binaryImp), 1, (float) calibration[0], (float) calibration[2], false, -1);
-//        IJ.saveAs(distanceMap.getImagePlus(), "TIF", "D:\\debugging\\giani_debug\\distanceMap.tif");
-        int nThreads = Runtime.getRuntime().availableProcessors();
-        RunnableMaximaFinder[] mf = new RunnableMaximaFinder[nThreads];
-        for (int thread = 0; thread < nThreads; thread++) {
-            mf[thread] = new RunnableMaximaFinder(distanceMap.getImageStack().getImageArray(), (int) Math.round(radii[0]), tempMaxima, new int[]{image.getWidth(), image.getHeight(), image.getNSlices()}, thread, nThreads, new int[]{2, 2, 2});
-            mf[thread].start();
-        }
-        try {
-            for (int thread = 0; thread < nThreads; thread++) {
-                mf[thread].join();
-            }
-        } catch (Exception e) {
-            IJ.error("A thread was interrupted in step 3 .");
-        }
-        ImageStack maxStack = new ImageStack(image.getWidth(), image.getHeight());
-        for (int n = 0; n < image.getNSlices(); n++) {
-            ByteProcessor bp = new ByteProcessor(image.getWidth(), image.getHeight());
-            bp.setValue(0.0);
-            bp.fill();
-            maxStack.addSlice(bp);
-        }
-        Object[] maxPix = maxStack.getImageArray();
-        for (int[] m : tempMaxima) {
-            ((byte[]) maxPix[m[2]])[m[0] + m[1] * image.getWidth()] = 1;
-        }
-//        IJ.saveAs(new ImagePlus("", maxStack), "TIF", "D:\\debugging\\giani_debug\\maxObjects.tif");
-        Objects3DPopulation objects = new Objects3DPopulation(new ImageLabeller().getLabels(ImageHandler.wrap(new ImagePlus("", maxStack))));
-        for (int i = 0; i < objects.getNbObjects(); i++) {
-            Object3D o = objects.getObject(i);
-            double[] centre = o.getCenterAsArray();
-            maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
-        }
-        consolidatePointsOnDistance(radii[0], calibration);
-//        consolidatePointsOnIntensity(0.8, Double.parseDouble(props.getProperty(propLabels[HESSIAN_STOP_SCALE])), calibration, ImageHandler.wrap(image));
-    }
+//    public void edmDetection(ImagePlus image) {
+//        ArrayList<int[]> tempMaxima = new ArrayList();
+//        radii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE]);
+//        double[] sigma = getCalibratedDoubleSigma(series, propLabels[EDM_FILTER], propLabels[EDM_FILTER], propLabels[EDM_FILTER]);
+//        GaussianBlur3D.blur(image, sigma[0], sigma[1], sigma[2]);
+//        int greyThresh = getThreshold(image, AutoThresholder.Method.valueOf(props.getProperty(propLabels[EDM_THRESH])));
+//        IJ.log(String.format("Searching for objects %.1f pixels in diameter in \"%s\"...", (2 * radii[0] / calibration[0]), image.getTitle()));
+//        ImagePlus binaryImp = image.duplicate();
+//        StackThresholder.thresholdStack(binaryImp, greyThresh);
+//        createThresholdOutline(binaryImp);
+////        IJ.saveAs(binaryImp, "TIF", "D:\\debugging\\giani_debug\\binaryImp.tif");
+//        ImageFloat distanceMap = EDT.run(ImageHandler.wrap(binaryImp), 1, (float) calibration[0], (float) calibration[2], false, -1);
+////        IJ.saveAs(distanceMap.getImagePlus(), "TIF", "D:\\debugging\\giani_debug\\distanceMap.tif");
+//        int nThreads = Runtime.getRuntime().availableProcessors();
+//        RunnableMaximaFinder[] mf = new RunnableMaximaFinder[nThreads];
+//        for (int thread = 0; thread < nThreads; thread++) {
+//            mf[thread] = new RunnableMaximaFinder(distanceMap.getImageStack().getImageArray(), (int) Math.round(radii[0]), tempMaxima, new int[]{image.getWidth(), image.getHeight(), image.getNSlices()}, thread, nThreads, new int[]{2, 2, 2});
+//            mf[thread].start();
+//        }
+//        try {
+//            for (int thread = 0; thread < nThreads; thread++) {
+//                mf[thread].join();
+//            }
+//        } catch (Exception e) {
+//            IJ.error("A thread was interrupted in step 3 .");
+//        }
+//        ImageStack maxStack = new ImageStack(image.getWidth(), image.getHeight());
+//        for (int n = 0; n < image.getNSlices(); n++) {
+//            ByteProcessor bp = new ByteProcessor(image.getWidth(), image.getHeight());
+//            bp.setValue(0.0);
+//            bp.fill();
+//            maxStack.addSlice(bp);
+//        }
+//        Object[] maxPix = maxStack.getImageArray();
+//        for (int[] m : tempMaxima) {
+//            ((byte[]) maxPix[m[2]])[m[0] + m[1] * image.getWidth()] = 1;
+//        }
+////        IJ.saveAs(new ImagePlus("", maxStack), "TIF", "D:\\debugging\\giani_debug\\maxObjects.tif");
+//        Objects3DPopulation objects = new Objects3DPopulation(new ImageLabeller().getLabels(ImageHandler.wrap(new ImagePlus("", maxStack))));
+//        for (int i = 0; i < objects.getNbObjects(); i++) {
+//            Object3D o = objects.getObject(i);
+//            double[] centre = o.getCenterAsArray();
+//            maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
+//        }
+//        consolidatePointsOnDistance(radii[0], calibration);
+////        consolidatePointsOnIntensity(0.8, Double.parseDouble(props.getProperty(propLabels[HESSIAN_STOP_SCALE])), calibration, ImageHandler.wrap(image));
+//    }
 
     public void hessianDetection(ImagePlus image) {
         int nEigenValues;

@@ -39,6 +39,7 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
     protected MultiThreadedProcess process;
     protected String[] propLabels = new String[]{"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""};
     protected URI helpURI;
+    protected String unitText = "pixels";
 
     public LayerPanel() {
         this(null, null, null, null, null);
@@ -96,4 +97,6 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
     protected void restartProcess() {
         this.process = process.duplicate();
     }
+
+    protected abstract void setToolTips();
 }
