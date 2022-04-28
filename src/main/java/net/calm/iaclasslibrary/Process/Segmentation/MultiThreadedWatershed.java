@@ -34,7 +34,6 @@ import net.calm.iaclasslibrary.Cell3D.CellRegion3D;
 import net.calm.iaclasslibrary.Cell3D.Cytoplasm3D;
 import net.calm.iaclasslibrary.Cell3D.Nucleus3D;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
-import net.calm.iaclasslibrary.IO.File.FileName;
 import net.calm.iaclasslibrary.Process.Calculate.MultiThreadedImageCalculator;
 import net.calm.iaclasslibrary.Process.DistanceTransform.RiemannianDistanceTransform;
 import net.calm.iaclasslibrary.Process.Mapping.MapPixels;
@@ -42,7 +41,6 @@ import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.Stacks.StackThresholder;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -104,13 +102,11 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         if (volumeMarker) {
             ImageFloat edt = EDT.run(ImageHandler.wrap(seeds), 1, (float) calibration[0], (float) calibration[2], true, Runtime.getRuntime().availableProcessors());
 //            IJ.saveAs(edt.getImagePlus(), "TIF", FileName.uniqueFileName("E:/Dropbox (The Francis Crick)/Debugging/Giani/images/outputs", "edt","tif"));
-            MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(edt.getImagePlus(), seeds, mask);
-            output = watershed.applyWithPriorityQueueAndDams();
+            output = watershed(edt.getImagePlus(), seeds, mask);
         } else {
             ImageFloat rdt = (new RiemannianDistanceTransform()).run(new ImageFloat(image), new ImageShort(seeds), 0, (float) calibration[0], (float) calibration[2], lambda);
 //            IJ.saveAs(rdt.getImagePlus(), "TIF", FileName.uniqueFileName("E:/Dropbox (The Francis Crick)/Debugging/Giani/images/outputs", "rdt","tif"));
-            MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(rdt.getImagePlus(), seeds, mask);
-            output = watershed.applyWithPriorityQueueAndDams();
+            output = watershed(rdt.getImagePlus(), seeds, mask);
         }
         try {
             if (remap) {
@@ -193,5 +189,10 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         MultiThreadedWatershed newProcess = new MultiThreadedWatershed(inputs, objectName, remap, combine, binaryImage, cells, segmentationType);
         this.updateOutputDests(newProcess);
         return newProcess;
+    }
+
+    public static ImagePlus watershed(ImagePlus inputImage, ImagePlus seeds, ImagePlus mask) {
+        MarkerControlledWatershedTransform3D watershed = new MarkerControlledWatershedTransform3D(inputImage, seeds, mask);
+        return watershed.applyWithPriorityQueueAndDams();
     }
 }

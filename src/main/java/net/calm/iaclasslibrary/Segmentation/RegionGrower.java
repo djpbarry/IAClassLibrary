@@ -16,16 +16,7 @@
  */
 package net.calm.iaclasslibrary.Segmentation;
 
-import net.calm.iaclasslibrary.Cell.CellData;
-import net.calm.iaclasslibrary.IAClasses.Region;
-import net.calm.iaclasslibrary.IAClasses.Utils;
-import net.calm.iaclasslibrary.Process.Segmentation.MultiThreadedRegionGrower;
-import net.calm.iaclasslibrary.UserVariables.UserVariables;
-import ij.IJ;
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.Prefs;
-import ij.WindowManager;
+import ij.*;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
 import ij.measure.Measurements;
@@ -34,22 +25,20 @@ import ij.plugin.filter.Analyzer;
 import ij.plugin.filter.GaussianBlur;
 import ij.plugin.filter.ParticleAnalyzer;
 import ij.plugin.frame.RoiManager;
-import ij.process.AutoThresholder;
-import ij.process.Blitter;
-import ij.process.ByteBlitter;
-import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
-import ij.process.ShortBlitter;
-import ij.process.ShortProcessor;
-import ij.process.TypeConverter;
-import java.awt.Rectangle;
+import ij.process.*;
+import net.calm.iaclasslibrary.Cell.CellData;
+import net.calm.iaclasslibrary.IAClasses.Region;
+import net.calm.iaclasslibrary.IAClasses.Utils;
+import net.calm.iaclasslibrary.Process.Segmentation.MultiThreadedRegionGrower;
+import net.calm.iaclasslibrary.Process.Segmentation.MultiThreadedWatershed;
+import net.calm.iaclasslibrary.UserVariables.UserVariables;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 
 /**
- *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
 public class RegionGrower {
@@ -79,7 +68,7 @@ public class RegionGrower {
                 ByteBlitter bb = new ByteBlitter(binary);
                 bb.copyBits(masks, 0, 0, Blitter.SUBTRACT);
             }
-//            IJ.saveAs(new ImagePlus("", binary), "PNG", String.format("D:\\debugging\\adapt_debug\\output\\%s_%d.png", "Residuals", (start - 2)));
+            IJ.saveAs(new ImagePlus("", binary), "PNG", String.format("D:\\debugging\\adapt_debug\\%s_%d.png", "Residuals", (start - 2)));
             double minArea = protMode ? getMinFilArea(uv) : getMinCellArea(uv);
             getSeedPoints(binary, initP, minArea);
             n = initP.size();
@@ -118,11 +107,11 @@ public class RegionGrower {
 
     /**
      * Find cell regions in the given image
-     * 
+     *
      * @param inputProc Input image
-     * @param rois Regions of interest on which to initialise the regions
-     * @param t Percentile to use in manual threshold calculation
-     * @param method Method to use for automatic threshold calculation
+     * @param rois      Regions of interest on which to initialise the regions
+     * @param t         Percentile to use in manual threshold calculation
+     * @param method    Method to use for automatic threshold calculation
      * @return List of regions
      */
     public static ArrayList<Region> findCellRegions(ImageProcessor inputProc, Roi[] rois, double t, String method) {
@@ -186,10 +175,10 @@ public class RegionGrower {
      * Produces a region image following conditional dilation of the regions in
      * the input regionImage
      *
-     * @param regionImage net.calm.iaclasslibrary.Image to be dilated
+     * @param regionImage        net.calm.iaclasslibrary.Image to be dilated
      * @param inputImage
      * @param singleImageRegions List of regions in image
-     * @param threshold Grey level threshold for dilation
+     * @param threshold          Grey level threshold for dilation
      * @return Dilated region image
      */
     private static ShortProcessor growRegions(ShortProcessor regionImage, ImageProcessor inputImage, ArrayList<Region> singleImageRegions, double threshold) {
@@ -341,21 +330,21 @@ public class RegionGrower {
     /**
      * Conditionally dilate regions
      *
-     * @param regionImagePix Pixel object representation region image
-     * @param greyPix Grey level pixels
-     * @param cell Region object considered for dilation
-     * @param point current point being queried for dilation
-     * @param intermediate Value to assign to pixels in region image if dilation
-     * is possible
-     * @param greyThresh Grey level threshold criteria for dilation
-     * @param index Current region index
+     * @param regionImagePix   Pixel object representation region image
+     * @param greyPix          Grey level pixels
+     * @param cell             Region object considered for dilation
+     * @param point            current point being queried for dilation
+     * @param intermediate     Value to assign to pixels in region image if dilation
+     *                         is possible
+     * @param greyThresh       Grey level threshold criteria for dilation
+     * @param index            Current region index
      * @param expandedImagePix Candidate pixels for dilation
-     * @param width net.calm.iaclasslibrary.Image width
-     * @param height net.calm.iaclasslibrary.Image height
-     * @param countPix Reference grid for keeping track of how often pixels are
-     * queried
+     * @param width            net.calm.iaclasslibrary.Image width
+     * @param height           net.calm.iaclasslibrary.Image height
+     * @param countPix         Reference grid for keeping track of how often pixels are
+     *                         queried
      * @param tempImagePix
-     * @param voronoiPix Pixel object representing voronoi segmentation
+     * @param voronoiPix       Pixel object representing voronoi segmentation
      * @return True if dilation is possible, false otherwise
      */
     private static boolean simpleDilate(short[] regionImagePix, float[] greyPix, Region cell, short[] point, short intermediate, double greyThresh, short index, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix, byte[] voronoiPix) {
@@ -479,11 +468,11 @@ public class RegionGrower {
      * When complete, borders are dilated to expanded borders and expanded
      * borders are set to null.
      *
-     * @param regions Regions list to be expanded
-     * @param regionImage net.calm.iaclasslibrary.Image depicting regions
-     * @param N Number of regions to be expanded
-     * @param terminal Value used in region image to depict termination of
-     * expansion
+     * @param regions       Regions list to be expanded
+     * @param regionImage   net.calm.iaclasslibrary.Image depicting regions
+     * @param N             Number of regions to be expanded
+     * @param terminal      Value used in region image to depict termination of
+     *                      expansion
      * @param tempRegionPix Contains candidate points for expansion
      */
     static void expandRegions(ArrayList<Region> regions, ShortProcessor regionImage, int N, short terminal, short[] tempRegionPix) {
@@ -499,11 +488,11 @@ public class RegionGrower {
      * complete, border is dilated to expanded border and expanded border is set
      * to null.
      *
-     * @param cell Region to be expanded
-     * @param width net.calm.iaclasslibrary.Image width
+     * @param cell          Region to be expanded
+     * @param width         net.calm.iaclasslibrary.Image width
      * @param tempRegionPix Contains candidate points for expansion
-     * @param regionImage net.calm.iaclasslibrary.Image depicting regions
-     * @param i Region index
+     * @param regionImage   net.calm.iaclasslibrary.Image depicting regions
+     * @param i             Region index
      */
     static void expandRegion(Region cell, int width, short[] tempRegionPix, ShortProcessor regionImage, int i) {
         if (cell != null) {
@@ -600,6 +589,30 @@ public class RegionGrower {
             IJ.log("Protrusion analysis failed.");
         }
         RegionGrower.hideWindows();
+    }
+
+    public static ArrayList<Region> watershedRegions(ImageProcessor inputProc, double threshold, ArrayList<CellData> cellData) {
+        ShortProcessor indexedRegions = new ShortProcessor(inputProc.getWidth(), inputProc.getHeight());
+        indexedRegions.setValue(Region.MASK_FOREGROUND);
+        indexedRegions.fill();
+        //indexedRegions.setColor(outVal);
+        ShortBlitter bb = new ShortBlitter(indexedRegions);
+        for (int i = 0; i < cellData.size(); i++) {
+            Region region = cellData.get(i).getInitialRegion();
+            if (region != null) {
+                ShortProcessor mask = (ShortProcessor) (new TypeConverter(region.getMask(), false)).convertToShort();
+                mask.invert();
+                mask.multiply(i + 1);
+                mask.multiply(1.0 / Region.MASK_BACKGROUND);
+                bb.copyBits(mask, 0, 0, Blitter.COPY_ZERO_TRANSPARENT);
+            }
+        }
+        ImageProcessor mask = inputProc.duplicate();
+        mask.threshold((int) Math.round(threshold));
+        IJ.saveAs(MultiThreadedWatershed.watershed(new ImagePlus("", inputProc), new ImagePlus("", indexedRegions), new ImagePlus("", mask)),
+                "PNG", "D:\\debugging\\adapt_debug\\watershed.png");
+
+        return null;
     }
 
 }
