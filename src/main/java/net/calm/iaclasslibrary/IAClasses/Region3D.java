@@ -78,7 +78,7 @@ public class Region3D extends Region {
 
     public byte[][][] getMaskStack() {
         if (maskStack == null) {
-            drawMask(imageWidth, imageHeight);
+            drawMask(imageWidth, imageHeight, MASK_FOREGROUND, MASK_BACKGROUND);
         } else if (maskStack[0].length != imageWidth || maskStack[0][0].length != imageHeight) {
             return constructFullSizeMaskStack(imageWidth, imageHeight);
         }
@@ -133,7 +133,7 @@ public class Region3D extends Region {
         return copy;
     }
 
-    void drawMask(int width, int height) {
+    void drawMask(int width, int height, int foreground, int background) {
         byte[][][] mask = new byte[imageDepth][width][height];
         for (int z = 0; z < imageDepth; z++) {
             for (int x = 0; x < width; x++) {

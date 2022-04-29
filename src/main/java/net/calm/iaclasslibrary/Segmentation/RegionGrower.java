@@ -47,6 +47,7 @@ public class RegionGrower {
     public static short terminal;
     public static short intermediate;
     private static double lambda = 100.0, filtRad = 10.0; // parameter used in construction of Voronoi manifolds. See Jones et al., 2005: dx.doi.org/10.1007/11569541_54
+    private static int SIXTEEN_TO_EIGHT_OFFSET = (int) (Math.round(Math.pow(2, 16) - Math.pow(2, 8)));
 
     public static int initialiseROIs(ByteProcessor masks, int threshold, int start, ImageProcessor input, PointRoi roi, int width, int height, int size, ArrayList<CellData> cellData, UserVariables uv, boolean protMode, boolean selectiveOutput) {
         ArrayList<short[]> initP = new ArrayList<>();
@@ -68,7 +69,7 @@ public class RegionGrower {
                 ByteBlitter bb = new ByteBlitter(binary);
                 bb.copyBits(masks, 0, 0, Blitter.SUBTRACT);
             }
-//            IJ.saveAs(new ImagePlus("", binary), "PNG", String.format("D:\\debugging\\adapt_debug\\%s_%d.png", "Residuals", (start - 2)));
+//            IJ.saveAs(new ImagePlus("", binary), "PNG", String.format("E:\\Debug\\Adapt\\%s_%d.png", "Residuals", (start - 2)));
             double minArea = protMode ? getMinFilArea(uv) : getMinCellArea(uv);
             getSeedPoints(binary, initP, minArea);
             n = initP.size();
@@ -605,6 +606,7 @@ public class RegionGrower {
             if (region != null) {
                 ShortProcessor mask = (ShortProcessor) (new TypeConverter(region.getMask(), false)).convertToShort();
                 mask.invert();
+                mask.subtract(RegionGrower.SIXTEEN_TO_EIGHT_OFFSET);
                 mask.multiply(i + 1);
                 mask.multiply(1.0 / Region.MASK_BACKGROUND);
                 bb.copyBits(mask, 0, 0, Blitter.COPY_ZERO_TRANSPARENT);
@@ -630,7 +632,7 @@ public class RegionGrower {
                     regionMask.setThreshold(i + 1, i + 1, ImageProcessor.NO_LUT_UPDATE);
                     regionMask = regionMask.createMask();
                     regionMask.invert();
-                    IJ.saveAs(new ImagePlus("", regionMask), "PNG", "E:/Debug/Adapt/region_mask" + (i + 1) + ".png");
+//                    IJ.saveAs(new ImagePlus("", regionMask), "PNG", "E:/Debug/Adapt/region_mask" + (i + 1) + ".png");
                     singleImageRegions.set(i, new Region(regionMask));
                 }
             }

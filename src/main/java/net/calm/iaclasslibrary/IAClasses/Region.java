@@ -80,7 +80,7 @@ public class Region {
                 this.addBorderPoint(bp[i], mask);
             }
         }
-        drawMask(imageWidth, imageHeight);
+        drawMask(imageWidth, imageHeight, MASK_FOREGROUND, MASK_BACKGROUND);
     }
 
     public Region(int width, int height, short[] centre) {
@@ -412,27 +412,31 @@ public class Region {
         return seedMean;
     }
 
-    void drawMask(int width, int height) {
+    void drawMask(int width, int height, int foreground, int background) {
         ImageProcessor mask = new ByteProcessor(width, height);
-        mask.setColor(MASK_BACKGROUND);
+        mask.setColor(background);
         mask.fill();
-        mask.setColor(MASK_FOREGROUND);
+        mask.setColor(foreground);
         int m = borderPix.size();
         for (int i = 0; i < m; i++) {
             short[] current = borderPix.get(i);
             mask.drawPixel(current[0], current[1]);
         }
-        fill(mask, MASK_FOREGROUND, MASK_BACKGROUND);
+        fill(mask, foreground, background);
         this.mask = mask;
     }
 
-    public ImageProcessor getMask() {
+    public ImageProcessor getMask(int foreground, int background) {
         if (mask == null) {
-            drawMask(imageWidth, imageHeight);
+            drawMask(imageWidth, imageHeight, foreground, background);
         } else if (mask.getWidth() != imageWidth || mask.getHeight() != imageHeight) {
             return constructFullSizeMask(imageWidth, imageHeight);
         }
         return mask.duplicate();
+    }
+
+    public ImageProcessor getMask() {
+        return getMask(MASK_FOREGROUND, MASK_BACKGROUND);
     }
 
     public short[][] getOrderedBoundary(int width, int height, ImageProcessor mask, float[] centre) {
@@ -483,7 +487,7 @@ public class Region {
         ImageProcessor edges = ip.duplicate();
         edges.findEdges();
         int size = stack.getSize();
-        drawMask(ip.getWidth(), ip.getHeight());
+        drawMask(ip.getWidth(), ip.getHeight(), MASK_FOREGROUND, MASK_BACKGROUND);
         short points[][] = getOrderedBoundary(ip.getWidth(), ip.getHeight(),
                 mask, new short[]{xc, yc});
         float floatPoints[][] = new float[points.length][3];
@@ -700,7 +704,7 @@ public class Region {
 
     public void addPoint(Pixel p) {
         if (mask == null) {
-            drawMask(imageWidth, imageHeight);
+            drawMask(imageWidth, imageHeight, MASK_FOREGROUND, MASK_BACKGROUND);
         }
         pix.add(p);
         mask.drawPixel(p.getRoundedX(), p.getRoundedY());
