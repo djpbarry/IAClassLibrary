@@ -7,21 +7,15 @@ import ij.gui.Roi;
 import ij.gui.Wand;
 import ij.plugin.Straightener;
 import ij.plugin.filter.EDM;
-import ij.process.Blitter;
-import ij.process.ByteProcessor;
-import ij.process.FloatPolygon;
-import ij.process.FloatProcessor;
-import ij.process.FloodFiller;
-import ij.process.ImageProcessor;
-import ij.process.TypeConverter;
-import java.awt.Rectangle;
+import ij.process.*;
+import org.apache.commons.math3.linear.ArrayRealVector;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
-import org.apache.commons.math3.linear.ArrayRealVector;
 
 /**
- *
  * @author barry05
  */
 public class Region {
@@ -52,6 +46,10 @@ public class Region {
         this.index = index;
     }
 
+    public Region(ImageProcessor mask) {
+        this(mask, Region.calcCentroid(mask));
+    }
+
     public Region(ImageProcessor mask, double[] centre) {
         this(mask, new short[]{(short) Math.round(centre[0]), (short) Math.round(centre[1])});
     }
@@ -62,10 +60,10 @@ public class Region {
 
     /**
      * Creates a new Region instance.
-     * 
-     * @param mask A binary mask image that defines the region
-     * @param centre The centre of the mask - any point within the mask object 
-     * in the form [x, y].
+     *
+     * @param mask   A binary mask image that defines the region
+     * @param centre The centre of the mask - any point within the mask object
+     *               in the form [x, y].
      */
     public Region(ImageProcessor mask, short[] centre) {
         this.active = true;
@@ -148,7 +146,7 @@ public class Region {
         }
     }
 
-    public void calcCentroid(ImageProcessor mask) {
+    public static float[] calcCentroid(ImageProcessor mask) {
         int width = mask.getWidth();
         int height = mask.getHeight();
         int count = 0;
@@ -164,14 +162,11 @@ public class Region {
                 }
             }
         }
-//        double x = xsum / count;
-//        double y = ysum / count;
-//        if (mask.getPixel((int) net.calm.iaclasslibrary.Math.round(x), (int) net.calm.iaclasslibrary.Math.round(y)) < Region.BACKGROUND) {
-        centres.add(new float[]{xsum / count, ysum / count});
-//            return true;
-//        } else {
-//            return false;
-//        }
+        return new float[]{xsum / count, ysum / count};
+    }
+
+    public void addCalculatedCentre(ImageProcessor mask) {
+        centres.add(Region.calcCentroid(mask));
     }
 
     public PolygonRoi getPolygonRoi(ImageProcessor mask) {
@@ -263,7 +258,7 @@ public class Region {
         return min;
     }
 
-//    public ArrayList<Pixel> getPixels() {
+    //    public ArrayList<Pixel> getPixels() {
 //        return pixels;
 //    }
     public int borderContains(int x, int y) {
@@ -613,7 +608,7 @@ public class Region {
 
     public ArrayList<float[]> getCentres() {
         if (centres.size() < 1) {
-            calcCentroid(getMask());
+            addCalculatedCentre(getMask());
         }
         return centres;
     }

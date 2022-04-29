@@ -68,7 +68,7 @@ public class RegionGrower {
                 ByteBlitter bb = new ByteBlitter(binary);
                 bb.copyBits(masks, 0, 0, Blitter.SUBTRACT);
             }
-            IJ.saveAs(new ImagePlus("", binary), "PNG", String.format("D:\\debugging\\adapt_debug\\%s_%d.png", "Residuals", (start - 2)));
+//            IJ.saveAs(new ImagePlus("", binary), "PNG", String.format("D:\\debugging\\adapt_debug\\%s_%d.png", "Residuals", (start - 2)));
             double minArea = protMode ? getMinFilArea(uv) : getMinCellArea(uv);
             getSeedPoints(binary, initP, minArea);
             n = initP.size();
@@ -105,6 +105,7 @@ public class RegionGrower {
         return n;
     }
 
+    @Deprecated
     /**
      * Find cell regions in the given image
      *
@@ -129,6 +130,7 @@ public class RegionGrower {
         return findCellRegions(inputProc, getThreshold(inputProc, true, t, method), cells);
     }
 
+    @Deprecated
     /*
      * Detects the cells in the specified image and, if showPreview is true,
      * returns an image illustrating the detected boundary.
@@ -597,6 +599,7 @@ public class RegionGrower {
         indexedRegions.fill();
         //indexedRegions.setColor(outVal);
         ShortBlitter bb = new ShortBlitter(indexedRegions);
+        ArrayList<Region> singleImageRegions = new ArrayList<>();
         for (int i = 0; i < cellData.size(); i++) {
             Region region = cellData.get(i).getInitialRegion();
             if (region != null) {
@@ -606,13 +609,34 @@ public class RegionGrower {
                 mask.multiply(1.0 / Region.MASK_BACKGROUND);
                 bb.copyBits(mask, 0, 0, Blitter.COPY_ZERO_TRANSPARENT);
             }
+            singleImageRegions.add(region);
         }
         ImageProcessor mask = inputProc.duplicate();
         mask.threshold((int) Math.round(threshold));
-        IJ.saveAs(MultiThreadedWatershed.watershed(new ImagePlus("", inputProc), new ImagePlus("", indexedRegions), new ImagePlus("", mask)),
-                "PNG", "D:\\debugging\\adapt_debug\\watershed.png");
+//        IJ.saveAs(new ImagePlus("", mask), "PNG", "E:/Debug/Adapt/watershed_mask.png");
+//        IJ.saveAs(new ImagePlus("", inputProc), "PNG", "E:/Debug/Adapt/watershed_input.png");
+//        IJ.saveAs(new ImagePlus("", indexedRegions), "PNG", "E:/Debug/Adapt/watershed_seeds.png");
+//        IJ.saveAs(MultiThreadedWatershed.watershed(new ImagePlus("", mask), new ImagePlus("", indexedRegions), new ImagePlus("", mask)),
+//                "PNG", "E:/Debug/Adapt/watershed_output.png");
 
-        return null;
+        ImagePlus watershedOutput = MultiThreadedWatershed.watershed(new ImagePlus("", mask), new ImagePlus("", indexedRegions), new ImagePlus("", mask));
+
+        for (int i = 0; i < cellData.size(); i++) {
+            Region initialRegion = cellData.get(i).getInitialRegion();
+            if (initialRegion != null) {
+                float[] centre = initialRegion.getCentre();
+                if (watershedOutput.getProcessor().getPixelValue((int) Math.round(centre[0]), (int) Math.round(centre[1])) > 0.0) {
+                    ImageProcessor regionMask = watershedOutput.getProcessor().duplicate();
+                    regionMask.setThreshold(i + 1, i + 1, ImageProcessor.NO_LUT_UPDATE);
+                    regionMask = regionMask.createMask();
+                    regionMask.invert();
+                    IJ.saveAs(new ImagePlus("", regionMask), "PNG", "E:/Debug/Adapt/region_mask" + (i + 1) + ".png");
+                    singleImageRegions.set(i, new Region(regionMask));
+                }
+            }
+        }
+
+        return singleImageRegions;
     }
 
 }
