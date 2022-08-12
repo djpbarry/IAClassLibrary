@@ -29,6 +29,10 @@ import ij.plugin.filter.ThresholdToSelection;
 import ij.process.*;
 import imagescience.image.Aspects;
 import imagescience.image.FloatImage;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.image3d.ImageFloat;
@@ -52,6 +56,9 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import static net.calm.iaclasslibrary.Process.Segmentation.MultiThreadedStarDist.CHANNEL_SELECT;
+import static net.calm.iaclasslibrary.Process.Segmentation.MultiThreadedStarDist.SERIES_SELECT;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
@@ -68,10 +75,14 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int SERIES_SELECT = 7;
     public static int HESSIAN_DETECT = 8;
     //public static int EDM_FILTER = 9;
+    public static int METHOD = 9;
     public static int HESSIAN_SCALE_STEP = 10;
     public static int HESSIAN_ABS = 11;
     public static int HESSIAN_THRESH = 12;
-    public static int N_PROP_LABELS = 13;
+    public static int STARDIST_DETECT = 13;
+    public static int STARDIST_PROB = 14;
+    public static int STARDIST_OVERLAP = 15;
+    public static int N_PROP_LABELS = 16;
 
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
@@ -140,8 +151,10 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         if (stack == null) {
             return;
         }
-        if (!Boolean.parseBoolean(props.getProperty(propLabels[BLOB_DETECT]))) {
+        if (Boolean.parseBoolean(props.getProperty(propLabels[HESSIAN_DETECT]))) {
             hessianDetection(imp);
+        } else if (Boolean.parseBoolean(props.getProperty(propLabels[STARDIST_DETECT]))) {
+            runStarDist(imp);
         } else {
             IJ.log(String.format("Searching for blobs %.1f pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0] / calibration[0]), thresh, imp.getTitle()));
             long[] min = new long[]{0, 0, 0};
@@ -216,7 +229,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 //        consolidatePointsOnDistance(radii[0], calibration);
 ////        consolidatePointsOnIntensity(0.8, Double.parseDouble(props.getProperty(propLabels[HESSIAN_STOP_SCALE])), calibration, ImageHandler.wrap(image));
 //    }
-
     public void hessianDetection(ImagePlus image) {
         int nEigenValues;
         Aspects a = new Aspects();
@@ -380,6 +392,71 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public Roi[] getEdmThresholdOutline() {
         return edmThresholdOutline;
+    }
+
+    public void runStarDist(ImagePlus imp) {
+        String tempDir = "E:/Debug/Giani/pipeline_test/";
+        String tempImage = "stardist_temp.tif";
+        String starDistOutput = FilenameUtils.getBaseName(tempImage) + ".stardist." + FilenameUtils.getExtension(tempImage);
+        imp = img.getLoadedImage();
+        IJ.saveAs(imp, "TIF", (new File(tempDir, tempImage).getAbsolutePath()));
+
+        List<String> cmd = new ArrayList<>();
+        cmd.add("cmd.exe");
+        cmd.add("/C");
+        cmd.add("cd C:/Users/davej/GitRepos/Python/stardist/venv/Scripts/");
+        cmd.add("&");
+        cmd.add("activate.bat");
+        cmd.add("&");
+        cmd.add("cd");
+        cmd.add("../..");
+        cmd.add("&");
+        cmd.add("python");
+        cmd.add("stardist/scripts/predict3d.py");
+        cmd.add("-i");
+        cmd.add((new File(tempDir, tempImage).getAbsolutePath()));
+        cmd.add("-m");
+        cmd.add("3D_demo");
+        cmd.add("-o");
+        cmd.add(tempDir);
+
+        System.out.println(cmd.toString().replace(",", ""));
+
+        try {
+            ProcessBuilder pb = new ProcessBuilder(cmd).redirectErrorStream(true);
+
+            Process p = pb.start();
+
+            Thread t = new Thread(Thread.currentThread().getName() + "-" + p.hashCode()) {
+                @Override
+                public void run() {
+                    BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    try {
+                        for (String line = stdIn.readLine(); line != null;) {
+                            System.out.println(line);
+                            line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
+                        }
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            };
+            t.setDaemon(true);
+            t.start();
+
+            p.waitFor();
+
+            int exitValue = p.exitValue();
+
+            if (exitValue != 0) {
+                System.out.println("Exited with value " + exitValue + ". Please check output above for indications of the problem.");
+            } else {
+                System.out.println("Run finished");
+            }
+        } catch (InterruptedException | IOException e) {
+
+        }
+        output = IJ.openImage((new File(tempDir, starDistOutput).getAbsolutePath()));
     }
 
     private int getThreshold(ImagePlus image, AutoThresholder.Method method) {
