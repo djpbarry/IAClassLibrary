@@ -82,7 +82,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int STARDIST_DETECT = 13;
     public static int STARDIST_PROB = 14;
     public static int STARDIST_OVERLAP = 15;
-    public static int N_PROP_LABELS = 16;
+    public static int STARDIST_DIR = 16;
+    public static int STARDIST_MODEL = 17;
+    public static int N_PROP_LABELS = 18;
 
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
@@ -395,16 +397,18 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     public void runStarDist(ImagePlus imp) {
-        String tempDir = "E:/Debug/Giani/pipeline_test/";
+        File stardistTempDir = new File(IJ.getDirectory("Temp"), "StarDistTemp");
+        stardistTempDir.mkdir();
         String tempImage = "stardist_temp.tif";
         String starDistOutput = FilenameUtils.getBaseName(tempImage) + ".stardist." + FilenameUtils.getExtension(tempImage);
         imp = img.getLoadedImage();
-        IJ.saveAs(imp, "TIF", (new File(tempDir, tempImage).getAbsolutePath()));
+        IJ.saveAs(imp, "TIF", (new File(stardistTempDir, tempImage).getAbsolutePath()));
 
         List<String> cmd = new ArrayList<>();
         cmd.add("cmd.exe");
         cmd.add("/C");
-        cmd.add("cd C:/Users/davej/GitRepos/Python/stardist/venv/Scripts/");
+        cmd.add("cd");
+        cmd.add(String.format("%s%svenv%sScripts", props.getProperty(propLabels[STARDIST_DIR]), File.separator, File.separator));
         cmd.add("&");
         cmd.add("activate.bat");
         cmd.add("&");
@@ -414,11 +418,15 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         cmd.add("python");
         cmd.add("stardist/scripts/predict3d.py");
         cmd.add("-i");
-        cmd.add((new File(tempDir, tempImage).getAbsolutePath()));
+        cmd.add((new File(stardistTempDir, tempImage).getAbsolutePath()));
         cmd.add("-m");
-        cmd.add("3D_demo");
+        cmd.add(props.getProperty(propLabels[STARDIST_MODEL]));
         cmd.add("-o");
-        cmd.add(tempDir);
+        cmd.add(stardistTempDir.getAbsolutePath());
+        cmd.add("--prob_thresh");
+        cmd.add(props.getProperty(propLabels[STARDIST_PROB]));
+        cmd.add("--nms_thresh");
+        cmd.add(props.getProperty(propLabels[STARDIST_OVERLAP]));
 
         System.out.println(cmd.toString().replace(",", ""));
 
@@ -456,7 +464,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         } catch (InterruptedException | IOException e) {
 
         }
-        output = IJ.openImage((new File(tempDir, starDistOutput).getAbsolutePath()));
+        output = IJ.openImage((new File(stardistTempDir, starDistOutput).getAbsolutePath()));
+        stardistTempDir.delete();
     }
 
     private int getThreshold(ImagePlus image, AutoThresholder.Method method) {
