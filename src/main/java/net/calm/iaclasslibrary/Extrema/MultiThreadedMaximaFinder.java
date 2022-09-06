@@ -84,7 +84,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int STARDIST_OVERLAP = 15;
     public static int STARDIST_DIR = 16;
     public static int STARDIST_MODEL = 17;
-    public static int N_PROP_LABELS = 18;
+    public static int STARDIST_TILE_XY = 18;
+    public static int STARDIST_TILE_Z = 19;
+    public static int N_PROP_LABELS = 20;
 
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
@@ -427,6 +429,10 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         cmd.add(props.getProperty(propLabels[STARDIST_PROB]));
         cmd.add("--nms_thresh");
         cmd.add(props.getProperty(propLabels[STARDIST_OVERLAP]));
+        cmd.add("--n_tiles");
+        cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
+        cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
+        cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
 
         System.out.println(cmd.toString().replace(",", ""));
 
