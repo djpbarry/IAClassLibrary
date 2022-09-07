@@ -22,23 +22,16 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
-import ij.plugin.GaussianBlur3D;
 import ij.plugin.ImageCalculator;
 import ij.plugin.SubstackMaker;
 import ij.plugin.filter.ThresholdToSelection;
 import ij.process.*;
 import imagescience.image.Aspects;
 import imagescience.image.FloatImage;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
-import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageLabeller;
-import mcib3d.image3d.distanceMap3d.EDT;
 import net.calm.iaclasslibrary.Cell3D.SpotFeatures;
 import net.calm.iaclasslibrary.IAClasses.Utils;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
@@ -51,14 +44,15 @@ import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import static net.calm.iaclasslibrary.Process.Segmentation.MultiThreadedStarDist.CHANNEL_SELECT;
-import static net.calm.iaclasslibrary.Process.Segmentation.MultiThreadedStarDist.SERIES_SELECT;
-import org.apache.commons.io.FilenameUtils;
 
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
@@ -186,7 +180,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         labelOutput(imp.getTitle(), "Blobs");
     }
 
-//    public void edmDetection(ImagePlus image) {
+    //    public void edmDetection(ImagePlus image) {
 //        ArrayList<int[]> tempMaxima = new ArrayList();
 //        radii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE]);
 //        double[] sigma = getCalibratedDoubleSigma(series, propLabels[EDM_FILTER], propLabels[EDM_FILTER], propLabels[EDM_FILTER]);
@@ -399,7 +393,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     public void runStarDist(ImagePlus imp) {
-        File stardistTempDir = new File(IJ.getDirectory("Temp"), "StarDistTemp");
+        File stardistTempDir = new File(IJ.getDirectory("home"), "StarDistTemp");
         stardistTempDir.mkdir();
         String tempImage = "stardist_temp.tif";
         String starDistOutput = FilenameUtils.getBaseName(tempImage) + ".stardist." + FilenameUtils.getExtension(tempImage);
@@ -407,32 +401,75 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         IJ.saveAs(imp, "TIF", (new File(stardistTempDir, tempImage).getAbsolutePath()));
 
         List<String> cmd = new ArrayList<>();
-        cmd.add("cmd.exe");
-        cmd.add("/C");
-        cmd.add("cd");
-        cmd.add(String.format("%s%svenv%sScripts", props.getProperty(propLabels[STARDIST_DIR]), File.separator, File.separator));
-        cmd.add("&");
-        cmd.add("activate.bat");
-        cmd.add("&");
-        cmd.add("cd");
-        cmd.add("../..");
-        cmd.add("&");
-        cmd.add("python");
-        cmd.add("stardist/scripts/predict3d.py");
-        cmd.add("-i");
-        cmd.add((new File(stardistTempDir, tempImage).getAbsolutePath()));
-        cmd.add("-m");
-        cmd.add(props.getProperty(propLabels[STARDIST_MODEL]));
-        cmd.add("-o");
-        cmd.add(stardistTempDir.getAbsolutePath());
-        cmd.add("--prob_thresh");
-        cmd.add(props.getProperty(propLabels[STARDIST_PROB]));
-        cmd.add("--nms_thresh");
-        cmd.add(props.getProperty(propLabels[STARDIST_OVERLAP]));
-        cmd.add("--n_tiles");
-        cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
-        cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
-        cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
+        if (IJ.isWindows()) {
+            cmd.add("cmd.exe");
+            cmd.add("/C");
+            cmd.add("cd");
+            cmd.add(String.format("%s%svenv%sScripts", props.getProperty(propLabels[STARDIST_DIR]), File.separator, File.separator));
+            cmd.add("&");
+            cmd.add("activate.bat");
+            cmd.add("&");
+            cmd.add("cd");
+            cmd.add("../..");
+            cmd.add("&");
+            cmd.add("python");
+            cmd.add("stardist/scripts/predict3d.py");
+            cmd.add("-i");
+            cmd.add((new File(stardistTempDir, tempImage).getAbsolutePath()));
+            cmd.add("-m");
+            cmd.add(props.getProperty(propLabels[STARDIST_MODEL]));
+            cmd.add("-o");
+            cmd.add(stardistTempDir.getAbsolutePath());
+            cmd.add("--prob_thresh");
+            cmd.add(props.getProperty(propLabels[STARDIST_PROB]));
+            cmd.add("--nms_thresh");
+            cmd.add(props.getProperty(propLabels[STARDIST_OVERLAP]));
+            cmd.add("--n_tiles");
+            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
+            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
+            cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
+        } else if (IJ.isLinux() || IJ.isMacOSX()) {
+            try {
+                FileWriter writer = new FileWriter(new File(stardistTempDir, "starDist.sh"), true);
+                //writer.write("cd " + props.getProperty(propLabels[STARDIST_DIR]) + "\r\n");   // write new line
+                //writer.write("&&\r\n");
+                //writer.write("source " + props.getProperty(propLabels[STARDIST_DIR]) + "/bin/activate\r\n");
+                //writer.write("&&\r\n");
+                writer.write(props.getProperty(propLabels[STARDIST_DIR]) + "/bin/python "
+                        + props.getProperty(propLabels[STARDIST_DIR]) + "/stardist/scripts/predict3d.py"
+                        + " -i " + (new File(stardistTempDir, tempImage)).getAbsolutePath()
+                        + " -m " + props.getProperty(propLabels[STARDIST_MODEL])
+                        + " -o " + stardistTempDir.getAbsolutePath()
+                        + " --prob_thresh " + props.getProperty(propLabels[STARDIST_PROB])
+                        + " --nms_thresh " + props.getProperty(propLabels[STARDIST_OVERLAP])
+                        + " --n_tiles " + props.getProperty(propLabels[STARDIST_TILE_XY])
+                        + " " + props.getProperty(propLabels[STARDIST_TILE_XY])
+                        + " " + props.getProperty(propLabels[STARDIST_TILE_Z]) + "\r\n");
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+//            cmd.add(String.format("%s/bin/python", props.getProperty(propLabels[STARDIST_DIR])));
+//            cmd.add(String.format("%s/stardist/scripts/predict3d.py", props.getProperty(propLabels[STARDIST_DIR])));
+//            cmd.add("-i");
+//            cmd.add((new File(stardistTempDir, tempImage).getAbsolutePath()));
+//            cmd.add("-m");
+//            cmd.add(props.getProperty(propLabels[STARDIST_MODEL]));
+//            cmd.add("-o");
+//            cmd.add(stardistTempDir.getAbsolutePath());
+//            cmd.add("--prob_thresh");
+//            cmd.add(props.getProperty(propLabels[STARDIST_PROB]));
+//            cmd.add("--nms_thresh");
+//            cmd.add(props.getProperty(propLabels[STARDIST_OVERLAP]));
+//            cmd.add("--n_tiles");
+//            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
+//            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
+//            cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
+            //cmd.add("/bin/bash/");
+            //cmd.add("-c");
+            //cmd.add("source");
+            cmd.add(new File(stardistTempDir, "starDist.sh").getAbsolutePath());
+        }
 
         System.out.println(cmd.toString().replace(",", ""));
 
@@ -441,22 +478,22 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
             Process p = pb.start();
 
-            Thread t = new Thread(Thread.currentThread().getName() + "-" + p.hashCode()) {
-                @Override
-                public void run() {
-                    BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                    try {
-                        for (String line = stdIn.readLine(); line != null;) {
-                            System.out.println(line);
-                            line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
-                        }
-                    } catch (IOException e) {
-                        System.out.println(e.getMessage());
-                    }
-                }
-            };
-            t.setDaemon(true);
-            t.start();
+//            Thread t = new Thread(Thread.currentThread().getName() + "-" + p.hashCode()) {
+//                @Override
+//                public void run() {
+//                    BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
+//                    try {
+//                        for (String line = stdIn.readLine(); line != null;) {
+//                            System.out.println(line);
+//                            line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
+//                        }
+//                    } catch (IOException e) {
+//                        System.out.println(e.getMessage());
+//                    }
+//                }
+//            };
+//            t.setDaemon(true);
+//            t.start();
 
             p.waitFor();
 
