@@ -48,7 +48,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -112,6 +111,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     public ImagePlus makeLocalMaximaImage(short background, int radius) {
+        if (Boolean.parseBoolean(props.getProperty(propLabels[STARDIST_DETECT]))) {
+            return output;
+        }
         ImagePlus imp = img.getLoadedImage();
         int width = imp.getWidth();
         int height = imp.getHeight();
@@ -429,46 +431,46 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
             cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
         } else if (IJ.isLinux() || IJ.isMacOSX()) {
-            try {
-                FileWriter writer = new FileWriter(new File(stardistTempDir, "starDist.sh"), true);
-                //writer.write("cd " + props.getProperty(propLabels[STARDIST_DIR]) + "\r\n");   // write new line
-                //writer.write("&&\r\n");
-                //writer.write("source " + props.getProperty(propLabels[STARDIST_DIR]) + "/bin/activate\r\n");
-                //writer.write("&&\r\n");
-                writer.write(props.getProperty(propLabels[STARDIST_DIR]) + "/bin/python "
-                        + props.getProperty(propLabels[STARDIST_DIR]) + "/stardist/scripts/predict3d.py"
-                        + " -i " + (new File(stardistTempDir, tempImage)).getAbsolutePath()
-                        + " -m " + props.getProperty(propLabels[STARDIST_MODEL])
-                        + " -o " + stardistTempDir.getAbsolutePath()
-                        + " --prob_thresh " + props.getProperty(propLabels[STARDIST_PROB])
-                        + " --nms_thresh " + props.getProperty(propLabels[STARDIST_OVERLAP])
-                        + " --n_tiles " + props.getProperty(propLabels[STARDIST_TILE_XY])
-                        + " " + props.getProperty(propLabels[STARDIST_TILE_XY])
-                        + " " + props.getProperty(propLabels[STARDIST_TILE_Z]) + "\r\n");
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-//            cmd.add(String.format("%s/bin/python", props.getProperty(propLabels[STARDIST_DIR])));
-//            cmd.add(String.format("%s/stardist/scripts/predict3d.py", props.getProperty(propLabels[STARDIST_DIR])));
-//            cmd.add("-i");
-//            cmd.add((new File(stardistTempDir, tempImage).getAbsolutePath()));
-//            cmd.add("-m");
-//            cmd.add(props.getProperty(propLabels[STARDIST_MODEL]));
-//            cmd.add("-o");
-//            cmd.add(stardistTempDir.getAbsolutePath());
-//            cmd.add("--prob_thresh");
-//            cmd.add(props.getProperty(propLabels[STARDIST_PROB]));
-//            cmd.add("--nms_thresh");
-//            cmd.add(props.getProperty(propLabels[STARDIST_OVERLAP]));
-//            cmd.add("--n_tiles");
-//            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
-//            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
-//            cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
-            //cmd.add("/bin/bash/");
-            //cmd.add("-c");
+//            try {
+//                FileWriter writer = new FileWriter(new File(stardistTempDir, "starDist.sh"), true);
+//                //writer.write("cd " + props.getProperty(propLabels[STARDIST_DIR]) + "\r\n");   // write new line
+//                //writer.write("&&\r\n");
+//                //writer.write("source " + props.getProperty(propLabels[STARDIST_DIR]) + "/bin/activate\r\n");
+//                //writer.write("&&\r\n");
+//                writer.write(props.getProperty(propLabels[STARDIST_DIR]) + "/bin/python "
+//                        + props.getProperty(propLabels[STARDIST_DIR]) + "/stardist/scripts/predict3d.py"
+//                        + " -i " + (new File(stardistTempDir, tempImage)).getAbsolutePath()
+//                        + " -m " + props.getProperty(propLabels[STARDIST_MODEL])
+//                        + " -o " + stardistTempDir.getAbsolutePath()
+//                        + " --prob_thresh " + props.getProperty(propLabels[STARDIST_PROB])
+//                        + " --nms_thresh " + props.getProperty(propLabels[STARDIST_OVERLAP])
+//                        + " --n_tiles " + props.getProperty(propLabels[STARDIST_TILE_XY])
+//                        + " " + props.getProperty(propLabels[STARDIST_TILE_XY])
+//                        + " " + props.getProperty(propLabels[STARDIST_TILE_Z]) + "\r\n");
+//                writer.close();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            cmd.add("/bin/bash/");
+//            cmd.add("-c");
+            cmd.add(String.format("%s/bin/python", props.getProperty(propLabels[STARDIST_DIR])));
+            cmd.add(String.format("%s/stardist/scripts/predict3d.py", props.getProperty(propLabels[STARDIST_DIR])));
+            cmd.add("-i");
+            cmd.add((new File(stardistTempDir, tempImage).getAbsolutePath()));
+            cmd.add("-m");
+            cmd.add(props.getProperty(propLabels[STARDIST_MODEL]));
+            cmd.add("-o");
+            cmd.add(stardistTempDir.getAbsolutePath());
+            cmd.add("--prob_thresh");
+            cmd.add(props.getProperty(propLabels[STARDIST_PROB]));
+            cmd.add("--nms_thresh");
+            cmd.add(props.getProperty(propLabels[STARDIST_OVERLAP]));
+            cmd.add("--n_tiles");
+            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
+            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
+            cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
             //cmd.add("source");
-            cmd.add(new File(stardistTempDir, "starDist.sh").getAbsolutePath());
+//            cmd.add(new File(stardistTempDir, "starDist.sh").getAbsolutePath());
         }
 
         System.out.println(cmd.toString().replace(",", ""));
@@ -507,6 +509,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         } catch (InterruptedException | IOException e) {
 
         }
+        System.out.println(String.format("Opening StarDist result: %s", (new File(stardistTempDir, starDistOutput).getAbsolutePath())));
         output = IJ.openImage((new File(stardistTempDir, starDistOutput).getAbsolutePath()));
         stardistTempDir.delete();
     }
