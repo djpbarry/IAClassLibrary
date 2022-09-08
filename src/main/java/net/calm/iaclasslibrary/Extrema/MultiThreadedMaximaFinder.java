@@ -44,11 +44,14 @@ import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 import net.imglib2.view.Views;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -416,62 +419,24 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             cmd.add("&");
             cmd.add("python");
             cmd.add("stardist/scripts/predict3d.py");
-            cmd.add("-i");
-            cmd.add((new File(stardistTempDir, tempImage).getAbsolutePath()));
-            cmd.add("-m");
-            cmd.add(props.getProperty(propLabels[STARDIST_MODEL]));
-            cmd.add("-o");
-            cmd.add(stardistTempDir.getAbsolutePath());
-            cmd.add("--prob_thresh");
-            cmd.add(props.getProperty(propLabels[STARDIST_PROB]));
-            cmd.add("--nms_thresh");
-            cmd.add(props.getProperty(propLabels[STARDIST_OVERLAP]));
-            cmd.add("--n_tiles");
-            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
-            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
-            cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
         } else if (IJ.isLinux() || IJ.isMacOSX()) {
-//            try {
-//                FileWriter writer = new FileWriter(new File(stardistTempDir, "starDist.sh"), true);
-//                //writer.write("cd " + props.getProperty(propLabels[STARDIST_DIR]) + "\r\n");   // write new line
-//                //writer.write("&&\r\n");
-//                //writer.write("source " + props.getProperty(propLabels[STARDIST_DIR]) + "/bin/activate\r\n");
-//                //writer.write("&&\r\n");
-//                writer.write(props.getProperty(propLabels[STARDIST_DIR]) + "/bin/python "
-//                        + props.getProperty(propLabels[STARDIST_DIR]) + "/stardist/scripts/predict3d.py"
-//                        + " -i " + (new File(stardistTempDir, tempImage)).getAbsolutePath()
-//                        + " -m " + props.getProperty(propLabels[STARDIST_MODEL])
-//                        + " -o " + stardistTempDir.getAbsolutePath()
-//                        + " --prob_thresh " + props.getProperty(propLabels[STARDIST_PROB])
-//                        + " --nms_thresh " + props.getProperty(propLabels[STARDIST_OVERLAP])
-//                        + " --n_tiles " + props.getProperty(propLabels[STARDIST_TILE_XY])
-//                        + " " + props.getProperty(propLabels[STARDIST_TILE_XY])
-//                        + " " + props.getProperty(propLabels[STARDIST_TILE_Z]) + "\r\n");
-//                writer.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            cmd.add("/bin/bash/");
-//            cmd.add("-c");
             cmd.add(String.format("%s/bin/python", props.getProperty(propLabels[STARDIST_DIR])));
             cmd.add(String.format("%s/stardist/scripts/predict3d.py", props.getProperty(propLabels[STARDIST_DIR])));
-            cmd.add("-i");
-            cmd.add((new File(stardistTempDir, tempImage).getAbsolutePath()));
-            cmd.add("-m");
-            cmd.add(props.getProperty(propLabels[STARDIST_MODEL]));
-            cmd.add("-o");
-            cmd.add(stardistTempDir.getAbsolutePath());
-            cmd.add("--prob_thresh");
-            cmd.add(props.getProperty(propLabels[STARDIST_PROB]));
-            cmd.add("--nms_thresh");
-            cmd.add(props.getProperty(propLabels[STARDIST_OVERLAP]));
-            cmd.add("--n_tiles");
-            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
-            cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
-            cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
-            //cmd.add("source");
-//            cmd.add(new File(stardistTempDir, "starDist.sh").getAbsolutePath());
         }
+        cmd.add("-i");
+        cmd.add((new File(stardistTempDir, tempImage).getAbsolutePath()));
+        cmd.add("-m");
+        cmd.add(props.getProperty(propLabels[STARDIST_MODEL]));
+        cmd.add("-o");
+        cmd.add(stardistTempDir.getAbsolutePath());
+        cmd.add("--prob_thresh");
+        cmd.add(props.getProperty(propLabels[STARDIST_PROB]));
+        cmd.add("--nms_thresh");
+        cmd.add(props.getProperty(propLabels[STARDIST_OVERLAP]));
+        cmd.add("--n_tiles");
+        cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
+        cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
+        cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
 
         System.out.println(cmd.toString().replace(",", ""));
 
@@ -480,38 +445,38 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
             Process p = pb.start();
 
-//            Thread t = new Thread(Thread.currentThread().getName() + "-" + p.hashCode()) {
-//                @Override
-//                public void run() {
-//                    BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
-//                    try {
-//                        for (String line = stdIn.readLine(); line != null;) {
-//                            System.out.println(line);
-//                            line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
-//                        }
-//                    } catch (IOException e) {
-//                        System.out.println(e.getMessage());
-//                    }
-//                }
-//            };
-//            t.setDaemon(true);
-//            t.start();
+            Thread t = new Thread(Thread.currentThread().getName() + "-" + p.hashCode()) {
+                @Override
+                public void run() {
+                    BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    try {
+                        for (String line = stdIn.readLine(); line != null; ) {
+                            System.out.println(line);
+                            line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
+                        }
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            };
+            t.setDaemon(true);
+            t.start();
 
             p.waitFor();
 
             int exitValue = p.exitValue();
 
             if (exitValue != 0) {
-                System.out.println("Exited with value " + exitValue + ". Please check output above for indications of the problem.");
+                System.out.println("StarDist exited with value " + exitValue + ". Please check output above for indications of the problem.");
             } else {
-                System.out.println("Run finished");
+                System.out.println("StarDist finished");
             }
+            output = IJ.openImage((new File(stardistTempDir, starDistOutput).getAbsolutePath()));
+            FileUtils.forceDelete(stardistTempDir);
         } catch (InterruptedException | IOException e) {
 
         }
-        System.out.println(String.format("Opening StarDist result: %s", (new File(stardistTempDir, starDistOutput).getAbsolutePath())));
-        output = IJ.openImage((new File(stardistTempDir, starDistOutput).getAbsolutePath()));
-        stardistTempDir.delete();
+        //stardistTempDir.delete();
     }
 
     private int getThreshold(ImagePlus image, AutoThresholder.Method method) {
