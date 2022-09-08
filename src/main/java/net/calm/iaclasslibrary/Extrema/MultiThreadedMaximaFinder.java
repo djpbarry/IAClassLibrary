@@ -82,7 +82,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int STARDIST_MODEL = 17;
     public static int STARDIST_TILE_XY = 18;
     public static int STARDIST_TILE_Z = 19;
-    public static int N_PROP_LABELS = 20;
+    public static int ILASTIK_FILE = 20;
+    public static int ILASTIK_CHANNEL = 21;
+    public static int N_PROP_LABELS = 22;
 
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
