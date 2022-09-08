@@ -140,7 +140,7 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
         }
     }
 
-    final protected void updateOutputDests(MultiThreadedProcess newProcess) {
+    final public void updateOutputDests(MultiThreadedProcess newProcess) {
         for (MultiThreadedProcess outputDest : outputDests) {
             outputDest.updateInput(this, newProcess);
         }
