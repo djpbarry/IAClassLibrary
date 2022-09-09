@@ -28,6 +28,9 @@ import ij.plugin.filter.ThresholdToSelection;
 import ij.process.*;
 import imagescience.image.Aspects;
 import imagescience.image.FloatImage;
+import loci.formats.FormatException;
+import loci.plugins.BF;
+import loci.plugins.in.ImporterOptions;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
 import mcib3d.image3d.ImageHandler;
@@ -82,9 +85,11 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int STARDIST_MODEL = 17;
     public static int STARDIST_TILE_XY = 18;
     public static int STARDIST_TILE_Z = 19;
-    public static int ILASTIK_FILE = 20;
-    public static int ILASTIK_CHANNEL = 21;
-    public static int N_PROP_LABELS = 22;
+    public static int ILASTIK_DETECT = 20;
+    public static int ILASTIK_FILE = 21;
+    public static int ILASTIK_CHANNEL = 22;
+    public static int ILASTIK_DIR = 23;
+    public static int N_PROP_LABELS = 24;
 
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
@@ -95,8 +100,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     private int series;
     private int channel;
     public static short BACKGROUND = 0;
-    private Roi[] edmThresholdOutline;
-    private Objects3DPopulation hessianObjects;
+    private Roi[] detectedObjectsOutline;
+    private Objects3DPopulation detectedObjects;
 
     public MultiThreadedMaximaFinder(MultiThreadedProcess[] inputs) {
         super(inputs);
@@ -129,9 +134,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             sp.fill();
             output.addSlice(sp);
         }
-        if (!Boolean.parseBoolean(props.getProperty(propLabels[BLOB_DETECT])) && hessianObjects != null) {
-            for (int i = 0; i < hessianObjects.getNbObjects(); i++) {
-                hessianObjects.getObject(i).draw(output, i + 1);
+        if (!Boolean.parseBoolean(props.getProperty(propLabels[BLOB_DETECT])) && detectedObjects != null) {
+            for (int i = 0; i < detectedObjects.getNbObjects(); i++) {
+                detectedObjects.getObject(i).draw(output, i + 1);
             }
         } else {
             Object[] stackPix = output.getImageArray();
@@ -160,6 +165,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             hessianDetection(imp);
         } else if (Boolean.parseBoolean(props.getProperty(propLabels[STARDIST_DETECT]))) {
             runStarDist(imp);
+        } else if (Boolean.parseBoolean(props.getProperty(propLabels[ILASTIK_DETECT]))) {
+            runIlastik();
         } else {
             IJ.log(String.format("Searching for blobs %.1f pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0] / calibration[0]), thresh, imp.getTitle()));
             long[] min = new long[]{0, 0, 0};
@@ -296,14 +303,19 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             blobImps[0] = ic.run("AND create stack", blobImps[0], blobImps[s]);
         }
 //        IJ.saveAs(blobImps[0], "TIF", "D:\\debugging\\giani_debug\\blob_outputs_post_threshold.tif");
-        createThresholdOutline(blobImps[0]);
-        hessianObjects = new Objects3DPopulation(new ImageLabeller().getLabels(ImageHandler.wrap(blobImps[0])));
-        for (int i = 0; i < hessianObjects.getNbObjects(); i++) {
-            Object3D o = hessianObjects.getObject(i);
+        IJ.saveAs(blobImps[0],"TIFF", "E:\\Dropbox (The Francis Crick)\\Debugging\\Giani//hessian_output.tiff");
+        processThresholdedObjects(blobImps[0]);
+        output = blobImps[0];
+    }
+
+    private void processThresholdedObjects(ImagePlus imp){
+        createThresholdOutline(imp);
+        detectedObjects = new Objects3DPopulation(new ImageLabeller().getLabels(ImageHandler.wrap(imp)));
+        for (int i = 0; i < detectedObjects.getNbObjects(); i++) {
+            Object3D o = detectedObjects.getObject(i);
             double[] centre = o.getCenterAsArray();
             maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
         }
-        output = blobImps[0];
     }
 
     void consolidatePointsOnDistance(double thresh, double[] calibration) {
@@ -376,14 +388,14 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     private void createThresholdOutline(ImagePlus imp) {
         ImageStack stack = imp.getImageStack();
-        edmThresholdOutline = new Roi[stack.size()];
+        detectedObjectsOutline = new Roi[stack.size()];
         ThresholdToSelection tts = new ThresholdToSelection();
         for (int i = 1; i <= stack.size(); i++) {
             ImageProcessor ip = stack.getProcessor(i);
             ip.setThreshold(1, 255, ImageProcessor.NO_LUT_UPDATE);
             tts.setup(null, imp);
             tts.run(ip);
-            edmThresholdOutline[i - 1] = imp.getRoi();
+            detectedObjectsOutline[i - 1] = imp.getRoi();
         }
     }
 
@@ -395,8 +407,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         return spotMaxima;
     }
 
-    public Roi[] getEdmThresholdOutline() {
-        return edmThresholdOutline;
+    public Roi[] getDetectedObjectsOutline() {
+        return detectedObjectsOutline;
     }
 
     public void runStarDist(ImagePlus imp) {
@@ -479,6 +491,90 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
         }
         //stardistTempDir.delete();
+    }
+
+    public void runIlastik() {
+        ImagePlus ilastikProbMap = null;
+        File ilastikTempDir = new File(IJ.getDirectory("home"), "ilastikTemp");
+        ilastikTempDir.mkdir();
+        String tempImage = "ilastik_temp.tiff";
+        String ilastikOutput = FilenameUtils.getBaseName(tempImage) + ".ilastik." + FilenameUtils.getExtension(tempImage);
+        ImagePlus imp = img.getLoadedImage();
+        IJ.saveAs(imp, "TIF", (new File(ilastikTempDir, tempImage).getAbsolutePath()));
+        File copyOfProjectFile = new File(ilastikTempDir, FilenameUtils.getName(props.getProperty(propLabels[ILASTIK_FILE])));
+        try {
+            FileUtils.copyFile(new File(props.getProperty(propLabels[ILASTIK_FILE])), copyOfProjectFile);
+
+            List<String> cmd = new ArrayList<>();
+            if (IJ.isWindows()) {
+                cmd.add("cmd.exe");
+                cmd.add("/C");
+                cmd.add("cd");
+                cmd.add(props.getProperty(propLabels[ILASTIK_DIR]));
+                cmd.add("&");
+                cmd.add("ilastik.exe");
+            } else if (IJ.isLinux() || IJ.isMacOSX()) {
+                cmd.add(String.format("%s/run_ilastik.sh", props.getProperty(propLabels[ILASTIK_DIR])));
+            }
+            cmd.add("--headless");
+            cmd.add(String.format("--project=\"%s\"", copyOfProjectFile));
+            cmd.add("--export_source=\"Probabilities\"");
+            cmd.add("--export_dtype=\"uint16\"");
+            cmd.add("--pipeline_result_drange=\"(0.0,1.0)\"");
+            cmd.add("--export_drange=\"(0,65535)\"");
+            cmd.add("--output_format");
+            cmd.add("multipage tiff");
+            cmd.add(String.format("--output_filename_format=\"%s\"", new File(ilastikTempDir, ilastikOutput).getAbsolutePath()));
+            cmd.add(String.format("\"%s\"", new File(ilastikTempDir, tempImage).getAbsolutePath()));
+
+            System.out.println(cmd.toString());
+
+            ProcessBuilder pb = new ProcessBuilder(cmd).redirectErrorStream(true);
+
+            Process p = pb.start();
+
+            Thread t = new Thread(Thread.currentThread().getName() + "-" + p.hashCode()) {
+                @Override
+                public void run() {
+                    BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    try {
+                        for (String line = stdIn.readLine(); line != null; ) {
+                            System.out.println(line);
+                            line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
+                        }
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            };
+            t.setDaemon(true);
+            t.start();
+
+            p.waitFor();
+
+            int exitValue = p.exitValue();
+
+            if (exitValue != 0) {
+                System.out.println("ilastik exited with value " + exitValue + ". Please check output above for indications of the problem.");
+            } else {
+                System.out.println("ilastik finished");
+            }
+            ImporterOptions io = new ImporterOptions();
+            io.setCBegin(0, Integer.parseInt(props.getProperty(propLabels[ILASTIK_CHANNEL])));
+            io.setCEnd(0, Integer.parseInt(props.getProperty(propLabels[ILASTIK_CHANNEL])));
+            io.setCStep(0, 1);
+            io.setSpecifyRanges(true);
+            io.setId(new File(ilastikTempDir, ilastikOutput).getAbsolutePath());
+            ilastikProbMap = BF.openImagePlus(io)[0];
+            FileUtils.forceDelete(ilastikTempDir);
+        } catch (InterruptedException | IOException | FormatException e) {
+
+        }
+        StackThresholder.thresholdStack(ilastikProbMap, 65535*0.25);
+        (new StackProcessor(ilastikProbMap.getImageStack())).invert();
+        IJ.saveAs(ilastikProbMap,"TIFF", "E:\\Dropbox (The Francis Crick)\\Debugging\\Giani//ilastik_output.tiff");
+        processThresholdedObjects(ilastikProbMap);
+        output = ilastikProbMap;
     }
 
     private int getThreshold(ImagePlus image, AutoThresholder.Method method) {
