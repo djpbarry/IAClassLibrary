@@ -303,7 +303,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             blobImps[0] = ic.run("AND create stack", blobImps[0], blobImps[s]);
         }
 //        IJ.saveAs(blobImps[0], "TIF", "D:\\debugging\\giani_debug\\blob_outputs_post_threshold.tif");
-        IJ.saveAs(blobImps[0],"TIFF", "E:\\Dropbox (The Francis Crick)\\Debugging\\Giani//hessian_output.tiff");
+//        IJ.saveAs(blobImps[0],"TIFF", "E:\\Dropbox (The Francis Crick)\\Debugging\\Giani//hessian_output.tiff");
         processThresholdedObjects(blobImps[0]);
         output = blobImps[0];
     }
