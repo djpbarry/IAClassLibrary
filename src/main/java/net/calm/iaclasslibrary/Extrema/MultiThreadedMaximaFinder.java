@@ -121,7 +121,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     public ImagePlus makeLocalMaximaImage(short background, int radius) {
-        if (Boolean.parseBoolean(props.getProperty(propLabels[STARDIST_DETECT]))) {
+        if (propLabels[STARDIST_DETECT] != null && Boolean.parseBoolean(props.getProperty(propLabels[STARDIST_DETECT]))) {
             return output;
         }
         ImagePlus imp = img.getLoadedImage();
@@ -163,9 +163,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         }
         if (Boolean.parseBoolean(props.getProperty(propLabels[HESSIAN_DETECT]))) {
             hessianDetection(imp);
-        } else if (Boolean.parseBoolean(props.getProperty(propLabels[STARDIST_DETECT]))) {
+        } else if (propLabels[STARDIST_DETECT] != null && Boolean.parseBoolean(props.getProperty(propLabels[STARDIST_DETECT], "false"))) {
             runStarDist(imp);
-        } else if (Boolean.parseBoolean(props.getProperty(propLabels[ILASTIK_DETECT]))) {
+        } else if (propLabels[ILASTIK_DETECT] != null && Boolean.parseBoolean(props.getProperty(propLabels[ILASTIK_DETECT], "false"))) {
             runIlastik();
         } else {
             IJ.log(String.format("Searching for blobs %.1f pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0] / calibration[0]), thresh, imp.getTitle()));
@@ -308,7 +308,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         output = blobImps[0];
     }
 
-    private void processThresholdedObjects(ImagePlus imp){
+    private void processThresholdedObjects(ImagePlus imp) {
         createThresholdOutline(imp);
         detectedObjects = new Objects3DPopulation(new ImageLabeller().getLabels(ImageHandler.wrap(imp)));
         for (int i = 0; i < detectedObjects.getNbObjects(); i++) {
@@ -570,9 +570,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         } catch (InterruptedException | IOException | FormatException e) {
 
         }
-        StackThresholder.thresholdStack(ilastikProbMap, 65535*0.25);
+        StackThresholder.thresholdStack(ilastikProbMap, 65535 * 0.25);
         (new StackProcessor(ilastikProbMap.getImageStack())).invert();
-        IJ.saveAs(ilastikProbMap,"TIFF", "E:\\Dropbox (The Francis Crick)\\Debugging\\Giani//ilastik_output.tiff");
+        IJ.saveAs(ilastikProbMap, "TIFF", "E:\\Dropbox (The Francis Crick)\\Debugging\\Giani//ilastik_output.tiff");
         processThresholdedObjects(ilastikProbMap);
         output = ilastikProbMap;
     }
