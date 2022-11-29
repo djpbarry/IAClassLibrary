@@ -16,7 +16,6 @@
  */
 package net.calm.iaclasslibrary.IO.BioFormats;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import loci.common.services.DependencyException;
@@ -31,10 +30,10 @@ import loci.plugins.in.ImporterOptions;
 import net.calm.iaclasslibrary.Process.IO.MultiThreadedImageLoader;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import ome.units.quantity.Length;
+import ome.units.unit.Unit;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
-import ome.units.unit.Unit;
 
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
@@ -128,7 +127,7 @@ public class BioFormatsImg {
             return null;
         }
         Length zRes = meta.getPixelsPhysicalSizeZ(series);
-        if(zRes == null && getSizeZ(series) >1){
+        if (zRes == null && getSizeZ(series) > 1) {
             zRes = new Length(1.0, getXYSpatialRes(series).unit());
         }
         return zRes;
@@ -344,8 +343,10 @@ public class BioFormatsImg {
         }
         return output;
     }
-    
-    public String getUnits(int series){
-        return getXYSpatialRes(series).unit().getSymbol();
+
+    public String getUnits(int series) {
+        Unit<Length> u = getXYSpatialRes(series).unit();
+        if (u != null) return u.getSymbol();
+        else return "microns";
     }
 }
