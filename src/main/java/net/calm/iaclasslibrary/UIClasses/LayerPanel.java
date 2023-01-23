@@ -19,16 +19,15 @@ package net.calm.iaclasslibrary.UIClasses;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
-import java.awt.Container;
-import java.awt.Desktop;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
-import javax.swing.JPanel;
 
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public abstract class LayerPanel extends JPanel implements GUIMethods {
@@ -99,4 +98,10 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
     }
 
     protected abstract void setToolTips();
+
+    protected void setComponentsEnabled() {
+        for (Component c : this.getComponents()) {
+            c.setEnabled(this.isEnabled());
+        }
+    }
 }
