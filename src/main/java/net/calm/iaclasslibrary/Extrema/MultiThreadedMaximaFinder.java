@@ -22,6 +22,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
+import ij.plugin.GaussianBlur3D;
 import ij.plugin.ImageCalculator;
 import ij.plugin.SubstackMaker;
 import ij.plugin.filter.ThresholdToSelection;
@@ -90,7 +91,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int ILASTIK_CHANNEL = 22;
     public static int ILASTIK_DIR = 23;
     public static int ILASTIK_THRESH = 24;
-    public static int N_PROP_LABELS = 25;
+    public static int ILASTIK_SMOOTHING = 25;
+    public static int N_PROP_LABELS = 26;
 
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
@@ -572,6 +574,11 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
         }
         IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output.tiff");
+        if (Double.parseDouble(props.getProperty(propLabels[ILASTIK_SMOOTHING])) > 0.0) {
+            double[] sigma = getCalibratedDoubleSigma(series, propLabels[ILASTIK_SMOOTHING], propLabels[ILASTIK_SMOOTHING], propLabels[ILASTIK_SMOOTHING]);
+            GaussianBlur3D.blur(ilastikProbMap, sigma[0], sigma[1], sigma[2]);
+        }
+        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output_smoothed.tiff");
         StackThresholder.thresholdStack(ilastikProbMap, 65535 * Double.parseDouble(props.getProperty(propLabels[ILASTIK_THRESH])));
         (new StackProcessor(ilastikProbMap.getImageStack())).invert();
         IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output_thresholded.tiff");
