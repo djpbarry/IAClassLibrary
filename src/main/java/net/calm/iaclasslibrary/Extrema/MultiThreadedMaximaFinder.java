@@ -89,7 +89,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int ILASTIK_FILE = 21;
     public static int ILASTIK_CHANNEL = 22;
     public static int ILASTIK_DIR = 23;
-    public static int N_PROP_LABELS = 24;
+    public static int ILASTIK_THRESH = 24;
+    public static int N_PROP_LABELS = 25;
 
     private ArrayList<int[]> maxima;
     private List<Spot> spotMaxima;
@@ -570,9 +571,10 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         } catch (InterruptedException | IOException | FormatException e) {
 
         }
-        StackThresholder.thresholdStack(ilastikProbMap, 65535 * 0.25);
+        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output.tiff");
+        StackThresholder.thresholdStack(ilastikProbMap, 65535 * Double.parseDouble(props.getProperty(propLabels[ILASTIK_THRESH])));
         (new StackProcessor(ilastikProbMap.getImageStack())).invert();
-        IJ.saveAs(ilastikProbMap, "TIFF", "E:\\Dropbox (The Francis Crick)\\Debugging\\Giani//ilastik_output.tiff");
+        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output_thresholded.tiff");
         processThresholdedObjects(ilastikProbMap);
         output = ilastikProbMap;
     }
