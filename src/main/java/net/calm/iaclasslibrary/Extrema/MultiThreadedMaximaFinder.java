@@ -69,14 +69,14 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int HESSIAN_START_SCALE = 4;
     public static int BLOB_SIZE = 1;
     public static int CHANNEL_SELECT = 0;
-    public static int HESSIAN_STOP_SCALE = 5;
+    //public static int HESSIAN_STOP_SCALE = 5;
     public static int BLOB_THRESH = 2;
     //public static int EDM_THRESH = 3;
     public static int SERIES_SELECT = 7;
     public static int HESSIAN_DETECT = 8;
     //public static int EDM_FILTER = 9;
     public static int METHOD = 9;
-    public static int HESSIAN_SCALE_STEP = 10;
+    //public static int HESSIAN_SCALE_STEP = 10;
     public static int HESSIAN_ABS = 11;
     public static int HESSIAN_THRESH = 12;
     public static int STARDIST_DETECT = 13;

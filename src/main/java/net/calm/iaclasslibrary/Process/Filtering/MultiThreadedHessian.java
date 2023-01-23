@@ -41,8 +41,6 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
     private final Image input;
     private Image[][] result;
     private double startScale;
-    private double stopScale;
-    private double scaleStep;
     private boolean abs;
 //    private int series;
 
@@ -56,19 +54,17 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
         this.props = props;
         this.propLabels = propLabels;
         this.startScale = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_START_SCALE]));
-        this.stopScale = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_STOP_SCALE]));
-        this.scaleStep = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_SCALE_STEP]));
         this.abs = Boolean.parseBoolean(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_ABS]));
 //        this.series = Integer.parseInt(props.getProperty(propLabels[MultiThreadedMaximaFinder.SERIES_SELECT]));
     }
 
     public void run() {
         int nThreads = Runtime.getRuntime().availableProcessors();
-        int nScales = (int) Math.ceil(1.0 + (stopScale - startScale) / scaleStep);
+        int nScales = 1;
         double[] scales = new double[nScales];
         result = new Image[nScales][3];
         for (int s = 0; s < nScales; s++) {
-            scales[s] = startScale + s * scaleStep;
+            scales[s] = startScale;
         }
 
         int nProcesses = Math.min(nThreads, nScales);
