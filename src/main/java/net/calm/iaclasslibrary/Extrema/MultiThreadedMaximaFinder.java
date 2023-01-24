@@ -573,15 +573,15 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         } catch (InterruptedException | IOException | FormatException e) {
 
         }
-        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output.tiff");
+//        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output.tiff");
         if (Double.parseDouble(props.getProperty(propLabels[ILASTIK_SMOOTHING])) > 0.0) {
             double[] sigma = getCalibratedDoubleSigma(series, propLabels[ILASTIK_SMOOTHING], propLabels[ILASTIK_SMOOTHING], propLabels[ILASTIK_SMOOTHING]);
             GaussianBlur3D.blur(ilastikProbMap, sigma[0], sigma[1], sigma[2]);
         }
-        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output_smoothed.tiff");
+//        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output_smoothed.tiff");
         StackThresholder.thresholdStack(ilastikProbMap, 65535 * Double.parseDouble(props.getProperty(propLabels[ILASTIK_THRESH])));
         (new StackProcessor(ilastikProbMap.getImageStack())).invert();
-        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output_thresholded.tiff");
+//        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output_thresholded.tiff");
         processThresholdedObjects(ilastikProbMap);
         output = ilastikProbMap;
     }
