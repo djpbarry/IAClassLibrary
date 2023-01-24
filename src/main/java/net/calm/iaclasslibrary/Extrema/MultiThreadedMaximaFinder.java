@@ -52,10 +52,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -505,6 +502,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         ImagePlus imp = img.getLoadedImage();
         IJ.saveAs(imp, "TIF", (new File(ilastikTempDir, tempImage).getAbsolutePath()));
         File copyOfProjectFile = new File(ilastikTempDir, FilenameUtils.getName(props.getProperty(propLabels[ILASTIK_FILE])));
+        Process p = null;
         try {
             FileUtils.copyFile(new File(props.getProperty(propLabels[ILASTIK_FILE])), copyOfProjectFile);
 
@@ -534,12 +532,12 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
             ProcessBuilder pb = new ProcessBuilder(cmd).redirectErrorStream(true);
 
-            Process p = pb.start();
-
+            p = pb.start();
+            final InputStream is = p.getInputStream();
             Thread t = new Thread(Thread.currentThread().getName() + "-" + p.hashCode()) {
                 @Override
                 public void run() {
-                    BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    BufferedReader stdIn = new BufferedReader(new InputStreamReader(is));
                     try {
                         for (String line = stdIn.readLine(); line != null; ) {
                             System.out.println(line);
@@ -571,7 +569,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             ilastikProbMap = BF.openImagePlus(io)[0];
             FileUtils.forceDelete(ilastikTempDir);
         } catch (InterruptedException | IOException | FormatException e) {
-
+            if (p != null) p.destroyForcibly();
+            IJ.log("Error: ilastik detection failed.");
         }
 //        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output.tiff");
         if (Double.parseDouble(props.getProperty(propLabels[ILASTIK_SMOOTHING])) > 0.0) {
@@ -584,6 +583,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 //        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output_thresholded.tiff");
         processThresholdedObjects(ilastikProbMap);
         output = ilastikProbMap;
+        if (p != null && p.isAlive()) {
+            p.destroyForcibly();
+        }
     }
 
     private int getThreshold(ImagePlus image, AutoThresholder.Method method) {
