@@ -29,10 +29,7 @@ import mcib3d.image3d.ImageInt;
 import mcib3d.image3d.ImageShort;
 import mcib3d.image3d.distanceMap3d.EDT;
 import net.calm.iaclasslibrary.Binary.BinaryMaker;
-import net.calm.iaclasslibrary.Cell3D.Cell3D;
-import net.calm.iaclasslibrary.Cell3D.CellRegion3D;
-import net.calm.iaclasslibrary.Cell3D.Cytoplasm3D;
-import net.calm.iaclasslibrary.Cell3D.Nucleus3D;
+import net.calm.iaclasslibrary.Cell3D.*;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.Calculate.MultiThreadedImageCalculator;
 import net.calm.iaclasslibrary.Process.DistanceTransform.RiemannianDistanceTransform;
@@ -138,7 +135,8 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
                 initialiseCellsWithNuclei(output.getTitle());
                 break;
             default:
-                addSpotsToCells();
+//                labelOutput(image.getTitle(), CellRegion3D.SPOT);
+//                addSpotsToCells(output.getTitle());
         }
     }
 
@@ -175,8 +173,17 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         }
     }
 
-    void addSpotsToCells() {
-
+    void addSpotsToCells(String label) {
+//        Objects3DPopulation spotPop = new Objects3DPopulation(ImageInt.wrap(output), 0);
+//        List<Object3D> spotObjects = spotPop.getObjectsList();
+//        for (int i = 0; i < spotObjects.size(); i++) {
+//            Cell3D cell = (Cell3D) cells.getObject(i);
+//            Spot3D spot = new Spot3D(spotObjects.get(i));
+//            spot.setName(String.format("%s_%d", label, spot.getValue()));
+//            if (spot.getVoxels().size() > 0) {
+//                cell.addSpot();
+//            }
+//        }
     }
 
     @Deprecated

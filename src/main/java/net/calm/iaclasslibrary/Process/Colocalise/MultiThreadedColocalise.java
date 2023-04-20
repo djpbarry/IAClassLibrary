@@ -16,6 +16,17 @@
  */
 package net.calm.iaclasslibrary.Process.Colocalise;
 
+import fiji.plugin.trackmate.Spot;
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.measure.ResultsTable;
+import ij.process.StackProcessor;
+import mcib3d.geom.Object3D;
+import mcib3d.geom.Objects3DPopulation;
+import mcib3d.geom.Vector3D;
+import mcib3d.image3d.ImageFloat;
+import mcib3d.image3d.ImageHandler;
+import mcib3d.image3d.distanceMap3d.EDT;
 import net.calm.iaclasslibrary.Cell3D.Cell3D;
 import net.calm.iaclasslibrary.Cell3D.CellRegion3D;
 import net.calm.iaclasslibrary.Cell3D.Spot3D;
@@ -29,31 +40,14 @@ import net.calm.iaclasslibrary.Process.ROI.MultiThreadedROIConstructor;
 import net.calm.iaclasslibrary.Process.ROI.OverlayDrawer;
 import net.calm.iaclasslibrary.Stacks.StackThresholder;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
-import fiji.plugin.trackmate.Spot;
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.measure.ResultsTable;
-import ij.process.StackProcessor;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Properties;
-import mcib3d.geom.Object3D;
-import mcib3d.geom.Objects3DPopulation;
-import mcib3d.geom.Vector3D;
-import mcib3d.geom.Voxel3D;
-import mcib3d.image3d.ImageFloat;
-import mcib3d.image3d.ImageHandler;
-import mcib3d.image3d.distanceMap3d.EDT;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class MultiThreadedColocalise extends MultiThreadedProcess {
@@ -106,7 +100,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         return newProcess;
     }
 
-    void assignParticlesToCells(List<Spot> spots, ImagePlus cellLabelImage, ImagePlus nucLabelImage) {
+    void assignParticlesToCells(List<Spot3D> spots, ImagePlus cellLabelImage, ImagePlus nucLabelImage) {
         labelOutput(cellLabelImage.getTitle(), CellRegion3D.SPOT);
         ImageStack cellLabelStack = cellLabelImage.getImageStack();
         ImageStack nucLabelStack = nucLabelImage.getImageStack();
@@ -119,7 +113,8 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
             idToIndexMap.put(((Cell3D) cells.get(i)).getID(), i);
         }
         for (int i = 0; i < N; i++) {
-            Spot p = spots.get(i);
+            Spot3D spot = spots.get(i);
+            Spot p = spot.getSpot();
             int xp = (int) Math.round(p.getFeature(Spot.POSITION_X) / xySpatialRes);
             int yp = (int) Math.round(p.getFeature(Spot.POSITION_Y) / xySpatialRes);
             int zp = (int) Math.round(p.getFeature(Spot.POSITION_Z) / zSpatialRes);
@@ -131,13 +126,15 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                 } else {
                     p.putFeature(SpotFeatures.NUCLEAR, 0.0);
                 }
-                LinkedList<Voxel3D> vox = OverlayDrawer.showOutput(p, null, img, props, null, false, p.getFeature(Spot.RADIUS), p.getFeature(Spot.RADIUS), cellLabelValue, series);
-                if (vox.size() < 1) {
+                if (spot.getVoxels().size() <= 1) {
+                    spot = new Spot3D(p, OverlayDrawer.showOutput(p, null, img, props, null, false, p.getFeature(Spot.RADIUS), p.getFeature(Spot.RADIUS), cellLabelValue, series));
+                }
+                if (spot.getVoxels().size() < 1) {
                     continue;
                 }
-                Spot3D spot = new Spot3D(p, vox);
                 spot.setComment(CellRegion3D.SPOT);
                 spot.setName(String.format("%s_%d", output.getTitle(), spotIndex++));
+                spot.setValue(cellLabelValue);
                 ((Cell3D) cells.get(cellLabelValue)).addSpot(spot, (int) Math.round(p.getFeature(SpotFeatures.CHANNEL)));
             }
         }
@@ -146,7 +143,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     void calcNucParticleDistances(ImagePlus nucLabelImage) {
         ImagePlus distanceMap = generateNuclearDistanceMap(nucLabelImage);
         int nThreads = Runtime.getRuntime().availableProcessors();
-List<Object3D> cells = cellPop.getObjectsList();
+        List<Object3D> cells = cellPop.getObjectsList();
         SpotNucDistanceCalc[] distanceCalcs = new SpotNucDistanceCalc[nThreads];
         for (int thread = 0; thread < nThreads; thread++) {
             distanceCalcs[thread] = new SpotNucDistanceCalc(cells, thread, nThreads, distanceMap);
@@ -220,6 +217,7 @@ List<Object3D> cells = cellPop.getObjectsList();
         DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", outputDir, File.separator, "spot_summary_data.csv")), false, true);
         MultiThreadedROIConstructor.processObjectPop(spotsPop, series, selectedChannels, img);
         MultiThreadedROIConstructor.saveAllRois(outputDir, spotsPop);
+        MultiThreadedROIConstructor.saveAllMasks(outputDir, spotsPop, img, series);
     }
 
     private ImagePlus generateNuclearDistanceMap(ImagePlus nucLabelImage) {

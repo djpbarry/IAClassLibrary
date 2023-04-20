@@ -116,7 +116,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         for (Objects3DPopulation pop : subPops) {
             processObjectPop(pop, series, selectedChannels, img);
             saveAllRois(outputPath, pop);
-            saveAllMasks(outputPath, pop);
+            saveAllMasks(outputPath, pop, img, series);
             for (int c = 0; c < pop.getNbObjects(); c++) {
                 pop.getObject(c).setComment("");
             }
@@ -205,7 +205,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         cells.saveObjects(String.format("%s%s%s.zip", path, File.separator, outputName));
     }
 
-    void saveAllMasks(String path, Objects3DPopulation cells) {
+    public static void saveAllMasks(String path, Objects3DPopulation cells, BioFormatsImg img, int series) {
         if (path == null || !new File(path).exists() || cells.getNbObjects() < 1) {
             return;
         }

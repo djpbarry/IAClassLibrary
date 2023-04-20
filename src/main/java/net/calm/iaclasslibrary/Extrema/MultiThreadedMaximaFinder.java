@@ -34,8 +34,10 @@ import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Objects3DPopulation;
+import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageLabeller;
+import net.calm.iaclasslibrary.Cell3D.Spot3D;
 import net.calm.iaclasslibrary.Cell3D.SpotFeatures;
 import net.calm.iaclasslibrary.IAClasses.Utils;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
@@ -54,6 +56,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
@@ -92,7 +95,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static int N_PROP_LABELS = 26;
 
     private ArrayList<int[]> maxima;
-    private List<Spot> spotMaxima;
+    private ArrayList<Spot3D> spotMaxima;
     private double[] radii;
     private double[] calibration;
     private ImageStack stack;
@@ -149,7 +152,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     public void run() {
-        maxima = new ArrayList();
+        maxima = new ArrayList<>();
+        spotMaxima = new ArrayList<>();
         series = Integer.parseInt(props.getProperty(propLabels[SERIES_SELECT]));
         channel = Integer.parseInt(props.getProperty(propLabels[CHANNEL_SELECT]));
         calibration = getCalibration(series);
@@ -186,8 +190,10 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
                     pos[d] = (int) Math.round(s.getFloatPosition(d) / calibration[d]);
                 }
                 maxima.add(pos);
+                LinkedList<Voxel3D> voxels = new LinkedList<>();
+                voxels.add(new Voxel3D(pos[0], pos[1], pos[2], 0.0));
+                spotMaxima.add(new Spot3D(s, voxels));
             }
-            this.spotMaxima = maximas;
         }
         output = makeLocalMaximaImage(BACKGROUND, (int) Math.round(radii[0] / calibration[0]));
 //        IJ.saveAs(output, "TIF", "D:\\debugging\\giani_debug\\watershedOutput.tif");
@@ -315,6 +321,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             Object3D o = detectedObjects.getObject(i);
             double[] centre = o.getCenterAsArray();
             maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
+            Spot s = new Spot(centre[0] * calibration[0], centre[1] * calibration[1], centre[2] * calibration[2], 1.0, 1.0);
+            s.putFeature(SpotFeatures.CHANNEL, new Double(channel));
+            spotMaxima.add(new Spot3D(o, s));
         }
     }
 
@@ -403,7 +412,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         return maxima;
     }
 
-    public List<Spot> getSpotMaxima() {
+    public ArrayList<Spot3D> getSpotMaxima() {
         return spotMaxima;
     }
 

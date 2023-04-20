@@ -17,24 +17,38 @@
 package net.calm.iaclasslibrary.Cell3D;
 
 import fiji.plugin.trackmate.Spot;
-import java.util.LinkedList;
+import mcib3d.geom.Object3D;
 import mcib3d.geom.Voxel3D;
 
+import java.util.LinkedList;
+
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class Spot3D extends CellRegion3D {
-    
+
     private final Spot spot;
-    
-    public Spot3D(Spot spot, LinkedList<Voxel3D> voxels){
+//    private final LinkedList<Voxel3D> voxels;
+
+    public Spot3D(Object3D object) {
+        super(object);
+        this.spot = null;
+    }
+
+    public Spot3D(Spot spot, LinkedList<Voxel3D> voxels) {
         super(voxels);
-        this.spot=spot;
+        this.spot = spot;
+    }
+
+    public Spot3D(Object3D object, Spot spot) {
+        super(object);
+        this.spot = spot;
     }
 
     public Spot getSpot() {
         return spot;
     }
-    
+
+
+
 }
