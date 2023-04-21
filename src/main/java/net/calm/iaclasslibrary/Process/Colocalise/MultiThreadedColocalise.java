@@ -132,8 +132,9 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                 if (spot.getVoxels().size() < 1) {
                     continue;
                 }
-                spot.setComment(CellRegion3D.SPOT);
-                spot.setName(String.format("%s_%d", output.getTitle(), spotIndex++));
+                spot.setComment("Channel_" + (int) Math.round(p.getFeature(SpotFeatures.CHANNEL)) + "_" + CellRegion3D.SPOT);
+                spot.setName(String.format("%s_%s_%d_%d", output.getTitle(), "Channel",
+                        (int) Math.round(p.getFeature(SpotFeatures.CHANNEL)), spotIndex++));
                 spot.setValue(cellLabelValue);
                 ((Cell3D) cells.get(cellLabelValue)).addSpot(spot, (int) Math.round(p.getFeature(SpotFeatures.CHANNEL)));
             }
@@ -178,7 +179,10 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     void saveData() throws IOException {
         ResultsTable rt = new ResultsTable();
         List<Object3D> cells = cellPop.getObjectsList();
-        Objects3DPopulation spotsPop = new Objects3DPopulation();
+        Objects3DPopulation[] spotsPop = new Objects3DPopulation[inputs.length - 2];
+        for (int i = 0; i < spotsPop.length; i++) {
+            spotsPop[i] = new Objects3DPopulation();
+        }
         for (Object3D c : cells) {
             ArrayList<ArrayList<Object3D>> allSpots = ((Cell3D) c).getSpots();
             int row = rt.getCounter();
@@ -188,7 +192,9 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                     if (spots.size() < 1) {
                         continue;
                     }
-                    spotsPop.addObjects(spots);
+                    for (Object3D s : spots) {
+                        spotsPop[(int) Math.round(((Spot3D) s).getSpot().getFeature(SpotFeatures.CHANNEL))].addObject(s);
+                    }
                     LinkedHashMap<String, DescriptiveStatistics> map = new LinkedHashMap<>();
                     for (Object3D spot : spots) {
                         Spot s = ((Spot3D) spot).getSpot();
@@ -215,9 +221,11 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         }
         String outputDir = props.getProperty(propLabels[OUTPUT_LABEL]);
         DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", outputDir, File.separator, "spot_summary_data.csv")), false, true);
-        MultiThreadedROIConstructor.processObjectPop(spotsPop, series, selectedChannels, img);
-        MultiThreadedROIConstructor.saveAllRois(outputDir, spotsPop);
-        MultiThreadedROIConstructor.saveAllMasks(outputDir, spotsPop, img, series);
+        for (Objects3DPopulation pop : spotsPop) {
+            MultiThreadedROIConstructor.processObjectPop(pop, series, selectedChannels, img);
+            MultiThreadedROIConstructor.saveAllRois(outputDir, pop);
+            MultiThreadedROIConstructor.saveAllMasks(outputDir, pop, img, series);
+        }
     }
 
     private ImagePlus generateNuclearDistanceMap(ImagePlus nucLabelImage) {

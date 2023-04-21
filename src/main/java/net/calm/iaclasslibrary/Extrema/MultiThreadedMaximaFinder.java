@@ -322,7 +322,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             double[] centre = o.getCenterAsArray();
             maxima.add(new int[]{(int) Math.round(centre[0]), (int) Math.round(centre[1]), (int) Math.round(centre[2])});
             Spot s = new Spot(centre[0] * calibration[0], centre[1] * calibration[1], centre[2] * calibration[2], 1.0, 1.0);
-            s.putFeature(SpotFeatures.CHANNEL, new Double(channel));
+            s.putFeature(SpotFeatures.CHANNEL, (double) channel);
             spotMaxima.add(new Spot3D(o, s));
         }
     }
