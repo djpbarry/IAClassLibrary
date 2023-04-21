@@ -179,7 +179,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     void saveData() throws IOException {
         ResultsTable rt = new ResultsTable();
         List<Object3D> cells = cellPop.getObjectsList();
-        Objects3DPopulation[] spotsPop = new Objects3DPopulation[inputs.length - 2];
+        Objects3DPopulation[] spotsPop = new Objects3DPopulation[img.getSizeC(series)];
         for (int i = 0; i < spotsPop.length; i++) {
             spotsPop[i] = new Objects3DPopulation();
         }
