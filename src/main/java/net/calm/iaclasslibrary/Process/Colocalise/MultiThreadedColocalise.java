@@ -17,6 +17,7 @@
 package net.calm.iaclasslibrary.Process.Colocalise;
 
 import fiji.plugin.trackmate.Spot;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.ResultsTable;
@@ -82,11 +83,14 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     public void run() {
         this.spotIndex = 1;
         int lInputs = inputs.length;
+        IJ.log("Assigning particles to cells...");
         for (int i = 0; i < inputs.length - 2; i++) {
             assignParticlesToCells(((MultiThreadedMaximaFinder) inputs[i]).getSpotMaxima(), inputs[lInputs - 2].getOutput(), inputs[lInputs - 1].getOutput());
         }
-        calcNucParticleDistances(inputs[lInputs - 1].getOutput());
-        calcNearestNeighbours();
+        //IJ.log("Calculating nuclear-particle distances...");
+        //calcNucParticleDistances(inputs[lInputs - 1].getOutput());
+        //IJ.log("Calculating inter-particle distances...");
+        //calcNearestNeighbours();
         try {
             saveData();
         } catch (Exception e) {
