@@ -186,6 +186,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
                 }
             }
         }
+        img.clearImageData();
     }
 
     public Objects3DPopulation getObjectPop() {

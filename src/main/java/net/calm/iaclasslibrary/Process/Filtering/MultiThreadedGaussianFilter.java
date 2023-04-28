@@ -77,6 +77,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
 //        imp.show();
         output = imp;
         labelOutput(imp.getTitle(), "Filtered");
+        img.clearImageData();
     }
 
     public MultiThreadedGaussianFilter duplicate() {

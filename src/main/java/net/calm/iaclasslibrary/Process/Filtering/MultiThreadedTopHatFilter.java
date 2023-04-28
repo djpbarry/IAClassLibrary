@@ -97,8 +97,9 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
             //(new StackProcessor(Morphology.whiteTopHat(imp.getImageStack(), EllipsoidStrel.fromRadiusList(sigma[0]/resizeFactor, sigma[1]/resizeFactor, sigma[2])))).resize(stack.getWidth(), stack.getHeight(), true);
             //imp.setStack(Morphology.whiteTopHat(imp.getImageStack(), EllipsoidStrel.fromRadiusList(sigma[0]/resizeFactor, sigma[1]/resizeFactor, sigma[2])));
         }
-        output = imp;
+        output = imp.duplicate();
         labelOutput(imp.getTitle(), "TopHatFiltered");
+        img.clearImageData();
     }
 
     public MultiThreadedTopHatFilter duplicate() {

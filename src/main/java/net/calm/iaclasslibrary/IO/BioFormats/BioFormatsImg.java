@@ -134,9 +134,13 @@ public class BioFormatsImg {
     }
 
     public ImagePlus getLoadedImage() {
-        ImagePlus dup = img.duplicate();
-        dup.setTitle(img.getTitle());
-        return dup;
+//        ImagePlus dup = img.duplicate();
+//        dup.setTitle(img.getTitle());
+        return img;
+    }
+
+    public void clearImageData() {
+        img = null;
     }
 
     public String getId() {

@@ -151,7 +151,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
                 ((short[]) stackPix[pix[2]])[pix[0] + pix[1] * width] = (short) (i + 1);
             }
         }
-        return new ImagePlus(String.format("%s - Local Maxima", imp.getTitle()), output);
+        ImagePlus impOut = new ImagePlus(String.format("%s - Local Maxima", imp.getTitle()), output);
+        img.clearImageData();
+        return impOut;
     }
 
     public void run() {
@@ -175,7 +177,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         } else if (propLabels[STARDIST_DETECT] != null && Boolean.parseBoolean(props.getProperty(propLabels[STARDIST_DETECT], "false"))) {
             runStarDist(imp);
         } else if (propLabels[ILASTIK_DETECT] != null && Boolean.parseBoolean(props.getProperty(propLabels[ILASTIK_DETECT], "false"))) {
-            runIlastik();
+            runIlastik(imp);
         } else {
             IJ.log(String.format("Searching for blobs %.1f pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0] / calibration[0]), thresh, imp.getTitle()));
             long[] min = new long[]{0, 0, 0};
@@ -203,6 +205,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         output = makeLocalMaximaImage(BACKGROUND, (int) Math.round(radii[0] / calibration[0]));
 //        IJ.saveAs(output, "TIF", "D:\\debugging\\giani_debug\\watershedOutput.tif");
         labelOutput(imp.getTitle(), "Blobs");
+        img.clearImageData();
     }
 
     public void hessianDetection(ImagePlus image) {
@@ -396,7 +399,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         stardistTempDir.mkdir();
         String tempImage = "stardist_temp.tif";
         String starDistOutput = FilenameUtils.getBaseName(tempImage) + ".stardist." + FilenameUtils.getExtension(tempImage);
-        imp = img.getLoadedImage();
+        //imp = img.getLoadedImage();
         IJ.saveAs(imp, "TIF", (new File(stardistTempDir, tempImage).getAbsolutePath()));
 
         List<String> cmd = new ArrayList<>();
@@ -473,13 +476,13 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         //stardistTempDir.delete();
     }
 
-    public void runIlastik() {
+    public void runIlastik(ImagePlus imp) {
         ImagePlus ilastikProbMap = null;
         File ilastikTempDir = new File(IJ.getDirectory("home"), "ilastikTemp");
         ilastikTempDir.mkdir();
         String tempImage = "ilastik_temp.tiff";
         String ilastikOutput = FilenameUtils.getBaseName(tempImage) + ".ilastik." + FilenameUtils.getExtension(tempImage);
-        ImagePlus imp = img.getLoadedImage();
+//        ImagePlus imp = img.getLoadedImage();
         IJ.saveAs(imp, "TIF", (new File(ilastikTempDir, tempImage).getAbsolutePath()));
         File copyOfProjectFile = new File(ilastikTempDir, FilenameUtils.getName(props.getProperty(propLabels[ILASTIK_FILE])));
         Process p = null;
