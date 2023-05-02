@@ -122,16 +122,17 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
             int xp = (int) Math.round(p.getFeature(Spot.POSITION_X) / xySpatialRes);
             int yp = (int) Math.round(p.getFeature(Spot.POSITION_Y) / xySpatialRes);
             int zp = (int) Math.round(p.getFeature(Spot.POSITION_Z) / zSpatialRes);
-            Integer cellLabelValue = idToIndexMap.get((int) Math.round(cellLabelStack.getVoxel(xp, yp, zp)));
+            int cellValue = ((int) Math.round(cellLabelStack.getVoxel(xp, yp, zp)));
+            Integer cellIndex = idToIndexMap.get(cellValue);
             int nucLabelValue = (int) Math.round(nucLabelStack.getVoxel(xp, yp, zp));
-            if (cellLabelValue != null) {
+            if (cellIndex != null) {
                 if (nucLabelValue > 0) {
                     p.putFeature(SpotFeatures.NUCLEAR, 1.0);
                 } else {
                     p.putFeature(SpotFeatures.NUCLEAR, 0.0);
                 }
                 if (spot.getVoxels().size() <= 1) {
-                    spot = new Spot3D(p, OverlayDrawer.showOutput(p, null, img, props, null, false, p.getFeature(Spot.RADIUS), p.getFeature(Spot.RADIUS), cellLabelValue, series));
+                    spot = new Spot3D(p, OverlayDrawer.showOutput(p, null, img, props, null, false, p.getFeature(Spot.RADIUS), p.getFeature(Spot.RADIUS), cellIndex, series));
                 }
                 if (spot.getVoxels().size() < 1) {
                     continue;
@@ -139,8 +140,8 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                 spot.setComment("Channel_" + (int) Math.round(p.getFeature(SpotFeatures.CHANNEL)) + "_" + CellRegion3D.SPOT);
                 spot.setName(String.format("%s_%s_%d_%d", output.getTitle(), "Channel",
                         (int) Math.round(p.getFeature(SpotFeatures.CHANNEL)), spotIndex++));
-                spot.setValue(cellLabelValue);
-                ((Cell3D) cells.get(cellLabelValue)).addSpot(spot, (int) Math.round(p.getFeature(SpotFeatures.CHANNEL)));
+                spot.setValue(cellValue);
+                ((Cell3D) cells.get(cellIndex)).addSpot(spot, (int) Math.round(p.getFeature(SpotFeatures.CHANNEL)));
             }
         }
     }
