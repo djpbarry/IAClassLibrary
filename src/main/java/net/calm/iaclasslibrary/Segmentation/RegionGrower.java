@@ -26,6 +26,7 @@ import ij.plugin.filter.GaussianBlur;
 import ij.plugin.filter.ParticleAnalyzer;
 import ij.plugin.frame.RoiManager;
 import ij.process.*;
+import inra.ijpb.binary.conncomp.FloodFillComponentsLabeling;
 import net.calm.iaclasslibrary.Cell.CellData;
 import net.calm.iaclasslibrary.IAClasses.Region;
 import net.calm.iaclasslibrary.IAClasses.Utils;
@@ -598,28 +599,21 @@ public class RegionGrower {
         ShortProcessor indexedRegions = new ShortProcessor(inputProc.getWidth(), inputProc.getHeight());
         indexedRegions.setValue(Region.MASK_FOREGROUND);
         indexedRegions.fill();
-        //indexedRegions.setColor(outVal);
         ShortBlitter bb = new ShortBlitter(indexedRegions);
         ArrayList<Region> singleImageRegions = new ArrayList<>();
         for (int i = 0; i < cellData.size(); i++) {
             Region region = cellData.get(i).getInitialRegion();
             if (region != null) {
-                ShortProcessor mask = (ShortProcessor) (new TypeConverter(region.getMask(), false)).convertToShort();
-                mask.invert();
-                mask.subtract(RegionGrower.SIXTEEN_TO_EIGHT_OFFSET);
-                mask.multiply(i + 1);
-                mask.multiply(1.0 / Region.MASK_BACKGROUND);
-                bb.copyBits(mask, 0, 0, Blitter.COPY_ZERO_TRANSPARENT);
+                ImageProcessor regionMask = region.getMask();
+                regionMask.invert();
+                ImageProcessor indexed_Region = (new FloodFillComponentsLabeling()).computeLabels(regionMask);
+                indexed_Region.multiply(i + 1);
+                bb.copyBits(indexed_Region, 0, 0, Blitter.COPY_ZERO_TRANSPARENT);
             }
             singleImageRegions.add(region);
         }
         ImageProcessor mask = inputProc.duplicate();
         mask.threshold((int) Math.round(threshold));
-//        IJ.saveAs(new ImagePlus("", mask), "PNG", "E:/Debug/Adapt/watershed_mask.png");
-//        IJ.saveAs(new ImagePlus("", inputProc), "PNG", "E:/Debug/Adapt/watershed_input.png");
-//        IJ.saveAs(new ImagePlus("", indexedRegions), "PNG", "E:/Debug/Adapt/watershed_seeds.png");
-//        IJ.saveAs(MultiThreadedWatershed.watershed(new ImagePlus("", mask), new ImagePlus("", indexedRegions), new ImagePlus("", mask)),
-//                "PNG", "E:/Debug/Adapt/watershed_output.png");
 
         ImagePlus watershedOutput = MultiThreadedWatershed.watershed(new ImagePlus("", mask), new ImagePlus("", indexedRegions), new ImagePlus("", mask));
 
