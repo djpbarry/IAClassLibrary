@@ -23,7 +23,7 @@ import ij.process.StackProcessor;
 import inra.ijpb.morphology.Morphology;
 import inra.ijpb.morphology.Strel3D;
 import inra.ijpb.morphology.strel.EllipsoidStrel;
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 
 import java.util.Properties;
@@ -55,7 +55,7 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
      * @param propLabels SERIES_SELECT_LABEL, CHANNEL_SELECT_LABEL,
      *                   FILT_RAD_XY_LABEL, FILT_RAD_XY_LABEL, FILT_RAD_Z_LABEL.
      */
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;

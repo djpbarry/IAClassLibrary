@@ -17,7 +17,6 @@
 package net.calm.iaclasslibrary.Process.ROI;
 
 import net.calm.iaclasslibrary.Extrema.MultiThreadedMaximaFinder;
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import fiji.plugin.trackmate.Spot;
 import ij.gui.OvalRoi;
 import ij.gui.Roi;
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Properties;
 import mcib3d.geom.Voxel3D;
+import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
 import ome.units.quantity.Length;
 
 /**
@@ -36,7 +36,7 @@ import ome.units.quantity.Length;
  */
 public class OverlayDrawer {
 
-    public static LinkedList<Voxel3D> showOutput(Spot s, Roi[] binaryOutline, BioFormatsImg img, Properties props, String[] propLabels, boolean edm, double maxXYRadiusMic, double maxZRadiusMic, int value, int series) {
+    public static LinkedList<Voxel3D> showOutput(Spot s, Roi[] binaryOutline, LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels, boolean edm, double maxXYRadiusMic, double maxZRadiusMic, int value, int series) {
         LinkedList<Voxel3D> voxels = new LinkedList<>();
         Length zLength = img.getZSpatialRes(series);
         double zSpatRes = 1.0;

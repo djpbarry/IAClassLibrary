@@ -28,7 +28,7 @@ import mcib3d.geom.Objects3DPopulation;
 import mcib3d.geom.Vector3D;
 import mcib3d.image3d.ImageInt;
 import net.calm.iaclasslibrary.Cell3D.*;
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import org.apache.commons.math3.linear.ArrayRealVector;
 
@@ -71,7 +71,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         this.cells = cells;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
@@ -122,7 +122,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         }
     }
 
-    public static void processObjectPop(Objects3DPopulation cells, int series, int selectedChannels, BioFormatsImg img) {
+    public static void processObjectPop(Objects3DPopulation cells, int series, int selectedChannels, LocationAgnosticBioFormatsImg img) {
         if (cells.getNbObjects() < 1) {
             return;
         }
@@ -207,7 +207,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         cells.saveObjects(String.format("%s%s%s.zip", path, File.separator, outputName));
     }
 
-    public static void saveAllMasks(String path, Objects3DPopulation cells, BioFormatsImg img, int series) {
+    public static void saveAllMasks(String path, Objects3DPopulation cells, LocationAgnosticBioFormatsImg img, int series) {
         if (path == null || !new File(path).exists() || cells.getNbObjects() < 1) {
             return;
         }

@@ -2,7 +2,7 @@ package net.calm.iaclasslibrary.Process.Segmentation;
 
 import ij.IJ;
 import ij.ImagePlus;
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import org.apache.commons.io.FilenameUtils;
 
@@ -25,7 +25,7 @@ public class MultiThreadedStarDist extends MultiThreadedProcess {
         super(inputs);
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.propLabels = propLabels;
         this.props = props;

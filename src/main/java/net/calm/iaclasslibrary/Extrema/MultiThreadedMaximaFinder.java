@@ -41,7 +41,7 @@ import net.calm.iaclasslibrary.Binary.BinaryMaker;
 import net.calm.iaclasslibrary.Cell3D.Spot3D;
 import net.calm.iaclasslibrary.Cell3D.SpotFeatures;
 import net.calm.iaclasslibrary.IAClasses.Utils;
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
 import net.calm.iaclasslibrary.Process.Filtering.MultiThreadedHessian;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.Stacks.StackMath;
@@ -120,7 +120,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         this.maxima = new ArrayList();
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.propLabels = propLabels;
         this.props = props;
