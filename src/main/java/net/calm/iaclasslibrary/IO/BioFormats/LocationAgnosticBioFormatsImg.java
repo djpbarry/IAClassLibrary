@@ -1,13 +1,11 @@
 package net.calm.iaclasslibrary.IO.BioFormats;
 
 import ij.ImagePlus;
-import ij.ImageStack;
 import loci.formats.FormatException;
 import loci.plugins.in.DisplayHandler;
 import loci.plugins.in.ImagePlusReader;
 import loci.plugins.in.ImportProcess;
 import loci.plugins.in.Importer;
-import net.calm.iaclasslibrary.Process.IO.MultiThreadedImageLoader;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -19,8 +17,10 @@ public class LocationAgnosticBioFormatsImg extends BioFormatsImg {
     public LocationAgnosticBioFormatsImg(String options) {
         super(null);
         try {
-            this.io = importer.parseOptions(options);
-            setId(io.getId());
+            if (options != null) {
+                this.io = importer.parseOptions(options);
+                setId(io.getId());
+            }
         } catch (IOException | FormatException e) {
             GenUtils.logError(e, "Could not open " + options);
         }
@@ -28,7 +28,7 @@ public class LocationAgnosticBioFormatsImg extends BioFormatsImg {
 
     public void loadPixelData(int series, int cBegin, int cEnd, String dimOrder) {
         io.clearSeries();
-        io.setSeriesOn(series,true);
+        io.setSeriesOn(series, true);
         io.setCBegin(series, cBegin);
         io.setCEnd(series, cEnd);
         if (series >= getSeriesCount() || cBegin >= getSizeC(series) || cEnd > getSizeC(series)) {

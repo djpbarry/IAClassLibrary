@@ -68,7 +68,7 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         if (inputs != null) {
             imp = inputs[0].getOutput();
         } else {
-            img.loadPixelData(series, channel, channel + 1, null);
+            img.loadPixelData(series, channel, channel, null);
             imp = img.getLoadedImage();
         }
         (new StackConverter(imp)).convertToGray32();

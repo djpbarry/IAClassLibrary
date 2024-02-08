@@ -35,7 +35,7 @@ public class MultiThreadedStarDist extends MultiThreadedProcess {
         series = Integer.parseInt(props.getProperty(propLabels[SERIES_SELECT]));
         channel = Integer.parseInt(props.getProperty(propLabels[CHANNEL_SELECT]));
         //calibration = getCalibration(series);
-        img.loadPixelData(series, channel, channel + 1, null);
+        img.loadPixelData(series, channel, channel, null);
         String tempDir = "E:/Debug/Giani/pipeline_test/";
         String tempImage = "stardist_temp.tif";
         String starDistOutput = FilenameUtils.getBaseName(tempImage) + ".stardist." + FilenameUtils.getExtension(tempImage);

@@ -164,7 +164,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         calibration = getCalibration(series);
         radii = getUncalibratedDoubleSigma(series, propLabels[BLOB_SIZE], propLabels[BLOB_SIZE], propLabels[BLOB_SIZE]);
         thresh = Float.parseFloat(props.getProperty(propLabels[BLOB_THRESH]));
-        img.loadPixelData(series, channel, channel + 1, null);
+        img.loadPixelData(series, channel, channel, null);
         ImagePlus imp = img.getLoadedImage();
         this.stack = imp.getImageStack();
         if (stack == null) {
