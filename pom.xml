@@ -13,7 +13,7 @@
 
     <groupId>net.calm</groupId>
     <artifactId>iaclasslibrary</artifactId>
-    <version>1.0.29</version>
+    <version>1.0.30</version>
 
     <name>net.calm.iaclasslibrary</name>
     <description>Maven implementation of Image Analysis Class Library.</description>
