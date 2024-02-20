@@ -43,7 +43,7 @@ public class BioFormatsImg {
     protected ImporterOptions io;
     private final ImageReader reader;
     private IMetadata meta;
-    private String id;
+    protected String id;
     protected ImagePlus img = new ImagePlus();
     private ImagePlus processedImage;
     private boolean validID;
