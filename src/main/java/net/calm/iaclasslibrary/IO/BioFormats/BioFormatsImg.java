@@ -140,7 +140,7 @@ public class BioFormatsImg {
     }
 
     public void clearImageData() {
-//                img = null;
+        // img = null;
     }
 
     public String getId() {
