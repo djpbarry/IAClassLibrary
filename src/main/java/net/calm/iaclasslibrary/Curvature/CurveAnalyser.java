@@ -16,12 +16,11 @@
  */
 package net.calm.iaclasslibrary.Curvature;
 
-import net.calm.iaclasslibrary.IAClasses.Utils;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class CurveAnalyser {
@@ -53,21 +52,12 @@ public class CurveAnalyser {
 //                bp.drawLine(pix[j][0], pix[j][1], pix[k][0], pix[k][1]);
 //                bp.drawLine(pix[j][0], pix[j][1], pix[i][0], pix[i][1]);
 //                IJ.saveAs(new ImagePlus("", bp), "PNG", "C:\\Users\\barryd\\debugging\\anamorf_debug\\curve_" + index++);
-                double theta1 = Utils.arcTan(pix[j][0] - pix[i][0], pix[j][1] - pix[i][1]);
-                double theta2 = Utils.arcTan(pix[k][0] - pix[j][0], pix[k][1] - pix[j][1]);
-                if (Math.abs(theta1 - theta2) >= 180.0) {
-                    if (theta2 > theta1) {
-                        theta2 -= 360.0;
-                    } else {
-                        theta1 -= 360.0;
-                    }
-                }
-                curvature[j] = theta1 - theta2;
+                curvature[j] = calculateMengerCurvature(new Point(pix[j][0], pix[j][1]),
+                        new Point(pix[i][0], pix[i][1]), new Point(pix[k][0], pix[k][1]));
                 if (cumulativeCurveStats != null) {
                     cumulativeCurveStats.get(0).add(new Double(pix[j][0]));
                     cumulativeCurveStats.get(1).add(new Double(pix[j][1]));
-                    cumulativeCurveStats.get(2).add(theta1);
-                    cumulativeCurveStats.get(3).add(theta2);
+                    cumulativeCurveStats.get(2).add(curvature[j]);
                 }
             }
         }
@@ -89,4 +79,26 @@ public class CurveAnalyser {
         }
         return calcCurvature(intPix, step, true, null);
     }
+
+    public static double calculateMengerCurvature(Point P1, Point P2, Point P3) {
+        // Calculate side lengths
+        double a = P1.distance(P2);
+        double b = P1.distance(P3);
+        double c = P2.distance(P3);
+
+        // Calculate semi-perimeter
+        double s = (a + b + c) / 2.0;
+
+        // Calculate the area using Heron's formula
+        double area = Math.sqrt(s * (s - a) * (s - b) * (s - c));
+
+        // Circumcircle radius
+        double R = (a * b * c) / (4.0 * area);
+
+        // Menger curvature
+        double curvature = 1.0 / R;
+
+        return curvature;
+    }
+
 }

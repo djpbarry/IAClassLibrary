@@ -16,7 +16,7 @@
  */
 package net.calm.iaclasslibrary.Process.Mapping;
 
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -37,7 +37,7 @@ public class MapPixels extends MultiThreadedProcess {
         this.map = new LinkedHashMap();
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
 
     }
 

@@ -40,11 +40,11 @@ import java.io.IOException;
  */
 public class BioFormatsImg {
 
-    private ImporterOptions io;
+    protected ImporterOptions io;
     private final ImageReader reader;
     private IMetadata meta;
-    private String id;
-    private ImagePlus img = new ImagePlus();
+    protected String id;
+    protected ImagePlus img = new ImagePlus();
     private ImagePlus processedImage;
     private boolean validID;
     public static char SERIES_SEP = '-';

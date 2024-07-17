@@ -2,7 +2,7 @@ package net.calm.iaclasslibrary.Process.Segmentation;
 
 import ij.IJ;
 import ij.ImagePlus;
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import org.apache.commons.io.FilenameUtils;
 
@@ -25,7 +25,7 @@ public class MultiThreadedStarDist extends MultiThreadedProcess {
         super(inputs);
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.propLabels = propLabels;
         this.props = props;
@@ -35,7 +35,7 @@ public class MultiThreadedStarDist extends MultiThreadedProcess {
         series = Integer.parseInt(props.getProperty(propLabels[SERIES_SELECT]));
         channel = Integer.parseInt(props.getProperty(propLabels[CHANNEL_SELECT]));
         //calibration = getCalibration(series);
-        img.loadPixelData(series, channel, channel + 1, null);
+        img.loadPixelData(series, channel, channel, null);
         String tempDir = "E:/Debug/Giani/pipeline_test/";
         String tempImage = "stardist_temp.tif";
         String starDistOutput = FilenameUtils.getBaseName(tempImage) + ".stardist." + FilenameUtils.getExtension(tempImage);

@@ -16,7 +16,7 @@
  */
 package net.calm.iaclasslibrary.Process.Filtering;
 
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.Process.RunnableProcess;
 import java.util.Properties;
@@ -41,7 +41,7 @@ public class MultiThreadedSobelFilter extends MultiThreadedProcess {
         this.input = input;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;

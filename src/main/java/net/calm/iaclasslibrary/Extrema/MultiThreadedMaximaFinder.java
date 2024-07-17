@@ -41,7 +41,7 @@ import net.calm.iaclasslibrary.Binary.BinaryMaker;
 import net.calm.iaclasslibrary.Cell3D.Spot3D;
 import net.calm.iaclasslibrary.Cell3D.SpotFeatures;
 import net.calm.iaclasslibrary.IAClasses.Utils;
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
 import net.calm.iaclasslibrary.Process.Filtering.MultiThreadedHessian;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.Stacks.StackMath;
@@ -120,7 +120,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         this.maxima = new ArrayList();
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.propLabels = propLabels;
         this.props = props;
@@ -164,7 +164,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         calibration = getCalibration(series);
         radii = getUncalibratedDoubleSigma(series, propLabels[BLOB_SIZE], propLabels[BLOB_SIZE], propLabels[BLOB_SIZE]);
         thresh = Float.parseFloat(props.getProperty(propLabels[BLOB_THRESH]));
-        img.loadPixelData(series, channel, channel + 1, null);
+        img.loadPixelData(series, channel, channel, null);
         ImagePlus imp = img.getLoadedImage();
         this.stack = imp.getImageStack();
         if (stack == null) {
