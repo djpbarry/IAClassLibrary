@@ -16,10 +16,7 @@
  */
 package net.calm.iaclasslibrary.Curvature;
 
-import net.calm.iaclasslibrary.IAClasses.Utils;
-
 import java.awt.*;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -56,22 +53,11 @@ public class CurveAnalyser {
 //                bp.drawLine(pix[j][0], pix[j][1], pix[i][0], pix[i][1]);
 //                IJ.saveAs(new ImagePlus("", bp), "PNG", "C:\\Users\\barryd\\debugging\\anamorf_debug\\curve_" + index++);
                 curvature[j] = calculateMengerCurvature(new Point(pix[j][0], pix[j][1]),
-                new Point(pix[i][0], pix[i][1]), new Point(pix[k][0], pix[j][k]));
-                double theta1 = Utils.arcTan(pix[j][0] - pix[i][0], pix[j][1] - pix[i][1]);
-                double theta2 = Utils.arcTan(pix[k][0] - pix[j][0], pix[k][1] - pix[j][1]);
-                if (Math.abs(theta1 - theta2) >= 180.0) {
-                    if (theta2 > theta1) {
-                        theta2 -= 360.0;
-                    } else {
-                        theta1 -= 360.0;
-                    }
-                }
-                curvature[j] = theta1 - theta2;
+                        new Point(pix[i][0], pix[i][1]), new Point(pix[k][0], pix[k][1]));
                 if (cumulativeCurveStats != null) {
                     cumulativeCurveStats.get(0).add(new Double(pix[j][0]));
                     cumulativeCurveStats.get(1).add(new Double(pix[j][1]));
-                    cumulativeCurveStats.get(2).add(theta1);
-                    cumulativeCurveStats.get(3).add(theta2);
+                    cumulativeCurveStats.get(2).add(curvature[j]);
                 }
             }
         }
