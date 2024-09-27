@@ -19,7 +19,7 @@ package net.calm.iaclasslibrary.Process.Segmentation;
 import net.calm.iaclasslibrary.Binary.BinaryMaker;
 import net.calm.iaclasslibrary.Binary.EDMMaker;
 import net.calm.iaclasslibrary.IAClasses.Region;
-import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
@@ -56,7 +56,7 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
         this.threshold = threshold;
     }
 
-    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
 
     }
 

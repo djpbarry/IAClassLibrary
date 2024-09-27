@@ -17,7 +17,6 @@
 package net.calm.iaclasslibrary.UIClasses;
 
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
-import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 
@@ -34,7 +33,7 @@ import java.util.concurrent.ExecutorService;
 public abstract class LayerPanel extends JPanel implements GUIMethods {
 
     protected ExecutorService exec;
-    protected final LocationAgnosticBioFormatsImg img;
+    protected final BioFormatsImg img;
     protected final Properties props;
     protected MultiThreadedProcess process;
     protected String[] propLabels = new String[]{"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""};
@@ -45,7 +44,7 @@ public abstract class LayerPanel extends JPanel implements GUIMethods {
         this(null, null, null, null, null);
     }
 
-    public LayerPanel(Properties props, LocationAgnosticBioFormatsImg img, MultiThreadedProcess process, String[] propLabels, URI helpURI) {
+    public LayerPanel(Properties props, BioFormatsImg img, MultiThreadedProcess process, String[] propLabels, URI helpURI) {
         super();
         if (props != null) {
             this.props = props;

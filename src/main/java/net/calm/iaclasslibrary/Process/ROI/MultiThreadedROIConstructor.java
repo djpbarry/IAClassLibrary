@@ -28,7 +28,7 @@ import mcib3d.geom.Objects3DPopulation;
 import mcib3d.geom.Vector3D;
 import mcib3d.image3d.ImageInt;
 import net.calm.iaclasslibrary.Cell3D.*;
-import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import org.apache.commons.math3.linear.ArrayRealVector;
 
@@ -71,7 +71,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         this.cells = cells;
     }
 
-    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
@@ -122,7 +122,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         }
     }
 
-    public static void processObjectPop(Objects3DPopulation cells, int series, int selectedChannels, LocationAgnosticBioFormatsImg img) {
+    public static void processObjectPop(Objects3DPopulation cells, int series, int selectedChannels, BioFormatsImg img) {
         if (cells.getNbObjects() < 1) {
             return;
         }
@@ -169,7 +169,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         int nChan = img.getSizeC(series);
         for (int c = 0; c < nChan; c++) {
             if (((int) Math.pow(2, c) & selectedChannels) != 0) {
-                img.loadPixelData(series, c, c, null);
+                img.loadPixelData(series, c, c + 1, null);
                 ImagePlus imp = img.getLoadedImage();
                 IJ.log(String.format("Measuring %s defined by %s.", imp.getTitle(), cells.getObject(0).getName()));
                 List<Double[]> pixMeasures = cells.getMeasuresStats(imp.getImageStack());
@@ -207,7 +207,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         cells.saveObjects(String.format("%s%s%s.zip", path, File.separator, outputName));
     }
 
-    public static void saveAllMasks(String path, Objects3DPopulation cells, LocationAgnosticBioFormatsImg img, int series) {
+    public static void saveAllMasks(String path, Objects3DPopulation cells, BioFormatsImg img, int series) {
         if (path == null || !new File(path).exists() || cells.getNbObjects() < 1) {
             return;
         }

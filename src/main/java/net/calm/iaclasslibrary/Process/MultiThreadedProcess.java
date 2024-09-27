@@ -16,7 +16,8 @@
  */
 package net.calm.iaclasslibrary.Process;
 
-import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import ij.ImagePlus;
 import java.util.LinkedList;
@@ -31,10 +32,10 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public abstract class MultiThreadedProcess extends Thread implements Callable<LocationAgnosticBioFormatsImg> {
+public abstract class MultiThreadedProcess extends Thread implements Callable<BioFormatsImg> {
 
     protected ExecutorService exec;
-    protected LocationAgnosticBioFormatsImg img;
+    protected BioFormatsImg img;
     protected Properties props;
     protected String[] propLabels;
     protected MultiThreadedProcess[] inputs;
@@ -48,7 +49,7 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Lo
         updateInputsWithOutput();
     }
 
-    public abstract void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels);
+    public abstract void setup(BioFormatsImg img, Properties props, String[] propLabels);
 
     public abstract void run();
 
@@ -111,7 +112,7 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Lo
         return propLabels;
     }
 
-    public LocationAgnosticBioFormatsImg call() {
+    public BioFormatsImg call() {
         return img;
     }
 

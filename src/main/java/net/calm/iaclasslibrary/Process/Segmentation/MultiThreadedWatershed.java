@@ -30,7 +30,7 @@ import mcib3d.image3d.ImageShort;
 import mcib3d.image3d.distanceMap3d.EDT;
 import net.calm.iaclasslibrary.Binary.BinaryMaker;
 import net.calm.iaclasslibrary.Cell3D.*;
-import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.Calculate.MultiThreadedImageCalculator;
 import net.calm.iaclasslibrary.Process.DistanceTransform.RiemannianDistanceTransform;
 import net.calm.iaclasslibrary.Process.Mapping.MapPixels;
@@ -78,7 +78,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         this.segmentationType = segmentationType;
     }
 
-    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;

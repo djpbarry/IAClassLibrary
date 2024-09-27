@@ -16,27 +16,26 @@
  */
 package net.calm.iaclasslibrary.Process.ROI;
 
-import net.calm.iaclasslibrary.Extrema.MultiThreadedMaximaFinder;
 import fiji.plugin.trackmate.Spot;
 import ij.gui.OvalRoi;
 import ij.gui.Roi;
-import java.awt.Color;
-import java.awt.Point;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Properties;
 import mcib3d.geom.Voxel3D;
-import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
+import net.calm.iaclasslibrary.Extrema.MultiThreadedMaximaFinder;
+import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import ome.units.quantity.Length;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class OverlayDrawer {
 
-    public static LinkedList<Voxel3D> showOutput(Spot s, Roi[] binaryOutline, LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels, boolean edm, double maxXYRadiusMic, double maxZRadiusMic, int value, int series) {
+    public static LinkedList<Voxel3D> showOutput(Spot s, Roi[] binaryOutline, BioFormatsImg img, Properties props, String[] propLabels, boolean edm, double maxXYRadiusMic, double maxZRadiusMic, int value, int series) {
         LinkedList<Voxel3D> voxels = new LinkedList<>();
         Length zLength = img.getZSpatialRes(series);
         double zSpatRes = 1.0;
@@ -56,8 +55,8 @@ public class OverlayDrawer {
         double maxXYRadiusMic2 = Math.pow(maxXYRadiusMic, 2.0);
         int zRadiusPix = (int) Math.ceil(maxZRadiusMic / zSpatRes);
         int[] pix = new int[]{(int) Math.round(s.getFeature(Spot.POSITION_X) / xySpatRes),
-            (int) Math.round(s.getFeature(Spot.POSITION_Y) / xySpatRes),
-            (int) Math.round(s.getFeature(Spot.POSITION_Z) / zSpatRes)};
+                (int) Math.round(s.getFeature(Spot.POSITION_Y) / xySpatRes),
+                (int) Math.round(s.getFeature(Spot.POSITION_Z) / zSpatRes)};
         int z0 = pix[2] + 1;
         for (int z = z0 - zRadiusPix < 0 ? 0 : z0 - zRadiusPix; z < z0 + zRadiusPix && z < img.getSizeZ(series); z++) {
             double z2 = Math.pow((z - z0) * zSpatRes, 2.0);

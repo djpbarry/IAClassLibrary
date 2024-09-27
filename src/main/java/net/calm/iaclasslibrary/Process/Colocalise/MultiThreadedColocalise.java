@@ -34,7 +34,7 @@ import net.calm.iaclasslibrary.Cell3D.Spot3D;
 import net.calm.iaclasslibrary.Cell3D.SpotFeatures;
 import net.calm.iaclasslibrary.Extrema.MultiThreadedMaximaFinder;
 import net.calm.iaclasslibrary.IAClasses.Utils;
-import net.calm.iaclasslibrary.IO.BioFormats.LocationAgnosticBioFormatsImg;
+import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.IO.DataWriter;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.Process.ROI.MultiThreadedROIConstructor;
@@ -73,7 +73,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         this.cellPop = cellPop;
     }
 
-    public void setup(LocationAgnosticBioFormatsImg img, Properties props, String[] propLabels) {
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
         this.props = props;
         this.propLabels = propLabels;
