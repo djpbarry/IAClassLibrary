@@ -16,12 +16,14 @@
  */
 package net.calm.iaclasslibrary.IO.BioFormats;
 
-import java.io.File;
-import java.util.ArrayList;
+import loci.formats.FormatException;
 import loci.formats.ImageReader;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
 /**
- *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class BioFormatsFileLister {
@@ -32,8 +34,16 @@ public class BioFormatsFileLister {
         File[] files = directory.listFiles();
         for (File f : files) {
             String id = f.getAbsolutePath();
-            if (reader.isThisType(id, false)) {
+            try {
+                // Attempt to set the file to be read
+                reader.setId(id);
+
                 fileNames.add(f.getName());
+
+                // Close the reader
+                reader.close();
+            } catch (FormatException | IOException e) {
+
             }
         }
         return fileNames;

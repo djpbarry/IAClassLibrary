@@ -26,6 +26,7 @@ import loci.formats.FormatException;
 import loci.formats.ImageReader;
 import loci.formats.meta.IMetadata;
 import loci.formats.services.OMEXMLService;
+import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
 import net.calm.iaclasslibrary.Process.IO.MultiThreadedImageLoader;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
@@ -168,21 +169,26 @@ public class BioFormatsImg {
         }
         try {
             reader.setSeries(series);
-            int sizeC = reader.getSizeC();
+            //int sizeC = reader.getSizeC();
             if (reader.getRGBChannelCount() > 1) {
-                sizeC = 1;
+                //sizeC = 1;
                 cEnd = 1;
             }
-            int[] limits = getLimits(dimOrder, cBegin, cEnd, sizeC);
-            int width = reader.getSizeX();
-            int height = reader.getSizeY();
-            ImageStack stack = new ImageStack(width, height, (cEnd - cBegin) * reader.getSizeT() * reader.getSizeZ() * reader.getRGBChannelCount());
-            MultiThreadedImageLoader loader = new MultiThreadedImageLoader(limits, reader, stack);
-            loader.start();
-            loader.join();
-            ImagePlus stackImp = new ImagePlus(id, stack);
-            stackImp.setDimensions(cEnd - cBegin, reader.getSizeZ(), reader.getSizeT());
-            stackImp.setOpenAsHyperStack(true);
+            //int[] limits = getLimits(dimOrder, cBegin, cEnd, sizeC);
+            //int width = reader.getSizeX();
+            //int height = reader.getSizeY();
+            //ImageStack stack = new ImageStack(width, height, (cEnd - cBegin) * reader.getSizeT() * reader.getSizeZ() * reader.getRGBChannelCount());
+            //MultiThreadedImageLoader loader = new MultiThreadedImageLoader(limits, reader, stack);
+            //loader.start();
+            //loader.join();
+            //ImagePlus stackImp = new ImagePlus(id, stack);
+            ImporterOptions options = new ImporterOptions();
+            options.setCBegin(series, cBegin);
+            options.setCEnd(series, cEnd);
+            options.setId(id);
+            options.clearSeries();
+            options.setSeriesOn(series, true);
+            ImagePlus stackImp = BF.openImagePlus(options)[0];
             img = stackImp;
             img.setTitle(String.format("%s-S%d_C%d", reformatFileName(FilenameUtils.getName(getId())), series, cBegin));
         } catch (Exception e) {
