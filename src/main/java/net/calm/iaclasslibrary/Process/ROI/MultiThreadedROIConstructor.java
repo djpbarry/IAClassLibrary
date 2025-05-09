@@ -169,7 +169,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         int nChan = img.getSizeC(series);
         for (int c = 0; c < nChan; c++) {
             if (((int) Math.pow(2, c) & selectedChannels) != 0) {
-                img.loadPixelData(series, c, c + 1, null);
+                img.loadPixelData(series, c, c, null);
                 ImagePlus imp = img.getLoadedImage();
                 IJ.log(String.format("Measuring %s defined by %s.", imp.getTitle(), cells.getObject(0).getName()));
                 List<Double[]> pixMeasures = cells.getMeasuresStats(imp.getImageStack());
