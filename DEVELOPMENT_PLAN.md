@@ -26,8 +26,8 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
 - IAClassLibrary (`net.calm.iaclasslibrary`) is a **Java library** (not a
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
-- **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version `1.0.37`
-  (bump to `1.0.38` pending, Decision 2), declared license
+- **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
+  `2.0.0-SNAPSHOT` (working toward the `2.0.0` release), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
   --no-transfer-progress verify` on **JDK 21** with dependency caching.
@@ -153,8 +153,8 @@ unresolved GPL-3-vs-BSD-2 contradiction ADAPT resolved in its Decision 1.
 ### B2. Tag the repo (blocks ADAPT's Phase G2 / Decision 2)
 
 ADAPT pins IAClassLibrary at commit `fe92f24c6e`, which is **after** the only
-tag `v1.032` (`da53d73`) and after the version bump to `1.0.37`. Tag current
-`master` with a proper semver release (reconciling the `v1.032` vs `1.0.37`
+tag `v1.032` (`da53d73`) and after the version bump to `1.0.37`. Release `2.0.0`
+and tag `v2.0.0` (reconciling the `v1.032` vs `1.0.37`
 naming skew) so ADAPT and the other libraries can pin to a tag instead of a
 commit hash.
 
@@ -293,9 +293,12 @@ in the phases above.
    BSD-2 to GPL-3 (`<licenses>` + `license.licenseName`). Source-header tidy-up
    (removing the old pre-GitHub-era boilerplate stubs) is deferred to a later
    pass — see Phase B1 item 4.
-2. **Versioning — semver `1.0.X`.** Bump `pom.xml` to `1.0.38` (after the M1
-   work lands), then tag `v1.0.38`. The existing `v1.032` tag is a mislabel of
-   `v1.0.32`; use the `v1.0.X` form going forward.
+2. **Versioning — semver.** Jump directly to major version `2.0.0` (development
+   version `2.0.0-SNAPSHOT`) to reflect the scale of the upcoming changes; tag
+   `v2.0.0` on release. The existing `v1.032` tag is a mislabel of `v1.0.32`;
+   use the `vX.Y.Z` form going forward. Version bumps are automated with
+   `maven-release-plugin` (`tagNameFormat=v@{project.version}`); the JAR version
+   is read from the manifest, not `pom.xml` (see `REVISION_LOG.md`).
 3. **Java target — 21** *(revised from 11)*. Upgrade the parent to
    `pom-scijava:45.1.0` and set `scijava.jvm.version=21`; build on JDK 21.
    This adopts TrackMate 8.0.0 (no version pin needed) and is the first step of
@@ -323,10 +326,10 @@ in the phases above.
 1. **M1 — Foundations (low risk, high value):** `.gitignore`, Maven wrapper, CI
    hardening (pin Java 21), delete the legacy Ant build, remove
    `MultiThreadedStarDist` + commented-out debug code, add GPL-3 `LICENSE` +
-   fix pom metadata, bump to `1.0.38` and tag `v1.0.38`. (Phase A, B, D1)
+   fix pom metadata, bump to `2.0.0` and tag `v2.0.0`. (Phase A, B, D1)
    *Status (2026-09-24): `.gitignore`/wrapper/CI/Ant-removal/LICENSE+pom are
-   done. Remaining: D1 (StarDist + debug-code removal) and B2 (bump to `1.0.38`
-   + tag `v1.0.38`).*
+   done. Remaining: D1 (StarDist + debug-code removal) and B2 (release `2.0.0`
+   + tag `v2.0.0`).*
 2. **M2 — Test harness:** JUnit 5 + a few pure-logic unit tests + CSV golden
    tests. (Phase C)
 3. **M3 — Gotchas & hygiene:** fix `validID`/`clearImageData`/`getLoadedImage`

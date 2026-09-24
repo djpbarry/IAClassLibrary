@@ -13,7 +13,7 @@
 
     <groupId>net.calm</groupId>
     <artifactId>iaclasslibrary</artifactId>
-    <version>1.0.37</version>
+    <version>2.0.0-SNAPSHOT</version>
 
     <name>net.calm.iaclasslibrary</name>
     <description>Maven implementation of Image Analysis Class Library.</description>
@@ -86,6 +86,18 @@
         <license.licenseName>gpl_v3</license.licenseName>
         <license.copyrightOwners>Francis Crick Institute</license.copyrightOwners>
     </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <repositories>
         <!-- NB: for SciJava dependencies -->

@@ -35,10 +35,19 @@ downstream consumers — takes precedence throughout.
 
 Still outstanding from M1 (carried into the next session):
 
-- Bump `pom.xml` from `1.0.37` to `1.0.38` and tag `v1.0.38` (Decision 2 / B2).
+- Release `2.0.0` (pom is now `2.0.0-SNAPSHOT`) and tag `v2.0.0` (Decision 2 / B2).
 - Remove `MultiThreadedStarDist` and the commented-out `IJ.saveAs(...)` debug
   blocks (D1).
 - Remove/ignore the stray untracked `nb-configuration.xml` and `out/` (L7).
+
+### 2026-09-24 — Version 2.0.0 and release automation
+
+- Bumped `pom.xml` to `2.0.0-SNAPSHOT` (working toward the `2.0.0` release).
+- Wired `maven-release-plugin` with `tagNameFormat=v@{project.version}` so a
+  single `mvn release:prepare` moves version + tag + next-SNAPSHOT atomically.
+- Replaced the pom-parsing version lookup with a manifest read:
+  `Revision.getVersion()` reads `Implementation-Version`; `getVersionFromPom`
+  is now `@Deprecated`.
 
 ---
 
@@ -78,7 +87,7 @@ writing before any build or CI edit.
 The only pre-existing tag is `v1.032`, a mislabel of `v1.0.32`, while `pom.xml`
 says `1.0.37`. Consumers cannot trust tag names against POM versions.
 
-**Rule:** use `v1.0.X` tags and never elide the patch zero; reconcile the
+**Rule:** use `vX.Y.Z` tags and never elide the patch zero; reconcile the
 tag/version skew before tagging (Decision 2 / B2).
 
 ### L3 — Resolve the licence before tagging

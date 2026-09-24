@@ -9,6 +9,27 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 
 public class Revision {
+
+	/**
+	 * The version of this library, as recorded by Maven in the JAR manifest
+	 * ({@code Implementation-Version}).
+	 *
+	 * @return the library version, or {@code "unknown"} when running from an
+	 * unpackaged classpath (e.g. an IDE) with no manifest entry
+	 */
+	public static String getVersion() {
+		String version = Revision.class.getPackage().getImplementationVersion();
+		return version == null || version.isEmpty() ? "unknown" : version;
+	}
+
+	/**
+	 * @param filePath path to a {@code pom.xml}
+	 * @return the project {@code <version>} element, or an error string
+	 * @deprecated Parsing {@code pom.xml} at runtime is unreliable because the
+	 * file is not packaged inside the built JAR. Use {@link #getVersion()}
+	 * instead, which reads the version from the JAR manifest.
+	 */
+	@Deprecated
 	public static String getVersionFromPom(String filePath) {
 		try {
 			// Set up DocumentBuilder to parse XML

@@ -7,25 +7,25 @@ ImageJ/Fiji ecosystem, maintained by David Barry (Francis Crick Institute). It
 provides reusable image-processing and analysis primitives consumed by other
 Fiji/ImageJ plugins, not a runnable application (there is no `main` method).
 
-- Build system: **Maven** (canonical), parent `org.scijava:pom-scijava` 40.0.0
-- Version in `pom.xml`: `1.0.37`
+- Build system: **Maven** (canonical), parent `org.scijava:pom-scijava` 45.1.0
+- Version in `pom.xml`: `2.0.0-SNAPSHOT` (working toward `2.0.0`)
 - Key dependencies: `net.imagej:ij` / `imagej`, Bio-Formats (`ome`,
   `loci.formats`), ImgLib2 (`io.scif`, `net.imglib2`), TrackMate, MorphoLibJ,
   mcib3d-core, Apache Commons Math3/Lang3/CSV, imagescience.
 
 ## Build / test
 
-- Build/verify: `mvn verify`
-- CI command (see `.github/workflows/maven.yml`): `mvn --batch-mode --update-snapshots verify`
-- Required JDK: **11** (per the CI workflow `setup-java` step)
-- There is **no Maven wrapper** - use a system `mvn`.
+- Build/verify: `./mvnw verify`
+- CI command (see `.github/workflows/maven.yml`): `./mvnw --batch-mode --no-transfer-progress verify`
+- Required JDK: **21** (per the CI workflow `setup-java` step)
+- There is a **Maven wrapper** (`mvnw`/`mvnw.cmd`) - use it instead of a system `mvn`.
 - There are **no tests** in the repository (`src/test` does not exist). "Verify"
   means compile + package + SciJava parent-POM checks.
 - `mvn -q -DskipTests compile` is the fastest way to check a change compiles.
 
-### Legacy Ant build (ignore)
+### Legacy Ant build (removed)
 
-`build.xml` and `nbproject/` are a stale NetBeans Ant build. Do not use it:
+The NetBeans Ant build (`build.xml` + `nbproject/`) has been **deleted** (Decision 6). It never ran on a clean machine:
 
 - `build.xml` has a `-pre-init` target that runs a Perl script via a hardcoded
   machine-specific path (`C:\Users\barryd\Strawberry\perl\bin\perl.exe`).
