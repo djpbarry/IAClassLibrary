@@ -15,7 +15,7 @@
     <artifactId>iaclasslibrary</artifactId>
     <version>2.0.0-SNAPSHOT</version>
 
-    <name>net.calm.iaclasslibrary</name>
+    <name>Image Analysis Class Library</name>
     <description>Maven implementation of Image Analysis Class Library.</description>
     <url>https://github.com/djpbarry/IAClassLibrary</url>
     <inceptionYear>2012</inceptionYear>
@@ -67,7 +67,7 @@
     </mailingLists>
 
     <scm>
-        <connection>scm:git:git://github.com/djpbarry/IAClassLibrary</connection>
+        <connection>scm:git:https://github.com/djpbarry/IAClassLibrary.git</connection>
         <developerConnection>scm:git:git@github.com:djpbarry/IAClassLibrary</developerConnection>
         <tag>HEAD</tag>
         <url>https://github.com/djpbarry/IAClassLibrary</url>
@@ -77,7 +77,8 @@
         <url>https://github.com/djpbarry/IAClassLibrary/issues</url>
     </issueManagement>
     <ciManagement>
-        <system>None</system>
+        <system>GitHub Actions</system>
+        <url>https://github.com/djpbarry/IAClassLibrary/actions</url>
     </ciManagement>
 
     <properties>
@@ -104,11 +105,6 @@
         <repository>
             <id>scijava.public</id>
             <url>https://maven.scijava.org/content/groups/public</url>
-        </repository>
-        <repository>
-            <id>ome</id>
-            <name>OME Artifactory</name>
-            <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
         </repository>
         <repository>
             <id>jitpack.io</id>
