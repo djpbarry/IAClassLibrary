@@ -81,6 +81,7 @@
 
     <properties>
         <package-name>net.calm.iaclasslibrary</package-name>
+        <scijava.jvm.version>11</scijava.jvm.version>
         <license.licenseName>bsd_2</license.licenseName>
         <license.copyrightOwners>Francis Crick Institute</license.copyrightOwners>
     </properties>
