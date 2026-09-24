@@ -76,7 +76,6 @@ public class RiemannianDistanceTransform extends EdtFloat {
         }
         IJ.log("Commencing Stage 2...");
         //Transformation 2.  g (in s) -> h (in s)
-//        IJ.saveAs(new ImagePlus("", outStack), "TIF", "D:\\debugging\\giani_debug\\rdt1.tif");
         Step2Thread[] s2t = new Step2Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
             s2t[thread] = new Step2Thread(thread, nbCPUs, w, h, d, s, gradData);
@@ -90,7 +89,6 @@ public class RiemannianDistanceTransform extends EdtFloat {
             IJ.error("A thread was interrupted in step 2 .");
         }
         IJ.log("Commencing Stage 3...");
-//        IJ.saveAs(new ImagePlus("", outStack), "TIF", "D:\\debugging\\giani_debug\\rdt2.tif");
         Step3Thread[] s3t = new Step3Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
             s3t[thread] = new Step3Thread(thread, nbCPUs, w, h, d, s, gradData);
@@ -105,7 +103,6 @@ public class RiemannianDistanceTransform extends EdtFloat {
         }
 //        //Transformation 3. h (in s) -> s
         IJ.log("Commencing Stage 4...");
-//        IJ.saveAs(new ImagePlus("", outStack), "TIF", "D:\\debugging\\giani_debug\\rdt2.tif");
         Step4Thread[] s4t = new Step4Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
             s4t[thread] = new Step4Thread(thread, nbCPUs, w, h, d, s, scale, gradData);
@@ -120,7 +117,6 @@ public class RiemannianDistanceTransform extends EdtFloat {
         }
         //Find the largest distance for scaling
         //Also fill in the background values.
-//        IJ.saveAs(new ImagePlus("", outStack), "TIF", "D:\\debugging\\giani_debug\\rdt3.tif");
         float distMax = 0;
         int wh = w * h;
         float dist;

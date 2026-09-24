@@ -45,7 +45,6 @@ public class StairsFitter {
 //    public static void main(String[] args) {
 //        double[][] data = null;
 //        try {
-//            data = DataReader.readFile(new File("C:\\Users\\barryd\\OneDrive - The Francis Crick Institute\\Working Data\\Yardimici\\Dominika\\test.csv"), CSVFormat.EXCEL);
 //        } catch (Exception e) {
 //
 //        }
@@ -78,18 +77,15 @@ public class StairsFitter {
             MultiKMeansPlusPlusClusterer<Clusterable> multiCluster = new MultiKMeansPlusPlusClusterer(kmeans, 100, new ClusterablePointScore());
             List<CentroidCluster<Clusterable>> clusters = multiCluster.cluster(clusterInput);
 //            imps.add(plot);
-//            System.out.println(String.format("Parameters: %d", p));
             double sd = calcInterClusterSpread(clusters, threshold);
             if (!Double.isNaN(sd) && sd < minSD) {
                 minSD = sd;
                 bestIndex = p;
                 bestClusters = clusters;
                 plot = showPlot(clusters, String.format("%d Clusters", p));
-//                IJ.saveAs(plot, "PNG", "C:\\Users\\barryd\\OneDrive - The Francis Crick Institute\\Working Data\\Yardimici\\Dominika\\plot.png");
                 fitted = true;
             }
         }
-//        System.out.println(String.format("Best: %d", bestIndex));
 //        imps.forEach((imp) -> {
 //            imp.close();
 //        });
@@ -131,7 +127,6 @@ public class StairsFitter {
         Arrays.sort(yCoords);
         Arrays.sort(xCoords);
         for (int j = 0; j < N - 1; j++) {
-//            System.out.println("x1:" + xCoords[j] + " y1:" + yCoords[j] + "x2:" + xCoords[j + 1] + " y2:" + yCoords[j + 1]);
             if (yCoords[j + 1] - yCoords[j] < threshold
                     || xCoords[j + 1] - xCoords[j] < threshold) {
                 return Double.NaN;

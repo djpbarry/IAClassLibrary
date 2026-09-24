@@ -67,12 +67,6 @@ public abstract class Fitter {
         double[] center = new double[numParams]; // mean of simplex vertices
         while (!done) {
             showProgress(numIter + maxIter * (defaultRestarts - restarts), maxIter * defaultRestarts);
-//            for (double d : simp[best]) {
-//                System.out.print(String.format("%f, ", d));
-//            }
-//            System.out.println();
-//            System.out.println("x= " + simp[best][0] + "; y= " + simp[best][1]
-//                    + "; r= " + simp[best][2]);
             numIter++;
             for (int i = 0; i < numParams; i++) {
                 center[i] = 0.0;
@@ -199,16 +193,11 @@ public abstract class Fitter {
         /*
          * x[numParams] = sumResiduals(x, xData, yData, zData); return true;
          */
-//        for (double d : x) {
-//            System.out.print(String.format("%f, ", d));
-//        }
-//        System.out.println();
         double e;
         x[numParams] = 0.0;
         for (int i = 0; i < xData.length; i++) {
             for (int j = 0; j < yData.length; j++) {
                 e = evaluate(x, xData[i], yData[j]) - zData[j * xData.length + i];
-//                System.out.println(String.format("%f", evaluate(x, xData[i], yData[j])));
                 x[numParams] = x[numParams] + (e * e);
             }
         }

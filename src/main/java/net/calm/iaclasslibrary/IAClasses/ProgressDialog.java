@@ -18,6 +18,7 @@ import java.awt.Toolkit;
  *
  * @author barry05
  */
+@Deprecated
 public class ProgressDialog extends javax.swing.JDialog {
     private String label;
 

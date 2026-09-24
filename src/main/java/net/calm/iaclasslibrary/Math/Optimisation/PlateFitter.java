@@ -34,10 +34,8 @@ public class PlateFitter extends Fitter {
         image.setRoi(plateTemplate.getCropRoi());
         double[] coeffs = Correlation.imageCorrelation(image.crop(), template, Correlation.PEARSONS);
         if (coeffs == null) {
-//            System.out.println(String.format("X: %f, Y: %f, Theta: %f, Corr: %f", params[0], params[1], params[2], -calcAreaOutside(image, plateTemplate.getCropRoi())));
             return -calcAreaOutside(image, plateTemplate.getCropRoi());
         } else {
-//            System.out.println(String.format("X: %f, Y: %f, Theta: %f, Corr: %f", params[0], params[1], params[2], coeffs[0]));
             return coeffs[0];
         }
     }

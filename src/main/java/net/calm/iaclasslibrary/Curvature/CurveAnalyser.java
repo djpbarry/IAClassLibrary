@@ -51,7 +51,6 @@ public class CurveAnalyser {
                 }
 //                bp.drawLine(pix[j][0], pix[j][1], pix[k][0], pix[k][1]);
 //                bp.drawLine(pix[j][0], pix[j][1], pix[i][0], pix[i][1]);
-//                IJ.saveAs(new ImagePlus("", bp), "PNG", "C:\\Users\\barryd\\debugging\\anamorf_debug\\curve_" + index++);
                 curvature[j] = calculateMengerCurvature(new Point(pix[j][0], pix[j][1]),
                         new Point(pix[i][0], pix[i][1]), new Point(pix[k][0], pix[k][1]));
                 if (cumulativeCurveStats != null) {

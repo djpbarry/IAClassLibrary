@@ -10,6 +10,7 @@ import java.util.ArrayList;
  * @author David J Barry <davejpbarry@gmail.com>
  * @version 05OCT2010
  */
+@Deprecated
 public class SkeletonProcessor {
 
     /**

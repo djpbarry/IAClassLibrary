@@ -99,6 +99,5 @@ public class Dijkstra {
 //                }
 //            }
 //        }
-//        IJ.saveAs(new ImagePlus("", bp), "PNG", "D:/debugging/anamorf_debug/graph_" + index++);
 //    }
 }

@@ -203,7 +203,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             }
         }
         output = makeLocalMaximaImage(BACKGROUND, (int) Math.round(radii[0] / calibration[0]));
-//        IJ.saveAs(output, "TIF", "D:\\debugging\\giani_debug\\watershedOutput.tif");
         labelOutput(imp.getTitle(), "Blobs");
         img.clearImageData();
     }
@@ -229,7 +228,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 //        double[] sigma = getCalibratedDoubleSigma(series, propLabels[EDM_FILTER], propLabels[EDM_FILTER], propLabels[EDM_FILTER]);
         IJ.log(String.format("Searching for objects %.1f pixels in diameter in \"%s\"...", (
                 Double.parseDouble(props.getProperty(propLabels[HESSIAN_START_SCALE])) / calibration[0]), image.getTitle()));
-//        IJ.saveAs(binaryImp, "TIF", "D:\\debugging\\giani_debug\\binaryImp.tif");
 
         if (image.getStackSize() > 1) {
             nEigenValues = 3;
@@ -252,7 +250,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             return;
         }
         ImagePlus hessianOutputs = hessian.getOutput();
-//        IJ.saveAs(hessianOutputs, "TIF", FileName.uniqueFileName("E:/Dropbox (The Francis Crick)/Debugging/Giani/images/outputs", "hessian_outputs", "tif"));
         SubstackMaker ssm = new SubstackMaker();
         int inputStackSize = image.getImageStackSize();
         int nScales = hessianOutputs.getImageStackSize() / (nEigenValues * inputStackSize);
@@ -262,7 +259,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             int index = s * nEigenValues * inputStackSize + 1;
             blobImps[s] = ssm.makeSubstack(hessianOutputs, String.format("%d-%d", index, index + inputStackSize - 1));
             StackMath.mutiply(blobImps[s], -1.0);
-//            IJ.saveAs(blobImps[0], "TIF", "D:\\debugging\\giani_debug\\blob_outputs_pre_threshold.tif");
             StackThresholder.thresholdStack(blobImps[s], s % nEigenValues == 0 ? hessianThresh : Double.MIN_VALUE);
             (new StackProcessor(blobImps[s].getImageStack())).invert();
         }
@@ -270,8 +266,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         for (int s = 1; s < nScales; s++) {
             blobImps[0] = ic.run("AND create stack", blobImps[0], blobImps[s]);
         }
-//        IJ.saveAs(blobImps[0], "TIF", "D:\\debugging\\giani_debug\\blob_outputs_post_threshold.tif");
-//        IJ.saveAs(blobImps[0],"TIFF", "E:\\Dropbox (The Francis Crick)\\Debugging\\Giani//hessian_output.tiff");
         processThresholdedObjects(blobImps[0]);
         output = blobImps[0];
     }
@@ -288,7 +282,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     }
 
     private void processThresholdedObjects(ImagePlus imp) {
-//        IJ.saveAs(imp, "TIF", "D:\\Dropbox (The Francis Crick)\\Debugging\\Giani\\mask.tif");
         createThresholdOutline(imp);
         detectedObjects = new Objects3DPopulation(new ImageLabeller().getLabels(ImageHandler.wrap(imp)));
         for (int i = 0; i < detectedObjects.getNbObjects(); i++) {
@@ -555,15 +548,12 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             if (p != null) p.destroyForcibly();
             IJ.log("Error: ilastik detection failed.");
         }
-//        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output.tiff");
         if (Double.parseDouble(props.getProperty(propLabels[ILASTIK_SMOOTHING])) > 0.0) {
             double[] sigma = getCalibratedDoubleSigma(series, propLabels[ILASTIK_SMOOTHING], propLabels[ILASTIK_SMOOTHING], propLabels[ILASTIK_SMOOTHING]);
             GaussianBlur3D.blur(ilastikProbMap, sigma[0], sigma[1], sigma[2]);
         }
-//        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output_smoothed.tiff");
         StackThresholder.thresholdStack(ilastikProbMap, 65535 * Double.parseDouble(props.getProperty(propLabels[ILASTIK_THRESH])));
         (new StackProcessor(ilastikProbMap.getImageStack())).invert();
-//        IJ.saveAs(ilastikProbMap, "TIFF", "D:/Dropbox (The Francis Crick)/Debugging/Giani/ilastik_output_thresholded.tiff");
         processThresholdedObjects(ilastikProbMap);
         output = ilastikProbMap;
         if (p != null && p.isAlive()) {

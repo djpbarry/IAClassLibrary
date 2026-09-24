@@ -86,7 +86,6 @@ public class RoiFitter extends Fitter {
         }
         fproc.setRoi(roi);
         FloatStatistics stats = new FloatStatistics(fproc, Measurements.MEAN + Measurements.AREA, null);
-//        System.out.println(String.format("%f %f %f", perimSum / n, stats.mean, perimSum / n - stats.mean));
         double result = perimSum / n - stats.mean;
         if (Double.isNaN(result)) {
             return -1.0;

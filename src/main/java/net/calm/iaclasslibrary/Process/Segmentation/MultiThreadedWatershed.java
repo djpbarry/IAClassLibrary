@@ -98,11 +98,9 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         (new StackProcessor(mask.getImageStack())).invert();
         if (volumeMarker) {
             ImageFloat edt = EDT.run(ImageHandler.wrap(seeds), 1, (float) calibration[0], (float) calibration[2], true, Runtime.getRuntime().availableProcessors());
-//            IJ.saveAs(edt.getImagePlus(), "TIF", FileName.uniqueFileName("E:/Dropbox (The Francis Crick)/Debugging/Giani/images/outputs", "edt","tif"));
             output = watershed(edt.getImagePlus(), seeds, mask);
         } else {
             ImageFloat rdt = (new RiemannianDistanceTransform()).run(new ImageFloat(image), new ImageShort(seeds), 0, (float) calibration[0], (float) calibration[2], lambda);
-//            IJ.saveAs(rdt.getImagePlus(), "TIF", FileName.uniqueFileName("E:/Dropbox (The Francis Crick)/Debugging/Giani/images/outputs", "rdt","tif"));
             output = watershed(rdt.getImagePlus(), seeds, mask);
         }
         try {

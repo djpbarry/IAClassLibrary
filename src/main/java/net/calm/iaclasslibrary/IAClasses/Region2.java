@@ -26,6 +26,7 @@ import java.util.List;
  *
  * @author barry05
  */
+@Deprecated
 public class Region2 {
 
 //    protected ArrayList<short[]> seedPix = new ArrayList<short[]>();
@@ -705,7 +706,6 @@ public class Region2 {
         EDM edm = new EDM();
         edm.toEDM(ip);
         int[] m = Utils.findImageMaxima(ip);
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/adapt_debug/edm.png");
         if (!(m[0] < 0.0 || m[1] < 0.0)) {
             return new Pixel2(m[0] + bx, m[1] + by);
         } else {
@@ -730,14 +730,12 @@ public class Region2 {
     }
 
     public boolean shrink(int iterations, boolean interpolate, int index) {
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_b" + index + ".png");
         if (mask == null) {
             mask = getMask();
         }
         for (int i = 0; i < iterations; i++) {
             mask.erode();
         }
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "C:/users/barry05/desktop/Test_Data_Sets/adapt_test_data/masks/mask_a" + index + ".png");
         Pixel2[] newBorder = getOrderedBoundary(mask.getWidth(), mask.getHeight(), mask, null);
         if (newBorder == null) {
             return false;
@@ -824,13 +822,9 @@ public class Region2 {
 //            pi.next();
 //            last = new int[]{(int) net.calm.iaclasslibrary.Math.round(current[0]), (int) net.calm.iaclasslibrary.Math.round(current[1])};
 //        }
-//IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test net.calm.adapt.Output/Mask_addPath_PreCrop_" + index);
         mask.setRoi(getBounds());
         mask = mask.crop();
         setMaskSize();
-//        System.out.println(index+": "+maskSize);
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test net.calm.adapt.Output/Mask_addPath_PostCrop_" + index);
-//IJ.saveAs((new ImagePlus("", mask2)), "PNG", "/Users/Dave/Desktop/EMSeg Test net.calm.adapt.Output/Mask2_" + index+"_"+mask2count++);
 
     }
 
@@ -867,8 +861,6 @@ public class Region2 {
             pi.next();
             last = new int[]{(int) Math.round(current[0]), (int) Math.round(current[1])};
         }
-//        System.out.println(index + ": " + size + " " + count);
-//        IJ.saveAs((new ImagePlus("", mask)), "PNG", "/Users/Dave/Desktop/EMSeg Test net.calm.adapt.Output/Mask_getCoorsFromPath_" + index);
         return coords;
     }
 

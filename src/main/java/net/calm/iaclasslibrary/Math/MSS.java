@@ -38,14 +38,11 @@ public class MSS {
                 }
                 timesteps[dn - 1] = Math.log(dn * dt);
                 g[dn - 1] = Math.log(g[dn - 1]);
-//                System.out.println(dn + "," + timesteps[dn - 1] + "," + g[dn - 1]);
             }
             CurveFitter fitter = new CurveFitter(timesteps, g);
             fitter.doFit(CurveFitter.STRAIGHT_LINE);
             mss[power - 1] = (fitter.getParams())[1];
             dp[power - 1] = power;
-//            System.out.println(dp[power - 1] + "," + mss[power - 1]);
-//            System.out.println();
         }
         CurveFitter fitter = new CurveFitter(dp, mss);
         fitter.doFit(CurveFitter.STRAIGHT_LINE);

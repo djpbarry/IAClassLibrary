@@ -11,6 +11,7 @@ import java.util.Arrays;
  * @author David J Barry <davejpbarry@gmail.com>
  * @version 05OCT2010
  */
+@Deprecated
 public class DataStatistics {
 
     private final int dataSize;

@@ -197,6 +197,8 @@ conventional JUnit 5 setup and wire it into `mvn verify`.
 
 ### D1. Remove experimental/dead code (do first)
 
+**Status: done (2026-09-24).**
+
 - `Process/Segmentation/MultiThreadedStarDist.java` is **debug code**: hardcoded
   paths (`E:/Debug/Giani/pipeline_test/`,
   `C:/Users/davej/GitRepos/Python/stardist/...`), a hardcoded Windows
@@ -330,7 +332,7 @@ in the phases above.
    `MultiThreadedStarDist` + commented-out debug code, add GPL-3 `LICENSE` +
    fix pom metadata, bump to `2.0.0` and tag `v2.0.0`. (Phase A, B, D1)
    *Status (2026-09-24): `.gitignore`/wrapper/CI/Ant-removal/LICENSE+pom are
-   done. Remaining: D1 (StarDist + debug-code removal) and B2 (release `2.0.0`
+   done, plus D1 (StarDist + debug-code removal). Remaining: B2 (release `2.0.0`
    + tag `v2.0.0`).*
 2. **M2 — Test harness:** JUnit 5 + a few pure-logic unit tests + CSV golden
    tests. (Phase C)

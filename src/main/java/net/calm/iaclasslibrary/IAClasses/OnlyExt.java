@@ -9,6 +9,7 @@ import java.io.FilenameFilter;
  * @author   David J Barry <davejpbarry@gmail.com>
  * @version  01SEP2010
  */
+@Deprecated
 public class OnlyExt implements FilenameFilter {
     private String extension;
 

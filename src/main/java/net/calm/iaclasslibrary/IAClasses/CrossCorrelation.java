@@ -13,6 +13,7 @@ import ij.process.ImageProcessor;
  *
  * @author David Barry <david.barry at crick.ac.uk>
  */
+@Deprecated
 public class CrossCorrelation {
 
     public static double crossCorrelation(float map1[], float map2[], int t, int s, double mean1, double mean2, int w, int h) {

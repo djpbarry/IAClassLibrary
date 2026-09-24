@@ -9,6 +9,7 @@ import java.util.List;
  *
  * @author barry05
  */
+@Deprecated
 public class RegionEdge {
 
     private final Region2 startVertex, endVertex;

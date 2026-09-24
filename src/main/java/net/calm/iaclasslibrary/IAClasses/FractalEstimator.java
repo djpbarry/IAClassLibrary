@@ -9,6 +9,7 @@ import java.awt.Color;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
+@Deprecated
 public class FractalEstimator {
 
     private int foreground, background;
@@ -78,7 +79,6 @@ public class FractalEstimator {
                 }
             }
             dbmCounts2D[p] = Math.log(massCount);
-//            System.out.println(String.format("%f %f", logE[index], dbmCounts2D[index]));
             dbsCounts2D[p] = Math.log(surfaceCount);
         }
         double dims[] = new double[2];

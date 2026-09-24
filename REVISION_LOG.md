@@ -36,8 +36,6 @@ downstream consumers — takes precedence throughout.
 Still outstanding from M1 (carried into the next session):
 
 - Release `2.0.0` (pom is now `2.0.0-SNAPSHOT`) and tag `v2.0.0` (Decision 2 / B2).
-- Remove `MultiThreadedStarDist` and the commented-out `IJ.saveAs(...)` debug
-  blocks (D1).
 - Remove/ignore the stray untracked `nb-configuration.xml` and `out/` (L7).
 
 ### 2026-09-24 — Version 2.0.0 and release automation
@@ -51,6 +49,18 @@ Still outstanding from M1 (carried into the next session):
 - B3/Decision 3: confirmed TrackMate resolves to 8.0.0 via the parent; the
   `v2.0.0` tag (B2) is deferred to release time, and `TrackerLibrary`/ADAPT must
   bump to TrackMate 8 + Java 21 in lockstep (M6).
+
+### 2026-09-24 — D1 dead/experimental code removal
+
+- Deleted `MultiThreadedStarDist` (experimental: hardcoded Windows paths, empty
+  catch block, `System.out.println` debug; zero in-repo references).
+- Removed 60+ commented-out `IJ.saveAs(...)`/`System.out.println` debug lines
+  with machine-specific paths across ~20 files.
+- `@Deprecated`-tagged the 13 legacy `IAClasses` classes from Decision 4
+  (`Region2`, `Region3D`, `RegionEdge`, `Pixel2`, `Gaussian3D`,
+  `CrossCorrelation`, `FractalEstimator`, `DataStatistics`, `SkeletonProcessor`,
+  `OnlyExt`, `ProgressDialog`, `StaticConstants`, `FluorescenceAnalyser`).
+  Kept: `Region`, `Utils`, `BoundaryPixel`, `DSPProcessor`, `Pixel`.
 
 ---
 

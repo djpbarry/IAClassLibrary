@@ -8,6 +8,7 @@ package net.calm.iaclasslibrary.IAClasses;
  *
  * @author barry05
  */
+@Deprecated
 public class StaticConstants {
     public static final int FOREGROUND = 0;
     public static final int BACKGROUND = 255;

@@ -70,7 +70,6 @@ public class RegionGrower {
                 ByteBlitter bb = new ByteBlitter(binary);
                 bb.copyBits(masks, 0, 0, Blitter.SUBTRACT);
             }
-//            IJ.saveAs(new ImagePlus("", binary), "PNG", String.format("E:\\Debug\\Adapt\\%s_%d.png", "Residuals", (start - 2)));
             double minArea = protMode ? getMinFilArea(uv) : getMinCellArea(uv);
             getSeedPoints(binary, initP, minArea);
             n = initP.size();
@@ -199,7 +198,6 @@ public class RegionGrower {
                     distanceMapImage.putPixelValue(x, y, distancemaps[i][x][y]);
                 }
             }
-//            IJ.saveAs(new ImagePlus("", distanceMapImage), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s_%d.tif", label, i));
         }
     }
 
@@ -273,7 +271,6 @@ public class RegionGrower {
             }
             expandRegions(singleImageRegions, regionStack, cellNum, terminal, tempRegionPix);
         }
-//        IJ.saveAs(new ImagePlus("", regionStack), "TIF", String.format("C:\\Users\\barryd\\Debugging\\adapt_debug\\%s.tif", "RegionImage"));
     }
 
     static boolean buildDistanceMaps(short[] regionImagePix, float[] greyPix, Region cell, short[] point, float[][] distancemap, double thresh, float[] gradientPix, int index, double lambda, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix) {
@@ -484,7 +481,6 @@ public class RegionGrower {
         for (int i = 0; i < N; i++) {
             expandRegion(regions.get(i), width, tempRegionPix, regionImage, i);
         }
-        //        IJ.saveAs((new ImagePlus("", tempRegionImage)), "PNG", "c:\\users\\barry05\\desktop\\masks\\tempRegionImage.png");
     }
 
     /**
@@ -539,7 +535,6 @@ public class RegionGrower {
                 cell.expandBorder();
             }
         }
-        //        IJ.saveAs((new ImagePlus("", tempRegionImage)), "PNG", "c:\\users\\barry05\\desktop\\masks\\tempRegionImage.png");
     }
 
     static void getSeedPoints(ByteProcessor binary, ArrayList<short[]> pixels, double minArea) {
@@ -626,7 +621,6 @@ public class RegionGrower {
                     regionMask.setThreshold(i + 1, i + 1, ImageProcessor.NO_LUT_UPDATE);
                     regionMask = regionMask.createMask();
                     regionMask.invert();
-//                    IJ.saveAs(new ImagePlus("", regionMask), "PNG", "E:/Debug/Adapt/region_mask" + (i + 1) + ".png");
                     singleImageRegions.set(i, new Region(regionMask));
                 }
             }

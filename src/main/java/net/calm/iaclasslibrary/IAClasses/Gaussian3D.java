@@ -10,6 +10,7 @@ import net.calm.iaclasslibrary.Particle.IsoGaussian;
  *
  * @author barry05
  */
+@Deprecated
 public class Gaussian3D extends IsoGaussian {
 
     private double z0, zSigma;

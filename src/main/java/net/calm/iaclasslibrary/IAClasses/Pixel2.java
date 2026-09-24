@@ -7,6 +7,7 @@ import java.util.Arrays;
  *
  * @author barry05
  */
+@Deprecated
 public class Pixel2 extends Point2D.Double {
 
     protected int iD;

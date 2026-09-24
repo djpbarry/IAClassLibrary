@@ -95,7 +95,6 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
                 if (i == null) {
                     continue;
                 }
-//                IJ.saveAs(i.imageplus(), "TIF", "D:\\debugging\\giani_debug\\hessian_output_" + count++ + ".tif");
                 ImageStack stack = i.imageplus().getImageStack();
                 for (int s = 1; s <= stack.size(); s++) {
                     outStack.addSlice(stack.getProcessor(s));

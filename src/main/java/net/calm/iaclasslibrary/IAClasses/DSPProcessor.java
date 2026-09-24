@@ -406,7 +406,6 @@ public class DSPProcessor {
             return null;
         }
 //        for (int i = 0; i < xinput.length; i++) {
-//            System.out.println(xinput[i] + "\t" + yinput[i]);
 //        }
         double gaussian[] = Utils.generateGaussian(sigma, gLength);
         double dgaussian[] = Utils.generateGaussianFirstDeriv(sigma, gLength);

@@ -54,7 +54,6 @@ public class RunnableMaximaFinder extends RunnableProcess {
                         continue;
                     }
                     int[] location = new int[]{i, j, k};
-//                    System.out.println(String.format("%d %d %d %d %f", maxima.size(), location[0], location[1], location[2], ((float[]) stackPix[location[2]])[location[0] + jOffset]));
                     if (isMax(location, dims, radii) && ((float[]) stackPix[k])[i + jOffset] >= maxThresh) {
                         addMaxima(location, jOffset);
                     }

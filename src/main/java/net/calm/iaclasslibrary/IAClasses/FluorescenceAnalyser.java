@@ -14,6 +14,7 @@ import ij.process.ImageStatistics;
 import ij.process.TypeConverter;
 import java.util.Arrays;
 
+@Deprecated
 public class FluorescenceAnalyser {
 
     ImagePlus imp;
