@@ -84,8 +84,8 @@ so builds don't depend on an unknown system Maven (mirrors ADAPT's A1).
 
 1. Use the wrapper (`./mvnw verify`) instead of a system `mvn`.
 2. Cache Maven dependencies (`actions/cache` on `~/.m2/repository`).
-3. Pin the Java target to 11 (`maven.compiler.release=11`, Decision 3) and
-   build on JDK 11+; consider a matrix over supported JDKs (11, 17, 21).
+3. Pin the Java target to 21 (`scijava.jvm.version=21`, Decision 3) and
+   build on JDK 21.
 4. Split future `build` and `test` jobs once Phase C lands.
 
 ### A3. Add a `.gitignore`
@@ -244,10 +244,10 @@ IAClassLibrary is itself an upstream dependency, so several items here are
 | G3 TrackMate version web | B3 | single TrackMate version policy |
 | G0 "no CI" | A2 | CI already exists; harden it |
 
-Coordinate the Java-target decision (Decision 3) with ADAPT's Decision 3
-(ADAPT targets Java 11 on a modern JDK). IAClassLibrary currently inherits its
-Java target from `pom-scijava:40.0.0` (no explicit override); decide whether to
-pin an explicit `maven.compiler.release` so downstream consumers know the floor.
+Coordinate the Java-target decision (Decision 3) with ADAPT's Decision 3.
+IAClassLibrary now targets **Java 21** (parent `pom-scijava:45.1.0`);
+`TrackerLibrary`, `AdaptDataProcessing`, and ADAPT must bump to Java 21 in
+lockstep and re-pin their IAClassLibrary dependency to the new tag.
 
 ---
 
@@ -268,9 +268,11 @@ in the phases above.
 2. **Versioning — semver `1.0.X`.** Bump `pom.xml` to `1.0.38` (after the M1
    work lands), then tag `v1.0.38`. The existing `v1.032` tag is a mislabel of
    `v1.0.32`; use the `v1.0.X` form going forward.
-3. **Java target — 11.** Pin `maven.compiler.release=11`, build on JDK 11+
-   (aligns with ADAPT and the existing CI). The TrackMate 8 / Java 21 move
-   remains a separate, later, coordinated change.
+3. **Java target — 21** *(revised from 11)*. Upgrade the parent to
+   `pom-scijava:45.1.0` and set `scijava.jvm.version=21`; build on JDK 21.
+   This adopts TrackMate 8.0.0 (no version pin needed) and is the first step of
+   a coordinated Java 21 bump across IAClassLibrary, `TrackerLibrary`,
+   `AdaptDataProcessing`, and ADAPT.
 4. **Legacy `IAClasses` package — deprecate, then remove.** Keep the load-bearing
    primitives `Region`, `Utils`, `BoundaryPixel`, `DSPProcessor`, and `Pixel`
    (used by `Cell`, `Segmentation`, `Process`, `Particle`, etc.). Mark the
