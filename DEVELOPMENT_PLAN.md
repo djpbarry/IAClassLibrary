@@ -84,8 +84,8 @@ so builds don't depend on an unknown system Maven (mirrors ADAPT's A1).
 
 1. Use the wrapper (`./mvnw verify`) instead of a system `mvn`.
 2. Cache Maven dependencies (`actions/cache` on `~/.m2/repository`).
-3. Confirm and pin the exact JDK; add a matrix over the JDKs the library is
-   expected to support once the Java-target decision (Decision 3) is made.
+3. Pin the Java target to 11 (`maven.compiler.release=11`, Decision 3) and
+   build on JDK 11+; consider a matrix over supported JDKs (11, 17, 21).
 4. Split future `build` and `test` jobs once Phase C lands.
 
 ### A3. Add a `.gitignore`
@@ -94,12 +94,12 @@ so builds don't depend on an unknown system Maven (mirrors ADAPT's A1).
 `*.iml`, and OS files. (`.idea/` is currently an untracked directory in the
 working tree.)
 
-### A4. Remove or archive the legacy Ant build
+### A4. Delete the legacy Ant build (Decision 6)
 
-`build.xml` (with its hardcoded Perl `-pre-init` hook) and `nbproject/` are
-machine-specific and non-portable. Options: delete them (they are recoverable
-from git), or move them under a clearly-labelled `legacy/` directory so Maven is
-unambiguously the canonical build. Decision 6 covers which.
+Delete `build.xml` (with its hardcoded Perl `-pre-init` hook), `nbproject/`,
+and the `.orig` backups. They are machine-specific and non-portable, and not
+part of the Maven build. Recoverable from git if the NetBeans workflow is ever
+revived.
 
 ---
 
@@ -196,12 +196,12 @@ Decide the canonical home for each concept and deprecate/remove the legacy
 versions, or explicitly document which to use where. `RegionGrower` already
 marks some methods `@Deprecated` — extend that discipline.
 
-### D4. Consolidate the image-loading surface (Decision 5)
+### D4. Document the image-loading surface (Decision 5)
 
-Decide the fate of `LocationAgnosticBioFormatsImg` (appears orphaned after
-"Removed references to LocationAgnosticBioFormatsImg"). Either delete it or
-document its use case relative to `BioFormatsImg`, so there is one obvious way to
-open an image.
+`LocationAgnosticBioFormatsImg` is **kept** (public API, possibly used by
+external projects). Document its role relative to `BioFormatsImg` (location-
+agnostic `Importer`/`ImportProcess` loading vs filesystem `ImageReader` loading)
+in `AGENTS.md` and Javadoc so there is one clear way to open each kind of input.
 
 ### D5. Fix the verified gotchas
 
@@ -251,38 +251,55 @@ pin an explicit `maven.compiler.release` so downstream consumers know the floor.
 
 ---
 
-## Decisions (open questions to resolve with the maintainer)
+## Resolved decisions
 
-1. **License — GPL-3.0 or BSD-2?** The source headers (GPL-3, newer files) and
-   `pom.xml` (BSD-2) disagree, and there is no `LICENSE` file. Pick one and
-   normalise (Phase B1). GPL-3.0 matches ADAPT's resolution and is compatible
-   with BSD-2, so there is no downstream blocker either way.
-2. **Tagging/versioning — semver.** Reconcile the `v1.032` tag vs `1.0.37` pom
-   version and tag `master` so ADAPT can un-pin from the commit hash.
-3. **Java target.** Confirm the compile target (currently inherited from
-   `pom-scijava:40.0.0`; CI builds on JDK 11). Pin an explicit
-   `maven.compiler.release` and document the build JDK.
-4. **Legacy `IAClasses` package.** Keep, deprecate, or remove the legacy
-   `Region`/`Pixel`/`Region2`/`Region3D` classes now that `Cell`/`Cell3D`/
-   `Particle` exist?
-5. **`LocationAgnosticBioFormatsImg`.** Delete the orphaned loader or restore and
-   document its role alongside `BioFormatsImg`?
-6. **Legacy Ant build.** Delete `build.xml` + `nbproject/`, or archive them under
-   `legacy/`?
+Resolved with the maintainer on 2024-09-24. These supersede the open questions
+in the phases above.
+
+0. **IAClassLibrary is a public library with multiple downstream consumers**
+   (ADAPT, `TrackerLibrary`, `AdaptDataProcessing`, and others), not just ADAPT's
+   dependency. Therefore "not referenced inside this repo" does **not** mean
+   "dead code": any public class may be used externally. Removal must be
+   restricted to (a) commented-out debug code and private internals, or (b)
+   public symbols only after a deprecation window and external-usage check.
+1. **License — GPL-3.0-or-later.** Add a root `LICENSE`, correct `pom.xml` from
+   BSD-2 to GPL-3 (`<licenses>` + `license.licenseName`), and normalise all
+   source headers (replace NetBeans stubs, add missing headers).
+2. **Versioning — semver `1.0.X`.** Bump `pom.xml` to `1.0.38` (after the M1
+   work lands), then tag `v1.0.38`. The existing `v1.032` tag is a mislabel of
+   `v1.0.32`; use the `v1.0.X` form going forward.
+3. **Java target — 11.** Pin `maven.compiler.release=11`, build on JDK 11+
+   (aligns with ADAPT and the existing CI). The TrackMate 8 / Java 21 move
+   remains a separate, later, coordinated change.
+4. **Legacy `IAClasses` package — deprecate, then remove.** Keep the load-bearing
+   primitives `Region`, `Utils`, `BoundaryPixel`, `DSPProcessor`, and `Pixel`
+   (used by `Cell`, `Segmentation`, `Process`, `Particle`, etc.). Mark the
+   unreferenced remainder (`Region2`, `Region3D`, `RegionEdge`, `Pixel2`,
+   `Gaussian3D`, `CrossCorrelation`, `FractalEstimator`, `DataStatistics`,
+   `SkeletonProcessor`, `OnlyExt`, `ProgressDialog`, `StaticConstants`, and the
+   `IAClasses` `FluorescenceAnalyser`) `@Deprecated` now, remove in a later major
+   version after confirming no external consumers.
+5. **`LocationAgnosticBioFormatsImg` — keep.** It is part of the public API and
+   may be used by external projects even though it is unreferenced in this repo.
+   Do not delete; document its role alongside `BioFormatsImg`.
+6. **Legacy Ant build — delete.** Remove `build.xml`, `nbproject/`, and the
+   `.orig` backups; they are non-portable, machine-specific, and not part of the
+   Maven build. Recoverable from git if the NetBeans workflow is ever revived.
 
 ---
 
 ## Suggested sequencing & milestones
 
 1. **M1 — Foundations (low risk, high value):** `.gitignore`, Maven wrapper, CI
-   hardening, remove `MultiThreadedStarDist` + commented-out debug code, add
-   `LICENSE` + resolve license metadata, tag the repo. (Phase A, B, D1, D6)
+   hardening (pin Java 11), delete the legacy Ant build, remove
+   `MultiThreadedStarDist` + commented-out debug code, add GPL-3 `LICENSE` +
+   fix pom metadata, bump to `1.0.38` and tag `v1.0.38`. (Phase A, B, D1)
 2. **M2 — Test harness:** JUnit 5 + a few pure-logic unit tests + CSV golden
    tests. (Phase C)
 3. **M3 — Gotchas & hygiene:** fix `validID`/`clearImageData`/`getLoadedImage`
    aliasing, duplicate import, error-handling normalisation. (Phase D5, D6)
 4. **M4 — Refactor core:** decompose `RegionGrower`/`MultiThreadedMaximaFinder`,
-   resolve legacy-vs-new duplication, decide `LocationAgnosticBioFormatsImg`.
+   `@Deprecated` the dead legacy classes, document `LocationAgnosticBioFormatsImg`.
    (Phase D2–D4)
 5. **M5 — Documentation:** expand `README.md`, sync `AGENTS.md`, Javadoc public
    API. (Phase E)
