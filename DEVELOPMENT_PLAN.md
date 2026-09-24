@@ -120,8 +120,11 @@ unresolved GPL-3-vs-BSD-2 contradiction ADAPT resolved in its Decision 1.
 2. Add the corresponding root `LICENSE` file.
 3. Correct `pom.xml` (`<licenses>`, `license.licenseName`, and
    `license.copyrightOwners` = Francis Crick Institute / David Barry).
-4. Normalise all source headers to the chosen license; replace the NetBeans
-   "change this header" stubs and add missing headers.
+4. **Deferred (future tidy-up).** The source headers need cleaning up at some
+   point: the NetBeans "change this header" stubs and other pre-GitHub-era
+   boilerplate headers are largely historical (this is a ~15-year-old project)
+   and are candidates for removal/simplification rather than one-for-one
+   replacement. Leave for a later pass; not blocking the current work.
 
 ### B2. Tag the repo (blocks ADAPT's Phase G2 / Decision 2)
 
@@ -263,8 +266,9 @@ in the phases above.
    restricted to (a) commented-out debug code and private internals, or (b)
    public symbols only after a deprecation window and external-usage check.
 1. **License — GPL-3.0-or-later.** Add a root `LICENSE`, correct `pom.xml` from
-   BSD-2 to GPL-3 (`<licenses>` + `license.licenseName`), and normalise all
-   source headers (replace NetBeans stubs, add missing headers).
+   BSD-2 to GPL-3 (`<licenses>` + `license.licenseName`). Source-header tidy-up
+   (removing the old pre-GitHub-era boilerplate stubs) is deferred to a later
+   pass — see Phase B1 item 4.
 2. **Versioning — semver `1.0.X`.** Bump `pom.xml` to `1.0.38` (after the M1
    work lands), then tag `v1.0.38`. The existing `v1.032` tag is a mislabel of
    `v1.0.32`; use the `v1.0.X` form going forward.
@@ -293,7 +297,7 @@ in the phases above.
 ## Suggested sequencing & milestones
 
 1. **M1 — Foundations (low risk, high value):** `.gitignore`, Maven wrapper, CI
-   hardening (pin Java 11), delete the legacy Ant build, remove
+   hardening (pin Java 21), delete the legacy Ant build, remove
    `MultiThreadedStarDist` + commented-out debug code, add GPL-3 `LICENSE` +
    fix pom metadata, bump to `1.0.38` and tag `v1.0.38`. (Phase A, B, D1)
 2. **M2 — Test harness:** JUnit 5 + a few pure-logic unit tests + CSV golden

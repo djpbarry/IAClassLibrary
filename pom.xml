@@ -25,7 +25,8 @@
     </organization>
     <licenses>
         <license>
-            <name>Simplified BSD License</name>
+            <name>GNU General Public License v3.0 or later</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -82,7 +83,7 @@
     <properties>
         <package-name>net.calm.iaclasslibrary</package-name>
         <scijava.jvm.version>21</scijava.jvm.version>
-        <license.licenseName>bsd_2</license.licenseName>
+        <license.licenseName>gpl_v3</license.licenseName>
         <license.copyrightOwners>Francis Crick Institute</license.copyrightOwners>
     </properties>
 
