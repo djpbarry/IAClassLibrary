@@ -6,26 +6,42 @@ the ADAPT project's `DEVELOPMENT_PLAN.md` (which treats IAClassLibrary as one of
 its three upstream JitPack dependencies). It is grounded in a full review of this
 repository as of the plan's writing.
 
+## Overarching aim
+
+**Modernise a codebase whose core is over a decade old.** Modernisation takes
+precedence over backward compatibility with downstream consumers: ADAPT,
+`TrackerLibrary`, and `AdaptDataProcessing` will themselves be updated and
+modernised in a later, coordinated pass. Where a choice is between a cleaner,
+more maintainable design and preserving a legacy API, prefer the cleaner design.
+
+- Deprecate legacy symbols rather than preserving them indefinitely.
+- Prefer deletion of dead/experimental code over keeping it "just in case"
+  (it is recoverable from git).
+- Record every decision, mistake, and lesson in
+  [`REVISION_LOG.md`](REVISION_LOG.md) so the same modernisation of the sibling
+  projects does not repeat them.
+
 ## Current state (context for the plan)
 
 - IAClassLibrary (`net.calm.iaclasslibrary`) is a **Java library** (not a
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
-- **Build:** Maven, parent `org.scijava:pom-scijava:40.0.0`, version `1.0.37`,
-  declared license **Simplified BSD** (`license.licenseName=bsd_2`).
-- **CI:** `.github/workflows/maven.yml` runs
-  `mvn --batch-mode --update-snapshots verify` on JDK 11. No Maven wrapper.
+- **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version `1.0.37`
+  (bump to `1.0.38` pending, Decision 2), declared license
+  **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24.)*
+- **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
+  --no-transfer-progress verify` on **JDK 21** with dependency caching.
+  *(Reconciled 2026-09-24.)*
 - **Tests:** none. There is no `src/test`, no test framework, no lint/format
-  tooling.
-- **License:** no `LICENSE` file exists; source headers are inconsistent —
-  roughly half GPL-3, roughly a third NetBeans "change this header" stubs, and a
-  handful with no header at all. The `pom.xml` declares BSD-2, so the effective
-  license is ambiguous (same contradiction ADAPT's plan flags for its other two
-  dependencies).
-- **Legacy build:** `build.xml` + `nbproject/` are a stale NetBeans Ant build
-  with hardcoded machine-specific paths (`C:\Users\barryd\...` Perl in
-  `build.xml`, hundreds of `C:\Users\Dave\fiji-nojre\Fiji.app\...` jar refs in
-  `nbproject/project.properties`). It does not run on a clean machine.
+  tooling. (Phase C, not yet started.)
+- **License:** a GPL-3.0-or-later `LICENSE` file now exists and `pom.xml` is
+  corrected from BSD-2 to GPL-3. Source headers remain inconsistent (roughly
+  half GPL-3, roughly a third NetBeans "change this header" stubs); header
+  tidy-up is deferred (Decision 1). *(Reconciled 2026-09-24.)*
+- **Legacy build:** `build.xml` + `nbproject/` have been **deleted** (Decision 6).
+  A stray untracked `nb-configuration.xml` (NetBeans config) and an untracked
+  `out/` directory (IDE build output) remain to be removed or gitignored.
+  *(Reconciled 2026-09-24.)*
 - **Structure:** ~100+ Java files across ~40 subpackages under
   `net.calm.iaclasslibrary`, split between a legacy `IAClasses` package and newer
   refactored packages (`Cell`, `Cell3D`, `Particle`, `Process`, `IO`, `ImgLib2`,
@@ -73,6 +89,10 @@ repository as of the plan's writing.
 
 ## Phase A — Build & CI modernization
 
+**Status: A1–A4 complete (2026-09-24).** The `.orig` backups were already
+absent; the stray `nb-configuration.xml` and `out/` still need removing/ignoring
+(see REVISION_LOG L7).
+
 ### A1. Add a Maven wrapper
 
 Pin a reproducible toolchain by committing `mvnw`/`mvnw.cmd` + `.mvn/wrapper/`
@@ -104,6 +124,10 @@ revived.
 ---
 
 ## Phase B — License & metadata (blocks ADAPT's Phase G1)
+
+**Status (2026-09-24): B1 items 1–3 are done** (LICENSE added, `pom.xml`
+corrected to GPL-3); B1 item 4 (header tidy-up) is deferred; **B2 (tag) and B3
+(TrackMate policy) are still open.**
 
 The ADAPT plan's Phase G1/G2 assumes IAClassLibrary just needs to "verify its
 LICENSE file" and be tagged. The reality is more involved:
@@ -256,7 +280,7 @@ lockstep and re-pin their IAClassLibrary dependency to the new tag.
 
 ## Resolved decisions
 
-Resolved with the maintainer on 2024-09-24. These supersede the open questions
+Resolved with the maintainer on 2026-09-24. These supersede the open questions
 in the phases above.
 
 0. **IAClassLibrary is a public library with multiple downstream consumers**
@@ -300,6 +324,9 @@ in the phases above.
    hardening (pin Java 21), delete the legacy Ant build, remove
    `MultiThreadedStarDist` + commented-out debug code, add GPL-3 `LICENSE` +
    fix pom metadata, bump to `1.0.38` and tag `v1.0.38`. (Phase A, B, D1)
+   *Status (2026-09-24): `.gitignore`/wrapper/CI/Ant-removal/LICENSE+pom are
+   done. Remaining: D1 (StarDist + debug-code removal) and B2 (bump to `1.0.38`
+   + tag `v1.0.38`).*
 2. **M2 — Test harness:** JUnit 5 + a few pure-logic unit tests + CSV golden
    tests. (Phase C)
 3. **M3 — Gotchas & hygiene:** fix `validID`/`clearImageData`/`getLoadedImage`
