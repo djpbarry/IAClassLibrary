@@ -70,7 +70,7 @@
         <connection>scm:git:git://github.com/djpbarry/IAClassLibrary</connection>
         <developerConnection>scm:git:git@github.com:djpbarry/IAClassLibrary</developerConnection>
         <tag>HEAD</tag>
-        <url>https://github.com/github.com/djpbarry/IAClassLibrary</url>
+        <url>https://github.com/djpbarry/IAClassLibrary</url>
     </scm>
     <issueManagement>
         <system>GitHub Issues</system>
