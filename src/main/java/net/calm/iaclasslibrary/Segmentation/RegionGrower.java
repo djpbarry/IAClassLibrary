@@ -44,11 +44,9 @@ import java.util.LinkedList;
  */
 public class RegionGrower {
 
-    private static boolean simple = true;
     public static short terminal;
     public static short intermediate;
     private static double lambda = 100.0, filtRad = 10.0; // parameter used in construction of Voronoi manifolds. See Jones et al., 2005: dx.doi.org/10.1007/11569541_54
-    private static int SIXTEEN_TO_EIGHT_OFFSET = (int) (Math.round(Math.pow(2, 16) - Math.pow(2, 8)));
 
     public static int initialiseROIs(ByteProcessor masks, int threshold, int start, ImageProcessor input, PointRoi roi, int width, int height, int size, ArrayList<CellData> cellData, UserVariables uv, boolean protMode, boolean selectiveOutput) {
         ArrayList<short[]> initP = new ArrayList<>();
@@ -326,77 +324,6 @@ public class RegionGrower {
 
     static float calcDistance(short[] point1, short[] point2, float[] gradPix, double lambda, int width) {
         return (float) ((Math.pow(gradPix[point2[1] * width + point2[0]] - gradPix[point1[0] + point1[1] * width], 2.0) + lambda) / (1.0 + lambda));
-    }
-
-    /**
-     * Conditionally dilate regions
-     *
-     * @param regionImagePix   Pixel object representation region image
-     * @param greyPix          Grey level pixels
-     * @param cell             Region object considered for dilation
-     * @param point            current point being queried for dilation
-     * @param intermediate     Value to assign to pixels in region image if dilation
-     *                         is possible
-     * @param greyThresh       Grey level threshold criteria for dilation
-     * @param index            Current region index
-     * @param expandedImagePix Candidate pixels for dilation
-     * @param width            net.calm.iaclasslibrary.Image width
-     * @param height           net.calm.iaclasslibrary.Image height
-     * @param countPix         Reference grid for keeping track of how often pixels are
-     *                         queried
-     * @param tempImagePix
-     * @param voronoiPix       Pixel object representing voronoi segmentation
-     * @return True if dilation is possible, false otherwise
-     */
-    private static boolean simpleDilate(short[] regionImagePix, float[] greyPix, Region cell, short[] point, short intermediate, double greyThresh, short index, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix, byte[] voronoiPix) {
-        int x = point[0];
-        int y = point[1];
-        int yOffset = y * width;
-        if (regionImagePix[x + yOffset] > intermediate) {
-            cell.addExpandedBorderPix(point);
-            expandedImagePix[x + yOffset] = Region.MASK_FOREGROUND;
-            tempImagePix[x + yOffset]++;
-            return false;
-        }
-        boolean dilate = false;
-        boolean remove = true;
-        for (int j = y > 0 ? y - 1 : 0; j < height && j <= y + 1; j++) {
-            int jOffset = j * width;
-            for (int i = x > 0 ? x - 1 : 0; i < width && i <= x + 1; i++) {
-                if (countPix[i + jOffset] == 0) {
-                    countPix[i + jOffset]++;
-                    short r = regionImagePix[i + jOffset];
-                    double g = greyPix[jOffset + i];
-                    int v = voronoiPix[jOffset + i];
-                    if ((r == Region.MASK_FOREGROUND || r == intermediate) && (g > greyThresh)
-                            && (v == Region.MASK_FOREGROUND)) {
-                        short[] p = new short[]{(short) i, (short) j};
-                        regionImagePix[i + jOffset] = intermediate;
-                        dilate = true;
-                        if (expandedImagePix[i + jOffset] != Region.MASK_FOREGROUND) {
-                            cell.addExpandedBorderPix(p);
-                            expandedImagePix[i + jOffset] = Region.MASK_FOREGROUND;
-                            tempImagePix[i + jOffset]++;
-                        }
-                    }
-                    r = regionImagePix[i + jOffset];
-                    remove = (r == intermediate || r == index) && remove;
-                }
-            }
-        }
-        if (!remove) {
-            cell.addExpandedBorderPix(point);
-            expandedImagePix[x + yOffset] = Region.MASK_FOREGROUND;
-            tempImagePix[x + yOffset]++;
-            if (x < 1 || y < 1 || x >= width - 1 || y >= height - 1) {
-                cell.setEdge(true);
-            }
-        } else if (Utils.isEdgePixel(x, y, width, height, 1)) {
-            cell.addExpandedBorderPix(point);
-            expandedImagePix[x + yOffset] = Region.MASK_FOREGROUND;
-            tempImagePix[x + yOffset]++;
-        }
-        return dilate;
     }
 
     static boolean dijkstraDilate(short[] regionImagePix, Region cell, short[] point, float[] greyPix, double greyThresh, float[] gradPix, short intermediate, int index, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix, float[][] distanceMap) {
