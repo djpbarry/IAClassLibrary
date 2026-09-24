@@ -126,8 +126,9 @@ revived.
 ## Phase B — License & metadata (blocks ADAPT's Phase G1)
 
 **Status (2026-09-24): B1 items 1–3 are done** (LICENSE added, `pom.xml`
-corrected to GPL-3); B1 item 4 (header tidy-up) is deferred; **B2 (tag) and B3
-(TrackMate policy) are still open.**
+corrected to GPL-3); B1 item 4 (header tidy-up) is deferred; **B2:** versioning infrastructure done (`2.0.0-SNAPSHOT` + release plugin); the
+`v2.0.0` tag is deferred to release time. **B3:** resolved by Decision 3
+(TrackMate 8.0.0 via the parent); cross-repo coordination pending (M6).
 
 The ADAPT plan's Phase G1/G2 assumes IAClassLibrary just needs to "verify its
 LICENSE file" and be tagged. The reality is more involved:
@@ -160,11 +161,12 @@ commit hash.
 
 ### B3. Resolve the TrackMate version web (blocks ADAPT's Phase G3)
 
-IAClassLibrary declares `sc.fiji:TrackMate` **unversioned** (parent-managed),
-while `TrackerLibrary` pins `7.10.0` and ADAPT pins `7.14.0`. Agree a single
-TrackMate version policy across IAClassLibrary, `TrackerLibrary`,
-`AdaptDataProcessing`, and ADAPT (7.x for now; the coordinated 8.x / Java 21 move
-is ADAPT's Phase D5 and is out of scope here).
+**Resolved by Decision 3 (2026-09-24).** IAClassLibrary declares
+`sc.fiji:TrackMate` **unversioned** (parent-managed); `pom-scijava:45.1.0`
+manages it to **8.0.0** (verified). This supersedes the earlier "7.x for now"
+note (the coordinated Java 21 / TrackMate 8.x move is now in progress).
+Remaining: `TrackerLibrary` (7.10.0) and ADAPT (7.14.0) must bump to 8.0.0 and
+Java 21 in lockstep (Phase F / M6).
 
 ---
 

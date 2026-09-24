@@ -48,6 +48,9 @@ Still outstanding from M1 (carried into the next session):
 - Replaced the pom-parsing version lookup with a manifest read:
   `Revision.getVersion()` reads `Implementation-Version`; `getVersionFromPom`
   is now `@Deprecated`.
+- B3/Decision 3: confirmed TrackMate resolves to 8.0.0 via the parent; the
+  `v2.0.0` tag (B2) is deferred to release time, and `TrackerLibrary`/ADAPT must
+  bump to TrackMate 8 + Java 21 in lockstep (M6).
 
 ---
 
