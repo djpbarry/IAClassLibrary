@@ -17,7 +17,6 @@
 package net.calm.iaclasslibrary.IO.BioFormats;
 
 import ij.ImagePlus;
-import ij.ImageStack;
 import loci.common.services.DependencyException;
 import loci.common.services.ServiceException;
 import loci.common.services.ServiceFactory;
@@ -28,7 +27,6 @@ import loci.formats.meta.IMetadata;
 import loci.formats.services.OMEXMLService;
 import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
-import net.calm.iaclasslibrary.Process.IO.MultiThreadedImageLoader;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import ome.units.quantity.Length;
 import ome.units.unit.Unit;
@@ -134,14 +132,21 @@ public class BioFormatsImg {
         return zRes;
     }
 
+    /**
+     * Returns the internal image directly, not a copy. Callers share a mutable
+     * reference to the loaded image.
+     *
+     * @return the loaded {@link ImagePlus}
+     */
     public ImagePlus getLoadedImage() {
-//        ImagePlus dup = img.duplicate();
-//        dup.setTitle(img.getTitle());
         return img;
     }
 
+    /**
+     * Intentionally a no-op. Clearing the image data caused GUI problems, so
+     * the loaded image is deliberately retained in memory.
+     */
     public void clearImageData() {
-        // img = null;
     }
 
     public String getId() {
@@ -152,6 +157,7 @@ public class BioFormatsImg {
         this.id = id;
         this.io.setId(id);
         this.reader.setId(id);
+        this.validID = true;
     }
 
     public boolean checkID(String id) {

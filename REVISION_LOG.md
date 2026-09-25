@@ -88,6 +88,15 @@ Still outstanding from M1 (carried into the next session):
   tests exist; the sigma/calibration helpers are already small/stateful and
   offer little safe pure-math to extract.
 
+### 2026-09-25 — D5 gotcha fixes (4 of 5)
+
+- Set `validID = true` in `BioFormatsImg.setId` so `isValidID()`/`getInfo()` work.
+- Documented `clearImageData()` as an intentional no-op and `getLoadedImage()` as
+  returning the internal image (aliasing) rather than a copy.
+- Removed the duplicate `BioFormatsImg` import in `MultiThreadedProcess` and
+  now-unused `ij.ImageStack`/`MultiThreadedImageLoader` imports in `BioFormatsImg`.
+- Deferred: `@Override`/diamond-generics pass (tedious, no behavioural value).
+
 ## 2024 — Bio-Formats loader consolidation
 
 - `3815dad` added `LocationAgnosticBioFormatsImg` (the `Importer`/`ImportProcess`

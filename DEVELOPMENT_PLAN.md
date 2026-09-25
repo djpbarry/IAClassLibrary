@@ -248,11 +248,16 @@ in `AGENTS.md` and Javadoc so there is one clear way to open each kind of input.
 
 ### D5. Fix the verified gotchas
 
-- Set `validID = true` in `setId`/`checkID`, or remove `isValidID()`.
-- Restore or remove `clearImageData()`; document the intended behaviour.
-- Make `getLoadedImage()` return a duplicate (or rename to signal aliasing).
-- Remove the duplicate `BioFormatsImg` import in `MultiThreadedProcess`.
-- Add `@Override` and diamond generics where missing (without gratuitous churn).
+**Status: 4 of 5 done (2026-09-25).**
+
+- [x] Set `validID = true` in `setId` (makes `isValidID()`/`getInfo()` meaningful).
+- [x] Document `clearImageData()` as an intentional no-op (clearing caused GUI problems).
+- [x] Document `getLoadedImage()` as returning the internal image (aliasing), not a copy.
+- [x] Remove the duplicate `BioFormatsImg` import in `MultiThreadedProcess`.
+- [ ] Add `@Override` and diamond generics where missing (deferred — tedious, low value).
+
+Also removed now-unused imports in `BioFormatsImg` (`ij.ImageStack`,
+`MultiThreadedImageLoader`) exposed by the D2 cleanup.
 
 ### D6. Normalise error handling
 

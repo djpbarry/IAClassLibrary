@@ -17,7 +17,6 @@
 package net.calm.iaclasslibrary.Process;
 
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
-import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import ij.ImagePlus;
 import java.util.LinkedList;
