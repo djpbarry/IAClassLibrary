@@ -67,8 +67,11 @@ Still outstanding from M1 (carried into the next session):
 ## 2026-09-25 — Phase C: JUnit 5 harness + CSV golden tests
 
 - Added JUnit 5 (Jupiter) test harness (`junit-jupiter-api`/`-engine`,
-  parent-managed 5.13.4) and 11 passing tests across `Histogram`, `GenUtils`,
-  `Rand`, `Interpolator`, and the CSV `DataIOTest` golden tests.
+  parent-managed 5.13.4) and 20 passing tests across pure-logic classes
+  (`Histogram`, `MSS`, `Rand`, `GenUtils`, `Smoother`, `Interpolator`,
+  `ClusterablePoint`, `DataWriter` transforms) and CSV golden tests
+  (`DataIOTest`, `TrajectoryAnalysis`). Phase C parked here; pure-logic
+  extraction (D2) deferred until after the refactoring.
 - **Bug found by golden tests:** `DataReader` leaked file handles — `CSVParser`
   (in `readCSVFile`/`readFileHeadings`) and `Scanner` (in `readTabbedFile`) were
   never closed, causing Windows "file in use" failures. Fixed with

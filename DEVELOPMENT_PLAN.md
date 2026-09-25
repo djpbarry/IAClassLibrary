@@ -32,8 +32,8 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
   --no-transfer-progress verify` on **JDK 21** with dependency caching.
   *(Reconciled 2026-09-24.)*
-- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 4 classes, 7
-  tests as of 2026-09-25. No lint/format tooling. (Phase C in progress.)
+- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 10 classes,
+  20 tests as of 2026-09-25. No lint/format tooling. (Phase C done for now.)
 - **License:** a GPL-3.0-or-later `LICENSE` file now exists and `pom.xml` is
   corrected from BSD-2 to GPL-3. Source headers remain inconsistent (roughly
   half GPL-3, roughly a third NetBeans "change this header" stubs); header
@@ -172,9 +172,11 @@ Java 21 in lockstep (Phase F / M6).
 
 ## Phase C — Introduce tests (the biggest maintainability win)
 
-**Status: in progress.** JUnit 5 harness wired (`junit-jupiter-api`/`-engine`,
-parent-managed 5.13.4) and initial pure-logic tests landed (7 tests, `mvn test`
-green). Remaining: CSV golden tests and pure-logic extraction (D2).
+**Status: done (2026-09-25; revisiting later).** JUnit 5 harness wired
+(`junit-jupiter-api`/`-engine`, parent-managed 5.13.4); 20 tests green across
+pure-logic (`Histogram`, `MSS`, `Rand`, `GenUtils`, `Smoother`, `Interpolator`,
+`ClusterablePoint`, `DataWriter` transforms) and CSV golden tests (`DataIOTest`,
+`TrajectoryAnalysis`). Deferred: extracting pure logic from god methods (D2).
 
 1. **Start with pure-logic, static-method classes** (no ImageJ runtime needed):
    - `Math/Histogram`, `Math/MSS`, `Math/Rand`
@@ -335,8 +337,8 @@ in the phases above.
    *Status (2026-09-24): `.gitignore`/wrapper/CI/Ant-removal/LICENSE+pom are
    done, plus D1 (StarDist + debug-code removal). Remaining: B2 (release `2.0.0`
    + tag `v2.0.0`).*
-2. **M2 — Test harness:** JUnit 5 + a few pure-logic unit tests + CSV golden
-   tests. (Phase C)
+2. **M2 — Test harness:** JUnit 5 + pure-logic unit tests + CSV golden tests.
+   *Done (20 tests, 2026-09-25).* (Phase C)
 3. **M3 — Gotchas & hygiene:** fix `validID`/`clearImageData`/`getLoadedImage`
    aliasing, duplicate import, error-handling normalisation. (Phase D5, D6)
 4. **M4 — Refactor core:** decompose `RegionGrower`/`MultiThreadedMaximaFinder`,
