@@ -1,3 +1,5 @@
+[![Build](https://github.com/djpbarry/IAClassLibrary/actions/workflows/maven.yml/badge.svg)](https://github.com/djpbarry/IAClassLibrary/actions/workflows/maven.yml) [![Javadoc](https://img.shields.io/badge/docs-Javadoc-blue)](https://djpbarry.github.io/IAClassLibrary/) [![JitPack](https://jitpack.io/v/djpbarry/IAClassLibrary.svg)](https://jitpack.io/#djpbarry/IAClassLibrary) ![Commit activity](https://img.shields.io/github/commit-activity/y/djpbarry/IAClassLibrary?style=plastic) ![License](https://img.shields.io/github/license/djpbarry/IAClassLibrary?color=green&style=plastic)
+
 # IAClassLibrary
 
 Image Analysis Class Library (`net.calm.iaclasslibrary`) — a reusable library of
