@@ -33,45 +33,42 @@ public class DataReader {
 
     public static double[][] readCSVFile(File file, CSVFormat format, ArrayList<String> colHeadings, ArrayList<String> rowLabels) throws IOException {
         ArrayList<ArrayList<Double>> data = new ArrayList();
-        CSVParser parser = CSVParser.parse(file, GenVariables.UTF8, format);
-//        ArrayList<String> headings = new ArrayList();
-//        ArrayList<String> rows = new ArrayList();
         int maxM = 0;
-        for (CSVRecord record : parser) {
-            int lineNumber = (int) parser.getCurrentLineNumber() - 1;
-            int line = colHeadings == null ? lineNumber : lineNumber - 1;
-            if (record.getRecordNumber() == 1 && colHeadings != null) {
-                for (int j = rowLabels == null ? 0 : 1; j < record.size(); j++) {
-                    colHeadings.add(record.get(j));
-                }
-            } else {
-                int j = 0;
-                if (rowLabels != null) {
-                    rowLabels.add(record.get(0));
-                    j++;
-                }
-                if (data.size() <= line) {
-                    data.add(new ArrayList());
-                }
-                for (; j < record.size(); j++) {
-                    double d;
-                    try {
-                        d = Double.parseDouble(record.get(j));
-                    } catch (NumberFormatException e) {
-                        d = Double.NaN;
+        try (CSVParser parser = CSVParser.parse(file, GenVariables.UTF8, format)) {
+            for (CSVRecord record : parser) {
+                int lineNumber = (int) parser.getCurrentLineNumber() - 1;
+                int line = colHeadings == null ? lineNumber : lineNumber - 1;
+                if (record.getRecordNumber() == 1 && colHeadings != null) {
+                    for (int j = rowLabels == null ? 0 : 1; j < record.size(); j++) {
+                        colHeadings.add(record.get(j));
                     }
-                    data.get(line).add(d);
-                }
-                if (j > maxM) {
-                    maxM = j;
+                } else {
+                    int j = 0;
+                    if (rowLabels != null) {
+                        rowLabels.add(record.get(0));
+                        j++;
+                    }
+                    if (data.size() <= line) {
+                        data.add(new ArrayList());
+                    }
+                    for (; j < record.size(); j++) {
+                        double d;
+                        try {
+                            d = Double.parseDouble(record.get(j));
+                        } catch (NumberFormatException e) {
+                            d = Double.NaN;
+                        }
+                        data.get(line).add(d);
+                    }
+                    if (j > maxM) {
+                        maxM = j;
+                    }
                 }
             }
         }
         if (rowLabels != null) {
             maxM--;
         }
-//        colHeadings = headings.toArray(colHeadings);
-//        rowLabels = rows.toArray(rowLabels);
         int m = data.size();
         double[][] output = new double[m][maxM];
         for (int j = 0; j < m; j++) {
@@ -129,14 +126,16 @@ public class DataReader {
                 }
             }
         }
+        scan.close();
         return output;
     }
 
     public static void readFileHeadings(File file, CSVFormat format, ArrayList<String> colHeadings, boolean labelled) throws IOException {
-        CSVParser parser = CSVParser.parse(file, GenVariables.UTF8, format);
-        CSVRecord record = parser.getRecords().get(0);
-        for (int j = labelled ? 1 : 0; j < record.size(); j++) {
-            colHeadings.add(record.get(j));
+        try (CSVParser parser = CSVParser.parse(file, GenVariables.UTF8, format)) {
+            CSVRecord record = parser.getRecords().get(0);
+            for (int j = labelled ? 1 : 0; j < record.size(); j++) {
+                colHeadings.add(record.get(j));
+            }
         }
     }
 
