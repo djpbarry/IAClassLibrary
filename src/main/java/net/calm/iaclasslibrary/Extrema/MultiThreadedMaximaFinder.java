@@ -561,11 +561,13 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         }
     }
 
-    private int getThreshold(ImagePlus image, AutoThresholder.Method method) {
-        StackStatistics stats = new StackStatistics(image);
-        int tIndex = (new AutoThresholder()).getThreshold(method, stats.histogram);
-        return (int) Math.round(stats.histMin + stats.binSize * tIndex);
-    }
+// --Commented out by Inspection START (25/09/2026 12:12):
+//    private int getThreshold(ImagePlus image, AutoThresholder.Method method) {
+//        StackStatistics stats = new StackStatistics(image);
+//        int tIndex = (new AutoThresholder()).getThreshold(method, stats.histogram);
+//        return (int) Math.round(stats.histMin + stats.binSize * tIndex);
+//    }
+// --Commented out by Inspection STOP (25/09/2026 12:12)
 
     public MultiThreadedMaximaFinder duplicate() {
         MultiThreadedMaximaFinder newProcess = new MultiThreadedMaximaFinder(inputs);
