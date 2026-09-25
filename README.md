@@ -33,6 +33,12 @@ Tests use JUnit 5 (Jupiter); run them with:
 The library is distributed via JitPack. Downstream projects (ADAPT,
 `TrackerLibrary`, `AdaptDataProcessing`) pin a tagged release (e.g. `v2.0.0`).
 
+## API Documentation
+
+Javadoc for the public API is published to
+<https://djpbarry.github.io/IAClassLibrary/> on every push to `development`
+(see `.github/workflows/javadoc.yml`).
+
 ## Packages
 
 Source lives under `src/main/java/net/calm/iaclasslibrary/`, organised into

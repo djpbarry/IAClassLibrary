@@ -118,6 +118,11 @@ Still outstanding from M1 (carried into the next session):
   package map, license).
 - Added class-level Javadoc to the key ADAPT-consumed public API: `BioFormatsImg`,
   `MultiThreadedProcess`, `RegionGrower`, `UserVariables`.
+- Added a GitHub Actions workflow (`.github/workflows/javadoc.yml`) that generates
+  Javadoc and publishes it to GitHub Pages (`target/reports/apidocs`), so agents
+  updating downstream projects can point at `djpbarry.github.io/IAClassLibrary/`
+  rather than the raw source. Needs the one-time Pages source set to
+  "GitHub Actions".
 
 ## 2024 — Bio-Formats loader consolidation
 
