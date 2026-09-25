@@ -169,19 +169,9 @@ public class BioFormatsImg {
         }
         try {
             reader.setSeries(series);
-            //int sizeC = reader.getSizeC();
             if (reader.getRGBChannelCount() > 1) {
-                //sizeC = 1;
                 cEnd = 1;
             }
-            //int[] limits = getLimits(dimOrder, cBegin, cEnd, sizeC);
-            //int width = reader.getSizeX();
-            //int height = reader.getSizeY();
-            //ImageStack stack = new ImageStack(width, height, (cEnd - cBegin) * reader.getSizeT() * reader.getSizeZ() * reader.getRGBChannelCount());
-            //MultiThreadedImageLoader loader = new MultiThreadedImageLoader(limits, reader, stack);
-            //loader.start();
-            //loader.join();
-            //ImagePlus stackImp = new ImagePlus(id, stack);
             ImporterOptions options = new ImporterOptions();
             options.setCBegin(series, cBegin);
             options.setCEnd(series, cEnd);
@@ -203,84 +193,6 @@ public class BioFormatsImg {
     String reformatFileName(String originalFileName) {
         return originalFileName.replace(LABEL_SEP, REPLACEMENT_SEP).replace(SERIES_SEP, REPLACEMENT_SEP);
     }
-
-// --Commented out by Inspection START (25/09/2026 12:11):
-//    private int[] getLimits(String dimOrder, int cBegin, int cEnd, int sizeC) {
-//        if (dimOrder == null) {
-//            dimOrder = reader.getDimensionOrder();
-//        }
-//        int[] limits = new int[9];
-//        switch (dimOrder) {
-//            case "XYZCT":
-//                limits[0] = 0;
-//                limits[1] = reader.getSizeZ();
-//                limits[2] = reader.getSizeZ();
-//                limits[3] = cBegin;
-//                limits[4] = cEnd;
-//                limits[5] = sizeC;
-//                limits[6] = 0;
-//                limits[7] = reader.getSizeT();
-//                limits[8] = reader.getSizeT();
-//                break;
-//            case "XYCTZ":
-//                limits[0] = cBegin;
-//                limits[1] = cEnd;
-//                limits[2] = sizeC;
-//                limits[3] = 0;
-//                limits[4] = reader.getSizeT();
-//                limits[5] = reader.getSizeT();
-//                limits[6] = 0;
-//                limits[7] = reader.getSizeZ();
-//                limits[8] = reader.getSizeZ();
-//                break;
-//            case "XYCZT":
-//                limits[0] = cBegin;
-//                limits[1] = cEnd;
-//                limits[2] = sizeC;
-//                limits[3] = 0;
-//                limits[4] = reader.getSizeZ();
-//                limits[5] = reader.getSizeZ();
-//                limits[6] = 0;
-//                limits[7] = reader.getSizeT();
-//                limits[8] = reader.getSizeT();
-//                break;
-//            case "XYTCZ":
-//                limits[0] = 0;
-//                limits[1] = reader.getSizeT();
-//                limits[2] = reader.getSizeT();
-//                limits[3] = cBegin;
-//                limits[4] = cEnd;
-//                limits[5] = sizeC;
-//                limits[6] = 0;
-//                limits[7] = reader.getSizeZ();
-//                limits[8] = reader.getSizeZ();
-//                break;
-//            case "XYTZC":
-//                limits[0] = 0;
-//                limits[1] = reader.getSizeT();
-//                limits[2] = reader.getSizeT();
-//                limits[3] = 0;
-//                limits[4] = reader.getSizeZ();
-//                limits[5] = reader.getSizeZ();
-//                limits[6] = cBegin;
-//                limits[7] = cEnd;
-//                limits[8] = sizeC;
-//                break;
-//            case "XYZTC":
-//                limits[0] = 0;
-//                limits[1] = reader.getSizeZ();
-//                limits[2] = reader.getSizeZ();
-//                limits[3] = 0;
-//                limits[4] = reader.getSizeT();
-//                limits[5] = reader.getSizeT();
-//                limits[6] = cBegin;
-//                limits[7] = cEnd;
-//                limits[8] = sizeC;
-//                break;
-//        }
-//        return limits;
-//    }
-// --Commented out by Inspection STOP (25/09/2026 12:11)
 
     public void setProcessedImage(ImagePlus processedImage) {
         this.processedImage = processedImage;

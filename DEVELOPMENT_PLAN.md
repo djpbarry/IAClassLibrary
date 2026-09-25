@@ -215,6 +215,15 @@ pure-logic (`Histogram`, `MSS`, `Rand`, `GenUtils`, `Smoother`, `Interpolator`,
 
 ### D2. Decompose the largest methods
 
+**Status: partially done (2026-09-25).** Removed the large commented-out bodies
+in `BioFormatsImg.loadPixelData` (old `MultiThreadedImageLoader` path) and
+deleted two IntelliJ "Commented out by Inspection" dead-code blocks (unused
+private `getLimits` and `getThreshold`). The remaining decomposition — breaking
+up `RegionGrower`/`MultiThreadedMaximaFinder` god methods and resolving the
+`terminal`/`intermediate` static mutable state — is deferred until behavioural
+tests exist (the sigma/calibration "pure math" is already in small helpers or
+trivial, so there is little safe extraction to do without tests).
+
 `RegionGrower` (400+ lines, static mutable state `terminal`/`intermediate`),
 `MultiThreadedMaximaFinder` (560+ lines), and `BioFormatsImg.loadPixelData`
 (contains large commented-out bodies) are the largest, most intertwined units.

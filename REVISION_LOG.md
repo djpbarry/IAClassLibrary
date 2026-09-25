@@ -77,6 +77,17 @@ Still outstanding from M1 (carried into the next session):
   never closed, causing Windows "file in use" failures. Fixed with
   try-with-resources (`scan.close()` for the tabbed reader).
 
+### 2026-09-25 — D2 dead-code cleanup (partial)
+
+- Removed the large commented-out bodies in `BioFormatsImg.loadPixelData` (the
+  old `MultiThreadedImageLoader` loading path).
+- Deleted two IntelliJ "Commented out by Inspection" blocks — unused private
+  `getLimits` (BioFormatsImg) and `getThreshold` (MultiThreadedMaximaFinder).
+- Deferred the remaining decomposition (RegionGrower/MultiThreadedMaximaFinder
+  god methods, the `terminal`/`intermediate` static state) until behavioural
+  tests exist; the sigma/calibration helpers are already small/stateful and
+  offer little safe pure-math to extract.
+
 ## 2024 — Bio-Formats loader consolidation
 
 - `3815dad` added `LocationAgnosticBioFormatsImg` (the `Importer`/`ImportProcess`
