@@ -112,6 +112,13 @@ Still outstanding from M1 (carried into the next session):
   `Importer`/`ImportProcess` (location-agnostic) vs filesystem `ImageReader`
   distinction, and updated `AGENTS.md` to record the Decision 5 "kept" outcome.
 
+### 2026-09-25 — Phase E documentation
+
+- Expanded `README.md` from a one-liner to a proper overview (build, consuming,
+  package map, license).
+- Added class-level Javadoc to the key ADAPT-consumed public API: `BioFormatsImg`,
+  `MultiThreadedProcess`, `RegionGrower`, `UserVariables`.
+
 ## 2024 — Bio-Formats loader consolidation
 
 - `3815dad` added `LocationAgnosticBioFormatsImg` (the `Importer`/`ImportProcess`

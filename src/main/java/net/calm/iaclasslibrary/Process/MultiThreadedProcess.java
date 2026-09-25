@@ -28,6 +28,9 @@ import ome.units.quantity.Length;
 import org.apache.commons.lang3.StringUtils;
 
 /**
+ * Abstract base class for a processing step in a {@code ProcessPipeline}.
+ * Extends {@link Thread} and implements {@link Callable}, running a single unit
+ * of work that reads from {@code inputs} and writes to {@code outputDests}.
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */

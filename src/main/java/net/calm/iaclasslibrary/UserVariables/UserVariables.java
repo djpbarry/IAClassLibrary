@@ -19,7 +19,8 @@ package net.calm.iaclasslibrary.UserVariables;
 import ij.process.AutoThresholder;
 
 /**
- *
+ * Holds the user-configurable analysis parameters (and their defaults) shared
+ * across the processing pipeline.
  */
 public class UserVariables {
 

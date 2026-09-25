@@ -35,6 +35,11 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.IOException;
 
 /**
+ * Primary Bio-Formats image loader. Wraps a {@code loci.formats.ImageReader}
+ * plus {@code ImporterOptions}/{@code IMetadata} and loads pixel data for a
+ * series and channel range into an ImageJ {@link ImagePlus}. See
+ * {@link LocationAgnosticBioFormatsImg} for the location-agnostic alternative.
+ *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class BioFormatsImg {

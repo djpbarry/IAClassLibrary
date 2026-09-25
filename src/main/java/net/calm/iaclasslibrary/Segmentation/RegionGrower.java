@@ -40,6 +40,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 /**
+ * Region-growing segmentation engine. Grows regions from seed points across an
+ * image, supporting distance-map and Dijkstra based dilation. Static helpers
+ * with mutable static state for the terminal/intermediate region values.
+ *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
 public class RegionGrower {

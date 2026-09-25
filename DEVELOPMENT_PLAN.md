@@ -283,6 +283,11 @@ the existing `GenUtils.logError`/`GenUtils.error` pattern, and give
 
 ## Phase E — Documentation
 
+**Status: done (2026-09-25).** Expanded `README.md` (overview, build, consuming,
+package map, license); kept `AGENTS.md` in sync; and added class-level Javadoc to
+the key ADAPT-consumed public API (`BioFormatsImg`, `MultiThreadedProcess`,
+`RegionGrower`, `UserVariables`).
+
 - **`README.md`** is currently a single `# IAClassLibrary` line. Expand it with:
   what the library is, how to build (`mvn verify`), how it is consumed (JitPack,
   by ADAPT/TrackerLibrary/AdaptDataProcessing), and the package map.
