@@ -13,6 +13,16 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
 
+/**
+ * Alternative Bio-Formats loader that drives image loading through the
+ * {@code Importer}/{@code ImportProcess}/{@code ImporterOptions} API rather than
+ * a filesystem {@code ImageReader} (which {@link BioFormatsImg} uses).
+ *
+ * <p>Constructed from an options string rather than a raw file id, so it is
+ * suited to inputs that are not plain filesystem files. Pixel data is read via
+ * {@code Importer.readPixels}; dimensions and spatial resolution are read from
+ * {@code ome.xml.meta.IMetadata}. For a raw file id, prefer {@link BioFormatsImg}.
+ */
 public class LocationAgnosticBioFormatsImg extends BioFormatsImg {
     private final Importer importer = new Importer(null);
     private final IMetadata metadata;

@@ -70,10 +70,10 @@ to before editing:
   `REPLACEMENT_SEP='.'` are used to reformat filenames (`reformatFileName`).
 - `IO.BioFormats.LocationAgnosticBioFormatsImg` - a subclass that instead drives
   Bio-Formats through the `Importer`/`ImportProcess`/`ImporterOptions` API and
-  reads metadata from `ome.xml.meta.IMetadata`. Its constructors take an options
-  string rather than a raw file id. A recent commit ("Removed references to
-  LocationAgnosticBioFormatsImg") suggests this class may be on its way out; check
-  for current usages before relying on it.
+  reads metadata from `ome.xml.meta.IMetadata`. Its constructor takes an options
+  string rather than a raw file id. **Kept** (Decision 5): it is public API and
+  may be used externally even though it is unreferenced in this repo. Prefer
+  `BioFormatsImg` for a raw file id, this class for options-string input.
 
 ### Process pipeline (threading model)
 

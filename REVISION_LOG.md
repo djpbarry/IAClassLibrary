@@ -106,6 +106,12 @@ Still outstanding from M1 (carried into the next session):
   and `ImageCorrelator`. Remaining `System.out.println` is progress/debug in the
   experimental StarDist/Ilastik and `CurvatureEstimator` loops (left as-is).
 
+### 2026-09-25 — D4 image-loading documentation
+
+- Added class-level Javadoc to `LocationAgnosticBioFormatsImg` clarifying the
+  `Importer`/`ImportProcess` (location-agnostic) vs filesystem `ImageReader`
+  distinction, and updated `AGENTS.md` to record the Decision 5 "kept" outcome.
+
 ## 2024 — Bio-Formats loader consolidation
 
 - `3815dad` added `LocationAgnosticBioFormatsImg` (the `Importer`/`ImportProcess`

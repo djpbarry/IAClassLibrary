@@ -241,6 +241,12 @@ marks some methods `@Deprecated` — extend that discipline.
 
 ### D4. Document the image-loading surface (Decision 5)
 
+**Status: done (2026-09-25).** Added a class-level Javadoc to
+`LocationAgnosticBioFormatsImg` explaining the `Importer`/`ImportProcess` vs
+filesystem `ImageReader` distinction, and updated the `AGENTS.md` note to drop
+the stale "may be on its way out" remark in favour of the Decision 5 "kept"
+resolution.
+
 `LocationAgnosticBioFormatsImg` is **kept** (public API, possibly used by
 external projects). Document its role relative to `BioFormatsImg` (location-
 agnostic `Importer`/`ImportProcess` loading vs filesystem `ImageReader` loading)
