@@ -22,6 +22,7 @@ import net.calm.iaclasslibrary.Cell.Cytoplasm;
 import net.calm.iaclasslibrary.Cell.Nucleus;
 import net.calm.iaclasslibrary.IAClasses.Region;
 import net.calm.iaclasslibrary.IO.DataWriter;
+import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import ij.IJ;
 import ij.ImageStack;
 import ij.gui.Roi;
@@ -228,7 +229,7 @@ public class FluorescenceAnalyser {
             meanStream.close();
             stdStream.close();
         } catch (FileNotFoundException e) {
-            System.out.println(e.toString());
+            GenUtils.logError(e, "Failed to write fluorescence maps.");
         }
     }
 

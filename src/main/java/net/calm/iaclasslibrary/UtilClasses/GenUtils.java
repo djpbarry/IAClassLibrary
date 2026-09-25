@@ -145,7 +145,7 @@ public class GenUtils {
                 }
             }
         } catch (Exception e) {
-            System.err.println(e.toString());
+            logError(e, "Failed to create directory: " + dirName);
             return null;
         }
         return dir;

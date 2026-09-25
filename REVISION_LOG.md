@@ -97,6 +97,15 @@ Still outstanding from M1 (carried into the next session):
   now-unused `ij.ImageStack`/`MultiThreadedImageLoader` imports in `BioFormatsImg`.
 - Deferred: `@Override`/diamond-generics pass (tedious, no behavioural value).
 
+### 2026-09-25 — D6 error-handling normalisation
+
+- Fixed the two empty catch blocks: `runStarDist` now logs via
+  `GenUtils.logError`, and `BioFormatsFileLister` notes the intentional skip.
+- Converted `System.out`/`System.err` error logging to `GenUtils.logError`/`IJ.log`
+  in `GenUtils.createDirectory`, `CurvatureEstimator`, `FluorescenceAnalyser`,
+  and `ImageCorrelator`. Remaining `System.out.println` is progress/debug in the
+  experimental StarDist/Ilastik and `CurvatureEstimator` loops (left as-is).
+
 ## 2024 — Bio-Formats loader consolidation
 
 - `3815dad` added `LocationAgnosticBioFormatsImg` (the `Importer`/`ImportProcess`

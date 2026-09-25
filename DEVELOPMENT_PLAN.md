@@ -261,6 +261,14 @@ Also removed now-unused imports in `BioFormatsImg` (`ij.ImageStack`,
 
 ### D6. Normalise error handling
 
+**Status: done (2026-09-25).** Fixed the two empty catch blocks (added an
+actionable `GenUtils.logError` in `runStarDist` and a "skip it" comment in
+`BioFormatsFileLister`) and converted `System.out`/`System.err` error logging to
+`GenUtils.logError`/`IJ.log` in `GenUtils.createDirectory`, `CurvatureEstimator`,
+`FluorescenceAnalyser`, and `ImageCorrelator`. Remaining `System.out.println`
+calls are progress/debug output in the experimental `runStarDist`/`runIlastik`
+and `CurvatureEstimator` loops (out of scope — D1 territory).
+
 Replace empty catch blocks and mixed `System.out.println`/`IJ.log` logging with
 the existing `GenUtils.logError`/`GenUtils.error` pattern, and give
 `catch (Exception)` blocks actionable messages.

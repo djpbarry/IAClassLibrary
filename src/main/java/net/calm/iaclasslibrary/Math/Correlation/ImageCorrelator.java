@@ -16,6 +16,7 @@
  */
 package net.calm.iaclasslibrary.Math.Correlation;
 
+import ij.IJ;
 import ij.WindowManager;
 import ij.gui.Roi;
 import ij.macro.ExtensionDescriptor;
@@ -80,7 +81,7 @@ public class ImageCorrelator implements MacroExtension {
     public String handleExtension(String name, Object[] args) {
         if (name.contentEquals(extensionFunctionNames[0])) {
             if (!(args[0] instanceof String && args[1] instanceof String && args[2] instanceof String)) {
-                System.out.print(String.format("Error: arguments passed to %s are not valid.", extensionFunctionNames[0]));
+                IJ.log(String.format("Error: arguments passed to %s are not valid.", extensionFunctionNames[0]));
                 return "";
             }
             this.roi = WindowManager.getImage((String) args[0]).getRoi();

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoint;
 
@@ -64,7 +65,7 @@ public class CurvatureEstimator {
             exec.shutdown();
             exec.awaitTermination(12, TimeUnit.HOURS);
         } catch (InterruptedException e) {
-            System.out.println(String.format("An exception occured - aborting: %s", e.toString()));
+            GenUtils.logError(e, "An exception occurred - aborting curvature estimation.");
             return;
         }
     }

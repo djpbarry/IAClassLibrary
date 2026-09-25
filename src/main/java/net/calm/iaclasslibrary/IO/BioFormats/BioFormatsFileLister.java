@@ -43,7 +43,7 @@ public class BioFormatsFileLister {
                 // Close the reader
                 reader.close();
             } catch (FormatException | IOException e) {
-
+                // Not a readable file - skip it.
             }
         }
         return fileNames;

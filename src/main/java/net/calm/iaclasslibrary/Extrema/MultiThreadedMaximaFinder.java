@@ -46,6 +46,7 @@ import net.calm.iaclasslibrary.Process.Filtering.MultiThreadedHessian;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.Stacks.StackMath;
 import net.calm.iaclasslibrary.Stacks.StackThresholder;
+import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import net.imglib2.img.ImagePlusAdapter;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.real.FloatType;
@@ -464,7 +465,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             output = IJ.openImage((new File(stardistTempDir, starDistOutput).getAbsolutePath()));
             FileUtils.forceDelete(stardistTempDir);
         } catch (InterruptedException | IOException e) {
-
+            GenUtils.logError(e, "StarDist detection failed.");
         }
         //stardistTempDir.delete();
     }
