@@ -153,3 +153,19 @@ Work landed on the `development` branch while the plan still says "tag current
 
 **Rule:** name the canonical branch in the plan and keep `origin/HEAD` consistent
 before tagging.
+
+### L9 — Java LSP setup (parked, unresolved)
+
+Attempted to add Eclipse JDTLS (`jdtls`) as a Java LSP for a reference-based
+dead-code sweep. Installed to `H:\GitRepos\Java\jdtls` and configured in
+`.crush.json`, but Crush never started it (`lsp_configured: java = not_started`,
+no start attempt). Suspected cause: the project lives on `H:` while Python/JDK
+live on `C:`, and Crush's LSP service fails to relativize the launcher path
+across drives (`Error getting relpath: can't make C:\...\jdtls.py relative to
+H:\...`).
+
+**Parked for later.** Next attempts, in order: (1) put the LSP launcher and a
+Python runtime on the same drive as the project; (2) drop `filetypes`/
+`root_markers` and rely on the LSP-name convention; (3) enable `options.debug_lsp`
+for verbose startup logs. Fallback for the dead-code sweep is IntelliJ's built-in
+"unused declaration" inspection rather than a Crush LSP.
