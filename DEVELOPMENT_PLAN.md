@@ -374,6 +374,15 @@ in the phases above.
    `.orig` backups; they are non-portable, machine-specific, and not part of the
    Maven build. Recoverable from git if the NetBeans workflow is ever revived.
 
+7. **Package namespace — `io.github.djpbarry`** *(resolved 2026-09-25)*. The
+   `net.calm` namespace was based on a domain that does not exist (`calm.net`).
+   Rename the package root from `net.calm.iaclasslibrary` to
+   `io.github.djpbarry.iaclasslibrary` (and the Maven `groupId` from `net.calm`
+   to `io.github.djpbarry`); the `artifactId` `iaclasslibrary` stays. This is a
+   breaking change shared across the whole suite (`TrackerLibrary`, `Adapt`,
+   `AdaptDataProcessing` all use the `net.calm.*` umbrella), so it is executed in
+   lockstep during the coordinated v2.0.0 hand-off (Phase F / M6), not solo.
+
 ---
 
 ## Suggested sequencing & milestones

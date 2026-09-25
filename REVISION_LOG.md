@@ -132,6 +132,14 @@ Still outstanding from M1 (carried into the next session):
   `IAClasses.DataStatistics` (→ commons-math3 `DescriptiveStatistics`) and
   `IAClasses.ProgressDialog` (→ ImageJ native progress) before re-pinning `v2.0.0`.
 
+### 2026-09-25 — Package namespace decision (Decision 7)
+
+- Decided to rename the package root `net.calm.iaclasslibrary` →
+  `io.github.djpbarry.iaclasslibrary` (and Maven `groupId` `net.calm` →
+  `io.github.djpbarry`), since `net.calm` was based on a non-existent domain.
+  Kept the project/`artifactId` name. Executed in lockstep with the sibling
+  repos during the v2.0.0 hand-off (Phase F / M6), not solo.
+
 ## 2024 — Bio-Formats loader consolidation
 
 - `3815dad` added `LocationAgnosticBioFormatsImg` (the `Importer`/`ImportProcess`
