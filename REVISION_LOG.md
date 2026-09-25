@@ -64,6 +64,16 @@ Still outstanding from M1 (carried into the next session):
 
 ---
 
+## 2026-09-25 — Phase C: JUnit 5 harness + CSV golden tests
+
+- Added JUnit 5 (Jupiter) test harness (`junit-jupiter-api`/`-engine`,
+  parent-managed 5.13.4) and 11 passing tests across `Histogram`, `GenUtils`,
+  `Rand`, `Interpolator`, and the CSV `DataIOTest` golden tests.
+- **Bug found by golden tests:** `DataReader` leaked file handles — `CSVParser`
+  (in `readCSVFile`/`readFileHeadings`) and `Scanner` (in `readTabbedFile`) were
+  never closed, causing Windows "file in use" failures. Fixed with
+  try-with-resources (`scan.close()` for the tabbed reader).
+
 ## 2024 — Bio-Formats loader consolidation
 
 - `3815dad` added `LocationAgnosticBioFormatsImg` (the `Importer`/`ImportProcess`
