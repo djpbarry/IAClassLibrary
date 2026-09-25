@@ -57,7 +57,7 @@ public class Particle extends Spot {
     }
 
     /**
-     * This particle's z-position within an image stack.
+     * This particle's frame (time) index within the image sequence.
      */
     public int getFrameNumber() {
         return t;

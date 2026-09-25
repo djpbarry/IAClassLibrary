@@ -124,6 +124,14 @@ Still outstanding from M1 (carried into the next session):
   rather than the raw source. Needs the one-time Pages source set to
   "GitHub Actions".
 
+### 2026-09-25 — Downstream cross-check fixes
+
+- Fixed a Javadoc bug: `Particle.getFrameNumber()` claimed to return "z-position
+  within an image stack" but returns the frame/time index (`t`).
+- Documented **B4**: `TrackerLibrary` must migrate off the deprecated
+  `IAClasses.DataStatistics` (→ commons-math3 `DescriptiveStatistics`) and
+  `IAClasses.ProgressDialog` (→ ImageJ native progress) before re-pinning `v2.0.0`.
+
 ## 2024 — Bio-Formats loader consolidation
 
 - `3815dad` added `LocationAgnosticBioFormatsImg` (the `Importer`/`ImportProcess`

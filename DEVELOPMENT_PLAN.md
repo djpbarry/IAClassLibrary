@@ -168,6 +168,21 @@ note (the coordinated Java 21 / TrackMate 8.x move is now in progress).
 Remaining: `TrackerLibrary` (7.10.0) and ADAPT (7.14.0) must bump to 8.0.0 and
 Java 21 in lockstep (Phase F / M6).
 
+### B4. Downstream migration off deprecated `IAClasses` (blocks the v2.0.0 re-pin)
+
+Cross-checking `TrackerLibrary`'s `net.calm.iaclasslibrary.*` usage against the
+v2.0.0-SNAPSHOT Javadoc found two legacy classes still in use by downstream code:
+
+- `IAClasses.DataStatistics` (3× in `ParticleTrajectory.java`) — migrate to
+  `org.apache.commons.math3.stat.descriptive.DescriptiveStatistics` (already
+  imported in the same file).
+- `IAClasses.ProgressDialog` (`TrajectoryBuilder.java`, `TrajectoryBridger.java`)
+  — migrate to ImageJ's native progress.
+
+This is a documented prerequisite for `TrackerLibrary` (and any other consumer)
+to re-pin to `v2.0.0`, since both classes are `@Deprecated` (Decision 4) and
+slated for removal in a later major version.
+
 ---
 
 ## Phase C — Introduce tests (the biggest maintainability win)
