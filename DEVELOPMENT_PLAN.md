@@ -32,8 +32,8 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
   --no-transfer-progress verify` on **JDK 21** with dependency caching.
   *(Reconciled 2026-09-24.)*
-- **Tests:** none. There is no `src/test`, no test framework, no lint/format
-  tooling. (Phase C, not yet started.)
+- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 4 classes, 7
+  tests as of 2026-09-25. No lint/format tooling. (Phase C in progress.)
 - **License:** a GPL-3.0-or-later `LICENSE` file now exists and `pom.xml` is
   corrected from BSD-2 to GPL-3. Source headers remain inconsistent (roughly
   half GPL-3, roughly a third NetBeans "change this header" stubs); header
@@ -172,8 +172,9 @@ Java 21 in lockstep (Phase F / M6).
 
 ## Phase C — Introduce tests (the biggest maintainability win)
 
-There is no test framework and no `src/test`. Follow the SciJava parent's
-conventional JUnit 5 setup and wire it into `mvn verify`.
+**Status: in progress.** JUnit 5 harness wired (`junit-jupiter-api`/`-engine`,
+parent-managed 5.13.4) and initial pure-logic tests landed (7 tests, `mvn test`
+green). Remaining: CSV golden tests and pure-logic extraction (D2).
 
 1. **Start with pure-logic, static-method classes** (no ImageJ runtime needed):
    - `Math/Histogram`, `Math/MSS`, `Math/Rand`

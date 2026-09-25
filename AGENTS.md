@@ -19,8 +19,8 @@ Fiji/ImageJ plugins, not a runnable application (there is no `main` method).
 - CI command (see `.github/workflows/maven.yml`): `./mvnw --batch-mode --no-transfer-progress verify`
 - Required JDK: **21** (per the CI workflow `setup-java` step)
 - There is a **Maven wrapper** (`mvnw`/`mvnw.cmd`) - use it instead of a system `mvn`.
-- There are **no tests** in the repository (`src/test` does not exist). "Verify"
-  means compile + package + SciJava parent-POM checks.
+- Tests use **JUnit 5** (Jupiter) under `src/test/java`; run with `./mvnw test`.
+  "Verify" means compile + package + SciJava parent-POM checks + tests.
 - `mvn -q -DskipTests compile` is the fastest way to check a change compiles.
 
 ### Legacy Ant build (removed)
@@ -145,7 +145,7 @@ to before editing:
 
 ## Gotchas
 
-- **No tests exist** - there is no test framework to run and no `src/test`.
+- **Tests exist** under `src/test/java` (JUnit 5). Run with `./mvnw test`.
 - **`BioFormatsImg.validID` is never set to `true`** anywhere, so
   `isValidID()` always returns `false`. Don't rely on it for validity checks.
 - **`BioFormatsImg.clearImageData()` is a no-op** (the body is commented out,
