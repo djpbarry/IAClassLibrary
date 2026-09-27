@@ -27,11 +27,12 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.0-SNAPSHOT` (working toward the `2.0.0` release), declared license
-  **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24.)*
+  `2.0.1` (released, tag `v2.0.1`), declared license
+  **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
+  released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
-  --no-transfer-progress verify` on **JDK 21** with dependency caching.
-  *(Reconciled 2026-09-24.)*
+  --update-snapshots verify` on **JDK 21** with the `setup-java` Maven cache.
+  *(Updated 2026-09-27.)*
 - **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 10 classes,
   20 tests as of 2026-09-25. No lint/format tooling. (Phase C done for now.)
 - **License:** a GPL-3.0-or-later `LICENSE` file now exists and `pom.xml` is
@@ -125,10 +126,11 @@ revived.
 
 ## Phase B — License & metadata (blocks ADAPT's Phase G1)
 
-**Status (2026-09-24): B1 items 1–3 are done** (LICENSE added, `pom.xml`
-corrected to GPL-3); B1 item 4 (header tidy-up) is deferred; **B2:** versioning infrastructure done (`2.0.0-SNAPSHOT` + release plugin); the
-`v2.0.0` tag is deferred to release time. **B3:** resolved by Decision 3
-(TrackMate 8.0.0 via the parent); cross-repo coordination pending (M6).
+**Status (2026-09-27): B1 items 1–3 are done** (LICENSE added, `pom.xml`
+corrected to GPL-3); B1 item 4 (header tidy-up) is deferred; **B2:** done —
+released `2.0.1` and tagged `v2.0.1` (see B2 below). **B3:** resolved by
+Decision 3 (TrackMate 8.0.0 via the parent); cross-repo coordination pending
+(M6).
 
 The ADAPT plan's Phase G1/G2 assumes IAClassLibrary just needs to "verify its
 LICENSE file" and be tagged. The reality is more involved:
@@ -153,11 +155,17 @@ unresolved GPL-3-vs-BSD-2 contradiction ADAPT resolved in its Decision 1.
 
 ### B2. Tag the repo (blocks ADAPT's Phase G2 / Decision 2)
 
-ADAPT pins IAClassLibrary at commit `fe92f24c6e`, which is **after** the only
-tag `v1.032` (`da53d73`) and after the version bump to `1.0.37`. Release `2.0.0`
-and tag `v2.0.0` (reconciling the `v1.032` vs `1.0.37`
-naming skew) so ADAPT and the other libraries can pin to a tag instead of a
-commit hash.
+**Done (2026-09-27).** ADAPT pinned IAClassLibrary at commit `fe92f24c6e`, after
+the only tag `v1.032` (`da53d73`). The release is now cut: version `2.0.1`, tag
+`v2.0.1`, published to JitPack as `com.github.djpbarry:iaclasslibrary:2.0.1`.
+
+The first attempt (`2.0.0` / `v2.0.0`) failed on both CI and JitPack — see
+`REVISION_LOG.md` 2026-09-27 and Lessons L10–L12. In brief: the tag build failed
+because `pom-scijava:45.1.0` drops the implicit Maven Central (fixed by declaring
+`central`), and the JitPack build failed because JitPack defaults to JDK 8 (fixed
+with `jitpack.yml` → `openjdk21`). A fresh `2.0.1` tag was cut rather than
+force-moving `v2.0.0` (JitPack caches by ref name). The broken `v2.0.0` tag is
+left as-is and must not be reused.
 
 ### B3. Resolve the TrackMate version web (blocks ADAPT's Phase G3)
 
@@ -322,14 +330,14 @@ IAClassLibrary is itself an upstream dependency, so several items here are
 | ADAPT plan item | IAClassLibrary action | This plan |
 |---|---|---|
 | G1 license fix | B1 | add LICENSE, correct pom, normalise headers |
-| G2 tag all three | B2 | tag `master` after `fe92f24`, reconcile version |
+| G2 tag all three | B2 | done — tagged `v2.0.1` (see B2) |
 | G3 TrackMate version web | B3 | single TrackMate version policy |
 | G0 "no CI" | A2 | CI already exists; harden it |
 
 Coordinate the Java-target decision (Decision 3) with ADAPT's Decision 3.
 IAClassLibrary now targets **Java 21** (parent `pom-scijava:45.1.0`);
 `TrackerLibrary`, `AdaptDataProcessing`, and ADAPT must bump to Java 21 in
-lockstep and re-pin their IAClassLibrary dependency to the new tag.
+lockstep and re-pin their IAClassLibrary dependency to `v2.0.1`.
 
 ---
 
@@ -390,10 +398,8 @@ in the phases above.
 1. **M1 — Foundations (low risk, high value):** `.gitignore`, Maven wrapper, CI
    hardening (pin Java 21), delete the legacy Ant build, remove
    `MultiThreadedStarDist` + commented-out debug code, add GPL-3 `LICENSE` +
-   fix pom metadata, bump to `2.0.0` and tag `v2.0.0`. (Phase A, B, D1)
-   *Status (2026-09-24): `.gitignore`/wrapper/CI/Ant-removal/LICENSE+pom are
-   done, plus D1 (StarDist + debug-code removal). Remaining: B2 (release `2.0.0`
-   + tag `v2.0.0`).*
+   fix pom metadata, release and tag. (Phase A, B, D1)
+   *Status (2026-09-27): complete — released `2.0.1`, tagged `v2.0.1` (B2).*
 2. **M2 — Test harness:** JUnit 5 + pure-logic unit tests + CSV golden tests.
    *Done (20 tests, 2026-09-25).* (Phase C)
 3. **M3 — Gotchas & hygiene:** fix `validID`/`clearImageData`/`getLoadedImage`
@@ -404,7 +410,8 @@ in the phases above.
 5. **M5 — Documentation:** expand `README.md`, sync `AGENTS.md`, Javadoc public
    API. (Phase E)
 6. **M6 — Upstream hand-off:** confirm TrackMate version policy and Java target
-   with the other three repos, so ADAPT can pin to tags. (Phase F)
+   with the other three repos, so ADAPT can pin to tags. IAClassLibrary's own tag
+   (`v2.0.1`) is now live on JitPack. (Phase F)
 
 Each milestone is independently shippable. M1 is the immediate next step and
 unblocks the ADAPT plan's M10 (upstream dependency hygiene).

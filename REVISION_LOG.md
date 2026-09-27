@@ -15,6 +15,32 @@ dated narrative plus the "what not to do again" notes.
 
 ---
 
+## 2026-09-27 — Release 2.0.1 (B2, M6 kick-off)
+
+The first release attempt (version `2.0.0`, tag `v2.0.0`) failed in two places,
+and both were the same class of issue the sibling `TrackerLibrary` had already
+hit and fixed. Rather than force-move the broken tag (JitPack caches by ref
+name), the fixes were applied and a fresh patch version `2.0.1` was cut.
+
+- **CI failure (GitHub Actions, tag build):** the `v2.0.0` tag build failed
+  while the same commit built green on `development`. The `development` and tag
+  runs fired simultaneously on a cold Maven cache (the version bump changed the
+  cache key) and had to re-resolve every dependency from only `scijava.public`
+  and JitPack — `pom-scijava:45.1.0` drops the implicit Maven Central, so there
+  was no `central` mirror to fall back on. One build won the race; the other hit
+  a transient resolution failure. Fixed by declaring `central` explicitly (L11)
+  and switching CI to `cache: 'maven'`.
+- **JitPack failure:** JitPack builds on **JDK 8** by default; the Java 21
+  project fails its own `RequireJavaVersion` enforcer rule. Fixed by adding
+  `jitpack.yml` with `jdk: [openjdk21]` (L10).
+- Also added `.gitattributes` (`mvnw` LF / `mvnw.cmd` CRLF) for Linux-CI
+  robustness (L12), matching `TrackerLibrary`.
+
+**Tag:** `v2.0.1` (fresh name — the broken `v2.0.0` is left as-is; do not re-use
+it). JitPack coordinate: `com.github.djpbarry:iaclasslibrary:2.0.1`.
+
+---
+
 ## 2026-09-24 — Modernisation kick-off (M1, Phases A & B)
 
 The first modernisation milestone landed in a single session. Decision history
@@ -245,3 +271,46 @@ Python runtime on the same drive as the project; (2) drop `filetypes`/
 `root_markers` and rely on the LSP-name convention; (3) enable `options.debug_lsp`
 for verbose startup logs. Fallback for the dead-code sweep is IntelliJ's built-in
 "unused declaration" inspection rather than a Crush LSP.
+
+### L10 — Pin the JDK in `jitpack.yml` for Java 21 projects
+
+JitPack's default build image runs **JDK 8**. A Java 21 project (after the
+`pom-scijava:45.1.0` move) fails JitPack's build at the enforcer's
+`RequireJavaVersion` rule — not because the code is wrong, but because the runner
+is on `1.8.0_292`. The failure only surfaces on the first real JitPack request,
+since the local `mvnw verify` runs on the developer's JDK 21.
+
+**Rule:** any Java 21 (or otherwise non-default-JDK) project consumed via JitPack
+must carry a `jitpack.yml` with `jdk: [openjdk21]` (or the matching version). Add
+it in the same pass as the Java 21 / parent-POM move, before cutting the release
+tag. IAClassLibrary missed this because its earlier (pre-Java-21) commits built
+`ok` on JitPack, so the gap only surfaced on the first Java 21 tag.
+
+Corollary: **JitPack caches build results by ref name.** Force-moving a tag does
+not reliably invalidate the cached `ref → commit` mapping, so a "fixed" tag can
+keep serving the stale failed build. If a release tag fails on JitPack, cut a
+fresh tag (next patch version) rather than force-moving the broken one.
+
+### L11 — `pom-scijava:45.1.0` drops the implicit Maven Central repo
+
+The parent POM no longer provides Maven Central, so a project that declares its
+own `<repositories>` (as IAClassLibrary does, for `scijava.public` and JitPack)
+must also declare `central` explicitly. Without it, resolution relies solely on
+the flaky `maven.scijava.org` and JitPack mirrors — fine on a warm local
+`~/.m2`, but fragile in CI when the version bump busts the Maven cache key and
+concurrent builds race to re-resolve from the thin mirror set.
+
+**Rule:** when moving to `pom-scijava:45.1.0`, declare
+`<id>central</id><url>https://repo.maven.apache.org/maven2</url>` explicitly in
+`<repositories>` in the same pass. `TrackerLibrary` hit and fixed this first (its
+"M1 deviation 1").
+
+### L12 — Add `.gitattributes` to pin wrapper line endings
+
+The Maven wrapper shell script (`mvnw`) must be LF on Linux CI and `mvnw.cmd`
+must be CRLF on Windows. Without a `.gitattributes` forcing this, a Windows
+checkout can commit `mvnw` with CRLF endings that break the Linux runner.
+
+**Rule:** commit a `.gitattributes` with `mvnw text eol=lf` and
+`mvnw.cmd`/`*.bat text eol=crlf` alongside the wrapper, and verify `mvnw` is
+tracked with the executable bit (`git ls-files -s mvnw` shows `100755`).
