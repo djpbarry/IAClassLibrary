@@ -58,6 +58,26 @@ low-risk items first, as sequenced in G7.
 - Kept `GenUtils.logError`'s `printStackTrace()` (the canonical logger) and the
   intentional silent skip in `BioFormatsFileLister`.
 
+### G8 — redundant-reimplementation survey (findings only, no code changes)
+
+Reviewed the codebase for classes/methods that reimplement functionality already
+in the JDK or a dependency. Highest-value findings:
+
+- **`Math.Optimisation.Fitter.doFit()`** — hand-rolled Nelder–Mead simplex,
+  inherited by five fitters → `commons-math3` `SimplexOptimizer`+`NelderMeadSimplex`.
+- **`IAClasses.DSPProcessor.FFT`/`IFFT`** — hand-written Cooley–Tukey FFT →
+  `commons-math3` `FastFourierTransformer`.
+- **`IAClasses.DataStatistics`** — mean/std-dev/percentile/regression →
+  `commons-math3` `StatUtils`/`DescriptiveStatistics`/`SimpleRegression` (also B4).
+- **`UtilClasses.GenVariables`** charsets → `java.nio.charset.StandardCharsets`.
+- **`IO.File.FileExtensionFilter`/`ImageFilter`/`IAClasses.OnlyExt`** → `FilenameUtils.isExtension`.
+- **`IAClasses.Utils.arcTan`** → `Math.atan2`+`Math.toDegrees`; `calcDistance` → `Math.hypot`.
+- **`Overlay.OverlayToRoi`** — explicitly copied from ImageJ `OverlayCommands`.
+- **`DateAndTime.Time.getDuration`** — reinvents (and misimplements) `java.time.Duration.between`.
+
+Full list (with "clearly redundant" / "partial overlap" / "internal duplication" /
+"not redundant" verdicts) is in `DEVELOPMENT_PLAN.md` Phase G8. No code changed yet.
+
 ---
 
 ## 2026-09-27 — Release 2.0.1 (B2, M6 kick-off)

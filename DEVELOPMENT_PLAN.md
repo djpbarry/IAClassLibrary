@@ -345,7 +345,8 @@ lockstep and re-pin their IAClassLibrary dependency to `v2.0.1`.
 
 ## Phase G — Modern Java modernisation (Java 21)
 
-**Status: G3 + G4 + G5 done (2026-10-02); G1–G2 and G6 pending.** The core is over
+**Status: G3 + G4 + G5 done; G8 surveyed (2026-10-02). Remaining: G1–G2, G6, and
+G8 implementation.** The core is over
 a decade old and predates most of the language/API features now available on the
 Java 21 target. A full-pass review found systematic opportunities to improve
 efficiency, performance, readability, and thread-safety without changing public
@@ -495,11 +496,101 @@ and `TiffWriter` all implement `AutoCloseable`.
 
 ### G7. Sequencing & risk
 
-Do **G4/G5 (resource + logging)** and **G3 (mechanical generics/boxing)** first —
-low risk, no behaviour change, testable. Then **G1/G2 (threading + static state)**
-after Phase C/D2 tests exist. Leave **G6** (language features) last as a
-readability pass; keep records and `var`/streams as opt-in, not forced. Record
-each completed sub-item in `REVISION_LOG.md`.
+Do the **low-risk, mechanical** items first, then the **structural** ones once
+behavioural tests exist, and the **cosmetic** ones last:
+
+1. **Done:** G4/G5 (resource + logging) and G3 (generics/boxing) — no behaviour
+   change, testable.
+2. **Next:** the pure-math subset of G8 — `Fitter.doFit` → `SimplexOptimizer`,
+   `DSPProcessor.FFT`/`IFFT` → `FastFourierTransformer`, and the `Utils`/
+   `DataStatistics` statistics → `StatUtils`/`DescriptiveStatistics`. These are
+   self-contained, testable now, and simplify G2 (e.g. removing
+   `Fitter.defaultRestarts`).
+3. **Then:** G1/G2 (threading + static state) — after the D2 god-method
+   decomposition and behavioural tests exist.
+4. **Then:** the remaining G8 items (I/O, filename filters, date/time, internal
+   duplication).
+5. **Last:** G6 (language features) — a cosmetic readability pass; doing it
+   earlier would churn code that G1/G2/G8 then rewrite. Keep records and
+   `var`/streams opt-in.
+
+Record each completed sub-item in `REVISION_LOG.md`.
+
+### G8. Eliminate redundant reimplementations (surveyed 2026-10-02)
+
+Several classes/methods hand-roll functionality already in the JDK or a
+dependency on the classpath (Commons Math3/Lang3/IO, ImageJ). Replacing them
+removes custom code that is more bug-prone than the mature equivalent.
+
+**Clearly redundant (replace outright):**
+
+- `Math.Optimisation.Fitter.doFit()` (`Fitter.java:59-138`) — a full hand-rolled
+  Nelder–Mead simplex, inherited by `IsoGaussianFitter`, `GaussianFitter3D`,
+  `NonIsoGaussianFitter`, `RoiFitter`, `PlateFitter`. Replace with
+  `org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer` +
+  `NelderMeadSimplex`.
+- `Fitter.root2` (`:26`) = `Math.pow(2.0, 0.5)` → `Math.sqrt(2.0)`.
+- `IAClasses.DSPProcessor.FFT`/`IFFT` (`DSPProcessor.java:238-332`) — hand-written
+  recursive Cooley–Tukey FFT → `org.apache.commons.math3.transform.FastFourierTransformer`.
+- `IAClasses.DataStatistics.calcMean`/`calcStdDev` (`:102-126`, `:150-163`) →
+  `StatUtils.mean` / `populationStandardDeviation` (class already `@Deprecated`, see B4).
+- `UtilClasses.GenVariables` charsets (`GenVariables.java:16-22`) → `java.nio.charset.StandardCharsets`.
+- `IO.File.FileExtensionFilter.accept` (`:35-43`) → `FilenameUtils.isExtension`.
+- `UtilClasses.GenUtils.getDelimiter()` (`:81-87`) → `File.separator`.
+- `IO.FileReader.getParamString()` (`:104-111`) → `String.join`; `getParamsArray()`
+  (`:82-89`) → `toArray(new String[0])`; `getParamIndex()` (`:161-163`) is a
+  pass-through over `List.indexOf`.
+- `IAClasses.Utils.calcDistance` (2-D, `:209-211`) → `Math.hypot`.
+- `Overlay.OverlayToRoi` (`:30-53`, "Copied from OverlayCommands") → `ij.plugin.OverlayCommands.overlayToRoi`.
+- `ImageProcessing.ImageBlurrer` (`:29-35`) → `ij.plugin.filter.GaussianBlur`.
+- `DateAndTime.Time.getDuration`/`getDurationAsString` (`:28-39`) → `java.time.Duration.between`
+  (also buggy: subtracts wall-clock components rather than elapsed time).
+
+**Partial overlap (inferior reimplementation; more involved):**
+
+- `IAClasses.Utils.arcTan` (`:324-354`) → `Math.atan2` + `Math.toDegrees` (0–360);
+  `calcEuclidDist` (`:213-223`) → `ml.distance.EuclideanDistance`;
+  `calcCovariance`/`covarianceMatrix` (`:235-278`) → `Covariance`;
+  `calcEigenvalues` (`:287-303`) → `EigenDecomposition`;
+  `generateGaussian` (`:400-433`) → `NormalDistribution.density`;
+  `getArrayMean` (`:435-443`) → `StatUtils.mean`.
+- `IAClasses.DataStatistics.calcPercentiles` (`:89-100`) → `Percentile`;
+  `findBestRegression`/`getRSquared` (`:214-258`) → `SimpleRegression`.
+- `Math.Optimisation.MultiGaussFitter`/`FloatingMultiGaussFitter.doMultiFit` —
+  finite-difference coordinate descent → `LevenbergMarquardtOptimizer` + `LeastSquaresBuilder`.
+- `DataProcessing.Interpolator.interpolateLinearly` (`:14-40`) and `DSPProcessor.upScale`
+  (`:186-226`) → `analysis.interpolation.LinearInterpolator`.
+- `IO.DataWriter.convertArrayToString` (`:123-132`) → `String.join`/`StringUtils.join`;
+  `transposeValues` (`:134-153`) → `MatrixUtils.createRealMatrix(...).transpose()`.
+- `IO.DataReader.readTabbedFile` (`:84-131`) → `CSVParser` + `CSVFormat.TDF`; NaN parse
+  (`:54-60`) → `NumberUtils.toDouble`.
+- `IO.File.FileName.makeValidFileName` (`:26-36`) → `FilenameUtils.removeExtension`.
+- `UtilClasses.GenUtils.checkRange` (`:111-119`) → `Math.floorMod`; `checkFileSep`
+  (`:154-167`) → `StringUtils.replaceChars`.
+- `UtilClasses.Utilities.getDate` (`:154-158`) → `java.time.DateTimeFormatter`;
+  `checkRange` (`:143-152`) → `Math.floorMod`.
+- `Particle.ParticleArray` duplicates TrackMate `SpotCollection` storage/add;
+  `Particle.refineCentroid` reimplements standard centroid localization.
+- `Math.Clustering.ClusterablePoint` → `ml.clustering.DoublePoint` (for the `Clusterable` role).
+
+**Internal duplication:**
+
+- `Cell.Cell.compareTo` ≡ `Cell.compare`; `Cell3D.Cell3D` same.
+- `Image.ImageChecker.isBinaryImage` ≡ `Binary.BinaryMaker.checkIfBinary`.
+- `IO.File.FileExtensionFilter` / `ImageFilter` / `IAClasses.OnlyExt` — three
+  near-identical filename filters.
+- `Extrema.MaximaFinder` (deprecated) facades over `MultiThreadedMaximaFinder`,
+  with 2-D local-max logic duplicated by `RunnableMaximaFinder`.
+
+**Verified NOT redundant** (no stdlib/commons equivalent; do not touch):
+`Math.Histogram.calcHistogram`, `Math.MSS`, `Math.Rand`, `Math.Correlation`,
+`Math.Clustering.StairsFitter`/`ZeroSlopeClusterOptimiser`, `DataProcessing.Smoother`,
+`Math.Optimisation.Plate`, `Graph.Dijkstra`, `IAClasses.SkeletonProcessor`,
+`IAClasses.FractalEstimator`, `Binary.EDMMaker`.
+
+**Sequencing:** see G7 — the pure-math items (`Fitter`, `DSPProcessor`, statistics)
+run before G1/G2; the legacy `IAClasses` items (`DataStatistics`, `OnlyExt`) ride
+on Decision 4 (deprecate-then-remove) rather than in-place rewrites.
 
 ---
 
@@ -575,9 +666,10 @@ in the phases above.
    with the other three repos, so ADAPT can pin to tags. IAClassLibrary's own tag
    (`v2.0.1`) is now live on JitPack. (Phase F)
 7. **M7 — Modern Java modernisation:** resource/logging fixes and mechanical
-   generics/boxing first (G3–G5), then the threading/static-state overhaul
-   (G1–G2) once Phase C/D2 tests exist, then the language-feature readability
-   pass (G6). (Phase G)
+   generics/boxing first (G3–G5), then the pure-math redundant-reimplementation
+   swaps (G8: `Fitter`, `DSPProcessor`, statistics), then the threading/
+   static-state overhaul (G1–G2) once Phase C/D2 tests exist, then the remaining
+   G8 items, then the language-feature readability pass (G6). (Phase G)
 
 Each milestone is independently shippable. M1 is the immediate next step and
 unblocks the ADAPT plan's M10 (upstream dependency hygiene).
