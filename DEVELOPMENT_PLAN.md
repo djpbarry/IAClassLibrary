@@ -343,6 +343,153 @@ lockstep and re-pin their IAClassLibrary dependency to `v2.0.1`.
 
 ---
 
+## Phase G — Modern Java modernisation (Java 21)
+
+**Status: survey complete (2026-10-02); no code changes yet.** The core is over
+a decade old and predates most of the language/API features now available on the
+Java 21 target. A full-pass review found systematic opportunities to improve
+efficiency, performance, readability, and thread-safety without changing public
+behaviour. Items are ordered by risk/impact: thread-safety and resource leaks
+first, mechanical language upgrades last. Each item lists the concrete sites
+found.
+
+### G1. Replace the hand-rolled `Thread` model with `java.util.concurrent`
+
+The processing pipeline is built on `Thread` subclasses with manual
+`start()`/`join()`:
+
+- `Process.MultiThreadedProcess` (`extends Thread`, self-`start()`/`join()` in
+  `getOutput()` at `MultiThreadedProcess.java:121-133`) is the base of ~15
+  subclasses; it already holds an unused `ExecutorService` (`:39`).
+- `Process.RunnableProcess` (`extends Thread`) is a second base for ~8 workers.
+- `Process.DistanceTransform.RiemannianDistanceTransform` hand-rolls four
+  `StepNThread` inner classes with manual `start()`/`join()` barriers
+  (`:65-117`, `:201`, `:268`, `:333`, `:395`).
+- `Process.Colocalise.MultiThreadedColocalise` uses raw `Thread[]` +
+  `start()`/`join()` (`:152-183`, `:248`, `:292`).
+- `Process.IO.MultiThreadedImageLoader` allocates an `Executors` pool then
+  bypasses it (`:62-70`), calling `start()` on `RunnablePixelLoader`.
+- `Extrema.MultiThreadedMaximaFinder` spawns anonymous `Thread`s to drain
+  `ProcessBuilder` output (`:439`, `:514`).
+
+Plan: convert `MultiThreadedProcess`/`RunnableProcess` to `implements Runnable`
+(or a small `ProcessStep` interface) and run stages through an
+`ExecutorService`/`ForkJoinPool`; consider **virtual threads** (Java 21) for the
+I/O- and process-bound stages. Do this only after the D2 extraction + Phase C
+tests exist, so behavioural equivalence can be asserted.
+
+### G2. Eliminate static mutable state (thread-safety)
+
+Shared mutable `static` fields are data-race hazards for a library whose
+processing is multi-threaded:
+
+- `Segmentation.RegionGrower` — `public static short terminal`/`intermediate`
+  plus `lambda`/`filtRad` (`RegionGrower.java:51-53`), mutated by
+  `RunnableRegionGrower` workers via static import. **Highest severity.**
+- `Extrema.MultiThreadedMaximaFinder` — ~30 mutable `static` config ints/shorts
+  (`:70-109`).
+- `Process.MultiThreadedProcess.OUTPUT_SEP`, and per-class label/feature index
+  constants across `MultiThreadedWatershed`, `MultiThreadedColocalise`,
+  `MultiThreadedGaussianFilter`, `MultiThreadedTopHatFilter`,
+  `MultiThreadedROIConstructor`, `SpotFeatures`, `Particle.COLOCALISED`.
+- `Trajectory.TrajectoryAnalysis` (`:48-63`) and
+  `Trajectory.DiffusionAnalyser.plotLegend` (`:36`).
+- `Graph.Dijkstra.index` (`:30`, unused), `GenUtils.maxline` (`:36`),
+  `IAClasses.SkeletonProcessor.branchpoint` (`:21`).
+
+Plan: convert to instance fields / configuration objects / method parameters;
+make true constants `final`. Do this before or alongside G1 so concurrency is
+actually safe.
+
+### G3. Collections, generics, and boxing
+
+- **Raw types (~35 sites):** `new ArrayList()`/`new LinkedList()`/
+  `new LinkedHashMap()` across `Process.MultiThreadedProcess`, `IO.DataReader`,
+  `IO.FileReader`, `Extrema.MultiThreadedMaximaFinder`,
+  `Trajectory.TrajectoryAnalysis`, `Process.ProcessPipeline`,
+  `Process.MapPixels`, `Graph.Graph`, `Math.Clustering.StairsFitter`/
+  `ZeroSlopeClusterOptimiser`/`ClusterablePointScore`,
+  `Curvature.CurvatureEstimator`, `Process.ROI.OverlayDrawer`/
+  `RunnableRoiConstructor`.
+- **Explicit type args → diamond (~20 sites):** `IO.FileReader`, `IAClasses.Region`,
+  `IAClasses.DSPProcessor`, `IAClasses.Utils`, `Trajectory.DiffusionAnalyser`,
+  `Math.Optimisation.FloatingMultiGaussFitter`/`MultiGaussFitter`.
+- **Deprecated boxing constructors (7 sites):** `new Integer(...)`/`new Double(...)`
+  in `IAClasses.DataStatistics`, `IAClasses.DSPProcessor`,
+  `Extrema.MultiThreadedMaximaFinder`, `Curvature.CurveAnalyser`, `IO.DataWriter`.
+- **Manual array growth/copy where a `List`/`Set` is clearer:**
+  `IAClasses.Pixel2.associations` (`Pixel2.java:70-87`, manual `System.arraycopy`
+  grow/shrink) and several `IAClasses.DataStatistics` slice/copy loops.
+
+### G4. Resource management (try-with-resources)
+
+Many streams/readers are closed manually or leak on exception/early return:
+
+- `IO.BioFormats.BioFormatsImg.reader` (field) is **never closed**.
+- `IO.BioFormats.BioFormatsFileReader` `ImageReader`s never closed (`:37`, `:43`).
+- `IO.BioFormats.BioFormatsFileLister` `ImageReader` closes manually and leaks on
+  `setId` throw (`:33-44`).
+- `IO.PropertyWriter.loadProperties` `FileInputStream` never closed (`:57`).
+- `IO.FileReader` `BufferedReader` leaks on the early `return` at `:129`.
+- `Extrema.MultiThreadedMaximaFinder` `BufferedReader`s never closed (`:442`, `:517`).
+- `UtilClasses.GenUtils` `BufferedReader` closed inside `try` not `finally` (`:198-210`).
+- `IO.DataReader` `Scanner`, `IO.DataWriter`/`Trajectory.TrajectoryAnalysis`
+  `CSVPrinter`, `IO.BioFormats.BioFormatsImageWriter` `TiffWriter`,
+  `Fluorescence.FluorescenceAnalyser` `PrintWriter`s — all manual close.
+
+Plan: convert to try-with-resources; note `CSVPrinter`, `Scanner`, `ImageReader`,
+and `TiffWriter` all implement `AutoCloseable`.
+
+### G5. Logging & error-handling normalisation
+
+- Remaining `System.out.println` debug/progress (should be `IJ.log`/`GenUtils`):
+  `Extrema.MultiThreadedMaximaFinder.java:432-538` (StarDist/ilastik process
+  output) and `Curvature.CurvatureEstimator.java:56-87`.
+- Direct `printStackTrace()` in `UtilClasses.GenUtils.logError` (`:177`) and
+  `Revision.Revision` (`:57`).
+- Broad/empty catches: `IO.BioFormats.BioFormatsFileLister.java:45-47` (comment-only),
+  `Revision.Revision.java:56-58`,
+  `Process.ROI.MultiThreadedROIConstructor.java:226-228`.
+
+### G6. Modern language features
+
+- **`switch` → arrow / switch expressions:** `UtilClasses.GenUtils` (`:269`),
+  `Process.Segmentation.MultiThreadedWatershed` (`:126`), `IAClasses.Region` (`:666`),
+  `Fluorescence.FluorescenceAnalyser` (`:101`),
+  `IO.BioFormats.BioFormatsImageWriter` (`:92`, `:123`),
+  `Image.ImageNormaliser` (`:39`), `IO.InputFileOpener` (`:63`),
+  `IO.OutputFolderOpener` (`:67`).
+- **`instanceof` + cast → pattern matching:** `Cell.Cell` (`:83`),
+  `IAClasses.Utils` (`:559`), `ParticleWriter.ParticleWriter` (`:38-45`),
+  `Process.ROI.MultiThreadedROIConstructor` (`:150`),
+  `UIClasses.PropertyExtractor` (many), `Math.Correlation.ImageCorrelator` (`:83`).
+- **Anonymous inner classes → lambdas:** `Extrema.MultiThreadedMaximaFinder`
+  (`:439`, `:514`), `UIClasses.SpecifyInputsDialog` (`:64`).
+- **String building:** `IO.FileReader` `concat` loop → `String.join` (`:104-110`);
+  `Trajectory.DiffusionAnalyser` `concat` accumulation (`:100`);
+  `MacroWriter.MacroWriter` multi-line `+` → text block (`:37-48`).
+- **`java.time`:** `UtilClasses.Utilities` `Date`/`SimpleDateFormat` →
+  `DateTimeFormatter` (`:154-158`). (`DateAndTime`/`TimeAndDate` already use
+  `java.time`.)
+- **Records:** `Cell.CellRegion` is a clean candidate (3 fields + accessors, no
+  logic); `Graph.Node` and `IAClasses.RegionEdge` are partial candidates if made
+  immutable. Other data holders (`Cell3D.CellRegion3D`, `Particle.Particle`,
+  `ClusterablePoint`, `Spot3D`, `Cell3D`) extend a class, so they are not
+  record-eligible.
+- **Null handling / dead code:** `Cell.Cell` and `Cell3D.Cell3D` contain redundant
+  `if (!(cell instanceof Cell)) throw new ClassCastException();` guards (the
+  parameter is already typed) — replace with `Objects.requireNonNull`.
+
+### G7. Sequencing & risk
+
+Do **G4/G5 (resource + logging)** and **G3 (mechanical generics/boxing)** first —
+low risk, no behaviour change, testable. Then **G1/G2 (threading + static state)**
+after Phase C/D2 tests exist. Leave **G6** (language features) last as a
+readability pass; keep records and `var`/streams as opt-in, not forced. Record
+each completed sub-item in `REVISION_LOG.md`.
+
+---
+
 ## Resolved decisions
 
 Resolved with the maintainer on 2026-09-24. These supersede the open questions
@@ -414,6 +561,10 @@ in the phases above.
 6. **M6 — Upstream hand-off:** confirm TrackMate version policy and Java target
    with the other three repos, so ADAPT can pin to tags. IAClassLibrary's own tag
    (`v2.0.1`) is now live on JitPack. (Phase F)
+7. **M7 — Modern Java modernisation:** resource/logging fixes and mechanical
+   generics/boxing first (G3–G5), then the threading/static-state overhaul
+   (G1–G2) once Phase C/D2 tests exist, then the language-feature readability
+   pass (G6). (Phase G)
 
 Each milestone is independently shippable. M1 is the immediate next step and
 unblocks the ADAPT plan's M10 (upstream dependency hygiene).
