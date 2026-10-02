@@ -8,15 +8,22 @@ provides reusable image-processing and analysis primitives consumed by other
 Fiji/ImageJ plugins, not a runnable application (there is no `main` method).
 
 - Build system: **Maven** (canonical), parent `org.scijava:pom-scijava` 45.1.0
-- Version in `pom.xml`: `2.0.0-SNAPSHOT` (working toward `2.0.0`)
+- Version in `pom.xml`: `2.0.1` (released, tag `v2.0.1`)
 - Key dependencies: `net.imagej:ij` / `imagej`, Bio-Formats (`ome`,
   `loci.formats`), ImgLib2 (`io.scif`, `net.imglib2`), TrackMate, MorphoLibJ,
   mcib3d-core, Apache Commons Math3/Lang3/CSV, imagescience.
 
+## Keep documentation in sync
+
+Every change to this repository (code, build, CI, or docs) must be followed, in
+the same pass, by a review of `DEVELOPMENT_PLAN.md` and `REVISION_LOG.md`,
+updating one or both as necessary — mark a phase/milestone done, record a new
+decision, or log a lesson. Never leave them describing the pre-change state.
+
 ## Build / test
 
 - Build/verify: `./mvnw verify`
-- CI command (see `.github/workflows/maven.yml`): `./mvnw --batch-mode --no-transfer-progress verify`
+- CI command (see `.github/workflows/maven.yml`): `./mvnw --batch-mode --update-snapshots verify`
 - Required JDK: **21** (per the CI workflow `setup-java` step)
 - There is a **Maven wrapper** (`mvnw`/`mvnw.cmd`) - use it instead of a system `mvn`.
 - Tests use **JUnit 5** (Jupiter) under `src/test/java`; run with `./mvnw test`.
@@ -139,20 +146,17 @@ to before editing:
   NetBeans "To change this template..." headers and use raw generic types
   (`new LinkedList()`), newer files use `@Override` and diamond syntax. Match the
   surrounding file rather than "modernizing" it.
-- **License headers are inconsistent**: `pom.xml` declares BSD-2, but many source
-  files carry GPL-v3 headers and others have NetBeans placeholder headers. Do not
-  add/rewrite license headers; leave existing ones alone.
+- **License headers are inconsistent**: `pom.xml` declares GPL-3 (Decision 1), but
+  source headers are mixed (GPL-v3 + NetBeans stubs). Do not add/rewrite license
+  headers; leave existing ones alone.
 
 ## Gotchas
 
 - **Tests exist** under `src/test/java` (JUnit 5). Run with `./mvnw test`.
-- **`BioFormatsImg.validID` is never set to `true`** anywhere, so
-  `isValidID()` always returns `false`. Don't rely on it for validity checks.
-- **`BioFormatsImg.clearImageData()` is a no-op** (the body is commented out,
-  with a note that clearing caused GUI problems). The internal `ImagePlus` is
-  intentionally kept.
-- **`BioFormatsImg.getLoadedImage()` returns the internal `img` directly** (the
-  duplicate logic is commented out) - callers get a shared reference, not a copy.
+- **`BioFormatsImg.clearImageData()` is a no-op** (intentionally empty, documented
+  via Javadoc). The internal `ImagePlus` is intentionally kept.
+- **`BioFormatsImg.getLoadedImage()` returns the internal `img` directly**
+  (documented via Javadoc) - callers get a shared reference, not a copy.
 - **`MultiThreadedProcess.getOutput()`** starts and joins the thread; calling it
   on an already-started/finished thread can throw `IllegalThreadStateException`,
   which is caught and logged.
@@ -167,6 +171,6 @@ to before editing:
   one before editing.
 - **Raw generic types and no `@Override`** appear in older files; do not "fix"
   them as part of unrelated changes.
-- The only tracked metadata/build config that matters for CI is `pom.xml` and
-  `.github/workflows/maven.yml`. Changes to `build.xml`/`nbproject/` have no
-  effect on CI.
+- CI-relevant config: `pom.xml`, `.github/workflows/maven.yml`,
+  `.github/workflows/javadoc.yml`, and `jitpack.yml`. Changes to `build.xml`/
+  `nbproject/` have no effect on CI.

@@ -61,7 +61,7 @@ downstream consumers — takes precedence throughout.
 
 Still outstanding from M1 (carried into the next session):
 
-- Release `2.0.0` (pom is now `2.0.0-SNAPSHOT`) and tag `v2.0.0` (Decision 2 / B2).
+- Release + tag — done: `2.0.1` / `v2.0.1` (2026-09-27).
 - Remove/ignore the stray untracked `nb-configuration.xml` and `out/` (L7).
 
 ### 2026-09-24 — Version 2.0.0 and release automation
@@ -72,9 +72,9 @@ Still outstanding from M1 (carried into the next session):
 - Replaced the pom-parsing version lookup with a manifest read:
   `Revision.getVersion()` reads `Implementation-Version`; `getVersionFromPom`
   is now `@Deprecated`.
-- B3/Decision 3: confirmed TrackMate resolves to 8.0.0 via the parent; the
-  `v2.0.0` tag (B2) is deferred to release time, and `TrackerLibrary`/ADAPT must
-  bump to TrackMate 8 + Java 21 in lockstep (M6).
+- B3/Decision 3: confirmed TrackMate resolves to 8.0.0 via the parent;
+  `TrackerLibrary`/ADAPT must bump to TrackMate 8 + Java 21 in lockstep (M6).
+  (The release landed as `v2.0.1` — see the 2026-09-27 entry.)
 
 ### 2026-09-24 — D1 dead/experimental code removal
 
@@ -156,7 +156,7 @@ Still outstanding from M1 (carried into the next session):
   within an image stack" but returns the frame/time index (`t`).
 - Documented **B4**: `TrackerLibrary` must migrate off the deprecated
   `IAClasses.DataStatistics` (→ commons-math3 `DescriptiveStatistics`) and
-  `IAClasses.ProgressDialog` (→ ImageJ native progress) before re-pinning `v2.0.0`.
+  `IAClasses.ProgressDialog` (→ ImageJ native progress) before re-pinning `v2.0.1`.
 
 ### 2026-09-25 — Package namespace decision (Decision 7)
 
@@ -164,7 +164,7 @@ Still outstanding from M1 (carried into the next session):
   `io.github.djpbarry.iaclasslibrary` (and Maven `groupId` `net.calm` →
   `io.github.djpbarry`), since `net.calm` was based on a non-existent domain.
   Kept the project/`artifactId` name. Executed in lockstep with the sibling
-  repos during the v2.0.0 hand-off (Phase F / M6), not solo.
+  repos during the v2.0.1 hand-off (Phase F / M6), not solo.
 
 ## 2024 — Bio-Formats loader consolidation
 

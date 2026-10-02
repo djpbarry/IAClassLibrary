@@ -20,6 +20,9 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
 - Record every decision, mistake, and lesson in
   [`REVISION_LOG.md`](REVISION_LOG.md) so the same modernisation of the sibling
   projects does not repeat them.
+- Keep this plan and `REVISION_LOG.md` in sync: after any repo change, review and
+  update one or both in the same pass (mark phases/milestones done, record
+  decisions, log lessons).
 
 ## Current state (context for the plan)
 
@@ -57,8 +60,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
 - **Two Bio-Formats loaders:** `IO.BioFormats.BioFormatsImg` (wraps
   `ImageReader`/`ImporterOptions`/`IMetadata`) and
   `IO.BioFormats.LocationAgnosticBioFormatsImg` (wraps `Importer`/`ImportProcess`).
-  A prior commit ("Removed references to LocationAgnosticBioFormatsImg") suggests
-  the latter may be orphaned — verify before relying on it.
+  Kept (Decision 5) and documented (D4) — it is public API.
 - **Process pipeline:** `Process.MultiThreadedProcess` (extends `Thread`,
   implements `Callable<BioFormatsImg>`) is the base for all processing steps,
   wired together by `Process.ProcessPipeline`. Workers follow a
@@ -70,7 +72,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   mcib3d-core, imagescience (Hessian), ImgLib2, SCIFIO, Bio-Formats, and
   commons-csv are each referenced in source. No obviously unused dependency.
 
-### Verified gotchas (from the code review)
+### Verified gotchas (from the code review — all fixed in D1/D5)
 
 - `BioFormatsImg.validID` is **never set to `true`**, so `isValidID()` always
   returns `false`.
@@ -176,7 +178,7 @@ note (the coordinated Java 21 / TrackMate 8.x move is now in progress).
 Remaining: `TrackerLibrary` (7.10.0) and ADAPT (7.14.0) must bump to 8.0.0 and
 Java 21 in lockstep (Phase F / M6).
 
-### B4. Downstream migration off deprecated `IAClasses` (blocks the v2.0.0 re-pin)
+### B4. Downstream migration off deprecated `IAClasses` (blocks the v2.0.1 re-pin)
 
 Cross-checking `TrackerLibrary`'s `net.calm.iaclasslibrary.*` usage against the
 v2.0.0-SNAPSHOT Javadoc found two legacy classes still in use by downstream code:
@@ -188,7 +190,7 @@ v2.0.0-SNAPSHOT Javadoc found two legacy classes still in use by downstream code
   — migrate to ImageJ's native progress.
 
 This is a documented prerequisite for `TrackerLibrary` (and any other consumer)
-to re-pin to `v2.0.0`, since both classes are `@Deprecated` (Decision 4) and
+to re-pin to `v2.0.1`, since both classes are `@Deprecated` (Decision 4) and
 slated for removal in a later major version.
 
 ---
@@ -358,7 +360,7 @@ in the phases above.
    pass — see Phase B1 item 4.
 2. **Versioning — semver.** Jump directly to major version `2.0.0` (development
    version `2.0.0-SNAPSHOT`) to reflect the scale of the upcoming changes; tag
-   `v2.0.0` on release. The existing `v1.032` tag is a mislabel of `v1.0.32`;
+   `v2.0.1` on release (the `v2.0.0` tag failed — see B2). The existing `v1.032` tag is a mislabel of `v1.0.32`;
    use the `vX.Y.Z` form going forward. Version bumps are automated with
    `maven-release-plugin` (`tagNameFormat=v@{project.version}`); the JAR version
    is read from the manifest, not `pom.xml` (see `REVISION_LOG.md`).
@@ -389,7 +391,7 @@ in the phases above.
    to `io.github.djpbarry`); the `artifactId` `iaclasslibrary` stays. This is a
    breaking change shared across the whole suite (`TrackerLibrary`, `Adapt`,
    `AdaptDataProcessing` all use the `net.calm.*` umbrella), so it is executed in
-   lockstep during the coordinated v2.0.0 hand-off (Phase F / M6), not solo.
+   lockstep during the coordinated v2.0.1 hand-off (Phase F / M6), not solo.
 
 ---
 
