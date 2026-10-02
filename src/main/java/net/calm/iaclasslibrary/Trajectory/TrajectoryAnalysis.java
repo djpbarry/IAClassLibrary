@@ -115,10 +115,10 @@ public class TrajectoryAnalysis implements PlugIn {
             TrajectoryAnalysis.INPUT_FRAME_INDEX--;
             TrajectoryAnalysis.INPUT_ID_INDEX--;
         }
-        ArrayList<String> labels = labelledData ? new ArrayList() : null;
+        ArrayList<String> labels = labelledData ? new ArrayList<>() : null;
         try {
             IJ.log(String.format("Reading %s...", inputFile.getAbsolutePath()));
-            inputData = DataReader.readCSVFile(inputFile, CSVFormat.DEFAULT, new ArrayList(), labels);
+            inputData = DataReader.readCSVFile(inputFile, CSVFormat.DEFAULT, new ArrayList<>(), labels);
             IJ.log("Parsing data...");
         } catch (Exception e) {
             GenUtils.error("Cannot read input file.");
@@ -167,9 +167,9 @@ public class TrajectoryAnalysis implements PlugIn {
     }
 
     double[][][] processData(double[][] inputData) {
-        ArrayList<Integer> lengths = new ArrayList();
-        idIndexMap = new LinkedHashMap();
-        LinkedHashMap<Double, Integer> localMap = new LinkedHashMap();
+        ArrayList<Integer> lengths = new ArrayList<>();
+        idIndexMap = new LinkedHashMap<>();
+        LinkedHashMap<Double, Integer> localMap = new LinkedHashMap<>();
         for (int i = 0; i < inputData.length; i++) {
             double thisID = inputData[i][INPUT_ID_INDEX];
             if (Double.isNaN(thisID)) {
@@ -276,10 +276,10 @@ public class TrajectoryAnalysis implements PlugIn {
 
     double[][][] calcRunLengths(double[][][] vels, double minVel) {
         int a = vels.length;
-        ArrayList<ArrayList<double[]>> runs = new ArrayList();
+        ArrayList<ArrayList<double[]>> runs = new ArrayList<>();
         for (int i = 0; i < a; i++) {
             int id = idIndexMap.get(i);
-            ArrayList<double[]> current = new ArrayList();
+            ArrayList<double[]> current = new ArrayList<>();
             int b = vels[i].length;
             if (b < 1) {
                 continue;
@@ -478,7 +478,7 @@ public class TrajectoryAnalysis implements PlugIn {
     }
 
     public String[] getFileHeadings(File inputFile, boolean labelledData) {
-        ArrayList<String> headings = new ArrayList();
+        ArrayList<String> headings = new ArrayList<>();
         try {
             DataReader.readFileHeadings(inputFile, CSVFormat.DEFAULT, headings, labelledData);
         } catch (Exception e) {

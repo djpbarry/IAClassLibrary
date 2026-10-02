@@ -103,7 +103,7 @@ public class DataStatistics {
         int i;
         double sum = 0.0d;
         int dataSize = data.length;
-//        zerocrossings = new ArrayList<Integer>();
+//        zerocrossings = new ArrayList<>();
 
         for (i = 0; i < dataSize; i++) {
 //            if (!(Double.isInfinite(data[i]) || Double.isNaN(data[i]))) {
@@ -115,7 +115,7 @@ public class DataStatistics {
 //                    minValue = data[i];
 //                }
 //                if (i < dataSize - 1 && (data[i] * data[i + 1] <= 0.0)) {
-//                    zerocrossings.add(new Integer(i));
+//                    zerocrossings.add(i);
 //                }
 //            } else {
 //                nans++;
@@ -126,7 +126,7 @@ public class DataStatistics {
     }
 
     private void findKeyPoints(double[] data) {
-        zerocrossings = new ArrayList<Integer>();
+        zerocrossings = new ArrayList<>();
         int length = data.length;
         for (int i = 0; i < length; i++) {
             if (!(Double.isInfinite(data[i]) || Double.isNaN(data[i]))) {
@@ -139,7 +139,7 @@ public class DataStatistics {
                     minIndex = i;
                 }
                 if (i > 0 && (data[i - 1] * data[i] <= 0.0) && data[i] < 0.0) {
-                    zerocrossings.add(new Integer(i));
+                    zerocrossings.add(i);
                 }
             } else {
                 nans++;

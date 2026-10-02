@@ -32,7 +32,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 public class DiffusionAnalyser {
 
     private static Plot msdPlot;
-    private static ArrayList<DescriptiveStatistics> globalMSD = new ArrayList<DescriptiveStatistics>();
+    private static ArrayList<DescriptiveStatistics> globalMSD = new ArrayList<>();
     private static String plotLegend = "";
     private double diffCoeff;
     private final float D_SCALING = 4.0f;
@@ -117,7 +117,7 @@ public class DiffusionAnalyser {
     }
 
     public void resetMSDPlot() {
-        globalMSD = new ArrayList<DescriptiveStatistics>();
+        globalMSD = new ArrayList<>();
         msdPlot = null;
     }
 }

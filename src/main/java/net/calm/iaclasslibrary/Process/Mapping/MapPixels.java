@@ -34,7 +34,7 @@ public class MapPixels extends MultiThreadedProcess {
 
     public MapPixels(MultiThreadedProcess[] inputs) {
         super(inputs);
-        this.map = new LinkedHashMap();
+        this.map = new LinkedHashMap<>();
     }
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {

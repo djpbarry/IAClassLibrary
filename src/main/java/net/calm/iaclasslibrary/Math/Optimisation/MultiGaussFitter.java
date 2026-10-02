@@ -181,7 +181,7 @@ public class MultiGaussFitter extends Fitter {
                 return getFits(spatialRes, xoffset, yoffset, magThresh, fitThresh);
             }
         }
-        ArrayList<IsoGaussian> fits = new ArrayList<IsoGaussian>();
+        ArrayList<IsoGaussian> fits = new ArrayList<>();
         for (int i = 0; i <= best; i++) {
             if (mag[best][i] > magThresh && r[i] > fitThresh) {
                 fits.add(new IsoGaussian((xe[best][i] + xoffset) * spatialRes,

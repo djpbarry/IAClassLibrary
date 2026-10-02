@@ -118,7 +118,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         super(null);
         this.radii = radii;
         this.thresh = thresh;
-        this.maxima = new ArrayList();
+        this.maxima = new ArrayList<>();
     }
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
@@ -192,7 +192,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             List<Spot> maximas = log.getResult();
             IJ.log(String.format("Found %d blobs.", maximas.size()));
             for (Spot s : maximas) {
-                s.putFeature(SpotFeatures.CHANNEL, new Double(channel));
+                s.putFeature(SpotFeatures.CHANNEL, (double) channel);
                 int[] pos = new int[3];
                 for (int d = 0; d < 3; d++) {
                     pos[d] = (int) Math.round(s.getFloatPosition(d) / calibration[d]);
@@ -222,7 +222,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             }
         }
         if (maxima == null) {
-            maxima = new ArrayList();
+            maxima = new ArrayList<>();
         }
 //        double[] minRadii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE], propLabels[HESSIAN_START_SCALE]);
 //        double[] maxRadii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE]);

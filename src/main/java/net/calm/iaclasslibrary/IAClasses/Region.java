@@ -20,11 +20,11 @@ import java.util.LinkedList;
  */
 public class Region {
 
-    protected ArrayList<short[]> seedPix = new ArrayList<short[]>();
-    protected ArrayList<Pixel> pix = new ArrayList<Pixel>();
-    protected LinkedList<short[]> borderPix = new LinkedList<short[]>();
-    protected LinkedList<short[]> expandedBorder = new LinkedList<short[]>();
-    protected ArrayList<float[]> centres = new ArrayList<float[]>();
+    protected ArrayList<short[]> seedPix = new ArrayList<>();
+    protected ArrayList<Pixel> pix = new ArrayList<>();
+    protected LinkedList<short[]> borderPix = new LinkedList<>();
+    protected LinkedList<short[]> expandedBorder = new LinkedList<>();
+    protected ArrayList<float[]> centres = new ArrayList<>();
     private double min = Double.MAX_VALUE, max = Double.MIN_VALUE, mean, seedMean, sigma;
     private double mfD[];
     protected boolean edge, active;
@@ -285,7 +285,7 @@ public class Region {
             return false;
         } else {
             borderPix = expandedBorder;
-            expandedBorder = new LinkedList<short[]>();
+            expandedBorder = new LinkedList<>();
             return true;
         }
     }
@@ -676,7 +676,7 @@ public class Region {
         if (newBorder == null) {
             return false;
         }
-        borderPix = new LinkedList<short[]>();
+        borderPix = new LinkedList<>();
         for (int j = 0; j < newBorder.length; j++) {
             addBorderPoint(newBorder[j], mask);
         }

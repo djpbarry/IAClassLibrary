@@ -47,7 +47,7 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
 
     public MultiThreadedProcess(MultiThreadedProcess[] inputs) {
         this.inputs = inputs;
-        this.outputDests = new LinkedList();
+        this.outputDests = new LinkedList<>();
         updateInputsWithOutput();
     }
 

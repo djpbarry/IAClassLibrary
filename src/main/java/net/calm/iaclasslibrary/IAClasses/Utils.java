@@ -126,7 +126,7 @@ public class Utils {
         if (image == null || x < 0 || x >= image.getWidth() || y < 0 || y >= image.getHeight()) {
             return null;
         }
-        ArrayList<Pixel> pixels = new ArrayList<Pixel>();
+        ArrayList<Pixel> pixels = new ArrayList<>();
         double currentDist, minDist = Double.MAX_VALUE;
 
         for (int i = x - radius; i <= x + radius; i++) {

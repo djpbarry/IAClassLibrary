@@ -81,7 +81,7 @@ public class Plate {
     }
 
     public LinkedList<Roi> drawRoi(double x, double y, double angle) {
-        LinkedList<Roi> rois = new LinkedList();
+        LinkedList<Roi> rois = new LinkedList<>();
         Rectangle bounds = outline.getBounds();
         double xc = bounds.width / 2.0;
         double yc = bounds.height / 2.0;

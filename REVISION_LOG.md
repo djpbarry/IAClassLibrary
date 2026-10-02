@@ -15,10 +15,23 @@ dated narrative plus the "what not to do again" notes.
 
 ---
 
-## 2026-10-02 — Phase G: resource management (G4) + logging (G5)
+## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
-Started the Java 21 modernisation survey (Phase G) and completed the two
+Started the Java 21 modernisation survey (Phase G) and completed the three
 low-risk items first, as sequenced in G7.
+
+### G3 — collections, generics, and boxing
+
+- Converted raw `new ArrayList()`/`new LinkedList()`/`new LinkedHashMap()` to
+  diamond (`<>`) across ~35 sites, and explicit type args to diamond across
+  ~20 sites (including the kept `IAClasses.Region`/`DSPProcessor`/`Utils`).
+- Replaced deprecated boxing constructors (`new Integer(...)`/`new Double(...)`)
+  with autoboxing/primitive casts in `DataStatistics`, `DSPProcessor`,
+  `MultiThreadedMaximaFinder`, `CurveAnalyser`, and `DataWriter`.
+- Parameterised two raw `List points = cluster.getPoints()` declarations to
+  `List<Clusterable>` in `ZeroSlopeClusterOptimiser`/`ClusterablePointScore`.
+- Deferred the "manual array growth/copy" item (`Pixel2.associations`,
+  `DataStatistics` slice/copy loops) — a structural change in deprecated classes.
 
 ### G4 — try-with-resources (resource management)
 

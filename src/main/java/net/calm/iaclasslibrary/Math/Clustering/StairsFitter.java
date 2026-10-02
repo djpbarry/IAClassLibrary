@@ -59,7 +59,7 @@ public class StairsFitter {
 //    }
 
     public boolean doFit(double[] xVals, double[] yVals, int[] range, double threshold) {
-        ArrayList<Clusterable> clusterInput = new ArrayList();
+        ArrayList<Clusterable> clusterInput = new ArrayList<>();
         int N = xVals.length;
         boolean fitted = false;
         if (yVals.length != N) {

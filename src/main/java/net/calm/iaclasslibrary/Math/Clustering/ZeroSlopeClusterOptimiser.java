@@ -76,7 +76,7 @@ public class ZeroSlopeClusterOptimiser<T extends CentroidCluster> {
     }
 
     double calculateSlope(Cluster cluster) {
-        List points = cluster.getPoints();
+        List<Clusterable> points = cluster.getPoints();
         if (points == null || !(points.get(0) instanceof WeightedObservedPoint)) {
             return Double.NaN;
         }

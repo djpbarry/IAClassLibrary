@@ -53,7 +53,7 @@ public class RunnableRoiConstructor extends RunnableProcess {
         labelImage.fill(Region.MASK_FOREGROUND);
         ObjectCreator3D creator3D = new ObjectCreator3D(labelImage);
         creator3D.drawObject(object);
-        ArrayList<Roi> objRois = new ArrayList();
+        ArrayList<Roi> objRois = new ArrayList<>();
         for (int z = 0; z < dims[2]; z++) {
             ByteProcessor maskSlice = new ByteProcessor(dims[0], dims[1], (byte[]) labelImage.getArray1D(z));
             maskSlice.setThreshold(1, 255, ImageProcessor.NO_LUT_UPDATE);

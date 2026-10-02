@@ -54,8 +54,8 @@ public class CurveAnalyser {
                 curvature[j] = calculateMengerCurvature(new Point(pix[j][0], pix[j][1]),
                         new Point(pix[i][0], pix[i][1]), new Point(pix[k][0], pix[k][1]));
                 if (cumulativeCurveStats != null) {
-                    cumulativeCurveStats.get(0).add(new Double(pix[j][0]));
-                    cumulativeCurveStats.get(1).add(new Double(pix[j][1]));
+                    cumulativeCurveStats.get(0).add((double) pix[j][0]);
+                    cumulativeCurveStats.get(1).add((double) pix[j][1]);
                     cumulativeCurveStats.get(2).add(curvature[j]);
                 }
             }

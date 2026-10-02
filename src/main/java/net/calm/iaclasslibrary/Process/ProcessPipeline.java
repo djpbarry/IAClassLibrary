@@ -28,7 +28,7 @@ public class ProcessPipeline implements Iterable<MultiThreadedProcess> {
     private final LinkedList<MultiThreadedProcess> pipeline;
 
     public ProcessPipeline() {
-        this.pipeline = new LinkedList();
+        this.pipeline = new LinkedList<>();
     }
 
     public void addProcess(MultiThreadedProcess process) {

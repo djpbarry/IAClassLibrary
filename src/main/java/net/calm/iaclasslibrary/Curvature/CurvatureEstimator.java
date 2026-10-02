@@ -84,7 +84,7 @@ public class CurvatureEstimator {
         }
 
         public void run() {
-            ArrayList<WeightedObservedPoint> coords = new ArrayList();
+            ArrayList<WeightedObservedPoint> coords = new ArrayList<>();
             if (ip.getPixel(x, y) > 0.0) {
                 for (int j = y - window; j <= y + window; j++) {
                     for (int i = x - window; i <= x + window; i++) {

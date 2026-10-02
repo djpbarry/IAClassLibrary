@@ -345,7 +345,7 @@ lockstep and re-pin their IAClassLibrary dependency to `v2.0.1`.
 
 ## Phase G — Modern Java modernisation (Java 21)
 
-**Status: G4 + G5 done (2026-10-02); G1–G3 and G6 pending.** The core is over
+**Status: G3 + G4 + G5 done (2026-10-02); G1–G2 and G6 pending.** The core is over
 a decade old and predates most of the language/API features now available on the
 Java 21 target. A full-pass review found systematic opportunities to improve
 efficiency, performance, readability, and thread-safety without changing public
@@ -402,6 +402,12 @@ make true constants `final`. Do this before or alongside G1 so concurrency is
 actually safe.
 
 ### G3. Collections, generics, and boxing
+
+**Status: done (2026-10-02).** Raw types, explicit type args, and deprecated
+boxing constructors converted; raw `List` declarations parameterised. The
+"manual array growth/copy" item (`Pixel2.associations`, `DataStatistics`
+slice/copy loops) is **deferred** — a structural change in deprecated classes,
+not a mechanical one.
 
 - **Raw types (~35 sites):** `new ArrayList()`/`new LinkedList()`/
   `new LinkedHashMap()` across `Process.MultiThreadedProcess`, `IO.DataReader`,

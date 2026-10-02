@@ -50,7 +50,7 @@ public class Graph {
     public void resetNodes() {
         for (Node n : getNodes()) {
             n.setDistance(Integer.MAX_VALUE);
-            n.setShortestPath(new LinkedList());
+            n.setShortestPath(new LinkedList<>());
         }
     }
 }

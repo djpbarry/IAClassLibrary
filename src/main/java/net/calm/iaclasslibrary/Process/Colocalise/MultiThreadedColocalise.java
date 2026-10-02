@@ -112,7 +112,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         double xySpatialRes = img.getXYSpatialRes(series).value().doubleValue();
         double zSpatialRes = img.getZSpatialRes(series).value().doubleValue();
         int N = spots.size();
-        LinkedHashMap<Integer, Integer> idToIndexMap = new LinkedHashMap<Integer, Integer>();
+        LinkedHashMap<Integer, Integer> idToIndexMap = new LinkedHashMap<>();
         List<Object3D> cells = cellPop.getObjectsList();
         for (int i = 0; i < cells.size(); i++) {
             idToIndexMap.put(((Cell3D) cells.get(i)).getID(), i);

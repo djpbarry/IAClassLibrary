@@ -283,7 +283,7 @@ public class Region2 {
             return false;
         } else {
             borderPix = expandedBorder;
-            expandedBorder = new LinkedList<Pixel2>();
+            expandedBorder = new LinkedList<>();
             return true;
         }
     }

@@ -32,7 +32,7 @@ import org.apache.commons.csv.CSVRecord;
 public class DataReader {
 
     public static double[][] readCSVFile(File file, CSVFormat format, ArrayList<String> colHeadings, ArrayList<String> rowLabels) throws IOException {
-        ArrayList<ArrayList<Double>> data = new ArrayList();
+        ArrayList<ArrayList<Double>> data = new ArrayList<>();
         int maxM = 0;
         try (CSVParser parser = CSVParser.parse(file, GenVariables.UTF8, format)) {
             for (CSVRecord record : parser) {
@@ -49,7 +49,7 @@ public class DataReader {
                         j++;
                     }
                     if (data.size() <= line) {
-                        data.add(new ArrayList());
+                        data.add(new ArrayList<>());
                     }
                     for (; j < record.size(); j++) {
                         double d;
@@ -82,7 +82,7 @@ public class DataReader {
     }
 
     public static double[][][] readTabbedFile(File file) throws IOException {
-        ArrayList<ArrayList<ArrayList<Double>>> data = new ArrayList();
+        ArrayList<ArrayList<ArrayList<Double>>> data = new ArrayList<>();
         int maxM = 0;
         int lineCount = 0;
         try (Scanner scan = new Scanner(file, GenVariables.UTF8_NAME)) {
@@ -92,12 +92,12 @@ public class DataReader {
                 lineScan.useDelimiter("\t");
                 ArrayList<ArrayList<Double>> currentRecord;
                 if (data.size() <= lineCount) {
-                    currentRecord = new ArrayList();
+                    currentRecord = new ArrayList<>();
                     data.add(currentRecord);
                 } else {
                     currentRecord = data.get(lineCount);
                 }
-                ArrayList<Double> lineData = new ArrayList();
+                ArrayList<Double> lineData = new ArrayList<>();
                 while (lineScan.hasNextDouble()) {
                     double d = lineScan.nextDouble();
                     lineData.add(d);

@@ -29,7 +29,7 @@ import java.util.ArrayList;
 public class BioFormatsFileLister {
 
     public static ArrayList<String> obtainValidFileList(File directory) {
-        ArrayList<String> fileNames = new ArrayList();
+        ArrayList<String> fileNames = new ArrayList<>();
         File[] files = directory.listFiles();
         for (File f : files) {
             String id = f.getAbsolutePath();

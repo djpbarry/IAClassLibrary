@@ -84,7 +84,7 @@ public class OverlayDrawer {
     }
 
     public static ArrayList<int[]> convertSpotsToMaximas(List<Spot> maximas, double[] calibration) {
-        ArrayList<int[]> maxima = new ArrayList();
+        ArrayList<int[]> maxima = new ArrayList<>();
         for (Spot s : maximas) {
             int[] pos = new int[3];
             for (int d = 0; d < 3; d++) {

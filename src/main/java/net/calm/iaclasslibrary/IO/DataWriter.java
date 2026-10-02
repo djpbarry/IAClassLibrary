@@ -113,7 +113,7 @@ public class DataWriter {
             }
         }
         Double[] meanVals = new Double[N + 1];
-        meanVals[0] = new Double(ds[0].getN());
+        meanVals[0] = (double) ds[0].getN();
         for (int j = 0; j < N; j++) {
             meanVals[j + 1] = ds[j].getMean();
         }
