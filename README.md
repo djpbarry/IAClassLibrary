@@ -33,13 +33,13 @@ Tests use JUnit 5 (Jupiter); run them with:
 ## Consuming
 
 The library is distributed via JitPack. Downstream projects (ADAPT,
-`TrackerLibrary`, `AdaptDataProcessing`) pin a tagged release (e.g. `v2.0.0`).
+`TrackerLibrary`, `AdaptDataProcessing`) pin a tagged release (e.g. `v2.0.1`).
 
 ## API Documentation
 
 Javadoc for the public API is published to
-<https://djpbarry.github.io/IAClassLibrary/> on every push to `development`
-(see `.github/workflows/javadoc.yml`).
+<https://djpbarry.github.io/IAClassLibrary/> on every push to `development` or
+`master` (see `.github/workflows/javadoc.yml`).
 
 ## Packages
 
