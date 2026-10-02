@@ -5,6 +5,11 @@
 # IDE
 /.idea/
 *.iml
+nb-configuration.xml
+/out/
+
+# Local tooling
+.crush.json
 
 # Maven wrapper jar (auto-downloaded on first run)
 .mvn/wrapper/maven-wrapper.jar
