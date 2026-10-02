@@ -30,6 +30,7 @@ import mcib3d.image3d.ImageInt;
 import net.calm.iaclasslibrary.Cell3D.*;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import org.apache.commons.math3.linear.ArrayRealVector;
 
 import java.io.File;
@@ -224,7 +225,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
                 pngWriter.writeImage(mask, maskPath, 0);
             }
         } catch (Exception e) {
-            IJ.log(String.format("Failed to save mask images in %s", maskDir.toFile().getAbsolutePath()));
+            GenUtils.logError(e, String.format("Failed to save mask images in %s", maskDir.toFile().getAbsolutePath()));
             return;
         }
     }

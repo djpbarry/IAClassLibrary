@@ -53,11 +53,11 @@ public class CurvatureEstimator {
         output.setValue(0.0);
         output.fill();
         int nProcessors = Runtime.getRuntime().availableProcessors();
-        System.out.println(String.format("%d processsors available", nProcessors));
+        IJ.log(String.format("%d processors available", nProcessors));
         try {
             ExecutorService exec = Executors.newFixedThreadPool(nProcessors);
             for (int y = window; y < height - window; y++) {
-                System.out.println(String.format("Line %d of %d...", (y - window), (height - window)));
+                IJ.log(String.format("Line %d of %d...", (y - window), (height - window)));
                 for (int x = window; x < width - window; x++) {
                     exec.submit(new CurveAnalyser(x, y, ip, output));
                 }
@@ -84,7 +84,6 @@ public class CurvatureEstimator {
         }
 
         public void run() {
-            System.out.println(String.format("%d %d", x, y));
             ArrayList<WeightedObservedPoint> coords = new ArrayList();
             if (ip.getPixel(x, y) > 0.0) {
                 for (int j = y - window; j <= y + window; j++) {

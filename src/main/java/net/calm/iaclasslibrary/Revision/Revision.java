@@ -1,5 +1,6 @@
 package net.calm.iaclasslibrary.Revision;
 
+import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -54,7 +55,7 @@ public class Revision {
 
 			return "Version not found!";
 		} catch (Exception e) {
-			e.printStackTrace();
+			GenUtils.logError(e, "Error reading pom.xml.");
 			return "Error reading pom.xml!";
 		}
 	}

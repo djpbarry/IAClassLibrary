@@ -429,7 +429,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
         cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
 
-        System.out.println(cmd.toString().replace(",", ""));
+        IJ.log(cmd.toString().replace(",", ""));
 
         try {
             ProcessBuilder pb = new ProcessBuilder(cmd).redirectErrorStream(true);
@@ -441,11 +441,11 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
                 public void run() {
                     try (BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
                         for (String line = stdIn.readLine(); line != null; ) {
-                            System.out.println(line);
+                            IJ.log(line);
                             line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
                         }
                     } catch (IOException e) {
-                        System.out.println(e.getMessage());
+                        GenUtils.logError(e, "Failed to read StarDist output.");
                     }
                 }
             };
@@ -457,9 +457,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             int exitValue = p.exitValue();
 
             if (exitValue != 0) {
-                System.out.println("StarDist exited with value " + exitValue + ". Please check output above for indications of the problem.");
+                IJ.log("StarDist exited with value " + exitValue + ". Please check output above for indications of the problem.");
             } else {
-                System.out.println("StarDist finished");
+                IJ.log("StarDist finished");
             }
             output = IJ.openImage((new File(stardistTempDir, starDistOutput).getAbsolutePath()));
             FileUtils.forceDelete(stardistTempDir);
@@ -504,7 +504,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             cmd.add(String.format("--output_filename_format=\"%s\"", new File(ilastikTempDir, ilastikOutput).getAbsolutePath()));
             cmd.add(String.format("\"%s\"", new File(ilastikTempDir, tempImage).getAbsolutePath()));
 
-            System.out.println(cmd.toString());
+            IJ.log(cmd.toString());
 
             ProcessBuilder pb = new ProcessBuilder(cmd).redirectErrorStream(true);
 
@@ -515,11 +515,11 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
                 public void run() {
                     try (BufferedReader stdIn = new BufferedReader(new InputStreamReader(is))) {
                         for (String line = stdIn.readLine(); line != null; ) {
-                            System.out.println(line);
+                            IJ.log(line);
                             line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
                         }
                     } catch (IOException e) {
-                        System.out.println(e.getMessage());
+                        GenUtils.logError(e, "Failed to read ilastik output.");
                     }
                 }
             };
@@ -531,9 +531,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             int exitValue = p.exitValue();
 
             if (exitValue != 0) {
-                System.out.println("ilastik exited with value " + exitValue + ". Please check output above for indications of the problem.");
+                IJ.log("ilastik exited with value " + exitValue + ". Please check output above for indications of the problem.");
             } else {
-                System.out.println("ilastik finished");
+                IJ.log("ilastik finished");
             }
             ImporterOptions io = new ImporterOptions();
             io.setCBegin(0, Integer.parseInt(props.getProperty(propLabels[ILASTIK_CHANNEL])));
