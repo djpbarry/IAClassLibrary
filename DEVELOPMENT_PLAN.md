@@ -345,7 +345,7 @@ lockstep and re-pin their IAClassLibrary dependency to `v2.0.1`.
 
 ## Phase G — Modern Java modernisation (Java 21)
 
-**Status: survey complete (2026-10-02); no code changes yet.** The core is over
+**Status: G4 + G5 done (2026-10-02); G1–G3 and G6 pending.** The core is over
 a decade old and predates most of the language/API features now available on the
 Java 21 target. A full-pass review found systematic opportunities to improve
 efficiency, performance, readability, and thread-safety without changing public
@@ -423,6 +423,10 @@ actually safe.
 
 ### G4. Resource management (try-with-resources)
 
+**Status: done (2026-10-02).** All sites below converted to try-with-resources;
+`BioFormatsImg` now implements `AutoCloseable` (`close()`), since its reader is
+a field-lifetime resource.
+
 Many streams/readers are closed manually or leak on exception/early return:
 
 - `IO.BioFormats.BioFormatsImg.reader` (field) is **never closed**.
@@ -437,10 +441,13 @@ Many streams/readers are closed manually or leak on exception/early return:
   `CSVPrinter`, `IO.BioFormats.BioFormatsImageWriter` `TiffWriter`,
   `Fluorescence.FluorescenceAnalyser` `PrintWriter`s — all manual close.
 
-Plan: convert to try-with-resources; note `CSVPrinter`, `Scanner`, `ImageReader`,
+Done: converted to try-with-resources; `CSVPrinter`, `Scanner`, `ImageReader`,
 and `TiffWriter` all implement `AutoCloseable`.
 
 ### G5. Logging & error-handling normalisation
+
+**Status: done (2026-10-02).** All `System.out`/`System.err` removed from
+`src/main` (only `GenUtils.logError`'s intentional `printStackTrace` remains).
 
 - Remaining `System.out.println` debug/progress (should be `IJ.log`/`GenUtils`):
   `Extrema.MultiThreadedMaximaFinder.java:432-538` (StarDist/ilastik process

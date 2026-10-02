@@ -15,6 +15,38 @@ dated narrative plus the "what not to do again" notes.
 
 ---
 
+## 2026-10-02 — Phase G: resource management (G4) + logging (G5)
+
+Started the Java 21 modernisation survey (Phase G) and completed the two
+low-risk items first, as sequenced in G7.
+
+### G4 — try-with-resources (resource management)
+
+- Converted all method-scoped readers/writers/streams to try-with-resources:
+  `BioFormatsFileReader` (2× `ImageReader`), `BioFormatsFileLister`,
+  `PropertyWriter` (`FileOutputStream` + a leaked `FileInputStream`),
+  `FileReader` (3× `BufferedReader`, incl. an early-`return` leak),
+  `GenUtils.readData`, `DataReader.readTabbedFile` (`Scanner`),
+  `DataWriter` (2× `CSVPrinter`), `TrajectoryAnalysis` (2× `CSVPrinter`),
+  `BioFormatsImageWriter` (2× `TiffWriter`),
+  `FluorescenceAnalyser` (2× `PrintWriter`), and
+  `MultiThreadedMaximaFinder` (2× process-drain `BufferedReader`).
+- `BioFormatsImg`'s `ImageReader` is a field-lifetime resource (used across
+  `setId`/`loadPixelData`/accessors), so a method-local try-with-resources does
+  not apply; made the class `implements AutoCloseable` with a `close()` method.
+
+### G5 — logging & error-handling normalisation
+
+- Removed all `System.out`/`System.err` from `src/main`: `MultiThreadedMaximaFinder`
+  (StarDist/ilastik) and `CurvatureEstimator` progress/debug now use `IJ.log`;
+  the per-pixel `System.out.println("%d %d")` debug line was deleted.
+- `Revision` and `MultiThreadedROIConstructor` now log via `GenUtils.logError`
+  (which includes the exception) instead of `printStackTrace` / a bare message.
+- Kept `GenUtils.logError`'s `printStackTrace()` (the canonical logger) and the
+  intentional silent skip in `BioFormatsFileLister`.
+
+---
+
 ## 2026-09-27 — Release 2.0.1 (B2, M6 kick-off)
 
 The first release attempt (version `2.0.0`, tag `v2.0.0`) failed in two places,
@@ -314,3 +346,14 @@ checkout can commit `mvnw` with CRLF endings that break the Linux runner.
 **Rule:** commit a `.gitattributes` with `mvnw text eol=lf` and
 `mvnw.cmd`/`*.bat text eol=crlf` alongside the wrapper, and verify `mvnw` is
 tracked with the executable bit (`git ls-files -s mvnw` shows `100755`).
+
+### L13 — Field-lifetime resources need `close()`/`AutoCloseable`, not try-with-resources
+
+The Bio-Formats `ImageReader` in `BioFormatsImg` is held as a field and used
+across many methods (`setId`, `loadPixelData`, accessors), so it cannot be
+wrapped in a method-local try-with-resources. The correct fix is to make the
+owning class `implements AutoCloseable` and expose a `close()`.
+
+**Rule:** distinguish method-scoped resources (try-with-resources) from
+object-lifetime resources (implement `AutoCloseable` + `close()`); never just
+ignore a field-held reader/stream because it "can't be wrapped in a try".
