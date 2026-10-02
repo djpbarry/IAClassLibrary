@@ -194,8 +194,7 @@ public class GenUtils {
         ArrayList<ArrayList<double[]>> output = new ArrayList<>();
         for (int i = 0; i < numOfFiles; i++) {
             output.add(new ArrayList<>());
-            try {
-                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(input[i])));
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(input[i])))) {
                 String line = br.readLine();
                 while (line != null) {
                     output.get(i).add(new double[cols]);
@@ -207,7 +206,6 @@ public class GenUtils {
                     }
                     line = br.readLine();
                 }
-                br.close();
             } catch (IOException e) {
                 IJ.error(e.toString());
             }

@@ -53,24 +53,24 @@ public class FileReader {
 
     public void readData(ArrayList<ArrayList<ArrayList<Double>>> data, File[] files, String delimiter) throws FileNotFoundException, IOException {
         for (int i = 0; i < numOfFiles; i++) {
-            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(files[i]), charSet));
-            filenames[i] = br.readLine();
-            ArrayList<String> thisParams = getParamsArray(br.readLine(), delimiter);
-            if (thisParams != null) {
-                int numThisParams = thisParams.size();
-                for (int p = 0; p < paramNames.size(); p++) {
-                    data.get(i).add(new ArrayList());
-                }
-                String line = br.readLine();
-                while (line != null) {
-                    Scanner scan = new Scanner(line).useDelimiter(delimiter + "\\s*");
-                    for (int k = 0; k < numThisParams; k++) {
-                        data.get(i).get(getParamIndex(thisParams.get(k), paramNames)).add(scan.nextDouble());
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(files[i]), charSet))) {
+                filenames[i] = br.readLine();
+                ArrayList<String> thisParams = getParamsArray(br.readLine(), delimiter);
+                if (thisParams != null) {
+                    int numThisParams = thisParams.size();
+                    for (int p = 0; p < paramNames.size(); p++) {
+                        data.get(i).add(new ArrayList());
                     }
-                    line = br.readLine();
+                    String line = br.readLine();
+                    while (line != null) {
+                        Scanner scan = new Scanner(line).useDelimiter(delimiter + "\\s*");
+                        for (int k = 0; k < numThisParams; k++) {
+                            data.get(i).get(getParamIndex(thisParams.get(k), paramNames)).add(scan.nextDouble());
+                        }
+                        line = br.readLine();
+                    }
                 }
             }
-            br.close();
         }
         Arrays.sort(filenames);
     }
@@ -111,46 +111,46 @@ public class FileReader {
     }
 
     public double readParam(File paramFile, int headerSize, String paramName) throws FileNotFoundException, IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(paramFile)));
-        for (int j = 0; j < headerSize; j++) {
-            br.readLine();
-        }
-        String line = br.readLine();
-        while (line != null) {
-            Scanner scan = new Scanner(line);
-            if (paramName.equalsIgnoreCase(scan.next())) {
-                double val;
-                try {
-                    val = scan.nextDouble();
-                } catch (Exception e) {
-                    scan.next();
-                    val = scan.nextDouble();
-                }
-                return val;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(paramFile)))) {
+            for (int j = 0; j < headerSize; j++) {
+                br.readLine();
             }
-            line = br.readLine();
+            String line = br.readLine();
+            while (line != null) {
+                Scanner scan = new Scanner(line);
+                if (paramName.equalsIgnoreCase(scan.next())) {
+                    double val;
+                    try {
+                        val = scan.nextDouble();
+                    } catch (Exception e) {
+                        scan.next();
+                        val = scan.nextDouble();
+                    }
+                    return val;
+                }
+                line = br.readLine();
+            }
         }
-        br.close();
         return Double.NaN;
     }
 
     public void getParamList(File[] files, String delimiter) throws FileNotFoundException, IOException {
         for (int i = 0; i < numOfFiles; i++) {
-            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(files[i]), charSet));
-            for (int j = 0; j < headerSize; j++) {
-                br.readLine();
-            }
-            String paramLine = br.readLine();
-            if (paramLine != null) {
-                Scanner scan = new Scanner(paramLine).useDelimiter(delimiter);
-                while (scan.hasNext()) {
-                    String thisParam = scan.next().trim();
-                    if (!paramNames.contains(thisParam)) {
-                        paramNames.add(thisParam);
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(files[i]), charSet))) {
+                for (int j = 0; j < headerSize; j++) {
+                    br.readLine();
+                }
+                String paramLine = br.readLine();
+                if (paramLine != null) {
+                    Scanner scan = new Scanner(paramLine).useDelimiter(delimiter);
+                    while (scan.hasNext()) {
+                        String thisParam = scan.next().trim();
+                        if (!paramNames.contains(thisParam)) {
+                            paramNames.add(thisParam);
+                        }
                     }
                 }
             }
-            br.close();
         }
     }
 

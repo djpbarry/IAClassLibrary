@@ -34,16 +34,18 @@ import java.io.IOException;
 public class BioFormatsFileReader {
     
     public static int getSeriesCount(String fileName) throws FormatException, IOException {
-        ImageReader reader = new ImageReader();
-        reader.setId(fileName);
-        return reader.getSeriesCount();
+        try (ImageReader reader = new ImageReader()) {
+            reader.setId(fileName);
+            return reader.getSeriesCount();
+        }
     }
     
     public static int getChannelCount(String fileName, int series) throws FormatException, IOException {
-        ImageReader reader = new ImageReader();
-        reader.setId(fileName);
-        reader.setSeries(series);
-        return reader.getSizeC();
+        try (ImageReader reader = new ImageReader()) {
+            reader.setId(fileName);
+            reader.setSeries(series);
+            return reader.getSizeC();
+        }
     }
 
     public static double getXYSpatialRes(String fileName, int series) throws FormatException, IOException {

@@ -41,26 +41,27 @@ public class PropertyWriter {
             return;
         }
         File outputFile = new File(String.format("%s%s%s", outputDir, File.separator, filename));
-        FileOutputStream stream = new FileOutputStream(outputFile);
-        if (XML) {
-            props.storeToXML(stream, comment);
-        } else {
-            props.store(stream, comment);
+        try (FileOutputStream stream = new FileOutputStream(outputFile)) {
+            if (XML) {
+                props.storeToXML(stream, comment);
+            } else {
+                props.store(stream, comment);
+            }
         }
-        stream.close();
     }
 
     public static void loadProperties(Properties props, String label, File file) throws IOException, InterruptedException, InvocationTargetException {
         if (file == null || file.isDirectory()) {
             file = Utilities.getFile(file, label, false);
         }
-        FileInputStream stream = new FileInputStream(file);
-        String ext = FilenameUtils.getExtension(file.getName());
-        boolean XML = ext.contains("xml") || ext.contains("XML");
-        if (XML) {
-            props.loadFromXML(stream);
-        } else {
-            props.load(stream);
+        try (FileInputStream stream = new FileInputStream(file)) {
+            String ext = FilenameUtils.getExtension(file.getName());
+            boolean XML = ext.contains("xml") || ext.contains("XML");
+            if (XML) {
+                props.loadFromXML(stream);
+            } else {
+                props.load(stream);
+            }
         }
     }
 }

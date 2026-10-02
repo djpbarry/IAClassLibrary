@@ -42,7 +42,7 @@ import java.io.IOException;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class BioFormatsImg {
+public class BioFormatsImg implements AutoCloseable {
 
     protected ImporterOptions io;
     private final ImageReader reader;
@@ -152,6 +152,17 @@ public class BioFormatsImg {
      * the loaded image is deliberately retained in memory.
      */
     public void clearImageData() {
+    }
+
+    /**
+     * Closes the underlying Bio-Formats reader. Safe to call after loading is
+     * complete; subsequent accessor calls will fail or return defaults.
+     *
+     * @throws IOException if the reader cannot be closed
+     */
+    @Override
+    public void close() throws IOException {
+        reader.close();
     }
 
     public String getId() {

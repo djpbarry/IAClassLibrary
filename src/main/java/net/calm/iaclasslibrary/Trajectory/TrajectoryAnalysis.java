@@ -416,9 +416,9 @@ public class TrajectoryAnalysis implements PlugIn {
         if (file.exists()) {
             file.delete();
         }
-        CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(file), GenVariables.ISO), CSVFormat.EXCEL);
-        printer.printRecord(((Object[]) headings));
-        printer.close();
+        try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(file), GenVariables.ISO), CSVFormat.EXCEL)) {
+            printer.printRecord(((Object[]) headings));
+        }
         for (int i = 0; i < data.length; i++) {
             double[][] d = data[i];
             DataWriter.saveValues(d, file, null, null, true);
@@ -442,9 +442,9 @@ public class TrajectoryAnalysis implements PlugIn {
         if (velData.exists()) {
             velData.delete();
         }
-        CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velData), GenVariables.ISO), CSVFormat.EXCEL);
-        printer.printRecord(((Object[]) new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "Net Distance", "Cumulative Distance", "Duration (s)"}));
-        printer.close();
+        try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velData), GenVariables.ISO), CSVFormat.EXCEL)) {
+            printer.printRecord(((Object[]) new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "Net Distance", "Cumulative Distance", "Duration (s)"}));
+        }
         for (int i = 0; i < runs.length; i++) {
             double[][] v = runs[i];
             DataWriter.saveValues(v, velData, null, null, true);

@@ -439,8 +439,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             Thread t = new Thread(Thread.currentThread().getName() + "-" + p.hashCode()) {
                 @Override
                 public void run() {
-                    BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                    try {
+                    try (BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
                         for (String line = stdIn.readLine(); line != null; ) {
                             System.out.println(line);
                             line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
@@ -514,8 +513,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             Thread t = new Thread(Thread.currentThread().getName() + "-" + p.hashCode()) {
                 @Override
                 public void run() {
-                    BufferedReader stdIn = new BufferedReader(new InputStreamReader(is));
-                    try {
+                    try (BufferedReader stdIn = new BufferedReader(new InputStreamReader(is))) {
                         for (String line = stdIn.readLine(); line != null; ) {
                             System.out.println(line);
                             line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P

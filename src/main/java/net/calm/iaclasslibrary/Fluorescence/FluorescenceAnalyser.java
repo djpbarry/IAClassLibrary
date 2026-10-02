@@ -196,15 +196,10 @@ public class FluorescenceAnalyser {
     }
 
     public static void generateFluorMapsPerCellOverTime(FloatProcessor[] fluorMaps, File childDir) {
-        File mean;
-        File std;
-        PrintWriter meanStream;
-        PrintWriter stdStream;
-        try {
-            mean = new File(childDir + File.separator + "MeanFluorescenceIntensity.csv");
-            meanStream = new PrintWriter(new FileOutputStream(mean));
-            std = new File(childDir + File.separator + "STDFluorescenceIntensity.csv");
-            stdStream = new PrintWriter(new FileOutputStream(std));
+        File mean = new File(childDir + File.separator + "MeanFluorescenceIntensity.csv");
+        File std = new File(childDir + File.separator + "STDFluorescenceIntensity.csv");
+        try (PrintWriter meanStream = new PrintWriter(new FileOutputStream(mean));
+                PrintWriter stdStream = new PrintWriter(new FileOutputStream(std))) {
             meanStream.print("Normalised Distance from net.calm.iaclasslibrary.Cell Edge,");
             stdStream.print("Normalised Distance from net.calm.iaclasslibrary.Cell Edge,");
             int mapHeight = fluorMaps[0].getHeight();
@@ -226,8 +221,6 @@ public class FluorescenceAnalyser {
                 meanStream.println();
                 stdStream.println();
             }
-            meanStream.close();
-            stdStream.close();
         } catch (FileNotFoundException e) {
             GenUtils.logError(e, "Failed to write fluorescence maps.");
         }

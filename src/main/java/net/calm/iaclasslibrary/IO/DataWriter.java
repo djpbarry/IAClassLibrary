@@ -37,13 +37,13 @@ public class DataWriter {
      * @throws IOException
      */
     public static void saveTextWindow(TextWindow tw, File dataFile, String headings) throws IOException {
-        CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile), GenVariables.ISO), CSVFormat.EXCEL);
-        int L = tw.getTextPanel().getLineCount();
-        printLine(printer, headings);
-        for (int l = 0; l < L; l++) {
-            printLine(printer, tw.getTextPanel().getLine(l));
+        try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile), GenVariables.ISO), CSVFormat.EXCEL)) {
+            int L = tw.getTextPanel().getLineCount();
+            printLine(printer, headings);
+            for (int l = 0; l < L; l++) {
+                printLine(printer, tw.getTextPanel().getLine(l));
+            }
         }
-        printer.close();
     }
 
     static void printLine(CSVPrinter printer, String line) throws IOException {
@@ -59,34 +59,34 @@ public class DataWriter {
     }
 
     public static void saveValues(double[][] vals, File dataFile, String[] colHeadings, String[] rowLabels, boolean append) throws IOException {
-        CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile, append), GenVariables.ISO), CSVFormat.EXCEL);
-        int L = vals.length;
+        try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(dataFile, append), GenVariables.ISO), CSVFormat.EXCEL)) {
+            int L = vals.length;
 //        if (rowLabels != null) {
 //            colHeadings = ArrayUtils.addAll(new String[]{"Label"}, colHeadings);
 //        }
-        if (colHeadings != null) {
-            printer.printRecord((Object[]) colHeadings);
-        }
-        for (int l = 0; l < L; l++) {
-            if (vals[l] != null) {
-                if (rowLabels != null) {
-                    if (rowLabels.length > l) {
-                        printer.print(rowLabels[l]);
-                    } else {
-                        printer.print(" ");
+            if (colHeadings != null) {
+                printer.printRecord((Object[]) colHeadings);
+            }
+            for (int l = 0; l < L; l++) {
+                if (vals[l] != null) {
+                    if (rowLabels != null) {
+                        if (rowLabels.length > l) {
+                            printer.print(rowLabels[l]);
+                        } else {
+                            printer.print(" ");
+                        }
                     }
-                }
-                for (double v : vals[l]) {
-                    if (!Double.isNaN(v)) {
-                        printer.print(v);
-                    } else {
-                        printer.print(" ");
+                    for (double v : vals[l]) {
+                        if (!Double.isNaN(v)) {
+                            printer.print(v);
+                        } else {
+                            printer.print(" ");
+                        }
                     }
+                    printer.println();
                 }
-                printer.println();
             }
         }
-        printer.close();
     }
 
     public static void saveValues(ArrayList<ArrayList<Double>> vals, File dataFile, String[] colHeadings, String[] rowLabels, boolean append) throws IOException {

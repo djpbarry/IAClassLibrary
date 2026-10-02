@@ -73,16 +73,16 @@ public class BioFormatsImageWriter {
         MetadataTools.populateMetadata(meta, 0, filename.getName(), false, "XYZCT",
                 FormatTools.getPixelTypeString(pixelType), w, h, 1, 1, 1, 1);
 
-        TiffWriter writer = new TiffWriter();
-        writer.setMetadataRetrieve(meta);
-        writer.setValidBitsPerPixel(32);
-        writer.setId(id);
-        if (lut != null) {
-            writer.setColorModel(lut);
+        try (TiffWriter writer = new TiffWriter()) {
+            writer.setMetadataRetrieve(meta);
+            writer.setValidBitsPerPixel(32);
+            writer.setId(id);
+            if (lut != null) {
+                writer.setColorModel(lut);
+            }
+            writer.setCompression("LZW");
+            writer.saveBytes(0, img);
         }
-        writer.setCompression("LZW");
-        writer.saveBytes(0, img);
-        writer.close();
     }
 
     public static void saveStack(ImageStack stack, File filename, IndexColorModel lut, int pixelType, String dimOrder, int[] dims, boolean bigTiff) throws DependencyException, ServiceException, FormatException, IOException {
@@ -108,31 +108,31 @@ public class BioFormatsImageWriter {
             MetadataTools.populateMetadata(meta, s, filename.getName(), false, dimOrder,
                     FormatTools.getPixelTypeString(pixelType), dims[0], dims[1], dims[2], dims[3], dims[4], 1);
         }
-        TiffWriter writer = new TiffWriter();
-        writer.setMetadataRetrieve(meta);
-        writer.setValidBitsPerPixel(bitDepth);
-        writer.setId(id);
-        if (lut != null) {
-            writer.setColorModel(lut);
-        }
-        writer.setCompression(TiffCompression.LZW.toString());
-        for (int s = 0; s < nSlices; s++) {
-            MetadataTools.populateMetadata(meta, s, filename.getName(), false, dimOrder,
-                    FormatTools.getPixelTypeString(pixelType), dims[0], dims[1], dims[2], dims[3], dims[4], 1);
-            byte[] img;
-            switch (pixelType) {
-                case (FormatTools.FLOAT):
-                    img = getFloatPix(stack.getProcessor(s + 1));
-                    break;
-                case (FormatTools.UINT16):
-                    img = getShortPix(stack.getProcessor(s + 1));
-                    break;
-                default:
-                    img = (byte[]) ((stack.getProcessor(s + 1)).getPixels());
+        try (TiffWriter writer = new TiffWriter()) {
+            writer.setMetadataRetrieve(meta);
+            writer.setValidBitsPerPixel(bitDepth);
+            writer.setId(id);
+            if (lut != null) {
+                writer.setColorModel(lut);
             }
-            writer.saveBytes(s, img);
+            writer.setCompression(TiffCompression.LZW.toString());
+            for (int s = 0; s < nSlices; s++) {
+                MetadataTools.populateMetadata(meta, s, filename.getName(), false, dimOrder,
+                        FormatTools.getPixelTypeString(pixelType), dims[0], dims[1], dims[2], dims[3], dims[4], 1);
+                byte[] img;
+                switch (pixelType) {
+                    case (FormatTools.FLOAT):
+                        img = getFloatPix(stack.getProcessor(s + 1));
+                        break;
+                    case (FormatTools.UINT16):
+                        img = getShortPix(stack.getProcessor(s + 1));
+                        break;
+                    default:
+                        img = (byte[]) ((stack.getProcessor(s + 1)).getPixels());
+                }
+                writer.saveBytes(s, img);
+            }
         }
-        writer.close();
     }
 
     static byte[] getFloatPix(ImageProcessor ip) {

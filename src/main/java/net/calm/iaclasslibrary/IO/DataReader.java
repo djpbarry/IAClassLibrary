@@ -83,31 +83,32 @@ public class DataReader {
 
     public static double[][][] readTabbedFile(File file) throws IOException {
         ArrayList<ArrayList<ArrayList<Double>>> data = new ArrayList();
-        Scanner scan = new Scanner(file, GenVariables.UTF8_NAME);
         int maxM = 0;
         int lineCount = 0;
-        while (scan.hasNextLine()) {
-            String line = scan.nextLine();
-            Scanner lineScan = new Scanner(line);
-            lineScan.useDelimiter("\t");
-            ArrayList<ArrayList<Double>> currentRecord;
-            if (data.size() <= lineCount) {
-                currentRecord = new ArrayList();
-                data.add(currentRecord);
-            } else {
-                currentRecord = data.get(lineCount);
-            }
-            ArrayList<Double> lineData = new ArrayList();
-            while (lineScan.hasNextDouble()) {
-                double d = lineScan.nextDouble();
-                lineData.add(d);
-            }
-            if (lineData.size() > 0) {
-                currentRecord.add(lineData);
-            } else if (currentRecord.size() > 0) {
-                lineCount++;
-                if (data.get(lineCount - 1).size() > maxM) {
-                    maxM = data.get(lineCount - 1).size();
+        try (Scanner scan = new Scanner(file, GenVariables.UTF8_NAME)) {
+            while (scan.hasNextLine()) {
+                String line = scan.nextLine();
+                Scanner lineScan = new Scanner(line);
+                lineScan.useDelimiter("\t");
+                ArrayList<ArrayList<Double>> currentRecord;
+                if (data.size() <= lineCount) {
+                    currentRecord = new ArrayList();
+                    data.add(currentRecord);
+                } else {
+                    currentRecord = data.get(lineCount);
+                }
+                ArrayList<Double> lineData = new ArrayList();
+                while (lineScan.hasNextDouble()) {
+                    double d = lineScan.nextDouble();
+                    lineData.add(d);
+                }
+                if (lineData.size() > 0) {
+                    currentRecord.add(lineData);
+                } else if (currentRecord.size() > 0) {
+                    lineCount++;
+                    if (data.get(lineCount - 1).size() > maxM) {
+                        maxM = data.get(lineCount - 1).size();
+                    }
                 }
             }
         }
@@ -126,7 +127,6 @@ public class DataReader {
                 }
             }
         }
-        scan.close();
         return output;
     }
 

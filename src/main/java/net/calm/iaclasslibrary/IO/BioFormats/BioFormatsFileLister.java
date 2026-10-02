@@ -30,18 +30,14 @@ public class BioFormatsFileLister {
 
     public static ArrayList<String> obtainValidFileList(File directory) {
         ArrayList<String> fileNames = new ArrayList();
-        ImageReader reader = new ImageReader();
         File[] files = directory.listFiles();
         for (File f : files) {
             String id = f.getAbsolutePath();
-            try {
+            try (ImageReader reader = new ImageReader()) {
                 // Attempt to set the file to be read
                 reader.setId(id);
 
                 fileNames.add(f.getName());
-
-                // Close the reader
-                reader.close();
             } catch (FormatException | IOException e) {
                 // Not a readable file - skip it.
             }
