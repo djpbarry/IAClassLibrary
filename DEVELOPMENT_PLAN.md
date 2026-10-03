@@ -661,6 +661,32 @@ rewrite), the string-join items (trailing-delimiter behaviour), and
 run before G1/G2; the legacy `IAClasses` items (`DataStatistics`, `OnlyExt`) ride
 on Decision 4 (deprecate-then-remove) rather than in-place rewrites.
 
+### G9. Optimise `RiemannianDistanceTransform`
+
+`Process.DistanceTransform.RiemannianDistanceTransform` is a gradient-weighted
+(Riemannian/anisotropic) distance transform: it accumulates a metric
+`w = (|∇I| + 1 + λ)/(1 + λ)` along each axis, then runs four separable 1D passes
+(Z→Y→X→Z) of `min_j (f[j] + (g[j] − g[i])²)`. There is **no drop-in equivalent**
+in the dependency tree (mcib3d `EdtFloat` is Euclidean; MorphoLibJ is
+chamfer/geodesic; ImageJ `EDM` is Euclidean), so the logic stays but the
+implementation should be tightened:
+
+1. **Efficiency — O(n²) → O(n):** each `StepNThread` 1D minimisation is O(n²).
+   Because `g` is a monotone cumulative sum of strictly positive weights, this is
+   the *distance transform of a sampled function*, computable in **O(n)** with the
+   Felzenszwalb–Huttenlocher lower-envelope algorithm. Output-identical; the
+   largest win (runtime is currently quadratic in the longest axis).
+2. **Accuracy:** compute the cumulative metric and the envelope in `double` and
+   cast to `float` only at output — `float32` squared distances lose precision
+   past ~4096 per dimension.
+3. **Threading:** route the four stages through a shared
+   `ExecutorService`/`ForkJoinPool` instead of spawning `4 × nbCPUs` fresh
+   `Thread`s per call (this is the same site already listed under G1 Step 4(b)).
+
+**Status: not started.** Independent of G1/G2 except item 3 (which shares G1 Step
+4(b)). Add a characterisation test pinning the current O(n²) output before
+rewriting — same discipline as the G8 numerical rewrites.
+
 ---
 
 ## Resolved decisions
@@ -741,7 +767,8 @@ in the phases above.
    generics/boxing first (G3–G5), then the pure-math redundant-reimplementation
    swaps (G8: `Fitter`, `DSPProcessor`, statistics), then the threading/
    static-state overhaul (G1–G2) once Phase C/D2 tests exist, then the remaining
-   G8 items, then the language-feature readability pass (G6). (Phase G)
+   G8 items, the `RiemannianDistanceTransform` optimisation (G9), and the
+   language-feature readability pass (G6). (Phase G)
 
 Each milestone is independently shippable. M1 is the immediate next step and
 unblocks the ADAPT plan's M10 (upstream dependency hygiene).
