@@ -124,6 +124,20 @@ left as-is (deprecated — Decision 4).
   text block (risky string change), `Utilities.getDate`→`java.time` (pattern
   syntax differs between `SimpleDateFormat` and `DateTimeFormatter`).
 
+### G1/G2 — progress (Step 0 + Step 1 start)
+
+- **Step 0 (characterise):** `MultiThreadedProcess`/`RunnableProcess`/`ProcessPipeline`
+  contracts locked — `getOutput()` self-`start()`/`join()`s; `exec` is subclass-owned;
+  `RunnableProcess` is a named `Thread` worker base.
+- **Step 1 (D2):** the pure-math helpers were already extracted (`calcDistance`,
+  `getThreshold`, `getMinFilArea`, `getMinCellArea`). Hardened static constants to
+  `final`: `RegionGrower.lambda`/`filtRad` and `MultiThreadedMaximaFinder`'s ~30
+  `propLabels` index constants + `BACKGROUND` (verified unassigned). Version → `2.0.3`.
+- **Remaining (the real race):** `RegionGrower.terminal`/`intermediate` are `public
+  static`, written once in `findCellRegions` and read by `RunnableRegionGrower`
+  workers via static import — the highest-severity G2 item, needs passing as params
+  or instance state.
+
 ---
 
 ## 2026-09-27 — Release 2.0.1 (B2, M6 kick-off)

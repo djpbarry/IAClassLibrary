@@ -380,11 +380,12 @@ The processing pipeline is built on `Thread` subclasses with manual
 - `Extrema.MultiThreadedMaximaFinder` spawns anonymous `Thread`s to drain
   `ProcessBuilder` output (`:439`, `:514`).
 
-Plan: convert `MultiThreadedProcess`/`RunnableProcess` to `implements Runnable`
-(or a small `ProcessStep` interface) and run stages through an
-`ExecutorService`/`ForkJoinPool`; consider **virtual threads** (Java 21) for the
-I/O- and process-bound stages. Do this only after the D2 extraction + Phase C
-tests exist, so behavioural equivalence can be asserted.
+Plan (revised 2026-10-02): keep `MultiThreadedProcess`/`RunnableProcess`
+`extends Thread` (public-API freeze); modernise the internal worker threads to
+`ExecutorService`/`ForkJoinPool` and use **virtual threads** (Java 21) for the
+I/O- and process-bound stages. See the G1/G2 execution plan below. Do this only
+after the D2 extraction + Phase C tests exist, so behavioural equivalence can be
+asserted.
 
 ### G2. Eliminate static mutable state (thread-safety)
 
@@ -408,6 +409,38 @@ processing is multi-threaded:
 Plan: convert to instance fields / configuration objects / method parameters;
 make true constants `final`. Do this before or alongside G1 so concurrency is
 actually safe.
+
+### G1/G2 — execution plan (ordered)
+
+**Decision:** keep `MultiThreadedProcess`/`RunnableProcess` `extends Thread`
+(public-API freeze); modernise only the internal worker threads. Revisit a
+`Runnable`-based base at the next major version.
+
+Order: D2 decompose → behavioural tests → G2 static state → G1 threading.
+
+0. **Characterise** — read `MultiThreadedProcess`, `RunnableProcess`, and the
+   pipeline subclasses to lock their contracts (`setup`/`run`/`duplicate`/
+   `getOutput`).
+1. **D2 — decompose** — `RegionGrower`: extract `getThreshold`/`getSeedPoints`/
+   region-growth core; move `terminal`/`intermediate`/`lambda`/`filtRad` out of
+   static scope. `MultiThreadedMaximaFinder`: extract config parsing + local-max
+   detection.
+2. **Behavioural tests** — cover the extracted RegionGrower helpers, MaximaFinder
+   config/labels, and `MultiThreadedProcess` mechanics (`getOutput` duplicate,
+   `outputDests` wiring, `duplicate()`).
+3. **G2 — static state (safe-first):** (a) delete unused statics (`Dijkstra.index`,
+   `SkeletonProcessor.branchpoint`); (b) mark true constants `final` (`OUTPUT_SEP`,
+   label/feature constants, `SpotFeatures`, `Particle.COLOCALISED`); (c) config
+   statics → instance fields (`MultiThreadedMaximaFinder` ~30, `TrajectoryAnalysis`,
+   `DiffusionAnalyser.plotLegend`); (d) `RegionGrower.terminal/intermediate/lambda/
+   filtRad` → instance/params (after 1–2).
+4. **G1 — threading:** (a) `MultiThreadedProcess`/`RunnableProcess` route work
+   through the existing `exec` / a managed pool; (b) `RiemannianDistanceTransform`
+   4 inner `Thread`s → `ExecutorService` + `Future`; (c) `MultiThreadedColocalise`
+   raw `Thread[]` → `ExecutorService`; (d) `MultiThreadedImageLoader` use its
+   executor; (e) `MultiThreadedMaximaFinder` process-drain → virtual threads.
+
+Each step compiles + tests green; record progress in `REVISION_LOG.md`.
 
 ### G3. Collections, generics, and boxing
 
