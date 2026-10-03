@@ -409,7 +409,10 @@ processing is multi-threaded:
   fields → instance (`inputFile`, `minVel`, `minDist`, `framesPerSec`,
   `smoothingWindow`, `smooth`, `interpolate`, `labelledData`, `INPUT_*`;
   `minPointsForMSD` → `final`).
-- `Trajectory.DiffusionAnalyser.plotLegend` (`:36`).
+- `Trajectory.DiffusionAnalyser.plotLegend` (`:36`) — **N/A (global by design):**
+  `plotLegend`/`msdPlot`/`globalMSD` form the population-MSD-plot accumulator,
+  exposed via `public static getMsdPlot()`; left static (same decision as
+  TrackerLibrary's `ParticleTrajectory`).
 - `Graph.Dijkstra.index` (`:30`, unused), `GenUtils.maxline` (`:36`),
   `IAClasses.SkeletonProcessor.branchpoint` (`:21`).
 
@@ -439,7 +442,8 @@ Order: D2 decompose → behavioural tests → G2 static state → G1 threading.
    `SkeletonProcessor.branchpoint`); (b) mark true constants `final` (`OUTPUT_SEP`,
    label/feature constants, `SpotFeatures`, `Particle.COLOCALISED`); (c) config
    statics → instance fields (`MultiThreadedMaximaFinder` ~30 already `final`
-   constants; `TrajectoryAnalysis` done; `DiffusionAnalyser.plotLegend`); (d)
+   constants; `TrajectoryAnalysis` done; `DiffusionAnalyser.plotLegend` N/A —
+   global by design); (d)
    `RegionGrower.terminal/intermediate/lambda/
    filtRad` → instance/params — **done** (terminal/intermediate removed; passed
    as params).
