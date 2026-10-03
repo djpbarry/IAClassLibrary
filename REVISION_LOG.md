@@ -36,6 +36,26 @@ Version → `2.0.6`. Full suite: 34/34 green.
 
 ---
 
+## 2026-10-03 — G2: `TrajectoryAnalysis` static config → instance fields
+
+Converted the 13 mutable `private static` fields in `Trajectory.TrajectoryAnalysis`
+to instance fields, removing the hidden global state shared across every instance
+and every `run()` invocation:
+
+- `inputFile`, `minVel`, `minDist`, `framesPerSec`, `smoothingWindow`, `smooth`,
+  `interpolate`, `labelledData`, and the four `INPUT_*_INDEX` column indices are
+  now instance fields (constructor + `showDialog` assign `this.<field>`).
+- `minPointsForMSD` (never reassigned) is now a `final` instance field.
+- `run()`'s `labelledData` column-shift now mutates the instance fields, not the
+  class statics.
+
+No public-API change (all fields were `private`); the only behavioural change is
+that a new instance no longer inherits the previous instance's settings.
+
+Version → `2.0.7`. Full suite: 34/34 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three

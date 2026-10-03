@@ -44,14 +44,14 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  */
 public class TrajectoryAnalysis implements PlugIn {
 
-    private static File inputFile;
-    private static double minVel = 0.01;
-    private static double minDist = 0.0;
-    private static double framesPerSec = 3.0;
-    private static int minPointsForMSD = 10;
-    private static int smoothingWindow = 1;
-    private static boolean smooth = false, interpolate = false;
-    private static int INPUT_X_INDEX = 2, INPUT_Y_INDEX = 3, INPUT_ID_INDEX = 10, INPUT_FRAME_INDEX = 0;
+    private File inputFile;
+    private double minVel = 0.01;
+    private double minDist = 0.0;
+    private double framesPerSec = 3.0;
+    private final int minPointsForMSD = 10;
+    private int smoothingWindow = 1;
+    private boolean smooth = false, interpolate = false;
+    private int INPUT_X_INDEX = 2, INPUT_Y_INDEX = 3, INPUT_ID_INDEX = 10, INPUT_FRAME_INDEX = 0;
     private final int _X_ = 0, _Y_ = 1, _T_ = 2, _ID_ = 3;
     private final int V_Fr = 0, V_X = 1, V_Y = 2, V_M = 3, V_Th = 4, V_F = 5, V_ID = 6, V_D = 7, V_T = 8;
     private final String TITLE = "net.calm.iaclasslibrary.net.calm.trackerlibrary.Trajectory Analysis";
@@ -60,22 +60,22 @@ public class TrajectoryAnalysis implements PlugIn {
     private LinkedHashMap<Integer, Integer> idIndexMap;
     private final boolean batch;
     public static final String MSD = "Mean_Square_Displacements.csv";
-    private static boolean labelledData = false;
+    private boolean labelledData = false;
     private boolean openResultsDirectory = true;
 
     public TrajectoryAnalysis(double minVel, double minDist, double framesPerSec, int smoothingWindow, boolean smooth, boolean interpolate, boolean labelledData, boolean batch, boolean openResultsDirectory, int[] cols) {
         this(batch);
-        TrajectoryAnalysis.minVel = minVel;
-        TrajectoryAnalysis.minDist = minDist;
-        TrajectoryAnalysis.framesPerSec = framesPerSec;
-        TrajectoryAnalysis.smoothingWindow = smoothingWindow;
-        TrajectoryAnalysis.smooth = smooth;
-        TrajectoryAnalysis.interpolate = interpolate;
-        TrajectoryAnalysis.labelledData = labelledData;
-        TrajectoryAnalysis.INPUT_X_INDEX = cols[0];
-        TrajectoryAnalysis.INPUT_Y_INDEX = cols[1];
-        TrajectoryAnalysis.INPUT_FRAME_INDEX = cols[2];
-        TrajectoryAnalysis.INPUT_ID_INDEX = cols[3];
+        this.minVel = minVel;
+        this.minDist = minDist;
+        this.framesPerSec = framesPerSec;
+        this.smoothingWindow = smoothingWindow;
+        this.smooth = smooth;
+        this.interpolate = interpolate;
+        this.labelledData = labelledData;
+        this.INPUT_X_INDEX = cols[0];
+        this.INPUT_Y_INDEX = cols[1];
+        this.INPUT_FRAME_INDEX = cols[2];
+        this.INPUT_ID_INDEX = cols[3];
         this.openResultsDirectory = openResultsDirectory;
     }
 
@@ -110,10 +110,10 @@ public class TrajectoryAnalysis implements PlugIn {
         }
         headingsArray = getFileHeadings(inputFile, labelledData);
         if (labelledData) {
-            TrajectoryAnalysis.INPUT_X_INDEX--;
-            TrajectoryAnalysis.INPUT_Y_INDEX--;
-            TrajectoryAnalysis.INPUT_FRAME_INDEX--;
-            TrajectoryAnalysis.INPUT_ID_INDEX--;
+            INPUT_X_INDEX--;
+            INPUT_Y_INDEX--;
+            INPUT_FRAME_INDEX--;
+            INPUT_ID_INDEX--;
         }
         ArrayList<String> labels = labelledData ? new ArrayList<>() : null;
         try {

@@ -405,8 +405,11 @@ processing is multi-threaded:
   constants across `MultiThreadedWatershed`, `MultiThreadedColocalise`,
   `MultiThreadedGaussianFilter`, `MultiThreadedTopHatFilter`,
   `MultiThreadedROIConstructor`, `SpotFeatures`, `Particle.COLOCALISED`.
-- `Trajectory.TrajectoryAnalysis` (`:48-63`) and
-  `Trajectory.DiffusionAnalyser.plotLegend` (`:36`).
+- `Trajectory.TrajectoryAnalysis` (`:48-63`) — **done (2026-10-03):** 13 static
+  fields → instance (`inputFile`, `minVel`, `minDist`, `framesPerSec`,
+  `smoothingWindow`, `smooth`, `interpolate`, `labelledData`, `INPUT_*`;
+  `minPointsForMSD` → `final`).
+- `Trajectory.DiffusionAnalyser.plotLegend` (`:36`).
 - `Graph.Dijkstra.index` (`:30`, unused), `GenUtils.maxline` (`:36`),
   `IAClasses.SkeletonProcessor.branchpoint` (`:21`).
 
@@ -436,7 +439,7 @@ Order: D2 decompose → behavioural tests → G2 static state → G1 threading.
    `SkeletonProcessor.branchpoint`); (b) mark true constants `final` (`OUTPUT_SEP`,
    label/feature constants, `SpotFeatures`, `Particle.COLOCALISED`); (c) config
    statics → instance fields (`MultiThreadedMaximaFinder` ~30 already `final`
-   constants; `TrajectoryAnalysis`, `DiffusionAnalyser.plotLegend`); (d)
+   constants; `TrajectoryAnalysis` done; `DiffusionAnalyser.plotLegend`); (d)
    `RegionGrower.terminal/intermediate/lambda/
    filtRad` → instance/params — **done** (terminal/intermediate removed; passed
    as params).
