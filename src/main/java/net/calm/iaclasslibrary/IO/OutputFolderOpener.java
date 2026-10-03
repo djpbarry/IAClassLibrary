@@ -65,14 +65,14 @@ public class OutputFolderOpener implements Runnable {
                 result = JFileChooser.ERROR_OPTION;
             }
             switch (result) {
-                case JFileChooser.CANCEL_OPTION:
+                case JFileChooser.CANCEL_OPTION -> {
                     Toolkit.getDefaultToolkit().beep();
                     boolean exit = addExitOption ? IJ.showMessageWithCancel("Exit", "Do you wish to exit?") : true;
                     if (exit) {
                         return;
                     }
-                    break;
-                case JFileChooser.APPROVE_OPTION:
+                }
+                case JFileChooser.APPROVE_OPTION -> {
                     newDirectory = fileChooser.getSelectedFile();
                     if (!(newDirectory.isDirectory() && newDirectory.exists())) {
                         IJ.showMessage("Invalid Directory!");
@@ -80,10 +80,11 @@ public class OutputFolderOpener implements Runnable {
                     } else {
                         validDirectory = true;
                     }
-                    break;
-                default:
+                }
+                default -> {
                     GenUtils.error("Error opening output directory.");
                     return;
+                }
             }
         }
     }

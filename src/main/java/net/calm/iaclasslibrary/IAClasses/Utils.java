@@ -524,8 +524,8 @@ public class Utils {
      * @deprecated use {@link net.calm.iaclasslibrary.ParticleWriter.ParticleWriter#drawParticle(ij.process.ImageProcessor, Particle.Particle, boolean, double, double, int) instead
      */
     public static boolean drawParticle(ImageProcessor image, Particle p, double tol, double res, boolean invert) {
-        if (p instanceof IsoGaussian) {
-            return draw2DGaussian(image, (IsoGaussian) p, tol, res, invert);
+        if (p instanceof IsoGaussian gaussian) {
+            return draw2DGaussian(image, gaussian, tol, res, invert);
         } else {
             return drawBlob(image, p, res);
         }

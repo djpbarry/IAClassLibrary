@@ -80,14 +80,14 @@ public class ImageCorrelator implements MacroExtension {
 
     public String handleExtension(String name, Object[] args) {
         if (name.contentEquals(extensionFunctionNames[0])) {
-            if (!(args[0] instanceof String && args[1] instanceof String && args[2] instanceof String)) {
+            if (!(args[0] instanceof String arg0 && args[1] instanceof String arg1 && args[2] instanceof String arg2)) {
                 IJ.log(String.format("Error: arguments passed to %s are not valid.", extensionFunctionNames[0]));
                 return "";
             }
-            this.roi = WindowManager.getImage((String) args[0]).getRoi();
-            this.image1 = WindowManager.getImage((String) args[0]).getProcessor();
-            this.image2 = WindowManager.getImage((String) args[1]).getProcessor();
-            this.label = (String) args[2];
+            this.roi = WindowManager.getImage(arg0).getRoi();
+            this.image1 = WindowManager.getImage(arg0).getProcessor();
+            this.image2 = WindowManager.getImage(arg1).getProcessor();
+            this.label = arg2;
             run();
         }
         return null;

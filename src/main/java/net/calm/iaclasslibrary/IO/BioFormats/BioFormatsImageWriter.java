@@ -88,17 +88,11 @@ public class BioFormatsImageWriter {
     public static void saveStack(ImageStack stack, File filename, IndexColorModel lut, int pixelType, String dimOrder, int[] dims, boolean bigTiff) throws DependencyException, ServiceException, FormatException, IOException {
         String id = filename.getAbsolutePath();
 
-        int bitDepth;
-        switch (pixelType) {
-            case FormatTools.FLOAT:
-                bitDepth = 32;
-                break;
-            case FormatTools.UINT16:
-                bitDepth = 16;
-                break;
-            default:
-                bitDepth = 8;
-        }
+        int bitDepth = switch (pixelType) {
+            case FormatTools.FLOAT -> 32;
+            case FormatTools.UINT16 -> 16;
+            default -> 8;
+        };
 
         ServiceFactory factory = new ServiceFactory();
         OMEXMLService service = factory.getInstance(OMEXMLService.class);
@@ -119,17 +113,11 @@ public class BioFormatsImageWriter {
             for (int s = 0; s < nSlices; s++) {
                 MetadataTools.populateMetadata(meta, s, filename.getName(), false, dimOrder,
                         FormatTools.getPixelTypeString(pixelType), dims[0], dims[1], dims[2], dims[3], dims[4], 1);
-                byte[] img;
-                switch (pixelType) {
-                    case (FormatTools.FLOAT):
-                        img = getFloatPix(stack.getProcessor(s + 1));
-                        break;
-                    case (FormatTools.UINT16):
-                        img = getShortPix(stack.getProcessor(s + 1));
-                        break;
-                    default:
-                        img = (byte[]) ((stack.getProcessor(s + 1)).getPixels());
-                }
+                byte[] img = switch (pixelType) {
+                    case FormatTools.FLOAT -> getFloatPix(stack.getProcessor(s + 1));
+                    case FormatTools.UINT16 -> getShortPix(stack.getProcessor(s + 1));
+                    default -> (byte[]) ((stack.getProcessor(s + 1)).getPixels());
+                };
                 writer.saveBytes(s, img);
             }
         }

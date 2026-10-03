@@ -109,6 +109,21 @@ unscaled inverse), and `Fitter.doFit()` now delegates to `SimplexOptimizer` +
 → `distribution.NormalDistribution.density` (behind `UtilsTest`). `IAClasses.DataStatistics`
 left as-is (deprecated — Decision 4).
 
+### G6 — modern language features
+
+- Converted `switch` statements to arrow/switch expressions across `GenUtils`,
+  `MultiThreadedWatershed`, `Region`, `FluorescenceAnalyser`, `ImageNormaliser`,
+  `InputFileOpener`, `OutputFolderOpener`, and `BioFormatsImageWriter`.
+- Converted `instanceof` + cast to pattern matching in `Cell`, `ParticleWriter`,
+  `MultiThreadedROIConstructor`, `ImageCorrelator`, `Utils`, and `PropertyExtractor`.
+- Replaced the redundant `null`/`instanceof` guards in `Cell`/`Cell3D` `compareTo`/
+  `compare` with `Objects.requireNonNull`; converted the two anonymous `Thread`s in
+  `MultiThreadedMaximaFinder` to lambdas.
+- Skipped (deliberately): records (API-breaking), `SpecifyInputsDialog`
+  `AbstractAction`→lambda (`Action` is not a functional interface), `MacroWriter`
+  text block (risky string change), `Utilities.getDate`→`java.time` (pattern
+  syntax differs between `SimpleDateFormat` and `DateTimeFormatter`).
+
 ---
 
 ## 2026-09-27 — Release 2.0.1 (B2, M6 kick-off)

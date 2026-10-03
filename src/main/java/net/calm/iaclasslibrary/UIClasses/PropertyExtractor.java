@@ -38,42 +38,40 @@ public class PropertyExtractor {
     public static void setProperties(final Properties props, Container container, int readWrite) {
         Component[] comps = container.getComponents();
         for (Component c : comps) {
-            if (c instanceof Container) {
-                if (readWrite == PropertyExtractor.WRITE && c instanceof GUIMethods) {
-                    ((GUIMethods) c).setVariables();
-                } else if (readWrite == PropertyExtractor.READ && c instanceof Updateable) {
-                    ((Updateable) c).update();
+            if (c instanceof Container containerComponent) {
+                if (readWrite == PropertyExtractor.WRITE && c instanceof GUIMethods methods) {
+                    methods.setVariables();
+                } else if (readWrite == PropertyExtractor.READ && c instanceof Updateable updateable) {
+                    updateable.update();
                 }
-                setProperties(props, (Container) c, readWrite);
+                setProperties(props, containerComponent, readWrite);
             }
 //            if (!c.isEnabled()) {
 //                continue;
 //            }
-            if (c instanceof JLabel) {
-                JLabel label = ((JLabel) c);
+            if (c instanceof JLabel label) {
                 Component currentComponent = label.getLabelFor();
-                if (currentComponent instanceof JTextField) {
+                if (currentComponent instanceof JTextField textField) {
                     if (readWrite == PropertyExtractor.WRITE) {
-                        props.setProperty(label.getText(), ((JTextField) currentComponent).getText());
+                        props.setProperty(label.getText(), textField.getText());
                     } else if (readWrite == PropertyExtractor.READ) {
-                        ((JTextField) currentComponent).setText(props.getProperty(label.getText()));
+                        textField.setText(props.getProperty(label.getText()));
                     }
-                } else if (currentComponent instanceof JComboBox) {
+                } else if (currentComponent instanceof JComboBox comboBox) {
                     if (readWrite == PropertyExtractor.WRITE) {
-                        Object selectedItem = ((JComboBox) currentComponent).getSelectedItem();
+                        Object selectedItem = comboBox.getSelectedItem();
                         if (selectedItem != null) {
                             props.setProperty(label.getText(), selectedItem.toString());
                         }
                     } else if (readWrite == PropertyExtractor.READ) {
-                        ((JComboBox) currentComponent).setSelectedItem(props.getProperty(label.getText()));
+                        comboBox.setSelectedItem(props.getProperty(label.getText()));
                     }
-                } else if (currentComponent instanceof JScrollPane) {
+                } else if (currentComponent instanceof JScrollPane scrollPane) {
                     //TODO: Extract selections from property file
-                    Component[] scrollPaneComps = ((JScrollPane) currentComponent).getViewport().getComponents();
+                    Component[] scrollPaneComps = scrollPane.getViewport().getComponents();
                     if (!(scrollPaneComps.length > 1)) {
-                        if (scrollPaneComps[0] instanceof JList) {
-                            JList list = ((JList) scrollPaneComps[0]);
-                            ListModel listModel = ((JList) scrollPaneComps[0]).getModel();
+                        if (scrollPaneComps[0] instanceof JList list) {
+                            ListModel listModel = list.getModel();
                             if (readWrite == PropertyExtractor.WRITE) {
                                 int n = listModel.getSize();
                                 int p = 0;
@@ -87,11 +85,11 @@ public class PropertyExtractor {
                         }
                     }
                 }
-            } else if (c instanceof JToggleButton) {
+            } else if (c instanceof JToggleButton toggleButton) {
                 if (readWrite == PropertyExtractor.WRITE) {
-                    props.setProperty(((JToggleButton) c).getText(), String.format("%b", ((JToggleButton) c).isSelected()));
+                    props.setProperty(toggleButton.getText(), String.format("%b", toggleButton.isSelected()));
                 } else if (readWrite == PropertyExtractor.READ) {
-                    ((JToggleButton) c).setSelected(Boolean.parseBoolean(props.getProperty(((JToggleButton) c).getText())));
+                    toggleButton.setSelected(Boolean.parseBoolean(props.getProperty(toggleButton.getText())));
                 }
             }
         }

@@ -346,8 +346,8 @@ lockstep and re-pin their IAClassLibrary dependency to `v2.0.1`.
 
 ## Phase G — Modern Java modernisation (Java 21)
 
-**Status: G3 + G4 + G5 done; G8 done for FFT + Fitter + 7 mechanical items
-(2026-10-02). Remaining: G1–G2, G6, and the G8 statistics/string/date-time items.** The core is over
+**Status: G3 + G4 + G5 + G6 done; G8 done for FFT + Fitter + mechanical + statistics
+items (2026-10-02). Remaining: G1–G2 and a few deferred G8 items.** The core is over
 a decade old and predates most of the language/API features now available on the
 Java 21 target. A full-pass review found systematic opportunities to improve
 efficiency, performance, readability, and thread-safety without changing public
@@ -473,6 +473,12 @@ and `TiffWriter` all implement `AutoCloseable`.
   `Process.ROI.MultiThreadedROIConstructor.java:226-228`.
 
 ### G6. Modern language features
+
+**Status: done (2026-10-02) for `switch`/`instanceof`/lambdas/`requireNonNull`.**
+Skipped: records (API-breaking), `SpecifyInputsDialog` `AbstractAction`→lambda
+(`Action` is not a functional interface), `MacroWriter` text block (risky string
+change), and `Utilities.getDate`→`java.time` (`SimpleDateFormat` vs
+`DateTimeFormatter` pattern syntax differ).
 
 - **`switch` → arrow / switch expressions:** `UtilClasses.GenUtils` (`:269`),
   `Process.Segmentation.MultiThreadedWatershed` (`:126`), `IAClasses.Region` (`:666`),

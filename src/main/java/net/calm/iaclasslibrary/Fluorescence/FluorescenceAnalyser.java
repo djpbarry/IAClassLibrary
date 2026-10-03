@@ -99,14 +99,9 @@ public class FluorescenceAnalyser {
                 image.setRoi(cr.getRoi());
                 ImageStatistics stats = ImageStatistics.getStatistics(image, measurement, null);
                 switch (measurement) {
-                    case Measurements.MEAN:
-                        ds.addValue(stats.mean);
-                        break;
-                    case Measurements.STD_DEV:
-                        ds.addValue(stats.stdDev);
-                        break;
-                    default:
-                        ds.addValue(0.0);
+                    case Measurements.MEAN -> ds.addValue(stats.mean);
+                    case Measurements.STD_DEV -> ds.addValue(stats.stdDev);
+                    default -> ds.addValue(0.0);
                 }
             }
             b++;

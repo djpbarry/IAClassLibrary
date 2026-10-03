@@ -261,16 +261,10 @@ public class GenUtils {
         ImagePlus tempCytoImp = new ImagePlus("", tempStack);
         StackConverter sc = new StackConverter(tempCytoImp);
         switch (bitDepth) {
-            case 8:
-                sc.convertToGray8();
-                break;
-            case 16:
-                sc.convertToGray16();
-                break;
-            case 32:
-                sc.convertToGray32();
-                break;
-            default:
+            case 8 -> sc.convertToGray8();
+            case 16 -> sc.convertToGray16();
+            case 32 -> sc.convertToGray32();
+            default -> { }
         }
         tempCytoImp.setDimensions(input.getNChannels(), nSlices, nFrames);
         return tempCytoImp;

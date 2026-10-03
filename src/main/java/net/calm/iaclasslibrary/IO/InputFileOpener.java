@@ -61,14 +61,14 @@ public class InputFileOpener implements Runnable {
                 result = JFileChooser.ERROR_OPTION;
             }
             switch (result) {
-                case JFileChooser.CANCEL_OPTION:
+                case JFileChooser.CANCEL_OPTION -> {
                     Toolkit.getDefaultToolkit().beep();
                     boolean exit = addExitOption ? IJ.showMessageWithCancel("Exit", "Do you wish to exit?") : true;
                     if (exit) {
                         return;
                     }
-                    break;
-                case JFileChooser.APPROVE_OPTION:
+                }
+                case JFileChooser.APPROVE_OPTION -> {
                     file = fileChooser.getSelectedFile();
                     if (!(file.isFile() && file.exists())) {
                         IJ.showMessage("Invalid Input File!");
@@ -76,10 +76,11 @@ public class InputFileOpener implements Runnable {
                     } else {
                         validFile = true;
                     }
-                    break;
-                default:
+                }
+                default -> {
                     GenUtils.error("Error opening file.");
                     return;
+                }
             }
         }
     }

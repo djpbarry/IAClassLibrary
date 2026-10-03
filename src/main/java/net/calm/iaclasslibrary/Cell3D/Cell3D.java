@@ -8,6 +8,7 @@ package net.calm.iaclasslibrary.Cell3D;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import mcib3d.geom.Object3D;
 import mcib3d.geom.Object3DVoxels;
 
@@ -41,22 +42,13 @@ public class Cell3D extends Object3DVoxels implements Comparator<Cell3D> {
     }
 
     public int compareTo(Cell3D cell) {
-        if (cell == null) {
-            throw new NullPointerException();
-        }
-        if (!(cell instanceof Cell3D)) {
-            throw new ClassCastException();
-        }
+        Objects.requireNonNull(cell);
         return this.ID - cell.getID();
     }
 
     public int compare(Cell3D cell1, Cell3D cell2) {
-        if (cell1 == null || cell2 == null) {
-            throw new NullPointerException();
-        }
-        if (!(cell1 instanceof Cell3D && cell2 instanceof Cell3D)) {
-            throw new ClassCastException();
-        }
+        Objects.requireNonNull(cell1);
+        Objects.requireNonNull(cell2);
         return cell1.getID() - cell2.getID();
     }
 

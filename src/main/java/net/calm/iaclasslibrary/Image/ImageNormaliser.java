@@ -35,17 +35,11 @@ public class ImageNormaliser {
         floatImage.subtract(stats.min);
         floatImage.multiply(normFactor / (stats.max - stats.min));
         floatImage.resetMinAndMax();
-        ImageProcessor output;
-        switch (type) {
-            case BYTE:
-                output = floatImage.convertToByteProcessor();
-                break;
-            case SHORT:
-                output = floatImage.convertToShortProcessor();
-                break;
-            default:
-                output = floatImage;
-        }
+        ImageProcessor output = switch (type) {
+            case BYTE -> floatImage.convertToByteProcessor();
+            case SHORT -> floatImage.convertToShortProcessor();
+            default -> floatImage;
+        };
         output.resetMinAndMax();
         return output;
     }

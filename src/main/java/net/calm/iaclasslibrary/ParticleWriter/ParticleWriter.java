@@ -37,12 +37,12 @@ public class ParticleWriter {
         int y = (int) Math.round(p.getY() / spatialRes);
         if (p instanceof Blob) {
             image.drawOval((x - radius), (y - radius), 2 * radius, 2 * radius);
-        } else if (p instanceof IsoGaussian) {
+        } else if (p instanceof IsoGaussian gaussian) {
             if (preview) {
-                radius = (int) Math.round(2.0 * ((IsoGaussian) p).getXSigma());
+                radius = (int) Math.round(2.0 * gaussian.getXSigma());
                 image.drawOval((x - radius), (y - radius), 2 * radius, 2 * radius);
             } else {
-                Utils.draw2DGaussian(image, (IsoGaussian) p, 0.0, spatialRes, false);
+                Utils.draw2DGaussian(image, gaussian, 0.0, spatialRes, false);
             }
         } else {
             image.drawLine(x, y - radius, x, y + radius);

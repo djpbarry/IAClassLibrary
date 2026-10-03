@@ -8,6 +8,7 @@ package net.calm.iaclasslibrary.Cell;
 import net.calm.iaclasslibrary.Particle.Particle;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Objects;
 
 /**
  *
@@ -41,22 +42,13 @@ public class Cell extends CellRegion implements Comparable<Cell>, Comparator<Cel
     }
 
     public int compareTo(Cell cell) {
-        if (cell == null) {
-            throw new NullPointerException();
-        }
-        if (!(cell instanceof Cell)) {
-            throw new ClassCastException();
-        }
+        Objects.requireNonNull(cell);
         return this.ID - cell.getID();
     }
 
     public int compare(Cell cell1, Cell cell2) {
-        if (cell1 == null || cell2 == null) {
-            throw new NullPointerException();
-        }
-        if (!(cell1 instanceof Cell && cell2 instanceof Cell)) {
-            throw new ClassCastException();
-        }
+        Objects.requireNonNull(cell1);
+        Objects.requireNonNull(cell2);
         return cell1.getID() - cell2.getID();
     }
 
@@ -80,8 +72,8 @@ public class Cell extends CellRegion implements Comparable<Cell>, Comparator<Cel
 
     public Nucleus getNucleus() {
         for (CellRegion region : regions) {
-            if (region instanceof Nucleus) {
-                return (Nucleus) region;
+            if (region instanceof Nucleus nucleus) {
+                return nucleus;
             }
         }
         return null;

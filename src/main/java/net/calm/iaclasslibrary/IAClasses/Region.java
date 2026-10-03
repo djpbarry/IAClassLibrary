@@ -664,12 +664,9 @@ public class Region {
         }
         for (int i = 0; i < iterations; i++) {
             switch (mode) {
-                case ImageProcessor.MIN:
-                    mask.dilate();
-                    break;
-                case ImageProcessor.MAX:
-                    mask.erode();
-                    break;
+                case ImageProcessor.MIN -> mask.dilate();
+                case ImageProcessor.MAX -> mask.erode();
+                default -> { }
             }
         }
         short[][] newBorder = getOrderedBoundary(mask.getWidth(), mask.getHeight(), mask, getCentre());

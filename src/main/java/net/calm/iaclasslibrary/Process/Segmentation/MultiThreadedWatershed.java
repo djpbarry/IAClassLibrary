@@ -124,17 +124,15 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
             GenUtils.logError(e, "Unable to remap pixels.");
         }
         switch (segmentationType) {
-            case CELLS:
+            case CELLS -> {
                 labelOutput(image.getTitle(), CellRegion3D.CYTO);
                 addCytoplasmToCells(output.getTitle());
-                break;
-            case NUCLEI:
+            }
+            case NUCLEI -> {
                 labelOutput(image.getTitle(), CellRegion3D.NUCLEUS);
                 initialiseCellsWithNuclei(output.getTitle());
-                break;
-            default:
-//                labelOutput(image.getTitle(), CellRegion3D.SPOT);
-//                addSpotsToCells(output.getTitle());
+            }
+            default -> { }
         }
     }
 

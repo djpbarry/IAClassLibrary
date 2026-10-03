@@ -148,8 +148,8 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             rt.setValue(Y_CENTROID, row, centre.y);
             rt.setValue(Z_CENTROID, row, centre.z);
             rt.setValue(LOCAT_HEAD, row, distMeasures[i]);
-            if (object instanceof Spot3D) {
-                Spot s = ((Spot3D) object).getSpot();
+            if (object instanceof Spot3D spot3D) {
+                Spot s = spot3D.getSpot();
                 rt.setValue(SpotFeatures.NUCLEAR, row, (int) Math.round(s.getFeature(SpotFeatures.NUCLEAR)));
                 Iterator<Entry<String, Double>> iter = s.getFeatures().entrySet().iterator();
                 while (iter.hasNext()) {
