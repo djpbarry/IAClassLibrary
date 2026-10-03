@@ -44,6 +44,20 @@ public class DSPProcessorFFTTest {
     }
 
     @Test
+    public void testComplexFFTMatchesCommonsMath() {
+        double[] re = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+        double[] im = {0.5, -0.5, 1.0, -1.0, 0.0, 2.0, -2.0, 0.5};
+        double[][] actual = DSPProcessor.FFT(re, im);
+        Complex[] input = new Complex[re.length];
+        for (int i = 0; i < re.length; i++) {
+            input[i] = new Complex(re[i], im[i]);
+        }
+        Complex[] expected = new FastFourierTransformer(DftNormalization.STANDARD)
+                .transform(input, TransformType.FORWARD);
+        assertComplexEquals(expected, actual, TOL);
+    }
+
+    @Test
     public void testFFTRoundTripIsUnscaled() {
         double[] signal = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
         double[][] spectrum = DSPProcessor.FFT(signal);

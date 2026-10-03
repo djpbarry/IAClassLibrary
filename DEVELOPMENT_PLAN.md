@@ -346,8 +346,8 @@ lockstep and re-pin their IAClassLibrary dependency to `v2.0.1`.
 
 ## Phase G — Modern Java modernisation (Java 21)
 
-**Status: G3 + G4 + G5 done; G8 partially done (7 mechanical items, 2026-10-02).
-Remaining: G1–G2, G6, and the G8 numerical/statistical rewrites.** The core is over
+**Status: G3 + G4 + G5 done; G8 done for FFT + Fitter + 7 mechanical items
+(2026-10-02). Remaining: G1–G2, G6, and the G8 statistics/string/date-time items.** The core is over
 a decade old and predates most of the language/API features now available on the
 Java 21 target. A full-pass review found systematic opportunities to improve
 efficiency, performance, readability, and thread-safety without changing public
@@ -535,11 +535,14 @@ removes custom code that is more bug-prone than the mature equivalent.
 `FilenameUtils.isExtension`; `FileReader.getParamsArray()` → `toArray`;
 `GenVariables` charsets → `StandardCharsets`.
 
-**Deferred — need characterisation tests or an API change:** `Fitter.doFit`
-(Nelder–Mead), `DSPProcessor.FFT`/`IFFT` (numerical equivalence), the
-`Utils`/`DataStatistics` statistics, the string-join items (trailing-delimiter
-behaviour), and `DateAndTime.Time.getDuration` (buggy; would change its public
-return type).
+**Done (2026-10-02, numerical — behind characterisation tests):**
+`DSPProcessor.FFT`/`IFFT` → `FastFourierTransformer` (with the unscaled-inverse
+`×N` correction) and `Fitter.doFit()` (Nelder–Mead) → `SimplexOptimizer` +
+`NelderMeadSimplex`. Public signatures unchanged.
+
+**Deferred — need an API change or further tests:** the `Utils`/`DataStatistics`
+statistics, the string-join items (trailing-delimiter behaviour), and
+`DateAndTime.Time.getDuration` (buggy; would change its public return type).
 
 **Clearly redundant (replace outright):**
 

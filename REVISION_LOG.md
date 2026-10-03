@@ -84,11 +84,9 @@ Full list (with "clearly redundant" / "partial overlap" / "internal duplication"
 `FileReader.getParamsArray()`→`toArray`; `GenVariables` charsets→`StandardCharsets`.
 Compile + tests green.
 
-**Deferred (need characterisation tests first, or an API change):** `Fitter.doFit`
-(Nelder–Mead → `SimplexOptimizer`), `DSPProcessor.FFT`/`IFFT` (→
-`FastFourierTransformer`), the `Utils`/`DataStatistics` statistics, the string-join
-items (trailing-delimiter behaviour), and `DateAndTime.Time.getDuration` (buggy;
-would change its public return type).
+**Deferred (need an API change or further tests):** the `Utils`/`DataStatistics`
+statistics, the string-join items (trailing-delimiter behaviour), and
+`DateAndTime.Time.getDuration` (buggy; would change its public return type).
 
 ### Characterisation tests for the G8 math rewrites
 
@@ -102,6 +100,11 @@ optimiser/FFT:
   multiply Math3's inverse by `N` (or use a custom normalisation).
 - `Math/Optimisation/IsoGaussianFitterTest` — fits a synthetic 2-D Gaussian and
   checks `mag`/`x0`/`y0`/`sigma` are recovered within tolerance.
+
+**Rewrites done (2026-10-02):** `DSPProcessor.FFT`/`IFFT` now delegate to
+`FastFourierTransformer` (forward unscaled; inverse `×N` to match the original's
+unscaled inverse), and `Fitter.doFit()` now delegates to `SimplexOptimizer` +
+`NelderMeadSimplex`. Public signatures unchanged; both characterisation tests pass.
 
 ---
 

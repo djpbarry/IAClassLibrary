@@ -2,6 +2,10 @@ package net.calm.iaclasslibrary.IAClasses;
 
 import ij.measure.CurveFitter;
 import java.util.ArrayList;
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.transform.DftNormalization;
+import org.apache.commons.math3.transform.FastFourierTransformer;
+import org.apache.commons.math3.transform.TransformType;
 
 /**
  * A collection of static utility methods for the analysis of an object boundary
@@ -236,40 +240,17 @@ public class DSPProcessor {
      * @return Fourier-domain signal
      */
     public static double[][] FFT(double[][] input) {
-        int k, m, inputLength = input.length;
-        double exponent, cosine, sine;
-        double fft[][] = new double[inputLength][2];
-
-        if (inputLength > 1) {
-            int halfInput = inputLength / 2;
-            double evenIndices[][] = new double[halfInput][2];
-            double oddIndices[][] = new double[halfInput][2];
-            for (m = 0; m < halfInput; m++) {
-                evenIndices[m][0] = input[2 * m][0];
-                evenIndices[m][1] = input[2 * m][1];
-                oddIndices[m][0] = input[(2 * m) + 1][0];
-                oddIndices[m][1] = input[(2 * m) + 1][1];
-            }
-            double evenFFT[][] = FFT(evenIndices);
-            double oddFFT[][] = FFT(oddIndices);
-
-            for (k = 0; k < halfInput; k++) {
-                exponent = -(2 * Math.PI * k) / inputLength;
-                cosine = Math.cos(exponent);
-                sine = Math.sin(exponent);
-                fft[k][0] = evenFFT[k][0] + cosine * oddFFT[k][0] - sine * oddFFT[k][1];
-                fft[k][1] = evenFFT[k][1] + cosine * oddFFT[k][1] + sine * oddFFT[k][0];
-            }
-            for (k = halfInput; k < inputLength; k++) {
-                exponent = -(2 * Math.PI * (k - halfInput)) / inputLength;
-                cosine = Math.cos(exponent);
-                sine = Math.sin(exponent);
-                fft[k][0] = evenFFT[k - halfInput][0] - cosine * oddFFT[k - halfInput][0] + sine * oddFFT[k - halfInput][1];
-                fft[k][1] = evenFFT[k - halfInput][1] - cosine * oddFFT[k - halfInput][1] - sine * oddFFT[k - halfInput][0];
-            }
-        } else {
-            fft[0][0] = input[0][0];
-            fft[0][1] = input[0][1];
+        int inputLength = input.length;
+        Complex[] complex = new Complex[inputLength];
+        for (int i = 0; i < inputLength; i++) {
+            complex[i] = new Complex(input[i][0], input[i][1]);
+        }
+        Complex[] result = new FastFourierTransformer(DftNormalization.STANDARD)
+                .transform(complex, TransformType.FORWARD);
+        double[][] fft = new double[inputLength][2];
+        for (int i = 0; i < inputLength; i++) {
+            fft[i][0] = result[i].getReal();
+            fft[i][1] = result[i].getImaginary();
         }
         return fft;
     }
@@ -293,40 +274,17 @@ public class DSPProcessor {
     }
 
     public static double[][] IFFT(double[][] input) {
-        int k, m, inputLength = input.length;
-        double exponent, cosine, sine;
-        double ifft[][] = new double[inputLength][2];
-
-        if (inputLength > 1) {
-            int halfInput = inputLength / 2;
-            double evenIndices[][] = new double[halfInput][2];
-            double oddIndices[][] = new double[halfInput][2];
-            for (m = 0; m < halfInput; m++) {
-                evenIndices[m][0] = input[2 * m][0];
-                oddIndices[m][0] = input[(2 * m) + 1][0];
-                evenIndices[m][1] = input[2 * m][1];
-                oddIndices[m][1] = input[(2 * m) + 1][1];
-            }
-            double evenFFT[][] = IFFT(evenIndices);
-            double oddFFT[][] = IFFT(oddIndices);
-
-            for (k = 0; k < halfInput; k++) {
-                exponent = (2 * Math.PI * k) / inputLength;
-                cosine = Math.cos(exponent);
-                sine = Math.sin(exponent);
-                ifft[k][0] = evenFFT[k][0] + cosine * oddFFT[k][0] - sine * oddFFT[k][1];
-                ifft[k][1] = evenFFT[k][1] + cosine * oddFFT[k][1] + sine * oddFFT[k][0];
-            }
-            for (k = halfInput; k < inputLength; k++) {
-                exponent = (2 * Math.PI * (k - halfInput)) / inputLength;
-                cosine = Math.cos(exponent);
-                sine = Math.sin(exponent);
-                ifft[k][0] = evenFFT[k - halfInput][0] - cosine * oddFFT[k - halfInput][0] + sine * oddFFT[k - halfInput][1];
-                ifft[k][1] = evenFFT[k - halfInput][1] - cosine * oddFFT[k - halfInput][1] - sine * oddFFT[k - halfInput][0];
-            }
-        } else {
-            ifft[0][0] = input[0][0];
-            ifft[0][1] = input[0][1];
+        int inputLength = input.length;
+        Complex[] complex = new Complex[inputLength];
+        for (int i = 0; i < inputLength; i++) {
+            complex[i] = new Complex(input[i][0], input[i][1]);
+        }
+        Complex[] result = new FastFourierTransformer(DftNormalization.STANDARD)
+                .transform(complex, TransformType.INVERSE);
+        double[][] ifft = new double[inputLength][2];
+        for (int i = 0; i < inputLength; i++) {
+            ifft[i][0] = result[i].getReal() * inputLength;
+            ifft[i][1] = result[i].getImaginary() * inputLength;
         }
         return ifft;
     }

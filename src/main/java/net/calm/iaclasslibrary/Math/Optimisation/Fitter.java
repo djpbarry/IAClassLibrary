@@ -17,6 +17,17 @@
  */
 package net.calm.iaclasslibrary.Math.Optimisation;
 
+import java.util.Arrays;
+import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.optim.InitialGuess;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.PointValuePair;
+import org.apache.commons.math3.optim.SimpleValueChecker;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
+import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
+import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex;
+import org.apache.commons.math3.optim.nonlinear.scalar.noderiv.SimplexOptimizer;
+
 public abstract class Fitter {
 
     protected final double alpha; // reflection coefficient
@@ -57,83 +68,49 @@ public abstract class Fitter {
     }
 
     public boolean doFit() {
-//        if (xData == null || yData == null || zData == null) {
-//            return false;
-//        }
         initialize();
-        restart(0);
-        numIter = 0;
-        boolean done = false;
-        double[] center = new double[numParams]; // mean of simplex vertices
-        while (!done) {
-            showProgress(numIter + maxIter * (defaultRestarts - restarts), maxIter * defaultRestarts);
-            numIter++;
-            for (int i = 0; i < numParams; i++) {
-                center[i] = 0.0;
-            }
-            // get mean "center" of vertices, excluding worst
-            for (int i = 0; i < numVertices; i++) {
-                if (i != worst) {
-                    for (int j = 0; j < numParams; j++) {
-                        center[j] += simp[i][j];
-                    }
+        if (simp == null || simp.length == 0) {
+            return false;
+        }
+        double[] start = Arrays.copyOf(simp[0], numParams);
+
+        MultivariateFunction objective = point -> {
+            double srs = 0.0;
+            for (int i = 0; i < xData.length; i++) {
+                for (int j = 0; j < yData.length; j++) {
+                    double e = evaluate(point, xData[i], yData[j]) - zData[j * xData.length + i];
+                    srs += e * e;
                 }
             }
-            // Reflect worst vertex through centre
-            for (int i = 0; i < numParams; i++) {
-                center[i] /= numParams;
-                next[i] = center[i] + alpha * (simp[worst][i] - center[i]);
-            }
-            sumResiduals(next);
-            // if it's better than the best...
-            if (next[numParams] <= simp[best][numParams]) {
-                newVertex();
-                // try expanding it
-                for (int i = 0; i < numParams; i++) {
-                    next[i] = center[i] + gamma * (simp[worst][i] - center[i]);
-                }
-                sumResiduals(next);
-                // if this is even better, keep it
-                if (next[numParams] <= simp[worst][numParams]) {
-                    newVertex();
-                }
-            } // else if better than the 2nd worst keep it...
-            else if (next[numParams] <= simp[nextWorst][numParams]) {
-                newVertex();
-            } // else try to make positive contraction of the worst
-            else {
-                for (int i = 0; i < numParams; i++) {
-                    next[i] = center[i] + beta * (simp[worst][i] - center[i]);
-                }
-                sumResiduals(next);
-                // if this is better than the second worst, keep it.
-                if (next[numParams] <= simp[nextWorst][numParams]) {
-                    newVertex();
-                } // if all else fails, contract simplex in on best
-                else {
-                    for (int i = 0; i < numVertices; i++) {
-                        if (i != best) {
-                            for (int j = 0; j < numVertices; j++) {
-                                simp[i][j] = beta * (simp[i][j] + simp[best][j]);
-                            }
-                            sumResiduals(simp[i]);
-                        }
-                    }
-                }
-            }
-            order();
-            double rtol = 2 * Math.abs(simp[best][numParams] - simp[worst][numParams]) / (Math.abs(simp[best][numParams]) + Math.abs(simp[worst][numParams]) + 1.0E-10);
-            if (numIter >= maxIter) {
-                done = true;
-            } else if (rtol < maxError) {
-                restarts--;
-                if (restarts < 0) {
-                    done = true;
-                } else {
-                    restart(best);
-                }
+            return srs;
+        };
+
+        double[] steps = new double[numParams];
+        for (int i = 0; i < numParams; i++) {
+            steps[i] = simp[0][i] / 2.0;
+            if (steps[i] == 0.0) {
+                steps[i] = 0.01;
             }
         }
+
+        SimplexOptimizer optimizer = new SimplexOptimizer(new SimpleValueChecker(maxError, maxError));
+        PointValuePair result = optimizer.optimize(
+                new ObjectiveFunction(objective),
+                new InitialGuess(start),
+                new MaxEval(maxIter),
+                new NelderMeadSimplex(steps),
+                GoalType.MINIMIZE);
+
+        double[] bestPoint = result.getPoint();
+        simp = new double[numVertices][numVertices];
+        System.arraycopy(bestPoint, 0, simp[0], 0, numParams);
+        simp[0][numParams] = result.getValue();
+        for (int i = 1; i < numVertices; i++) {
+            System.arraycopy(simp[0], 0, simp[i], 0, numVertices);
+        }
+        best = 0;
+        worst = 0;
+        nextWorst = 0;
         return true;
     }
 
