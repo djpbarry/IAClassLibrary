@@ -46,12 +46,12 @@ import java.util.Properties;
  */
 public class MultiThreadedWatershed extends MultiThreadedProcess {
 
-    public static int SERIES_LABEL = 0;
-    public static int THRESHOLD_LABEL = 1;
-    public static int VOL_MARKER_LABEL = 2;
-    public static int MEMB_MARKER_LABEL = 3;
-    public static int LAMBDA_LABEL = 4;
-    public static int N_PROP_LABELS = 5;
+    public static final int SERIES_LABEL = 0;
+    public static final int THRESHOLD_LABEL = 1;
+    public static final int VOL_MARKER_LABEL = 2;
+    public static final int MEMB_MARKER_LABEL = 3;
+    public static final int LAMBDA_LABEL = 4;
+    public static final int N_PROP_LABELS = 5;
     private double[] calibration;
     private int series;
     private final String objectName;

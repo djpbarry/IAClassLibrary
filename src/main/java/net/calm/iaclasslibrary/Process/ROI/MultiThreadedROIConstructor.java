@@ -47,21 +47,21 @@ import java.util.Properties;
  */
 public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 
-    public static int SERIES_LABEL = 0;
-    public static int CHANNELS_LABEL = 1;
-    public static int OUTPUT_LABEL = 2;
-    public static int LOCALISE_LABEL = 3;
-    public static int N_PROP_LABELS = 4;
+    public static final int SERIES_LABEL = 0;
+    public static final int CHANNELS_LABEL = 1;
+    public static final int OUTPUT_LABEL = 2;
+    public static final int LOCALISE_LABEL = 3;
+    public static final int N_PROP_LABELS = 4;
     private final Objects3DPopulation cells;
     int selectedChannels;
     int series;
     private String outputPath;
-    public static String[] PIX_HEADINGS = {"Channel", "Cell_Index", "Mean_Pixel_Value",
+    public static final String[] PIX_HEADINGS = {"Channel", "Cell_Index", "Mean_Pixel_Value",
             "Pixel_Standard_Deviation", "Min_Pixel_Value", "Max_Pixel_Value", "Integrated_Density"};
-    public static String LOCAT_HEAD = "Normalised_Distance_to_Centre";
-    public static String X_CENTROID = "Centroid_X";
-    public static String Y_CENTROID = "Centroid_Y";
-    public static String Z_CENTROID = "Centroid_Z";
+    public static final String LOCAT_HEAD = "Normalised_Distance_to_Centre";
+    public static final String X_CENTROID = "Centroid_X";
+    public static final String Y_CENTROID = "Centroid_Y";
+    public static final String Z_CENTROID = "Centroid_Z";
 
     public MultiThreadedROIConstructor(MultiThreadedProcess[] inputs) {
         this(inputs, null);

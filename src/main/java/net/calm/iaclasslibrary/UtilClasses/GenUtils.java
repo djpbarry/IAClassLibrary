@@ -33,8 +33,8 @@ import org.apache.commons.io.FileUtils;
  */
 public class GenUtils {
 
-    public static int maxline = 200;
-    public static String hgTagDir = ".hg/cache/tags";
+    public static final int maxline = 200;
+    public static final String hgTagDir = ".hg/cache/tags";
     /**
      * Greek letter 'mu'
      */

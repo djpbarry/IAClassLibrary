@@ -27,8 +27,6 @@ import java.util.Set;
  */
 public class Dijkstra {
 
-    static int index = 0;
-
     public static Graph calculateShortestPathFromSource(Graph graph, Node source) {
         source.setDistance(0);
 

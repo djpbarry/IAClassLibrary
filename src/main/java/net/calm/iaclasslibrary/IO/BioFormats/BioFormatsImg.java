@@ -51,9 +51,9 @@ public class BioFormatsImg implements AutoCloseable {
     protected ImagePlus img = new ImagePlus();
     private ImagePlus processedImage;
     private boolean validID;
-    public static char SERIES_SEP = '-';
-    public static char LABEL_SEP = '_';
-    public static char REPLACEMENT_SEP = '.';
+    public static final char SERIES_SEP = '-';
+    public static final char LABEL_SEP = '_';
+    public static final char REPLACEMENT_SEP = '.';
 
     public BioFormatsImg() {
         this(null);

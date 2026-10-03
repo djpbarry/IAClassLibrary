@@ -34,12 +34,12 @@ import java.util.concurrent.Executors;
  */
 public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
 
-    public static int SERIES_LABEL = 0;
-    public static int CHANNEL_LABEL = 1;
-    public static int FILT_RAD_LABEL = 2;
-    public static int RESIZE_FACTOR_LABEL = 3;
-    public static int ENABLE_FILTER_LABEL = 4;
-    public static int N_PROP_LABELS = 5;
+    public static final int SERIES_LABEL = 0;
+    public static final int CHANNEL_LABEL = 1;
+    public static final int FILT_RAD_LABEL = 2;
+    public static final int RESIZE_FACTOR_LABEL = 3;
+    public static final int ENABLE_FILTER_LABEL = 4;
+    public static final int N_PROP_LABELS = 5;
 
     private double[] sigma;
     private int channel;

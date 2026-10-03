@@ -43,7 +43,7 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     protected MultiThreadedProcess[] inputs;
     protected final LinkedList<MultiThreadedProcess> outputDests;
     protected ImagePlus output;
-    public static String OUTPUT_SEP = "_";
+    public static final String OUTPUT_SEP = "_";
 
     public MultiThreadedProcess(MultiThreadedProcess[] inputs) {
         this.inputs = inputs;

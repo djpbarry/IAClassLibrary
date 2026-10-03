@@ -140,6 +140,12 @@ left as-is (deprecated — Decision 4).
 - **Step 2 (tests):** added `RegionGrowerTest` (`calcDistance`, `getMinCellArea`)
   and `MultiThreadedProcessTest` (`constructOutputName`, `getOutput` duplicate,
   `outputDests` wiring). Version → `2.0.4`.
+- **Step 3 (G2, part 1 — constants):** deleted the unused `Dijkstra.index`; marked
+  the remaining `static` constants `final` (`MultiThreadedProcess.OUTPUT_SEP`,
+  `BioFormatsImg` separators, per-class label/feature constants in
+  `MultiThreadedWatershed`/`GaussianFilter`/`TopHatFilter`/`Colocalise`/
+  `ROIConstructor`, `SpotFeatures`, `Particle.COLOCALISED`, `GenUtils.maxline`/
+  `hgTagDir`, `Fitter.defaultRestarts`). Version → `2.0.5`.
 
 ---
 

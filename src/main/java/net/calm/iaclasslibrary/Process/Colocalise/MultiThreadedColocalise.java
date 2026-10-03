@@ -54,19 +54,19 @@ import java.util.Map.Entry;
  */
 public class MultiThreadedColocalise extends MultiThreadedProcess {
 
-    public static int SERIES_LABEL = 0;
-    public static int CHANNELS_LABEL = 1;
-    public static int OUTPUT_LABEL = 2;
-    public static int N_PROP_LABELS = 3;
+    public static final int SERIES_LABEL = 0;
+    public static final int CHANNELS_LABEL = 1;
+    public static final int OUTPUT_LABEL = 2;
+    public static final int N_PROP_LABELS = 3;
     private Objects3DPopulation cellPop;
     private int series;
     private int selectedChannels;
     private int spotIndex;
-    public static String CELL_INDEX = "Cell_Index";
-    public static String N_SPOTS = "Number_of_Spots";
-    public static String MEAN_NUC_DIST = "Mean_Distance_To_Nuclear_Centre_Microns";
-    public static String MEAN_NEIGHBOUR_DIST = "Mean_Distance_To_Nearest_Neighbour_Microns";
-    public static String MEAN_INTENS = "Mean_Intensity";
+    public static final String CELL_INDEX = "Cell_Index";
+    public static final String N_SPOTS = "Number_of_Spots";
+    public static final String MEAN_NUC_DIST = "Mean_Distance_To_Nuclear_Centre_Microns";
+    public static final String MEAN_NEIGHBOUR_DIST = "Mean_Distance_To_Nearest_Neighbour_Microns";
+    public static final String MEAN_INTENS = "Mean_Intensity";
 
     public MultiThreadedColocalise(MultiThreadedProcess[] inputs, Objects3DPopulation cellPop) {
         super(inputs);
