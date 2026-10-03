@@ -458,7 +458,12 @@ Order: D2 decompose → behavioural tests → G2 static state → G1 threading.
    `MultiThreadedImageLoader` use its executor — **done (2026-10-03):** now
    routes `RunnablePixelLoader`s through `runWorkers` instead of raw
    `start()`/`join()`; (e) `MultiThreadedMaximaFinder`
-   process-drain → virtual threads.
+   process-drain → virtual threads — **done (2026-10-03):** StarDist/ilastik
+   drain threads now `Thread.ofVirtual()`.
+
+**G1 complete (2026-10-03):** Steps 4a–4e all landed; worker execution is now
+pool/virtual-thread based while `MultiThreadedProcess`/`RunnableProcess` remain
+`extends Thread`.
 
 Each step compiles + tests green; record progress in `REVISION_LOG.md`.
 

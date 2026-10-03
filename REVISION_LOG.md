@@ -123,6 +123,21 @@ Version → `2.0.11`. Full suite: 35/35 green.
 
 ---
 
+## 2026-10-03 — G1: `MultiThreadedMaximaFinder` virtual threads (Step 4e)
+
+Converted the two subprocess-drain threads in
+`Extrema.MultiThreadedMaximaFinder` (`runStarDist`, `runIlastik`) from anonymous
+platform `Thread`s to Java 21 virtual threads via
+`Thread.ofVirtual().name(...).start(...)`. These drain the subprocess stdout on
+the I/O-bound path, so virtual threads are the right tool; the `setDaemon(true)`
+call is dropped (virtual threads are always daemon).
+
+**G1 (Steps 4a–4e) is now complete.**
+
+Version → `2.0.12`. Full suite: 35/35 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three

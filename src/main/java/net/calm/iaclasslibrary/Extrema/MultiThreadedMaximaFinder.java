@@ -436,18 +436,18 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
             Process p = pb.start();
 
-            Thread t = new Thread(() -> {
-                try (BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-                    for (String line = stdIn.readLine(); line != null; ) {
-                        IJ.log(line);
-                        line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
-                    }
-                } catch (IOException e) {
-                    GenUtils.logError(e, "Failed to read StarDist output.");
-                }
-            }, Thread.currentThread().getName() + "-" + p.hashCode());
-            t.setDaemon(true);
-            t.start();
+            Thread.ofVirtual()
+                    .name(Thread.currentThread().getName() + "-" + p.hashCode())
+                    .start(() -> {
+                        try (BufferedReader stdIn = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+                            for (String line = stdIn.readLine(); line != null; ) {
+                                IJ.log(line);
+                                line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
+                            }
+                        } catch (IOException e) {
+                            GenUtils.logError(e, "Failed to read StarDist output.");
+                        }
+                    });
 
             p.waitFor();
 
@@ -507,18 +507,18 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
             p = pb.start();
             final InputStream is = p.getInputStream();
-            Thread t = new Thread(() -> {
-                try (BufferedReader stdIn = new BufferedReader(new InputStreamReader(is))) {
-                    for (String line = stdIn.readLine(); line != null; ) {
-                        IJ.log(line);
-                        line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
-                    }
-                } catch (IOException e) {
-                    GenUtils.logError(e, "Failed to read ilastik output.");
-                }
-            }, Thread.currentThread().getName() + "-" + p.hashCode());
-            t.setDaemon(true);
-            t.start();
+            Thread.ofVirtual()
+                    .name(Thread.currentThread().getName() + "-" + p.hashCode())
+                    .start(() -> {
+                        try (BufferedReader stdIn = new BufferedReader(new InputStreamReader(is))) {
+                            for (String line = stdIn.readLine(); line != null; ) {
+                                IJ.log(line);
+                                line = stdIn.readLine();// you don't want to remove or comment that line! no you don't :P
+                            }
+                        } catch (IOException e) {
+                            GenUtils.logError(e, "Failed to read ilastik output.");
+                        }
+                    });
 
             p.waitFor();
 
