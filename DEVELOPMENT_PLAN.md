@@ -36,8 +36,9 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
   --update-snapshots verify` on **JDK 21** with the `setup-java` Maven cache.
   *(Updated 2026-09-27.)*
-- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 10 classes,
-  20 tests as of 2026-09-25. No lint/format tooling. (Phase C done for now.)
+- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 12 classes,
+  24 tests as of 2026-10-02 (incl. FFT/Fitter characterisation tests). No
+  lint/format tooling. (Phase C done for now.)
 - **License:** a GPL-3.0-or-later `LICENSE` file now exists and `pom.xml` is
   corrected from BSD-2 to GPL-3. Source headers remain inconsistent (roughly
   half GPL-3, roughly a third NetBeans "change this header" stubs); header

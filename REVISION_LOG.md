@@ -90,6 +90,19 @@ Compile + tests green.
 items (trailing-delimiter behaviour), and `DateAndTime.Time.getDuration` (buggy;
 would change its public return type).
 
+### Characterisation tests for the G8 math rewrites
+
+Added two test classes (4 tests) to pin current behaviour before replacing the
+optimiser/FFT:
+
+- `IAClasses/DSPProcessorFFTTest` — asserts `FFT(double[])` matches Commons Math3
+  `FastFourierTransformer` (forward), and that `IFFT` equals **N ×** Math3's
+  inverse. **Key finding:** `DSPProcessor.IFFT` is *unscaled*, whereas Math3's
+  `DftNormalization.STANDARD` inverse applies a `1/N` factor — so the rewrite must
+  multiply Math3's inverse by `N` (or use a custom normalisation).
+- `Math/Optimisation/IsoGaussianFitterTest` — fits a synthetic 2-D Gaussian and
+  checks `mag`/`x0`/`y0`/`sigma` are recovered within tolerance.
+
 ---
 
 ## 2026-09-27 — Release 2.0.1 (B2, M6 kick-off)
