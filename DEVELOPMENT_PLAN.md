@@ -354,6 +354,12 @@ behaviour. Items are ordered by risk/impact: thread-safety and resource leaks
 first, mechanical language upgrades last. Each item lists the concrete sites
 found.
 
+**Guardrail — public API stays unchanged.** Throughout Phase G no public method
+signature, return type, field type, or class is changed or removed. Where a
+change would alter the API, `@Deprecate` the old symbol and add a new one instead
+(e.g. `DateAndTime.Time.getDuration` would gain a new `Duration`-returning method
+rather than changing its current return type). This tightens Decision 0.
+
 ### G1. Replace the hand-rolled `Thread` model with `java.util.concurrent`
 
 The processing pipeline is built on `Thread` subclasses with manual
