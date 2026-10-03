@@ -30,7 +30,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.2` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`), declared license
+  `2.0.5` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -198,11 +198,12 @@ slated for removal in a later major version.
 
 ## Phase C — Introduce tests (the biggest maintainability win)
 
-**Status: done (2026-09-25; revisiting later).** JUnit 5 harness wired
-(`junit-jupiter-api`/`-engine`, parent-managed 5.13.4); 20 tests green across
-pure-logic (`Histogram`, `MSS`, `Rand`, `GenUtils`, `Smoother`, `Interpolator`,
-`ClusterablePoint`, `DataWriter` transforms) and CSV golden tests (`DataIOTest`,
-`TrajectoryAnalysis`). Deferred: extracting pure logic from god methods (D2).
+**Status: done (2026-09-25; extended 2026-10-02).** JUnit 5 harness wired
+(`junit-jupiter-api`/`-engine`, parent-managed 5.13.4); 34 tests green across 15
+classes — pure-logic (`Histogram`, `MSS`, `Rand`, `GenUtils`, `Smoother`,
+`Interpolator`, `ClusterablePoint`, `DataWriter` transforms), CSV golden tests
+(`DataIOTest`, `TrajectoryAnalysis`), plus FFT/Fitter/Utils/RegionGrower/
+`MultiThreadedProcess` tests. Deferred: extracting pure logic from god methods (D2).
 
 1. **Start with pure-logic, static-method classes** (no ImageJ runtime needed):
    - `Math/Histogram`, `Math/MSS`, `Math/Rand`
