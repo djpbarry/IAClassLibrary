@@ -33,12 +33,6 @@ public class FileExtensionFilter implements FilenameFilter {
     }
 
     public boolean accept(File current, String name) {
-        String ext = FilenameUtils.getExtension(name);
-        for (String e : exts) {
-            if (e.equalsIgnoreCase(ext)) {
-                return true;
-            }
-        }
-        return false;
+        return FilenameUtils.isExtension(name, exts);
     }
 }

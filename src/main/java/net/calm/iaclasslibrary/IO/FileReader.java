@@ -80,12 +80,7 @@ public class FileReader {
     }
 
     public String[] getParamsArray() {
-        int numParams = paramNames.size();
-        String[] paramArray = new String[numParams];
-        for (int i = 0; i < numParams; i++) {
-            paramArray[i] = paramNames.get(i);
-        }
-        return paramArray;
+        return paramNames.toArray(new String[0]);
     }
 
     public ArrayList<String> getParamsArray(String headings, String delimiter) {

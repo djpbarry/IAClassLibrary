@@ -58,7 +58,7 @@ low-risk items first, as sequenced in G7.
 - Kept `GenUtils.logError`'s `printStackTrace()` (the canonical logger) and the
   intentional silent skip in `BioFormatsFileLister`.
 
-### G8 — redundant-reimplementation survey (findings only, no code changes)
+### G8 — redundant-reimplementation survey
 
 Reviewed the codebase for classes/methods that reimplement functionality already
 in the JDK or a dependency. Highest-value findings:
@@ -76,7 +76,19 @@ in the JDK or a dependency. Highest-value findings:
 - **`DateAndTime.Time.getDuration`** — reinvents (and misimplements) `java.time.Duration.between`.
 
 Full list (with "clearly redundant" / "partial overlap" / "internal duplication" /
-"not redundant" verdicts) is in `DEVELOPMENT_PLAN.md` Phase G8. No code changed yet.
+"not redundant" verdicts) is in `DEVELOPMENT_PLAN.md` Phase G8.
+
+**Done (2026-10-02, mechanical):** `Fitter.root2`→`Math.sqrt`; `Utils.calcDistance`→
+`Math.hypot`; `Utils.arcTan`→`Math.atan2`+`Math.toDegrees`; `GenUtils.getDelimiter`→
+`File.separator`; `FileExtensionFilter`→`FilenameUtils.isExtension`;
+`FileReader.getParamsArray()`→`toArray`; `GenVariables` charsets→`StandardCharsets`.
+Compile + tests green.
+
+**Deferred (need characterisation tests first, or an API change):** `Fitter.doFit`
+(Nelder–Mead → `SimplexOptimizer`), `DSPProcessor.FFT`/`IFFT` (→
+`FastFourierTransformer`), the `Utils`/`DataStatistics` statistics, the string-join
+items (trailing-delimiter behaviour), and `DateAndTime.Time.getDuration` (buggy;
+would change its public return type).
 
 ---
 

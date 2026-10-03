@@ -79,11 +79,7 @@ public class GenUtils {
     }
 
     public static String getDelimiter() {
-        if (IJ.isWindows()) {
-            return "\\";
-        } else {
-            return "/";
-        }
+        return File.separator;
     }
 
     public static void drawRegionWithLabel(ImageProcessor image, Roi roi, String label,

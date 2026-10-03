@@ -6,6 +6,7 @@
 package net.calm.iaclasslibrary.UtilClasses;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  *
@@ -17,7 +18,7 @@ public class GenVariables {
     
     public static final String ISO_NAME = "ISO-8859-1";
     
-    public static final Charset UTF8 = Charset.forName(UTF8_NAME);
+    public static final Charset UTF8 = StandardCharsets.UTF_8;
 
-    public static final Charset ISO = Charset.forName(ISO_NAME);
+    public static final Charset ISO = StandardCharsets.ISO_8859_1;
 }

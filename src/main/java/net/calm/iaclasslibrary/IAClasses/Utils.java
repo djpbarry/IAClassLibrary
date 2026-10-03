@@ -207,7 +207,7 @@ public class Utils {
      * <code>{x2, y2}</code>.
      */
     public static double calcDistance(double x1, double y1, double x2, double y2) {
-        return calcEuclidDist(new double[]{x1, y1}, new double[]{x2, y2});
+        return Math.hypot(x1 - x2, y1 - y2);
     }
 
     public static double calcEuclidDist(double vector1[], double vector2[]) {
@@ -322,35 +322,7 @@ public class Utils {
     }
 
     public static double arcTan(double xVal, double yVal) {
-        double outVal;
-
-        if (xVal != 0.0) {
-            if (xVal > 0.0 && yVal > 0.0) {
-                outVal = 360.0 - Math.atan(yVal / xVal) * 180.0 / Math.PI;
-            } else if (xVal < 0.0 && yVal > 0.0) {
-                xVal *= -1;
-                outVal = 180.0 + Math.atan(yVal / xVal) * 180.0 / Math.PI;
-            } else if (xVal < 0.0 && yVal < 0.0) {
-                xVal *= -1;
-                yVal *= -1;
-                outVal = 180.0 - Math.atan(yVal / xVal) * 180.0 / Math.PI;
-            } else if (xVal > 0.0 && yVal < 0.0) {
-                yVal *= -1;
-                outVal = Math.atan(yVal / xVal) * 180.0 / Math.PI;
-            } else if (xVal > 0.0 && yVal == 0.0) {
-                outVal = 0.0;
-            } else {
-                outVal = 180.0;
-            }
-        } else if (yVal > 0.0) {
-            outVal = 270.0;
-        } else if (yVal < 0.0) {
-            outVal = 90.0;
-        } else {
-            outVal = 0.0;
-        }
-
-        return outVal;
+        return (360.0 - Math.toDegrees(Math.atan2(yVal, xVal))) % 360.0;
     }
 
     public static double angleBetweenTwoLines(double vector1[], double vector2[]) {

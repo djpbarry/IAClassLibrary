@@ -23,7 +23,7 @@ public abstract class Fitter {
     protected final double gamma; // expansion coefficient
     protected final double beta; // contraction coefficient
     protected final double maxError; // maximum error tolerance
-    protected static final double root2 = Math.pow(2.0, 0.5); // square root of 2
+    protected static final double root2 = Math.sqrt(2.0); // square root of 2
     public static final int IterFactor = 500;
     protected static int defaultRestarts = 2; // default number of restarts
     protected double[] xData;

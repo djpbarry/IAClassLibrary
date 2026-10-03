@@ -345,8 +345,8 @@ lockstep and re-pin their IAClassLibrary dependency to `v2.0.1`.
 
 ## Phase G — Modern Java modernisation (Java 21)
 
-**Status: G3 + G4 + G5 done; G8 surveyed (2026-10-02). Remaining: G1–G2, G6, and
-G8 implementation.** The core is over
+**Status: G3 + G4 + G5 done; G8 partially done (7 mechanical items, 2026-10-02).
+Remaining: G1–G2, G6, and the G8 numerical/statistical rewrites.** The core is over
 a decade old and predates most of the language/API features now available on the
 Java 21 target. A full-pass review found systematic opportunities to improve
 efficiency, performance, readability, and thread-safety without changing public
@@ -521,6 +521,18 @@ Record each completed sub-item in `REVISION_LOG.md`.
 Several classes/methods hand-roll functionality already in the JDK or a
 dependency on the classpath (Commons Math3/Lang3/IO, ImageJ). Replacing them
 removes custom code that is more bug-prone than the mature equivalent.
+
+**Done (2026-10-02, mechanical):** `Fitter.root2` → `Math.sqrt`; `Utils.calcDistance`
+→ `Math.hypot`; `Utils.arcTan` → `Math.atan2` + `Math.toDegrees`;
+`GenUtils.getDelimiter` → `File.separator`; `FileExtensionFilter.accept` →
+`FilenameUtils.isExtension`; `FileReader.getParamsArray()` → `toArray`;
+`GenVariables` charsets → `StandardCharsets`.
+
+**Deferred — need characterisation tests or an API change:** `Fitter.doFit`
+(Nelder–Mead), `DSPProcessor.FFT`/`IFFT` (numerical equivalence), the
+`Utils`/`DataStatistics` statistics, the string-join items (trailing-delimiter
+behaviour), and `DateAndTime.Time.getDuration` (buggy; would change its public
+return type).
 
 **Clearly redundant (replace outright):**
 
