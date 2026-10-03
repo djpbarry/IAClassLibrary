@@ -30,7 +30,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.1` (released, tag `v2.0.1`), declared license
+  `2.0.2` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -644,12 +644,15 @@ in the phases above.
    BSD-2 to GPL-3 (`<licenses>` + `license.licenseName`). Source-header tidy-up
    (removing the old pre-GitHub-era boilerplate stubs) is deferred to a later
    pass — see Phase B1 item 4.
-2. **Versioning — semver.** Jump directly to major version `2.0.0` (development
-   version `2.0.0-SNAPSHOT`) to reflect the scale of the upcoming changes; tag
-   `v2.0.1` on release (the `v2.0.0` tag failed — see B2). The existing `v1.032` tag is a mislabel of `v1.0.32`;
-   use the `vX.Y.Z` form going forward. Version bumps are automated with
-   `maven-release-plugin` (`tagNameFormat=v@{project.version}`); the JAR version
-   is read from the manifest, not `pom.xml` (see `REVISION_LOG.md`).
+2. **Versioning — Conventional Commits.** Commit messages follow Conventional
+   Commits (`fix:`, `feat:`, `chore:`, `refactor:`, `docs:`, `test:`;
+   `BREAKING CHANGE:`/`!` for breaking changes). Bump `<version>` in `pom.xml` on
+   every code change: `fix`/`refactor`/`chore`/`docs`/`test` → patch, `feat` →
+   minor, breaking → major. No `-SNAPSHOT` suffix — each commit is a concrete
+   version. *(The `2.0.1`/`v2.0.1` release and failed `v2.0.0` tag are historical —
+   see B2.)* The existing `v1.032` tag is a mislabel of `v1.0.32`; use the `vX.Y.Z`
+   form going forward. The JAR version is read from the manifest, not `pom.xml`
+   (see `Revision.getVersion()`).
 3. **Java target — 21** *(revised from 11)*. Upgrade the parent to
    `pom-scijava:45.1.0` and set `scijava.jvm.version=21`; build on JDK 21.
    This adopts TrackMate 8.0.0 (no version pin needed) and is the first step of

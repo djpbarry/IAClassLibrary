@@ -146,6 +146,11 @@ to before editing:
   NetBeans "To change this template..." headers and use raw generic types
   (`new LinkedList()`), newer files use `@Override` and diamond syntax. Match the
   surrounding file rather than "modernizing" it.
+- **Commit messages & versioning**: use Conventional Commits (`fix:`, `feat:`,
+  `chore:`, `refactor:`, `docs:`, `test:`; `BREAKING CHANGE:`/`!` for breaking).
+  Bump `<version>` in `pom.xml` on every code change — `fix`/`refactor`/`chore`/
+  `docs`/`test` → patch (`2.0.2` → `2.0.3`), `feat` → minor (`2.0.2` → `2.1.0`),
+  breaking → major (`2.0.2` → `3.0.0`). No `-SNAPSHOT` suffix.
 - **License headers are inconsistent**: `pom.xml` declares GPL-3 (Decision 1), but
   source headers are mixed (GPL-v3 + NetBeans stubs). Do not add/rewrite license
   headers; leave existing ones alone.

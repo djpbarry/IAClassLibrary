@@ -436,3 +436,13 @@ owning class `implements AutoCloseable` and expose a `close()`.
 **Rule:** distinguish method-scoped resources (try-with-resources) from
 object-lifetime resources (implement `AutoCloseable` + `close()`); never just
 ignore a field-held reader/stream because it "can't be wrapped in a try".
+
+### L14 — Version via Conventional Commits (bump on every change)
+
+The agreed scheme is Conventional Commits, with `<version>` in `pom.xml` bumped on
+every code change — `fix`/`refactor`/`chore`/`docs`/`test` → patch, `feat` → minor,
+breaking → major — and no `-SNAPSHOT` suffix. After the manual `2.0.1` release the
+pom was left pinned at `2.0.1`, so a batch of commits carried no version movement.
+
+**Rule:** bump the version on every change (patch/minor/major per the commit type);
+never leave the pom on a `-SNAPSHOT` or a stale version.
