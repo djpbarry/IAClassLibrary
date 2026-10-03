@@ -6,6 +6,7 @@ import ij.process.ByteProcessor;
 import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
@@ -32,6 +33,22 @@ public class MultiThreadedProcessTest {
         TestProcess input = new TestProcess(null);
         TestProcess output = new TestProcess(new TestProcess[]{input});
         assertTrue(input.outputDests.contains(output));
+    }
+
+    @Test
+    public void testRunWorkersExecutesAllTasks() {
+        TestProcess p = new TestProcess(null);
+        final int[] counts = new int[8];
+        p.exec = Executors.newFixedThreadPool(4);
+        Runnable[] workers = new Runnable[8];
+        for (int i = 0; i < workers.length; i++) {
+            final int idx = i;
+            workers[i] = () -> counts[idx] = 1;
+        }
+        p.runWorkers(workers, "test");
+        for (int count : counts) {
+            assertEquals(1, count);
+        }
     }
 
     private static class TestProcess extends MultiThreadedProcess {

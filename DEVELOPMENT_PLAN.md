@@ -448,10 +448,12 @@ Order: D2 decompose → behavioural tests → G2 static state → G1 threading.
    filtRad` → instance/params — **done** (terminal/intermediate removed; passed
    as params).
 4. **G1 — threading:** (a) `MultiThreadedProcess`/`RunnableProcess` route work
-   through the existing `exec` / a managed pool; (b) `RiemannianDistanceTransform`
-   4 inner `Thread`s → `ExecutorService` + `Future`; (c) `MultiThreadedColocalise`
-   raw `Thread[]` → `ExecutorService`; (d) `MultiThreadedImageLoader` use its
-   executor; (e) `MultiThreadedMaximaFinder` process-drain → virtual threads.
+   through the existing `exec` / a managed pool — **done (2026-10-03):** added
+   `MultiThreadedProcess.runWorkers(Runnable[], String)` + unit test; (b)
+   `RiemannianDistanceTransform` 4 inner `Thread`s → `ExecutorService` + `Future`;
+   (c) `MultiThreadedColocalise` raw `Thread[]` → `ExecutorService`; (d)
+   `MultiThreadedImageLoader` use its executor; (e) `MultiThreadedMaximaFinder`
+   process-drain → virtual threads.
 
 Each step compiles + tests green; record progress in `REVISION_LOG.md`.
 

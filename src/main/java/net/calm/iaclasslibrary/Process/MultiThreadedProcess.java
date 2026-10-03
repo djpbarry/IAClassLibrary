@@ -64,6 +64,18 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
         }
     }
 
+    /**
+     * Submits the given worker tasks to the managed executor and waits for them
+     * to finish, so subclasses route work through the pool instead of spawning
+     * and joining raw {@link Thread}s themselves.
+     */
+    protected void runWorkers(Runnable[] workers, String errorMessage) {
+        for (Runnable worker : workers) {
+            exec.execute(worker);
+        }
+        terminate(errorMessage);
+    }
+
     protected int[] getCalibratedIntSigma(int series, String xLabel, String yLabel, String zLabel) {
         double[] sigma = getCalibratedDoubleSigma(series, xLabel, yLabel, zLabel);
         return new int[]{(int) Math.round(sigma[0]),

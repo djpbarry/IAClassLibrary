@@ -56,6 +56,27 @@ Version → `2.0.7`. Full suite: 34/34 green.
 
 ---
 
+## 2026-10-03 — G1: `MultiThreadedProcess.runWorkers` helper (Step 4a)
+
+Started the G1 threading modernisation. The base `MultiThreadedProcess` already
+held an `exec` (ExecutorService), but subclasses ran workers inconsistently —
+some via `exec.submit(...)`+`terminate(...)`, others via raw `Thread.start()`/
+`join()`. Added a single, correct way to route work through the pool:
+
+- `MultiThreadedProcess.runWorkers(Runnable[] workers, String errorMessage)`
+  submits each worker to `exec` and then awaits via the existing `terminate(...)`
+  (shutdown + `awaitTermination`).
+- `RunnableProcess` workers (which extend `Thread`) are submitted as `Runnable`s,
+  so the pool invokes `run()` directly rather than spawning an OS thread per task.
+- Added `MultiThreadedProcessTest.testRunWorkersExecutesAllTasks` (4-thread pool,
+  8 tasks) to pin the behaviour.
+
+Subclasses still on raw `start()`/`join()` (Steps 4b–4e) will adopt this helper.
+
+Version → `2.0.8`. Full suite: 35/35 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three
