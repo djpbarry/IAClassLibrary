@@ -398,8 +398,9 @@ processing is multi-threaded:
   `RunnableRegionGrower` workers via static import. **Highest severity.**
   **Done (2026-10-03):** `terminal`/`intermediate` removed; computed locally and
   passed as constructor params (`lambda`/`filtRad` already `static final`).
-- `Extrema.MultiThreadedMaximaFinder` — ~30 mutable `static` config ints/shorts
-  (`:70-109`).
+- `Extrema.MultiThreadedMaximaFinder` — ~30 `static` prop-label index constants
+  (`:70-109`) — **done (2026-10-03):** already `static final` (immutable indices,
+  not config); per-run state is instance fields.
 - `Process.MultiThreadedProcess.OUTPUT_SEP`, and per-class label/feature index
   constants across `MultiThreadedWatershed`, `MultiThreadedColocalise`,
   `MultiThreadedGaussianFilter`, `MultiThreadedTopHatFilter`,
@@ -434,8 +435,9 @@ Order: D2 decompose → behavioural tests → G2 static state → G1 threading.
 3. **G2 — static state (safe-first):** (a) delete unused statics (`Dijkstra.index`,
    `SkeletonProcessor.branchpoint`); (b) mark true constants `final` (`OUTPUT_SEP`,
    label/feature constants, `SpotFeatures`, `Particle.COLOCALISED`); (c) config
-   statics → instance fields (`MultiThreadedMaximaFinder` ~30, `TrajectoryAnalysis`,
-   `DiffusionAnalyser.plotLegend`); (d) `RegionGrower.terminal/intermediate/lambda/
+   statics → instance fields (`MultiThreadedMaximaFinder` ~30 already `final`
+   constants; `TrajectoryAnalysis`, `DiffusionAnalyser.plotLegend`); (d)
+   `RegionGrower.terminal/intermediate/lambda/
    filtRad` → instance/params — **done** (terminal/intermediate removed; passed
    as params).
 4. **G1 — threading:** (a) `MultiThreadedProcess`/`RunnableProcess` route work
