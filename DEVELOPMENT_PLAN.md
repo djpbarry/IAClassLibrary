@@ -452,7 +452,9 @@ Order: D2 decompose → behavioural tests → G2 static state → G1 threading.
    `MultiThreadedProcess.runWorkers(Runnable[], String)` + unit test; (b)
    `RiemannianDistanceTransform` 4 inner `Thread`s → `ExecutorService` + `Future`
    — **done (2026-10-03):** single fixed pool + `runWorkers` helper;
-   (c) `MultiThreadedColocalise` raw `Thread[]` → `ExecutorService`; (d)
+   (c) `MultiThreadedColocalise` raw `Thread[]` → `ExecutorService` — **done
+   (2026-10-03):** `calcNucParticleDistances`/`calcNearestNeighbours` now use
+   `runWorkers`; (d)
    `MultiThreadedImageLoader` use its executor; (e) `MultiThreadedMaximaFinder`
    process-drain → virtual threads.
 

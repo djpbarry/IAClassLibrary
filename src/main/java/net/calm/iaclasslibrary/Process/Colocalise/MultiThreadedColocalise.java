@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.Executors;
 
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
@@ -154,15 +155,9 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         SpotNucDistanceCalc[] distanceCalcs = new SpotNucDistanceCalc[nThreads];
         for (int thread = 0; thread < nThreads; thread++) {
             distanceCalcs[thread] = new SpotNucDistanceCalc(cells, thread, nThreads, distanceMap);
-            distanceCalcs[thread].start();
         }
-        try {
-            for (int thread = 0; thread < nThreads; thread++) {
-                distanceCalcs[thread].join();
-            }
-        } catch (InterruptedException ie) {
-            GenUtils.logError(ie, "Problem encountered calculating cell-spot distances.");
-        }
+        this.exec = Executors.newFixedThreadPool(nThreads);
+        runWorkers(distanceCalcs, "Problem encountered calculating cell-spot distances.");
     }
 
     void calcNearestNeighbours() {
@@ -171,15 +166,9 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         SpotSpotDistanceCalc[] distanceCalcs = new SpotSpotDistanceCalc[nThreads];
         for (int thread = 0; thread < nThreads; thread++) {
             distanceCalcs[thread] = new SpotSpotDistanceCalc(cells, thread, nThreads);
-            distanceCalcs[thread].start();
         }
-        try {
-            for (int thread = 0; thread < nThreads; thread++) {
-                distanceCalcs[thread].join();
-            }
-        } catch (InterruptedException ie) {
-            GenUtils.logError(ie, "Problem encountered calculating spot-spot distances.");
-        }
+        this.exec = Executors.newFixedThreadPool(nThreads);
+        runWorkers(distanceCalcs, "Problem encountered calculating spot-spot distances.");
     }
 
     void saveData() throws IOException {

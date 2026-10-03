@@ -95,6 +95,22 @@ Version → `2.0.9`. Full suite: 35/35 green.
 
 ---
 
+## 2026-10-03 — G1: `MultiThreadedColocalise` thread pool (Step 4c)
+
+Replaced the two raw `Thread[]` start/join blocks in
+`Process.Colocalise.MultiThreadedColocalise` with the `MultiThreadedProcess`
+`runWorkers` helper:
+
+- `calcNucParticleDistances` (`SpotNucDistanceCalc[]`) and `calcNearestNeighbours`
+  (`SpotSpotDistanceCalc[]`) now build their worker arrays, create a fixed pool
+  (`Executors.newFixedThreadPool(nThreads)`), and hand off to `runWorkers(...)`.
+- The inner `SpotNucDistanceCalc`/`SpotSpotDistanceCalc` classes are unchanged
+  (`extends Thread`, submitted as `Runnable`s).
+
+Version → `2.0.10`. Full suite: 35/35 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three
