@@ -77,6 +77,24 @@ Version → `2.0.8`. Full suite: 35/35 green.
 
 ---
 
+## 2026-10-03 — G1: `RiemannianDistanceTransform` thread pool (Step 4b)
+
+Replaced `RiemannianDistanceTransform`'s four `StepNThread` start/join blocks
+(which spawned `4 × nbCPUs` fresh OS threads per run) with a single
+`ExecutorService` reused across the four passes:
+
+- `run()` creates one `Executors.newFixedThreadPool(nbCPUs)`, builds each step's
+  worker array, then calls a private `runWorkers(Runnable[], ExecutorService,
+  String)` that `submit`s them and awaits via `Future.get()`.
+- `Future.get()` also propagates worker `ExecutionException`s (previously a
+  throwing worker died silently on `join()`).
+- The four passes remain sequential (each reads the previous pass's `s`), so the
+  helper is a barrier per stage; `exec.shutdown()` runs once at the end.
+
+Version → `2.0.9`. Full suite: 35/35 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three

@@ -26,6 +26,12 @@ import ij.process.ImageProcessor;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.image3d.ImageShort;
 import mcib3d.image3d.distanceMap3d.EdtFloat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  *
@@ -60,61 +66,35 @@ public class RiemannianDistanceTransform extends EdtFloat {
             s[k] = (float[]) ipk.getPixels();
         }
         float[] sk;
+        ExecutorService exec = Executors.newFixedThreadPool(nbCPUs);
         IJ.log("Commencing Stage 1...");
         //Transformation 1.  Use s to store g.
         Step1Thread[] s1t = new Step1Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
             s1t[thread] = new Step1Thread(thread, nbCPUs, w, h, d, s, scale, gradData, binData);
-            s1t[thread].start();
         }
-        try {
-            for (int thread = 0; thread < nbCPUs; thread++) {
-                s1t[thread].join();
-            }
-        } catch (InterruptedException ie) {
-            IJ.error("A thread was interrupted in step 1 .");
-        }
+        runWorkers(s1t, exec, "step 1");
         IJ.log("Commencing Stage 2...");
         //Transformation 2.  g (in s) -> h (in s)
         Step2Thread[] s2t = new Step2Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
             s2t[thread] = new Step2Thread(thread, nbCPUs, w, h, d, s, gradData);
-            s2t[thread].start();
         }
-        try {
-            for (int thread = 0; thread < nbCPUs; thread++) {
-                s2t[thread].join();
-            }
-        } catch (InterruptedException ie) {
-            IJ.error("A thread was interrupted in step 2 .");
-        }
+        runWorkers(s2t, exec, "step 2");
         IJ.log("Commencing Stage 3...");
         Step3Thread[] s3t = new Step3Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
             s3t[thread] = new Step3Thread(thread, nbCPUs, w, h, d, s, gradData);
-            s3t[thread].start();
         }
-        try {
-            for (int thread = 0; thread < nbCPUs; thread++) {
-                s3t[thread].join();
-            }
-        } catch (InterruptedException ie) {
-            IJ.error("A thread was interrupted in step 3 .");
-        }
+        runWorkers(s3t, exec, "step 3");
 //        //Transformation 3. h (in s) -> s
         IJ.log("Commencing Stage 4...");
         Step4Thread[] s4t = new Step4Thread[nbCPUs];
         for (int thread = 0; thread < nbCPUs; thread++) {
             s4t[thread] = new Step4Thread(thread, nbCPUs, w, h, d, s, scale, gradData);
-            s4t[thread].start();
         }
-        try {
-            for (int thread = 0; thread < nbCPUs; thread++) {
-                s4t[thread].join();
-            }
-        } catch (InterruptedException ie) {
-            IJ.error("A thread was interrupted in step 4 .");
-        }
+        runWorkers(s4t, exec, "step 4");
+        exec.shutdown();
         //Find the largest distance for scaling
         //Also fill in the background values.
         float distMax = 0;
@@ -138,6 +118,22 @@ public class RiemannianDistanceTransform extends EdtFloat {
         res.setOffset(greyImp);
         res.setMinAndMax(0, distMax);
         return res;
+    }
+
+    private void runWorkers(Runnable[] workers, ExecutorService exec, String stepName) {
+        List<Future<?>> futures = new ArrayList<>(workers.length);
+        for (Runnable worker : workers) {
+            futures.add(exec.submit(worker));
+        }
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException e) {
+                GenUtils.logError(e, "A thread was interrupted in " + stepName + ".");
+            } catch (ExecutionException e) {
+                GenUtils.logError(e, "A worker failed in " + stepName + ".");
+            }
+        }
     }
 
     ImageFloat getGradImage(ImagePlus greyImp) {
