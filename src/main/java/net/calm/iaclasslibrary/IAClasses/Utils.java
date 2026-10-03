@@ -22,6 +22,8 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
 public class Utils {
 
@@ -214,12 +216,7 @@ public class Utils {
         if (vector1 == null || vector2 == null || (vector1.length != vector2.length)) {
             return Double.NaN;
         }
-        int m = vector1.length;
-        double sum = 0.0;
-        for (int i = 0; i < m; i++) {
-            sum += Math.pow(vector1[i] - vector2[i], 2.0);
-        }
-        return Math.sqrt(sum);
+        return new EuclideanDistance().compute(vector1, vector2);
     }
 
     /**
@@ -370,12 +367,11 @@ public class Utils {
     }
 
     public static double[] generateGaussian(double sigma, int length) {
+        NormalDistribution normal = new NormalDistribution(0.0, sigma);
         double gaussian[] = new double[length];
-        double a = 1.0 / (sigma * Math.sqrt(2.0 * Math.PI));
-        double twoSigma2 = 2.0 * sigma * sigma;
         int i0 = (length - 1) / 2;
         for (int i = 0; i < length; i++) {
-            gaussian[i] = a * Math.exp(-((i - i0) * (i - i0)) / twoSigma2);
+            gaussian[i] = normal.density(i - i0);
         }
         return gaussian;
     }

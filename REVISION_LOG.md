@@ -105,6 +105,9 @@ optimiser/FFT:
 `FastFourierTransformer` (forward unscaled; inverse `×N` to match the original's
 unscaled inverse), and `Fitter.doFit()` now delegates to `SimplexOptimizer` +
 `NelderMeadSimplex`. Public signatures unchanged; both characterisation tests pass.
+`Utils.calcEuclidDist` → `ml.distance.EuclideanDistance` and `Utils.generateGaussian`
+→ `distribution.NormalDistribution.density` (behind `UtilsTest`). `IAClasses.DataStatistics`
+left as-is (deprecated — Decision 4).
 
 ---
 

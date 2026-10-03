@@ -36,8 +36,8 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
   --update-snapshots verify` on **JDK 21** with the `setup-java` Maven cache.
   *(Updated 2026-09-27.)*
-- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 12 classes,
-  24 tests as of 2026-10-02 (incl. FFT/Fitter characterisation tests). No
+- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 13 classes,
+  29 tests as of 2026-10-02 (incl. FFT/Fitter/Utils characterisation tests). No
   lint/format tooling. (Phase C done for now.)
 - **License:** a GPL-3.0-or-later `LICENSE` file now exists and `pom.xml` is
   corrected from BSD-2 to GPL-3. Source headers remain inconsistent (roughly
@@ -540,8 +540,15 @@ removes custom code that is more bug-prone than the mature equivalent.
 `×N` correction) and `Fitter.doFit()` (Nelder–Mead) → `SimplexOptimizer` +
 `NelderMeadSimplex`. Public signatures unchanged.
 
-**Deferred — need an API change or further tests:** the `Utils`/`DataStatistics`
-statistics, the string-join items (trailing-delimiter behaviour), and
+**Done (2026-10-02, statistics):** `Utils.calcEuclidDist` →
+`ml.distance.EuclideanDistance`; `Utils.generateGaussian` →
+`distribution.NormalDistribution.density`. Signatures unchanged.
+
+**Deferred:** `Utils.calcCovariance`/`covarianceMatrix` (math3 `Covariance` does
+not accept the pre-computed means this API exposes), `Utils.getArrayMean`/
+`calcEigenvalues` (hand-rolled versions are correct and simple — marginal),
+`IAClasses.DataStatistics` (deprecated; rides on Decision 4, not an in-place
+rewrite), the string-join items (trailing-delimiter behaviour), and
 `DateAndTime.Time.getDuration` (buggy; would change its public return type).
 
 **Clearly redundant (replace outright):**
