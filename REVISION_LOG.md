@@ -137,6 +137,9 @@ left as-is (deprecated — Decision 4).
   static`, written once in `findCellRegions` and read by `RunnableRegionGrower`
   workers via static import — the highest-severity G2 item, needs passing as params
   or instance state.
+- **Step 2 (tests):** added `RegionGrowerTest` (`calcDistance`, `getMinCellArea`)
+  and `MultiThreadedProcessTest` (`constructOutputName`, `getOutput` duplicate,
+  `outputDests` wiring). Version → `2.0.4`.
 
 ---
 
