@@ -19,8 +19,6 @@ package net.calm.iaclasslibrary.Process.Segmentation;
 import net.calm.iaclasslibrary.IAClasses.Region;
 import net.calm.iaclasslibrary.IAClasses.Utils;
 import net.calm.iaclasslibrary.Process.RunnableProcess;
-import static net.calm.iaclasslibrary.Segmentation.RegionGrower.intermediate;
-import static net.calm.iaclasslibrary.Segmentation.RegionGrower.terminal;
 import ij.process.ShortProcessor;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -46,6 +44,8 @@ public class RunnableRegionGrower extends RunnableProcess {
     short[] tempRegionPix;
     byte[] voronoiPix;
     ShortProcessor regionImage;
+    short intermediate;
+    short terminal;
 
     /**
      * Constructor method
@@ -68,7 +68,7 @@ public class RunnableRegionGrower extends RunnableProcess {
     public RunnableRegionGrower(Region cell, short[] expandedImagePix, int width,
             short[] checkImagePix, short[] regionImagePix, float[] inputPix, double threshold,
             int i, int height, short[] countImagePix, short[] tempRegionPix, ShortProcessor regionImage,
-            byte[] voronoiPix, String name) {
+            byte[] voronoiPix, short intermediate, short terminal, String name) {
         super(name);
         this.cell = cell;
         this.expandedImagePix = expandedImagePix;
@@ -83,6 +83,8 @@ public class RunnableRegionGrower extends RunnableProcess {
         this.tempRegionPix = tempRegionPix;
         this.voronoiPix = voronoiPix;
         this.regionImage = regionImage;
+        this.intermediate = intermediate;
+        this.terminal = terminal;
     }
 
     @Override

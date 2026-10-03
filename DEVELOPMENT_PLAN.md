@@ -396,6 +396,8 @@ processing is multi-threaded:
 - `Segmentation.RegionGrower` — `public static short terminal`/`intermediate`
   plus `lambda`/`filtRad` (`RegionGrower.java:51-53`), mutated by
   `RunnableRegionGrower` workers via static import. **Highest severity.**
+  **Done (2026-10-03):** `terminal`/`intermediate` removed; computed locally and
+  passed as constructor params (`lambda`/`filtRad` already `static final`).
 - `Extrema.MultiThreadedMaximaFinder` — ~30 mutable `static` config ints/shorts
   (`:70-109`).
 - `Process.MultiThreadedProcess.OUTPUT_SEP`, and per-class label/feature index
@@ -434,7 +436,8 @@ Order: D2 decompose → behavioural tests → G2 static state → G1 threading.
    label/feature constants, `SpotFeatures`, `Particle.COLOCALISED`); (c) config
    statics → instance fields (`MultiThreadedMaximaFinder` ~30, `TrajectoryAnalysis`,
    `DiffusionAnalyser.plotLegend`); (d) `RegionGrower.terminal/intermediate/lambda/
-   filtRad` → instance/params (after 1–2).
+   filtRad` → instance/params — **done** (terminal/intermediate removed; passed
+   as params).
 4. **G1 — threading:** (a) `MultiThreadedProcess`/`RunnableProcess` route work
    through the existing `exec` / a managed pool; (b) `RiemannianDistanceTransform`
    4 inner `Thread`s → `ExecutorService` + `Future`; (c) `MultiThreadedColocalise`

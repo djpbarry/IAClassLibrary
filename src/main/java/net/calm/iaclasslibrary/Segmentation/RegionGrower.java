@@ -41,15 +41,12 @@ import java.util.LinkedList;
 
 /**
  * Region-growing segmentation engine. Grows regions from seed points across an
- * image, supporting distance-map and Dijkstra based dilation. Static helpers
- * with mutable static state for the terminal/intermediate region values.
+ * image, supporting distance-map and Dijkstra based dilation.
  *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
 public class RegionGrower {
 
-    public static short terminal;
-    public static short intermediate;
     private static final double lambda = 100.0, filtRad = 10.0; // parameter used in construction of Voronoi manifolds. See Jones et al., 2005: dx.doi.org/10.1007/11569541_54
 
     public static int initialiseROIs(ByteProcessor masks, int threshold, int start, ImageProcessor input, PointRoi roi, int width, int height, int size, ArrayList<CellData> cellData, UserVariables uv, boolean protMode, boolean selectiveOutput) {
@@ -167,8 +164,6 @@ public class RegionGrower {
             singleImageRegions.add(region);
             outVal++;
         }
-        intermediate = (short) (singleImageRegions.size() + 1);
-        terminal = (short) (intermediate + 1);
         /*
          * Filter image to be used as basis for region growing.
          */
@@ -208,6 +203,8 @@ public class RegionGrower {
         int height = inputImage.getHeight();
         int widthheight = width * height;
         int cellNum = singleImageRegions.size();
+        short intermediate = (short) (cellNum + 1);
+        short terminal = (short) (intermediate + 1);
         float[] inputPix = (float[]) inputImage.getPixels();
         ImageStack regionStack = new ImageStack(width, height);
         short[][] checkImagePix = new short[cellNum][widthheight];
@@ -260,7 +257,7 @@ public class RegionGrower {
                         short[] thispix = borderPix.get(j);
                         int offset = thispix[1] * width;
                         if (checkImagePix[i][thispix[0] + offset] == Region.MASK_FOREGROUND) {
-                            boolean thisResult = buildDistanceMaps(regionImagePix, inputPix, cell, thispix, distancemaps[i], thresh, texturePix, i + 1, lambda, expandedImagePix, width, height, countImagePix[i], tempRegionPix[i]);
+                            boolean thisResult = buildDistanceMaps(regionImagePix, inputPix, cell, thispix, distancemaps[i], thresh, texturePix, i + 1, intermediate, lambda, expandedImagePix, width, height, countImagePix[i], tempRegionPix[i]);
                             thisChange = thisResult || thisChange;
                             if (!thisResult) {
                                 checkImagePix[i][thispix[0] + offset]++;
@@ -275,7 +272,7 @@ public class RegionGrower {
         }
     }
 
-    static boolean buildDistanceMaps(short[] regionImagePix, float[] greyPix, Region cell, short[] point, float[][] distancemap, double thresh, float[] gradientPix, int index, double lambda, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix) {
+    static boolean buildDistanceMaps(short[] regionImagePix, float[] greyPix, Region cell, short[] point, float[][] distancemap, double thresh, float[] gradientPix, int index, short intermediate, double lambda, short[] expandedImagePix, int width, int height, short[] countPix, short[] tempImagePix) {
         int x = point[0];
         int y = point[1];
         int yOffset = y * width;
@@ -410,7 +407,7 @@ public class RegionGrower {
     static void expandRegions(ArrayList<Region> regions, ShortProcessor regionImage, int N, short terminal, short[] tempRegionPix) {
         int width = regionImage.getWidth();
         for (int i = 0; i < N; i++) {
-            expandRegion(regions.get(i), width, tempRegionPix, regionImage, i);
+            expandRegion(regions.get(i), width, tempRegionPix, regionImage, i, terminal);
         }
     }
 
@@ -424,8 +421,9 @@ public class RegionGrower {
      * @param tempRegionPix Contains candidate points for expansion
      * @param regionImage   net.calm.iaclasslibrary.Image depicting regions
      * @param i             Region index
+     * @param terminal      Value used to depict termination of expansion
      */
-    static void expandRegion(Region cell, int width, short[] tempRegionPix, ShortProcessor regionImage, int i) {
+    static void expandRegion(Region cell, int width, short[] tempRegionPix, ShortProcessor regionImage, int i, short terminal) {
         if (cell != null) {
             LinkedList<short[]> pixels = cell.getExpandedBorder();
             int borderLength = pixels.size();

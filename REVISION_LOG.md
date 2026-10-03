@@ -15,6 +15,27 @@ dated narrative plus the "what not to do again" notes.
 
 ---
 
+## 2026-10-03 — G2: `RegionGrower` static mutable state eliminated
+
+Removed the highest-severity G2 item: `RegionGrower.terminal`/`intermediate`
+were `public static short` fields, written once in `findCellRegions` and read by
+`RunnableRegionGrower` workers (via `import static`), so concurrent region-growing
+runs raced on them.
+
+- Deleted `public static short terminal`/`intermediate`.
+- `MultiThreadedRegionGrower.run()` now computes them locally from
+  `singleImageRegions.size()` and passes them to `RunnableRegionGrower` as
+  constructor params (stored as instance fields), removing the static import.
+- The dead distance-map path (`initDistanceMaps`/`buildDistanceMaps`/
+  `expandRegion`) now takes `intermediate`/`terminal` as parameters and computes
+  them locally rather than reading the removed statics.
+- No behaviour change: the values are still `intermediate = N + 1`,
+  `terminal = N + 2`.
+
+Version → `2.0.6`. Full suite: 34/34 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three

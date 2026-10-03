@@ -75,6 +75,8 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
         Arrays.fill(checkImagePix, Region.MASK_FOREGROUND);
         Arrays.fill(countImagePix, Region.MASK_FOREGROUND);
         int cellNum = singleImageRegions.size();
+        short intermediate = (short) (cellNum + 1);
+        short terminal = (short) (intermediate + 1);
         byte[] voronoiPix = EDMMaker.makeVoronoiPix(BinaryMaker.makeBinaryImage(regionImagePix, width, height, null, 0, 0));
         Arrays.fill(tempRegionPix, Region.MASK_FOREGROUND);
         for (int i = 0; i < cellNum; i++) {
@@ -83,7 +85,7 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
                 exec.submit(new RunnableRegionGrower(cell, expandedImagePix, width,
                         checkImagePix, regionImagePix, inputPix, threshold,
                         i, height, countImagePix, tempRegionPix, regionImage,
-                        voronoiPix, "RegionGrower_" + i));
+                        voronoiPix, intermediate, terminal, "RegionGrower_" + i));
             }
         }
         terminate("Error detecting cells.");
