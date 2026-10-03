@@ -455,7 +455,9 @@ Order: D2 decompose → behavioural tests → G2 static state → G1 threading.
    (c) `MultiThreadedColocalise` raw `Thread[]` → `ExecutorService` — **done
    (2026-10-03):** `calcNucParticleDistances`/`calcNearestNeighbours` now use
    `runWorkers`; (d)
-   `MultiThreadedImageLoader` use its executor; (e) `MultiThreadedMaximaFinder`
+   `MultiThreadedImageLoader` use its executor — **done (2026-10-03):** now
+   routes `RunnablePixelLoader`s through `runWorkers` instead of raw
+   `start()`/`join()`; (e) `MultiThreadedMaximaFinder`
    process-drain → virtual threads.
 
 Each step compiles + tests green; record progress in `REVISION_LOG.md`.

@@ -111,6 +111,18 @@ Version → `2.0.10`. Full suite: 35/35 green.
 
 ---
 
+## 2026-10-03 — G1: `MultiThreadedImageLoader` uses its executor (Step 4d)
+
+`Process.IO.MultiThreadedImageLoader.run()` already created an
+`Executors.newFixedThreadPool(1)` but bypassed it, `start()`ing/`join()`ing the
+single `RunnablePixelLoader` directly. Now routes the loaders through the
+inherited `runWorkers(...)` helper (submit + `terminate`), and the now-unused
+`ij.IJ` import is removed.
+
+Version → `2.0.11`. Full suite: 35/35 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three
