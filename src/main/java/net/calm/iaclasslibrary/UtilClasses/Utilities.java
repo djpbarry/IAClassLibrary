@@ -141,14 +141,7 @@ public class Utilities {
     }
 
     public static int checkRange(int number, int lowerBound, int upperBound) {
-        int newNo = number;
-        if (newNo < lowerBound) {
-            newNo += upperBound;
-        }
-        if (newNo >= upperBound) {
-            newNo -= upperBound;
-        }
-        return newNo;
+        return Math.floorMod(number - lowerBound, upperBound - lowerBound) + lowerBound;
     }
 
     public static String getDate(String format) {

@@ -105,13 +105,7 @@ public class GenUtils {
     }
 
     public static int checkRange(int a, int b) {
-        if (a < 0) {
-            return a + b;
-        } else if (a >= b) {
-            return a - b;
-        } else {
-            return a;
-        }
+        return Math.floorMod(a, b);
     }
 
     /*

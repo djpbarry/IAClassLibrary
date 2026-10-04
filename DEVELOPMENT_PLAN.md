@@ -690,7 +690,7 @@ distilled into individual steps, ordered by risk. Tiers 1–4 are in scope now;
 Tier 5 is deferred/skipped.
 
 - **Tier 1 — mechanical swaps (low risk, no API change):**
-  1. `GenUtils.checkRange` → `Math.floorMod` (also `Utilities.checkRange`).
+  1. `GenUtils.checkRange` → `Math.floorMod` (also `Utilities.checkRange`). — **done (2026-10-03).**
   2. `GenUtils.checkFileSep` → `StringUtils.replaceChars`.
   3. `IO.FileReader.getParamString()` → `String.join` (verify trailing-delimiter
      behaviour).

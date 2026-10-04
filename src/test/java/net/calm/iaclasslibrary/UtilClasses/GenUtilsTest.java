@@ -17,6 +17,8 @@ public class GenUtilsTest {
         assertEquals(4, GenUtils.checkRange(-1, 5));
         assertEquals(2, GenUtils.checkRange(5, 3));
         assertEquals(2, GenUtils.checkRange(2, 10));
+        assertEquals(4, GenUtils.checkRange(-6, 5));
+        assertEquals(2, GenUtils.checkRange(8, 3));
     }
 
     @Test

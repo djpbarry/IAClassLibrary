@@ -158,6 +158,24 @@ Version → `2.0.13`. Full suite: 37/37 green.
 
 ---
 
+## 2026-10-03 — G8 step 1: `checkRange` → `Math.floorMod`
+
+Replaced the hand-rolled `checkRange` wrappers with the JDK `Math.floorMod`:
+
+- `GenUtils.checkRange(a, b)` — the old single-step `+b`/`-b` wrap was only
+  correct for `a ∈ [-b, 2b)`; now `Math.floorMod(a, b)` (correct full wrap into
+  `[0, b)`). Public signature unchanged.
+- `Utilities.checkRange(number, lowerBound, upperBound)` — was a single-step wrap
+  with a wrong modulus (used `upperBound` instead of `upperBound - lowerBound`);
+  now `Math.floorMod(number - lowerBound, upperBound - lowerBound) + lowerBound`.
+  Unreferenced in-repo (public API).
+- Extended `GenUtilsTest.testCheckRange` with multi-step cases (`-6,5` and `8,3`)
+  that the old implementation got wrong.
+
+Version → `2.0.14`. Full suite: 37/37 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three
