@@ -754,3 +754,37 @@ rewrite is major — flatten the `xe/ye/mag/bg[/sigma]` 2-D arrays to a paramete
 vector, supply analytic Jacobians, enforce `bg ≤ mag` via `ParameterValidator`, and
 preserve the incremental "add one Gaussian at a time" loop — with no test coverage
 and an unclear win for a ≤ 49-pixel patch. Left as-is.
+
+G8 Step 13 (done): `Cell.Cell.compare` and `Cell3D.Cell3D.compare` now delegate to
+`compareTo` (was a duplicated `Objects.requireNonNull` + `ID` subtraction). Public
+signatures unchanged. Version → `2.0.21`.
+
+---
+
+## 2026-10-04 — G8 Tier 4 verified: Steps 14–16 are not safely dedupable
+
+Tier 4 was the last remaining G8 batch. Each item was inspected before acting,
+per L15, and all three turned out to be "partial overlap" rather than true
+duplication — so they are deferred rather than force-changed:
+
+- **Step 14 — `ImageChecker.isBinaryImage` vs `BinaryMaker.checkIfBinary`:** not
+  identical. `isBinaryImage` is a pure histogram test
+  (`width*height == hist[0]+hist[255]`, no type check); `checkIfBinary` requires
+  `ByteProcessor` and compares against `stats.pixelCount` (ROI-aware), not
+  `width*height`. The shared piece is a single comparison, so a shared helper would
+  add public API surface for no real saving.
+- **Step 15 — filename filters:** `FileExtensionFilter` already delegates to
+  `FilenameUtils.isExtension` (Tier 1). `ImageFilter` uses a loose
+  `endsWith(lowercased)` match; `OnlyExt` is `@Deprecated` with TIF/TIFF and
+  JPG/JPEG special-casing. Neither is behaviourally equivalent to
+  `FilenameUtils.isExtension`, so collapsing them would change public semantics.
+- **Step 16 — `MaximaFinder` facade:** only two methods are `@Deprecated`, and both
+  already delegate to `MultiThreadedMaximaFinder` (the facade dedupe is already
+  done). The live 2-D methods (`findImageMaxima`, the `drawValue`
+  `findLocalMaxima`, `isLocalMax`) operate on `ImageProcessor`/`short[]` with 2-D
+  kernels and are not duplicated by the 3-D `float[]`
+  `RunnableMaximaFinder.isMax` (different dimensionality, type, boundary clamping).
+  Removing them would break `Utils` callers.
+
+No code changed, so no version bump. This closes Phase G8; the remaining items are
+the documented Tier 5 deferrals.

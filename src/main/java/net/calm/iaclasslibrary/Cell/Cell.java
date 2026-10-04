@@ -47,9 +47,7 @@ public class Cell extends CellRegion implements Comparable<Cell>, Comparator<Cel
     }
 
     public int compare(Cell cell1, Cell cell2) {
-        Objects.requireNonNull(cell1);
-        Objects.requireNonNull(cell2);
-        return cell1.getID() - cell2.getID();
+        return cell1.compareTo(cell2);
     }
 
     public void addParticle(Particle p) {

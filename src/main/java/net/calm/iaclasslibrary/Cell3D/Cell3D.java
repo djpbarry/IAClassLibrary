@@ -47,9 +47,7 @@ public class Cell3D extends Object3DVoxels implements Comparator<Cell3D> {
     }
 
     public int compare(Cell3D cell1, Cell3D cell2) {
-        Objects.requireNonNull(cell1);
-        Objects.requireNonNull(cell2);
-        return cell1.getID() - cell2.getID();
+        return cell1.compareTo(cell2);
     }
 
     public void addSpot(Spot3D s, int channel) {

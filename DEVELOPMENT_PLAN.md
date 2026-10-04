@@ -30,7 +30,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.19` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`), declared license
+  `2.0.21` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -674,7 +674,8 @@ rewrite), the string-join items (trailing-delimiter behaviour), and
 
 **Internal duplication:**
 
-- `Cell.Cell.compareTo` ≡ `Cell.compare`; `Cell3D.Cell3D` same.
+- `Cell.Cell.compareTo` ≡ `Cell.compare`; `Cell3D.Cell3D` same — **done** (`compare`
+  now delegates to `compareTo`).
 - `Image.ImageChecker.isBinaryImage` ≡ `Binary.BinaryMaker.checkIfBinary`.
 - `IO.File.FileExtensionFilter` / `ImageFilter` / `IAClasses.OnlyExt` — three
   near-identical filename filters.
@@ -754,10 +755,27 @@ Tier 5 is deferred/skipped.
       problem is small (≤ `FIT_SIZE²` pixels). Revisit only if fit performance
       becomes an issue.
 - **Tier 4 — internal duplication (low value, structural):**
-  13. `Cell.Cell.compareTo` ≡ `Cell.compare`; `Cell3D` same.
-  14. `Image.ImageChecker.isBinaryImage` ≡ `Binary.BinaryMaker.checkIfBinary`.
-  15. Dedup `FileExtensionFilter` / `ImageFilter` / `IAClasses.OnlyExt`.
-  16. `Extrema.MaximaFinder` (deprecated) facade dedup.
+  13. `Cell.Cell.compareTo` ≡ `Cell.compare`; `Cell3D` same — **done (2026-10-03):**
+      `compare` now delegates to `compareTo`.
+  14. `Image.ImageChecker.isBinaryImage` ≡ `Binary.BinaryMaker.checkIfBinary` —
+      **verified NOT identical (2026-10-04), deferred.** `isBinaryImage` is a pure
+      histogram test (`width*height == hist[0]+hist[255]`) with no type check;
+      `checkIfBinary` additionally requires `ByteProcessor` and compares against
+      `stats.pixelCount` (ROI-aware), not `width*height`. The shared logic is one
+      comparison, so a dedupe helper would add public API for no meaningful saving.
+  15. Dedup `FileExtensionFilter` / `ImageFilter` / `IAClasses.OnlyExt` —
+      **deferred (2026-10-04).** `FileExtensionFilter` already delegates to
+      `FilenameUtils.isExtension` (Tier 1). `ImageFilter` uses a loose
+      `endsWith(lowercased)` match and `OnlyExt` is `@Deprecated` with TIF/TIFF +
+      JPG/JPEG special-casing; neither is behaviourally equivalent, so collapsing
+      them would change public semantics.
+  16. `Extrema.MaximaFinder` (deprecated) facade dedup — **verified not a facade
+      (2026-10-04), deferred.** Only two methods are `@Deprecated` and they already
+      delegate to `MultiThreadedMaximaFinder`; the live 2-D methods
+      (`findImageMaxima`, the `drawValue` `findLocalMaxima`, `isLocalMax`) operate
+      on `ImageProcessor`/`short[]` with 2-D kernels and are not duplicated by the
+      3-D `float[]` `RunnableMaximaFinder.isMax` (different dimensionality, type,
+      and boundary clamping). Aggressive removal would break `Utils` callers.
 - **Tier 5 — deferred / skip:**
   17. `IAClasses.DataStatistics` — **skip** (deprecated; rides on Decision 4).
   18. `Utils.calcCovariance`/`covarianceMatrix` → `Covariance` — **deferred** (API
