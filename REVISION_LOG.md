@@ -718,3 +718,8 @@ is package-private, and it has since diverged from the copied code (it now calls
 actually public/callable and still behaviourally equivalent — inspect the
 dependency's class/source (e.g. `javap`), don't trust a grep-only redundancy
 verdict.
+
+Same pass (G8 Step 8): `ImageProcessing.ImageBlurrer` was flagged "clearly
+redundant" but is a 4-line wrapper that already calls `GaussianBlur.blurGaussian`
+— a delegation, not a reimplementation, so there is nothing to replace.
+`GaussianBlur.blurGaussian(ImageProcessor, double)` is confirmed `public`.

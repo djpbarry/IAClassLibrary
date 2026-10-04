@@ -637,7 +637,9 @@ rewrite), the string-join items (trailing-delimiter behaviour), and
 - `IAClasses.Utils.calcDistance` (2-D, `:209-211`) → `Math.hypot`.
 - `Overlay.OverlayToRoi` (`:30-53`, "Copied from OverlayCommands") → **not feasible**
   (no public ImageJ equivalent — see Step 7).
-- `ImageProcessing.ImageBlurrer` (`:29-35`) → `ij.plugin.filter.GaussianBlur`.
+- `ImageProcessing.ImageBlurrer` (`:29-35`) → **not applicable** (already delegates
+  to `GaussianBlur.blurGaussian` per slice; a thin public wrapper, not a
+  reimplementation).
 - `DateAndTime.Time.getDuration`/`getDurationAsString` (`:28-39`) → `java.time.Duration.between`
   (also buggy: subtracts wall-clock components rather than elapsed time).
 
@@ -714,7 +716,10 @@ Tier 5 is deferred/skipped.
      (2026-10-03):** `OverlayCommands` has no public `overlayToRoi`; the equivalent
      `toRoiManager()` is package-private and has since diverged (`rm.setOverlay(...)`
      vs the copied `rm.add(...)` loop). Keep the copy.
-  8. `ImageProcessing.ImageBlurrer` → `ij.plugin.filter.GaussianBlur`.
+  8. `ImageProcessing.ImageBlurrer` → `ij.plugin.filter.GaussianBlur` — **not
+     applicable (2026-10-03):** `blurStack` already delegates to
+     `GaussianBlur.blurGaussian` per slice; it is a thin public wrapper, not a
+     redundant reimplementation. Nothing to change.
   9. `IO.DataReader.readTabbedFile` → `CSVParser` + `CSVFormat.TDF`; NaN parse →
      `NumberUtils.toDouble`.
 - **Tier 3 — numerical swaps (medium risk, needs characterisation tests):**
