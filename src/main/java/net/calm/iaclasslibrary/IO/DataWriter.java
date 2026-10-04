@@ -21,6 +21,7 @@ import ij.text.TextWindow;
 import net.calm.iaclasslibrary.UtilClasses.GenVariables;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.io.File;
@@ -129,24 +130,7 @@ public class DataWriter {
     }
 
     public static double[][] transposeValues(double[][] data) {
-        int l1 = data.length;
-        int l2 = -1;
-        for (double[] d : data) {
-            if (d != null && d.length > l2) {
-                l2 = d.length;
-            }
-        }
-        double[][] transposedData = new double[l2][l1];
-        for (int i = 0; i < l2; i++) {
-            for (int j = 0; j < l1; j++) {
-                if (data[j] != null && i < data[j].length) {
-                    transposedData[i][j] = data[j][i];
-                } else {
-                    transposedData[i][j] = Double.NaN;
-                }
-            }
-        }
-        return transposedData;
+        return MatrixUtils.createRealMatrix(data).transpose().getData();
     }
 
     public static void saveResultsTable(ResultsTable rt, File file) throws IOException {

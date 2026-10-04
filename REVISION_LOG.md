@@ -222,6 +222,20 @@ Version → `2.0.17`. Full suite: 37/37 green.
 
 ---
 
+## 2026-10-03 — G8 step 5: `DataWriter.transposeValues` → `MatrixUtils`
+
+Replaced the hand-rolled transpose loop in `IO.DataWriter.transposeValues` with
+`MatrixUtils.createRealMatrix(data).transpose().getData()`.
+
+- Rectangular input (the tested case) is unchanged.
+- Behaviour change: null/ragged rows now throw (`MatrixUtils` requires a
+  rectangular matrix) instead of NaN-filling the missing cells. No in-repo
+  callers pass ragged data.
+
+Version → `2.0.18`. Full suite: 37/37 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three

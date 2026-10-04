@@ -699,7 +699,9 @@ Tier 5 is deferred/skipped.
      (2026-10-03):** used `StringBuilder` (not `String.join`) because the method's
      "delimiter *after* each element" + seed semantics, pinned by `DataWriterTest`,
      don't map to `String.join`'s "delimiter *between*" semantics.
-  5. `IO.DataWriter.transposeValues` → `MatrixUtils.createRealMatrix(...).transpose()`.
+  5. `IO.DataWriter.transposeValues` → `MatrixUtils.createRealMatrix(...).transpose()`. — **done
+     (2026-10-03):** ragged/null rows now throw (was NaN-fill); rectangular case
+     unchanged.
   6. `Utilities.getDate` → `java.time.DateTimeFormatter`.
 - **Tier 2 — ImageJ/IO delegation (low risk):**
   7. `Overlay.OverlayToRoi` → `ij.plugin.OverlayCommands.overlayToRoi`.
