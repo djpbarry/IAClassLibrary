@@ -8,7 +8,7 @@ provides reusable image-processing and analysis primitives consumed by other
 Fiji/ImageJ plugins, not a runnable application (there is no `main` method).
 
 - Build system: **Maven** (canonical), parent `org.scijava:pom-scijava` 45.1.0
-- Version in `pom.xml`: `2.0.5` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`)
+- Version in `pom.xml`: `2.0.19` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`)
 - Key dependencies: `net.imagej:ij` / `imagej`, Bio-Formats (`ome`,
   `loci.formats`), ImgLib2 (`io.scif`, `net.imglib2`), TrackMate, MorphoLibJ,
   mcib3d-core, Apache Commons Math3/Lang3/CSV, imagescience.
@@ -97,9 +97,10 @@ to before editing:
   aliasing).
 - The convention is a `MultiThreadedX` base class paired with a `RunnableX`
   worker (e.g. `MultiThreadedImageLoader` + `RunnablePixelLoader`,
-  `MultiThreadedColocalise` + `RunnableColocalise`). Workers extend `Thread` and
-  are started/joined inside `run()` rather than submitted to the `ExecutorService`
-  in practice (see `MultiThreadedImageLoader.run()`).
+  `MultiThreadedColocalise` + `RunnableColocalise`). Workers are submitted as
+  `Runnable`s to a shared `ExecutorService` via
+  `MultiThreadedProcess.runWorkers(...)`; the subprocess-drain threads in
+  `MultiThreadedMaximaFinder` use Java 21 virtual threads.
 
 ### Cell / Particle model
 

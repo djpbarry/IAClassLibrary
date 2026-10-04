@@ -30,7 +30,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.13` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`), declared license
+  `2.0.19` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -198,8 +198,8 @@ slated for removal in a later major version.
 
 ## Phase C — Introduce tests (the biggest maintainability win)
 
-**Status: done (2026-09-25; extended 2026-10-02).** JUnit 5 harness wired
-(`junit-jupiter-api`/`-engine`, parent-managed 5.13.4); 34 tests green across 15
+**Status: done (2026-09-25; extended 2026-10-03).** JUnit 5 harness wired
+(`junit-jupiter-api`/`-engine`, parent-managed 5.13.4); 37 tests green across 16
 classes — pure-logic (`Histogram`, `MSS`, `Rand`, `GenUtils`, `Smoother`,
 `Interpolator`, `ClusterablePoint`, `DataWriter` transforms), CSV golden tests
 (`DataIOTest`, `TrajectoryAnalysis`), plus FFT/Fitter/Utils/RegionGrower/
@@ -347,8 +347,9 @@ lockstep and re-pin their IAClassLibrary dependency to `v2.0.1`.
 
 ## Phase G — Modern Java modernisation (Java 21)
 
-**Status: G3 + G4 + G5 + G6 done; G8 done for FFT + Fitter + mechanical + statistics
-items (2026-10-02). Remaining: G1–G2 and a few deferred G8 items.** The core is over
+**Status: G3–G6 done; G1, G2, G9 done; G8 mostly done (FFT + Fitter + mechanical +
+statistics + Tier-1 steps) (2026-10-03). Remaining: G8 Tiers 2–4 and a few deferred
+G8 items.** The core is over
 a decade old and predates most of the language/API features now available on the
 Java 21 target. A full-pass review found systematic opportunities to improve
 efficiency, performance, readability, and thread-safety without changing public
