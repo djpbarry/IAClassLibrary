@@ -8,7 +8,7 @@ provides reusable image-processing and analysis primitives consumed by other
 Fiji/ImageJ plugins, not a runnable application (there is no `main` method).
 
 - Build system: **Maven** (canonical), parent `org.scijava:pom-scijava` 45.1.0
-- Version in `pom.xml`: `2.0.21` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`)
+- Version in `pom.xml`: `2.0.22` (patch-bumped per commit; last release `2.0.21` / tag `v2.0.21`)
 - Key dependencies: `net.imagej:ij` / `imagej`, Bio-Formats (`ome`,
   `loci.formats`), ImgLib2 (`io.scif`, `net.imglib2`), TrackMate, MorphoLibJ,
   mcib3d-core, Apache Commons Math3/Lang3/CSV, imagescience.
@@ -26,6 +26,8 @@ decision, or log a lesson. Never leave them describing the pre-change state.
 - CI command (see `.github/workflows/maven.yml`): `./mvnw --batch-mode --update-snapshots verify`
 - Required JDK: **21** (per the CI workflow `setup-java` step)
 - There is a **Maven wrapper** (`mvnw`/`mvnw.cmd`) - use it instead of a system `mvn`.
+  It is the jar-less `only-script` type: there is no `maven-wrapper.jar`, so do not
+  add or commit one.
 - Tests use **JUnit 5** (Jupiter) under `src/test/java`; run with `./mvnw test`.
   "Verify" means compile + package + SciJava parent-POM checks + tests.
 - `mvn -q -DskipTests compile` is the fastest way to check a change compiles.

@@ -11,7 +11,7 @@ nb-configuration.xml
 # Local tooling
 .crush.json
 
-# Maven wrapper jar (auto-downloaded on first run)
+# Maven wrapper jar (not used: the wrapper is the jar-less "only-script" type)
 .mvn/wrapper/maven-wrapper.jar
 
 # OS

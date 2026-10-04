@@ -685,6 +685,27 @@ checkout can commit `mvnw` with CRLF endings that break the Linux runner.
 `mvnw.cmd`/`*.bat text eol=crlf` alongside the wrapper, and verify `mvnw` is
 tracked with the executable bit (`git ls-files -s mvnw` shows `100755`).
 
+### L16 — A gitignored wrapper jar breaks JitPack; use the `only-script` wrapper
+
+The `v2.0.21` JitPack build failed with `ClassNotFoundException:
+org.apache.maven.wrapper.MavenWrapperMain`. `.mvn/wrapper/maven-wrapper.jar` is
+gitignored, and the old-style `mvnw` could only fetch it with `wget`/`curl` or a
+committed `MavenWrapperDownloader.java`. The JitPack image had neither, so the jar
+was silently never downloaded. Local builds and GitHub Actions hid the problem
+because the jar was already on disk (locally) or `curl` was available (CI).
+
+Fix (version `2.0.22`): regenerated the wrapper as the jar-less **`only-script`**
+type (`maven-wrapper-plugin:3.3.2:wrapper -Dtype=only-script -Dmaven=3.9.9`). The
+new `mvnw` downloads Maven itself and falls back to an inline `javac`-compiled
+downloader when `wget`/`curl` are missing. Verified by deleting the local jar and
+running the full suite through `mvnw.cmd`. Note that the plugin cannot be run via
+the old `mvnw.cmd`, because that holds a lock on the jar it is replacing; run it
+with the cached Maven under `~/.m2/wrapper/dists/` instead.
+
+**Rule:** never rely on a gitignored `maven-wrapper.jar`. Use the `only-script`
+wrapper, or commit the jar. Before tagging, test the wrapper from a clean checkout
+(no jar on disk).
+
 ### L13 — Field-lifetime resources need `close()`/`AutoCloseable`, not try-with-resources
 
 The Bio-Formats `ImageReader` in `BioFormatsImg` is held as a field and used

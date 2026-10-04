@@ -30,7 +30,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.21` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`), declared license
+  `2.0.22` (patch-bumped per commit; last release `2.0.21` / tag `v2.0.21`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -100,6 +100,8 @@ absent; the stray `nb-configuration.xml` and `out/` still need removing/ignoring
 
 Pin a reproducible toolchain by committing `mvnw`/`mvnw.cmd` + `.mvn/wrapper/`
 so builds don't depend on an unknown system Maven (mirrors ADAPT's A1).
+*(2026-10-04: the wrapper is now the jar-less `only-script` type (maven-wrapper
+3.3.2, Maven 3.9.9), so no `maven-wrapper.jar` is needed; see L16.)*
 
 ### A2. Harden CI
 
