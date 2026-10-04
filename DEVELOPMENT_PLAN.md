@@ -654,7 +654,8 @@ rewrite), the string-join items (trailing-delimiter behaviour), and
 - `IAClasses.DataStatistics.calcPercentiles` (`:89-100`) → `Percentile`;
   `findBestRegression`/`getRSquared` (`:214-258`) → `SimpleRegression`.
 - `Math.Optimisation.MultiGaussFitter`/`FloatingMultiGaussFitter.doMultiFit` —
-  finite-difference coordinate descent → `LevenbergMarquardtOptimizer` + `LeastSquaresBuilder`.
+  finite-difference coordinate descent → `LevenbergMarquardtOptimizer` + `LeastSquaresBuilder`
+  — **deferred** (see Step 12).
 - `DataProcessing.Interpolator.interpolateLinearly` (`:14-40`) and `DSPProcessor.upScale`
   (`:186-226`) → **not worth it** (the interpolation is a one-line formula; see Step 10).
 - `IO.DataWriter.convertArrayToString` (`:123-132`) → `String.join`/`StringUtils.join`;
@@ -743,7 +744,15 @@ Tier 5 is deferred/skipped.
       guarantee the same (descending) order, and diverges on complex eigenvalues
       (current returns `NaN`, math3 returns real parts).
   12. `Math.Optimisation.MultiGaussFitter`/`FloatingMultiGaussFitter.doMultiFit` →
-      `LevenbergMarquardtOptimizer` + `LeastSquaresBuilder`.
+      `LevenbergMarquardtOptimizer` + `LeastSquaresBuilder` — **deferred
+      (2026-10-03):** the LM classes exist (verified `LevenbergMarquardtOptimizer`
+      + `LeastSquaresBuilder.model(MultivariateJacobianFunction)`), but this is a
+      major rewrite: flatten the `xe/ye/mag/bg[/sigma]` 2-D arrays to a parameter
+      vector, supply analytic Jacobians, enforce the `bg ≤ mag` clamp via
+      `ParameterValidator`, and preserve the incremental "add one Gaussian at a
+      time" loop. No test coverage; the current coordinate descent works and the
+      problem is small (≤ `FIT_SIZE²` pixels). Revisit only if fit performance
+      becomes an issue.
 - **Tier 4 — internal duplication (low value, structural):**
   13. `Cell.Cell.compareTo` ≡ `Cell.compare`; `Cell3D` same.
   14. `Image.ImageChecker.isBinaryImage` ≡ `Binary.BinaryMaker.checkIfBinary`.

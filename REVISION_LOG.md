@@ -746,3 +746,11 @@ G8 Step 11 (not worth it): `Utils.getArrayMean` (2-D mean) and
 has no `double[][]` overload (would need a flatten pass), and `EigenDecomposition`
 adds `RealMatrix` boilerplate while reordering eigenvalues and diverging on complex
 eigenvalues. No change made.
+
+G8 Step 12 (deferred): `MultiGaussFitter`/`FloatingMultiGaussFitter.doMultiFit` is
+a finite-difference coordinate descent. `LevenbergMarquardtOptimizer` +
+`LeastSquaresBuilder` exist (verified `model(MultivariateJacobianFunction)`), but the
+rewrite is major — flatten the `xe/ye/mag/bg[/sigma]` 2-D arrays to a parameter
+vector, supply analytic Jacobians, enforce `bg ≤ mag` via `ParameterValidator`, and
+preserve the incremental "add one Gaussian at a time" loop — with no test coverage
+and an unclear win for a ≤ 49-pixel patch. Left as-is.
