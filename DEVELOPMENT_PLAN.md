@@ -699,17 +699,20 @@ implementation should be tightened:
    Because `g` is a monotone cumulative sum of strictly positive weights, this is
    the *distance transform of a sampled function*, computable in **O(n)** with the
    Felzenszwalb–Huttenlocher lower-envelope algorithm. Output-identical; the
-   largest win (runtime is currently quadratic in the longest axis).
+   largest win (runtime is currently quadratic in the longest axis). — **done
+   (2026-10-03):** `distanceTransformSampled` (lower envelope) + `nearestForegroundDistance`
+   (two-pass) extracted as static methods.
 2. **Accuracy:** compute the cumulative metric and the envelope in `double` and
    cast to `float` only at output — `float32` squared distances lose precision
-   past ~4096 per dimension.
+   past ~4096 per dimension. — **done (2026-10-03):** `compute*Distances` and the
+   transforms now use `double`.
 3. **Threading:** route the four stages through a shared
    `ExecutorService`/`ForkJoinPool` instead of spawning `4 × nbCPUs` fresh
-   `Thread`s per call (this is the same site already listed under G1 Step 4(b)).
+   `Thread`s per call — **done (G1 Step 4(b)).**
 
-**Status: not started.** Independent of G1/G2 except item 3 (which shares G1 Step
-4(b)). Add a characterisation test pinning the current O(n²) output before
-rewriting — same discipline as the G8 numerical rewrites.
+**Status: done (2026-10-03).** Characterisation tests added
+(`RiemannianDistanceTransformTest`, 2 tests) pinning the O(n) transforms against
+naive O(n²) double reference implementations.
 
 ---
 

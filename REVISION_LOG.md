@@ -138,6 +138,26 @@ Version → `2.0.12`. Full suite: 35/35 green.
 
 ---
 
+## 2026-10-03 — G9: `RiemannianDistanceTransform` O(n) + `double` (done)
+
+Completed the two remaining G9 items on `RiemannianDistanceTransform` (threading
+was already G1 4b):
+
+- **Efficiency:** extracted the two 1D transforms as static methods —
+  `distanceTransformSampled(f, g, w)` (Felzenszwalb–Huttenlocher lower envelope,
+  for Steps 2/3/4) and `nearestForegroundDistance(g, mask, w, background)`
+  (two-pass, for Step 1). The four `StepNThread` inner classes now call these
+  instead of the O(n²) nested scans.
+- **Accuracy:** `computeX/Y/ZDistances` and the transform accumulators now use
+  `double`; `lambda` widened to `double`; results cast to `float` only when
+  written back into `s`.
+- **Tests:** `RiemannianDistanceTransformTest` (2 tests) pins both transforms
+  against naive O(n²) double reference implementations.
+
+Version → `2.0.13`. Full suite: 37/37 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three
