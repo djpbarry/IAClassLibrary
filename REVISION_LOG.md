@@ -193,6 +193,20 @@ Version → `2.0.15`. Full suite: 37/37 green.
 
 ---
 
+## 2026-10-03 — G8 step 3: `FileReader.getParamString` → `String.join`
+
+Replaced the `concat` loop in `IO.FileReader.getParamString()` with
+`String.join("\t", paramNames)`.
+
+- The old loop left a **trailing tab** (`a\tb\tc\t`); `String.join` returns
+  `a\tb\tc`. No in-repo callers of `getParamString()`, so the trailing separator
+  was an unintended artifact and is now dropped (documented behaviour change for
+  the public method).
+
+Version → `2.0.16`. Full suite: 37/37 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three

@@ -693,7 +693,8 @@ Tier 5 is deferred/skipped.
   1. `GenUtils.checkRange` → `Math.floorMod` (also `Utilities.checkRange`). — **done (2026-10-03).**
   2. `GenUtils.checkFileSep` → `StringUtils.replaceChars`. — **done (2026-10-03).**
   3. `IO.FileReader.getParamString()` → `String.join` (verify trailing-delimiter
-     behaviour).
+     behaviour). — **done (2026-10-03):** trailing `\t` dropped (was an unintended
+     trailing separator).
   4. `IO.DataWriter.convertArrayToString` → `String.join`/`StringUtils.join`.
   5. `IO.DataWriter.transposeValues` → `MatrixUtils.createRealMatrix(...).transpose()`.
   6. `Utilities.getDate` → `java.time.DateTimeFormatter`.

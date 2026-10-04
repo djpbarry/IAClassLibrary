@@ -97,12 +97,7 @@ public class FileReader {
     }
 
     public String getParamString() {
-        int numParams = paramNames.size();
-        String paramString = "";
-        for (int i = 0; i < numParams; i++) {
-            paramString = paramString.concat(paramNames.get(i) + "\t");
-        }
-        return paramString;
+        return String.join("\t", paramNames);
     }
 
     public double readParam(File paramFile, int headerSize, String paramName) throws FileNotFoundException, IOException {
