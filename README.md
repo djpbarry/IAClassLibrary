@@ -33,7 +33,9 @@ Tests use JUnit 5 (Jupiter); run them with:
 ## Consuming
 
 The library is distributed via JitPack. Downstream projects (ADAPT,
-`TrackerLibrary`, `AdaptDataProcessing`) pin a tagged release (e.g. `v2.0.1`).
+`TrackerLibrary`, `AdaptDataProcessing`) pin a tagged release (e.g. `v2.0.21`).
+Consumers must also target Java 21 (the library is compiled to the Java 21
+release).
 
 ## API Documentation
 
