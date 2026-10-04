@@ -121,14 +121,11 @@ public class DataWriter {
     }
 
     public static String convertArrayToString(String seed, Object[] input, String delimiter) {
-        String output = seed;
-        if (output == null) {
-            output = new String();
-        }
+        StringBuilder output = new StringBuilder(seed == null ? "" : seed);
         for (Object s : input) {
-            output = (output.concat(String.valueOf(s))).concat(delimiter);
+            output.append(String.valueOf(s)).append(delimiter);
         }
-        return output;
+        return output.toString();
     }
 
     public static double[][] transposeValues(double[][] data) {

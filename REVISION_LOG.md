@@ -207,6 +207,21 @@ Version → `2.0.16`. Full suite: 37/37 green.
 
 ---
 
+## 2026-10-03 — G8 step 4: `DataWriter.convertArrayToString` → `StringBuilder`
+
+Replaced the `String.concat` loop in `IO.DataWriter.convertArrayToString` with a
+`StringBuilder` (O(n) vs the old O(n²) repeated `concat`).
+
+- Used `StringBuilder` rather than `String.join`/`StringUtils.join` because the
+  method appends the delimiter *after* each element (and prepends a `seed`),
+  which is pinned by `DataWriterTest.testConvertArrayToString`
+  (`"seed1-2-3-"`). `String.join`'s "delimiter between elements" semantics would
+  drop that trailing separator. Behaviour is unchanged.
+
+Version → `2.0.17`. Full suite: 37/37 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three

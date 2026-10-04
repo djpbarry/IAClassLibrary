@@ -695,7 +695,10 @@ Tier 5 is deferred/skipped.
   3. `IO.FileReader.getParamString()` → `String.join` (verify trailing-delimiter
      behaviour). — **done (2026-10-03):** trailing `\t` dropped (was an unintended
      trailing separator).
-  4. `IO.DataWriter.convertArrayToString` → `String.join`/`StringUtils.join`.
+  4. `IO.DataWriter.convertArrayToString` → `String.join`/`StringUtils.join`. — **done
+     (2026-10-03):** used `StringBuilder` (not `String.join`) because the method's
+     "delimiter *after* each element" + seed semantics, pinned by `DataWriterTest`,
+     don't map to `String.join`'s "delimiter *between*" semantics.
   5. `IO.DataWriter.transposeValues` → `MatrixUtils.createRealMatrix(...).transpose()`.
   6. `Utilities.getDate` → `java.time.DateTimeFormatter`.
 - **Tier 2 — ImageJ/IO delegation (low risk):**
