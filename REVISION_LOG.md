@@ -176,6 +176,23 @@ Version → `2.0.14`. Full suite: 37/37 green.
 
 ---
 
+## 2026-10-03 — G8 step 2: `checkFileSep` → `StringUtils.replaceChars`
+
+Replaced the nine sequential `String.replace(char, char)` calls in
+`GenUtils.checkFileSep` with a single `StringUtils.replaceChars` over the invalid
+filename-character set `\ / : * ? " < > |`.
+
+- Gotcha: `StringUtils.replaceChars` **deletes** search characters that have no
+  corresponding replacement (rather than mapping them to the last replacement
+  char), so the replacement string must be the same length as the search set —
+  built here with `StringUtils.repeat(sub, invalid.length())`. The first
+  attempted one-char replacement silently collapsed the separators, caught by the
+  existing `GenUtilsTest.testCheckFileSep` golden assertion.
+
+Version → `2.0.15`. Full suite: 37/37 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three

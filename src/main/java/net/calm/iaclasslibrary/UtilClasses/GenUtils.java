@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Scanner;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -142,18 +143,8 @@ public class GenUtils {
     }
 
     public static String checkFileSep(String directory, char sub) {
-        String dir;
-        dir = directory.replace('\\', sub);
-        dir = dir.replace('/', sub);
-        dir = dir.replace(':', sub);
-        dir = dir.replace('*', sub);
-        dir = dir.replace('?', sub);
-        dir = dir.replace('"', sub);
-        dir = dir.replace('<', sub);
-        dir = dir.replace('>', sub);
-        dir = dir.replace('|', sub);
-
-        return dir;
+        String invalid = "\\/:*?\"<>|";
+        return StringUtils.replaceChars(directory, invalid, StringUtils.repeat(sub, invalid.length()));
     }
 
     public static void logError(Exception e, String message) {
