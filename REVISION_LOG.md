@@ -731,3 +731,18 @@ G8 Step 9 (partial): `readCSVFile`'s NaN-parse now uses
 only the leading run of doubles per line and treats blank lines as record
 separators, which `CSVParser`+`TDF` does not replicate cleanly, and there is no
 test coverage. Version → `2.0.20`.
+
+G8 Step 10 (not worth it): `Interpolator.interpolateLinearly` and
+`DSPProcessor.upScale` each use a one-line linear-interpolation formula
+(`a + t·(b-a)`); `LinearInterpolator` (verified `interpolate(double[], double[])`
+→ `PolynomialSplineFunction`) adds boilerplate and diverges on edge cases —
+single-point input throws (`upScale` holds the value), and boundary extrapolates
+(`upScale` clamps). `interpolateLinearly` is a bespoke 3-D/`ref`-column/`keys`
+traversal, not a 1-D interpolation. No characterisation test written — nothing to
+replace.
+
+G8 Step 11 (not worth it): `Utils.getArrayMean` (2-D mean) and
+`Utils.calcEigenvalues` (2×2 closed form) are correct and simple. `StatUtils.mean`
+has no `double[][]` overload (would need a flatten pass), and `EigenDecomposition`
+adds `RealMatrix` boilerplate while reordering eigenvalues and diverging on complex
+eigenvalues. No change made.

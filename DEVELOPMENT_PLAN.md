@@ -648,15 +648,15 @@ rewrite), the string-join items (trailing-delimiter behaviour), and
 - `IAClasses.Utils.arcTan` (`:324-354`) → `Math.atan2` + `Math.toDegrees` (0–360);
   `calcEuclidDist` (`:213-223`) → `ml.distance.EuclideanDistance`;
   `calcCovariance`/`covarianceMatrix` (`:235-278`) → `Covariance`;
-  `calcEigenvalues` (`:287-303`) → `EigenDecomposition`;
+  `calcEigenvalues` (`:287-303`) → `EigenDecomposition` — **not worth it**;
   `generateGaussian` (`:400-433`) → `NormalDistribution.density`;
-  `getArrayMean` (`:435-443`) → `StatUtils.mean`.
+  `getArrayMean` (`:435-443`) → `StatUtils.mean` — **not worth it**.
 - `IAClasses.DataStatistics.calcPercentiles` (`:89-100`) → `Percentile`;
   `findBestRegression`/`getRSquared` (`:214-258`) → `SimpleRegression`.
 - `Math.Optimisation.MultiGaussFitter`/`FloatingMultiGaussFitter.doMultiFit` —
   finite-difference coordinate descent → `LevenbergMarquardtOptimizer` + `LeastSquaresBuilder`.
 - `DataProcessing.Interpolator.interpolateLinearly` (`:14-40`) and `DSPProcessor.upScale`
-  (`:186-226`) → `analysis.interpolation.LinearInterpolator`.
+  (`:186-226`) → **not worth it** (the interpolation is a one-line formula; see Step 10).
 - `IO.DataWriter.convertArrayToString` (`:123-132`) → `String.join`/`StringUtils.join`;
   `transposeValues` (`:134-153`) → `MatrixUtils.createRealMatrix(...).transpose()`.
 - `IO.DataReader.readTabbedFile` (`:84-131`) → `CSVParser` + `CSVFormat.TDF`; NaN parse
@@ -729,9 +729,19 @@ Tier 5 is deferred/skipped.
      `CSVParser`+`TDF` does not replicate cleanly; no test coverage).
 - **Tier 3 — numerical swaps (medium risk, needs characterisation tests):**
   10. `DataProcessing.Interpolator.interpolateLinearly` + `DSPProcessor.upScale` →
-      `LinearInterpolator`.
+      `LinearInterpolator` — **not worth it (2026-10-03):** both use a one-line
+      linear-interpolation formula (`a + t·(b-a)`); `LinearInterpolator` is a 1-D
+      spline that (a) adds boilerplate, (b) throws on a single-point input where
+      `upScale` holds the value, and (c) extrapolates at the boundary where
+      `upScale` clamps. `interpolateLinearly` is a bespoke 3-D/`ref`-column/`keys`
+      traversal, not a 1-D interpolation. No genuine redundancy to eliminate.
   11. `Utils.getArrayMean` → `StatUtils.mean`; `Utils.calcEigenvalues` →
-      `EigenDecomposition`.
+      `EigenDecomposition` — **not worth it (2026-10-03):** `getArrayMean` would
+      need a 2-D → 1-D flatten (more code, no benefit — the loop is already O(n));
+      `StatUtils.mean` has no `double[][]` overload. `calcEigenvalues` is a correct
+      2×2 closed-form; `EigenDecomposition` adds `RealMatrix` boilerplate, does not
+      guarantee the same (descending) order, and diverges on complex eigenvalues
+      (current returns `NaN`, math3 returns real parts).
   12. `Math.Optimisation.MultiGaussFitter`/`FloatingMultiGaussFitter.doMultiFit` →
       `LevenbergMarquardtOptimizer` + `LeastSquaresBuilder`.
 - **Tier 4 — internal duplication (low value, structural):**
