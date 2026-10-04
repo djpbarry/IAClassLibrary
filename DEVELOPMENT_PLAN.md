@@ -30,15 +30,15 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.5` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`), declared license
+  `2.0.13` (patch-bumped per commit; last release `2.0.1` / tag `v2.0.1`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
   --update-snapshots verify` on **JDK 21** with the `setup-java` Maven cache.
   *(Updated 2026-09-27.)*
-- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 15 classes,
-  34 tests as of 2026-10-02 (incl. FFT/Fitter/Utils/RegionGrower/MultiThreadedProcess
-  tests). No lint/format tooling. (Phase C done for now.)
+- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 16 classes,
+  37 tests as of 2026-10-03 (incl. FFT/Fitter/Utils/RegionGrower/MultiThreadedProcess/
+  RiemannianDistanceTransform tests). No lint/format tooling. (Phase C done for now.)
 - **License:** a GPL-3.0-or-later `LICENSE` file now exists and `pom.xml` is
   corrected from BSD-2 to GPL-3. Source headers remain inconsistent (roughly
   half GPL-3, roughly a third NetBeans "change this header" stubs); header
@@ -684,6 +684,50 @@ rewrite), the string-join items (trailing-delimiter behaviour), and
 **Sequencing:** see G7 — the pure-math items (`Fitter`, `DSPProcessor`, statistics)
 run before G1/G2; the legacy `IAClasses` items (`DataStatistics`, `OnlyExt`) ride
 on Decision 4 (deprecate-then-remove) rather than in-place rewrites.
+
+**Remaining G8 work — execution steps (2026-10-03).** The survey above is
+distilled into individual steps, ordered by risk. Tiers 1–4 are in scope now;
+Tier 5 is deferred/skipped.
+
+- **Tier 1 — mechanical swaps (low risk, no API change):**
+  1. `GenUtils.checkRange` → `Math.floorMod` (also `Utilities.checkRange`).
+  2. `GenUtils.checkFileSep` → `StringUtils.replaceChars`.
+  3. `IO.FileReader.getParamString()` → `String.join` (verify trailing-delimiter
+     behaviour).
+  4. `IO.DataWriter.convertArrayToString` → `String.join`/`StringUtils.join`.
+  5. `IO.DataWriter.transposeValues` → `MatrixUtils.createRealMatrix(...).transpose()`.
+  6. `Utilities.getDate` → `java.time.DateTimeFormatter`.
+- **Tier 2 — ImageJ/IO delegation (low risk):**
+  7. `Overlay.OverlayToRoi` → `ij.plugin.OverlayCommands.overlayToRoi`.
+  8. `ImageProcessing.ImageBlurrer` → `ij.plugin.filter.GaussianBlur`.
+  9. `IO.DataReader.readTabbedFile` → `CSVParser` + `CSVFormat.TDF`; NaN parse →
+     `NumberUtils.toDouble`.
+- **Tier 3 — numerical swaps (medium risk, needs characterisation tests):**
+  10. `DataProcessing.Interpolator.interpolateLinearly` + `DSPProcessor.upScale` →
+      `LinearInterpolator`.
+  11. `Utils.getArrayMean` → `StatUtils.mean`; `Utils.calcEigenvalues` →
+      `EigenDecomposition`.
+  12. `Math.Optimisation.MultiGaussFitter`/`FloatingMultiGaussFitter.doMultiFit` →
+      `LevenbergMarquardtOptimizer` + `LeastSquaresBuilder`.
+- **Tier 4 — internal duplication (low value, structural):**
+  13. `Cell.Cell.compareTo` ≡ `Cell.compare`; `Cell3D` same.
+  14. `Image.ImageChecker.isBinaryImage` ≡ `Binary.BinaryMaker.checkIfBinary`.
+  15. Dedup `FileExtensionFilter` / `ImageFilter` / `IAClasses.OnlyExt`.
+  16. `Extrema.MaximaFinder` (deprecated) facade dedup.
+- **Tier 5 — deferred / skip:**
+  17. `IAClasses.DataStatistics` — **skip** (deprecated; rides on Decision 4).
+  18. `Utils.calcCovariance`/`covarianceMatrix` → `Covariance` — **deferred** (API
+      exposes pre-computed means).
+  19. `DateAndTime.Time.getDuration` → `java.time.Duration` — **deferred** (buggy;
+      would change public return type — add new method + `@Deprecated` only).
+  20. `Particle.ParticleArray` / `Particle.refineCentroid` / `ClusterablePoint` →
+      library equivalents — **structural/API risk**, needs a maintainer call.
+
+**Order:** Tier 1 → 2 → 3 → 4, leaving Tier 5 as documented deferrals.
+
+⚠️ `FileName.makeValidFileName → FilenameUtils.removeExtension` (from the survey)
+is suspected wrong — `makeValidFileName` likely sanitises a filename rather than
+strips an extension. Verify before touching.
 
 ### G9. Optimise `RiemannianDistanceTransform`
 
