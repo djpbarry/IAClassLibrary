@@ -705,3 +705,16 @@ pom was left pinned at `2.0.1`, so a batch of commits carried no version movemen
 
 **Rule:** bump the version on every change (patch/minor/major per the commit type);
 never leave the pom on a `-SNAPSHOT` or a stale version.
+
+### L15 — Verify the upstream method is public before declaring a copy redundant
+
+The G8 survey flagged `Overlay.OverlayToRoi` as "clearly redundant — copied from
+`ij.plugin.OverlayCommands`". On inspection (`javap` + the source jar),
+`OverlayCommands` has **no** public `overlayToRoi`; the equivalent `toRoiManager()`
+is package-private, and it has since diverged from the copied code (it now calls
+`rm.setOverlay(overlay)` rather than the `rm.add(...)` loop). The copy must stay.
+
+**Rule:** before replacing a "copied from X" method, confirm X's replacement is
+actually public/callable and still behaviourally equivalent — inspect the
+dependency's class/source (e.g. `javap`), don't trust a grep-only redundancy
+verdict.

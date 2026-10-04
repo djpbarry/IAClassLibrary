@@ -635,7 +635,8 @@ rewrite), the string-join items (trailing-delimiter behaviour), and
   (`:82-89`) → `toArray(new String[0])`; `getParamIndex()` (`:161-163`) is a
   pass-through over `List.indexOf`.
 - `IAClasses.Utils.calcDistance` (2-D, `:209-211`) → `Math.hypot`.
-- `Overlay.OverlayToRoi` (`:30-53`, "Copied from OverlayCommands") → `ij.plugin.OverlayCommands.overlayToRoi`.
+- `Overlay.OverlayToRoi` (`:30-53`, "Copied from OverlayCommands") → **not feasible**
+  (no public ImageJ equivalent — see Step 7).
 - `ImageProcessing.ImageBlurrer` (`:29-35`) → `ij.plugin.filter.GaussianBlur`.
 - `DateAndTime.Time.getDuration`/`getDurationAsString` (`:28-39`) → `java.time.Duration.between`
   (also buggy: subtracts wall-clock components rather than elapsed time).
@@ -709,7 +710,10 @@ Tier 5 is deferred/skipped.
      common `yyyy/MM/dd/HH/mm/ss/SSS`, differs for timezone/`S`-fraction and
      uncommon letters).
 - **Tier 2 — ImageJ/IO delegation (low risk):**
-  7. `Overlay.OverlayToRoi` → `ij.plugin.OverlayCommands.overlayToRoi`.
+  7. `Overlay.OverlayToRoi` → `ij.plugin.OverlayCommands.overlayToRoi` — **not feasible
+     (2026-10-03):** `OverlayCommands` has no public `overlayToRoi`; the equivalent
+     `toRoiManager()` is package-private and has since diverged (`rm.setOverlay(...)`
+     vs the copied `rm.add(...)` loop). Keep the copy.
   8. `ImageProcessing.ImageBlurrer` → `ij.plugin.filter.GaussianBlur`.
   9. `IO.DataReader.readTabbedFile` → `CSVParser` + `CSVFormat.TDF`; NaN parse →
      `NumberUtils.toDouble`.
