@@ -44,9 +44,8 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   half GPL-3, roughly a third NetBeans "change this header" stubs); header
   tidy-up is deferred (Decision 1). *(Reconciled 2026-09-24.)*
 - **Legacy build:** `build.xml` + `nbproject/` have been **deleted** (Decision 6).
-  A stray untracked `nb-configuration.xml` (NetBeans config) and an untracked
-  `out/` directory (IDE build output) remain to be removed or gitignored.
-  *(Reconciled 2026-09-24.)*
+  The stray `nb-configuration.xml` (NetBeans config) and `out/` directory (IDE
+  build output) are gitignored (`.gitignore`), not tracked. *(Reconciled 2026-09-24.)*
 - **Structure:** ~100+ Java files across ~40 subpackages under
   `net.calm.iaclasslibrary`, split between a legacy `IAClasses` package and newer
   refactored packages (`Cell`, `Cell3D`, `Particle`, `Process`, `IO`, `ImgLib2`,
@@ -347,9 +346,10 @@ lockstep and re-pin their IAClassLibrary dependency to `v2.0.1`.
 
 ## Phase G — Modern Java modernisation (Java 21)
 
-**Status: G3–G6 done; G1, G2, G9 done; G8 mostly done (FFT + Fitter + mechanical +
-statistics + Tier-1 steps) (2026-10-03). Remaining: G8 Tiers 2–4 and a few deferred
-G8 items.** The core is over
+**Status: done (2026-10-04).** G1–G9 complete — G1 (threading), G2 (static state),
+G3 (collections/generics/boxing), G4 (try-with-resources), G5 (logging), G6
+(language features), G8 (redundant reimplementations: Tiers 1–3 done, Tier 4
+verified/deferred, Tier 5 deferred), G9 (RiemannianDistanceTransform). The core is over
 a decade old and predates most of the language/API features now available on the
 Java 21 target. A full-pass review found systematic opportunities to improve
 efficiency, performance, readability, and thread-safety without changing public
