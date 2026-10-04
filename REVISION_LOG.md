@@ -723,3 +723,11 @@ Same pass (G8 Step 8): `ImageProcessing.ImageBlurrer` was flagged "clearly
 redundant" but is a 4-line wrapper that already calls `GaussianBlur.blurGaussian`
 — a delegation, not a reimplementation, so there is nothing to replace.
 `GaussianBlur.blurGaussian(ImageProcessor, double)` is confirmed `public`.
+
+G8 Step 9 (partial): `readCSVFile`'s NaN-parse now uses
+`NumberUtils.toDouble(record.get(j), Double.NaN)` (was try/catch
+`Double.parseDouble`); verified `NumberUtils.toDouble(String, double)` is public.
+`readTabbedFile` → `CSVParser`+`TDF` is **deferred** — the `Scanner` impl collects
+only the leading run of doubles per line and treats blank lines as record
+separators, which `CSVParser`+`TDF` does not replicate cleanly, and there is no
+test coverage. Version → `2.0.20`.

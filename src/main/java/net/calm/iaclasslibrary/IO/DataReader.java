@@ -24,6 +24,7 @@ import java.util.Scanner;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.math.NumberUtils;
 
 /**
  *
@@ -52,13 +53,7 @@ public class DataReader {
                         data.add(new ArrayList<>());
                     }
                     for (; j < record.size(); j++) {
-                        double d;
-                        try {
-                            d = Double.parseDouble(record.get(j));
-                        } catch (NumberFormatException e) {
-                            d = Double.NaN;
-                        }
-                        data.get(line).add(d);
+                        data.get(line).add(NumberUtils.toDouble(record.get(j), Double.NaN));
                     }
                     if (j > maxM) {
                         maxM = j;

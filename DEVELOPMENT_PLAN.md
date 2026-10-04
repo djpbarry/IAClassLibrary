@@ -660,7 +660,8 @@ rewrite), the string-join items (trailing-delimiter behaviour), and
 - `IO.DataWriter.convertArrayToString` (`:123-132`) → `String.join`/`StringUtils.join`;
   `transposeValues` (`:134-153`) → `MatrixUtils.createRealMatrix(...).transpose()`.
 - `IO.DataReader.readTabbedFile` (`:84-131`) → `CSVParser` + `CSVFormat.TDF`; NaN parse
-  (`:54-60`) → `NumberUtils.toDouble`.
+  (`:54-60`) → `NumberUtils.toDouble` — **done (NaN parse); `readTabbedFile` deferred**
+  (see Step 9).
 - `IO.File.FileName.makeValidFileName` (`:26-36`) → `FilenameUtils.removeExtension`.
 - `UtilClasses.GenUtils.checkRange` (`:111-119`) → `Math.floorMod`; `checkFileSep`
   (`:154-167`) → `StringUtils.replaceChars`.
@@ -721,7 +722,11 @@ Tier 5 is deferred/skipped.
      `GaussianBlur.blurGaussian` per slice; it is a thin public wrapper, not a
      redundant reimplementation. Nothing to change.
   9. `IO.DataReader.readTabbedFile` → `CSVParser` + `CSVFormat.TDF`; NaN parse →
-     `NumberUtils.toDouble`.
+     `NumberUtils.toDouble` — **partially done (2026-10-03):** NaN parse in
+     `readCSVFile` → `NumberUtils.toDouble`. `readTabbedFile` → `CSVParser` +
+     `CSVFormat.TDF` **deferred** (the Scanner impl collects only the leading run
+     of doubles per line and treats blank lines as record separators, which
+     `CSVParser`+`TDF` does not replicate cleanly; no test coverage).
 - **Tier 3 — numerical swaps (medium risk, needs characterisation tests):**
   10. `DataProcessing.Interpolator.interpolateLinearly` + `DSPProcessor.upScale` →
       `LinearInterpolator`.
