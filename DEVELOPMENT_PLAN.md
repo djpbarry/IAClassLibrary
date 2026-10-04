@@ -702,7 +702,11 @@ Tier 5 is deferred/skipped.
   5. `IO.DataWriter.transposeValues` → `MatrixUtils.createRealMatrix(...).transpose()`. — **done
      (2026-10-03):** ragged/null rows now throw (was NaN-fill); rectangular case
      unchanged.
-  6. `Utilities.getDate` → `java.time.DateTimeFormatter`.
+  6. `Utilities.getDate` → `java.time.DateTimeFormatter`. — **done (2026-10-03):**
+     `LocalDateTime.now().format(DateTimeFormatter.ofPattern(...))`; caveat —
+     `SimpleDateFormat` vs `DateTimeFormatter` pattern syntax differ (matches for
+     common `yyyy/MM/dd/HH/mm/ss/SSS`, differs for timezone/`S`-fraction and
+     uncommon letters).
 - **Tier 2 — ImageJ/IO delegation (low risk):**
   7. `Overlay.OverlayToRoi` → `ij.plugin.OverlayCommands.overlayToRoi`.
   8. `ImageProcessing.ImageBlurrer` → `ij.plugin.filter.GaussianBlur`.

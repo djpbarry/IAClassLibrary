@@ -236,6 +236,21 @@ Version → `2.0.18`. Full suite: 37/37 green.
 
 ---
 
+## 2026-10-03 — G8 step 6: `Utilities.getDate` → `java.time`
+
+Replaced `Utilities.getDate`'s `SimpleDateFormat`/`Date` formatting with
+`LocalDateTime.now().format(DateTimeFormatter.ofPattern(format))`.
+
+- Removed now-unused `java.text.*`/`java.util.Date` imports.
+- Caveat (previously flagged as a G6 skip): `SimpleDateFormat` and
+  `DateTimeFormatter` pattern syntax differ — identical for common
+  `yyyy/MM/dd/HH/mm/ss/SSS`, but divergent for timezone and some single-letter
+  fraction/era forms. No in-repo callers, so no format strings to reconcile.
+
+Version → `2.0.19`. Full suite: 37/37 green.
+
+---
+
 ## 2026-10-02 — Phase G: collections (G3) + resource management (G4) + logging (G5)
 
 Started the Java 21 modernisation survey (Phase G) and completed the three

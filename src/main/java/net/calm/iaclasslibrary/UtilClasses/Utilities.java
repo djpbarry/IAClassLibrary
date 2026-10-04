@@ -17,9 +17,8 @@ import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import javax.swing.SwingUtilities;
 
 /**
@@ -145,9 +144,7 @@ public class Utilities {
     }
 
     public static String getDate(String format) {
-        Date current = new Date();
-        DateFormat dateFormat = new SimpleDateFormat(format);
-        return dateFormat.format(current);
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern(format));
     }
 
     public static void setLookAndFeel(Class c) {
