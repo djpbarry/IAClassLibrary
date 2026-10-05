@@ -325,6 +325,23 @@ the key ADAPT-consumed public API (`BioFormatsImg`, `MultiThreadedProcess`,
   public API of the packages consumed by ADAPT (`IO.BioFormats`, `Process`,
   `Segmentation.RegionGrower`, `UserVariables`).
 
+### E-follow-up — Javadoc content & HTML hygiene (deferred, 2026-10-04)
+
+Phase E only added class-level Javadoc to four classes. Two follow-up items were
+identified but deferred (no code changes yet):
+
+1. **Content enrichment** — most public methods carry empty/generated Javadoc
+   (`@param`/`@return` with no text, NetBeans "change this header" stubs). Add
+   contract-level docs for the ADAPT-consumed surface: units (µm via OME
+   `Length`), nullability, return-value ownership (copy vs. aliased reference),
+   blocking/thread-safety, and frame-vs-time semantics. Migrate the `AGENTS.md`
+   "Gotchas" into the actual Javadoc so they travel with the API.
+2. **HTML hygiene** — ~95 `@author` Javadoc tags contain `Name <email>`; the
+   angle brackets are parsed as (malformed) HTML and break the published Javadoc
+   ("invalid input"). Escape them as `&lt;`/`&gt;` (or drop the obfuscated
+   email). The license-header `<http://www.gnu.org/licenses/>` is *not* affected —
+   it sits in a non-Javadoc `/* ... */` comment and is never rendered.
+
 ---
 
 ## Phase F — Upstream coordination (with the ADAPT plan)

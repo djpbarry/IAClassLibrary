@@ -809,3 +809,23 @@ duplication — so they are deferred rather than force-changed:
 
 No code changed, so no version bump. This closes Phase G8; the remaining items are
 the documented Tier 5 deferrals.
+
+---
+
+## 2026-10-04 — Phase E follow-up planned: Javadoc content & HTML hygiene
+
+After the `v2.0.21`/`v2.0.22` release work, a Javadoc gap was raised and planned
+(deferred, no code changes):
+
+- **Content enrichment** — most public methods have empty/generated Javadoc. The
+  fix is a targeted contract-first pass over the ADAPT-consumed surface (units,
+  nullability, aliasing vs. copy, blocking/thread-safety, frame-vs-time), moving
+  the `AGENTS.md` "Gotchas" inline so they travel with the API.
+- **HTML hygiene bug** — ~95 `@author` Javadoc tags use `Name <email>`; the
+  `<...>` is parsed as an HTML tag and breaks the rendered page ("invalid input").
+  The correct fix is `&lt;`/`&gt;` (or drop the obfuscated email). The GPL header's
+  `<http://www.gnu.org/licenses/>` is *not* the culprit — it is inside a
+  non-Javadoc `/* ... */` comment, so Javadoc never emits it.
+
+**Lesson:** a `<` in a Javadoc comment (not just in `{@code}`-less prose) is HTML.
+`@author Name <email>` must escape the brackets or use `{@literal ...}`.
