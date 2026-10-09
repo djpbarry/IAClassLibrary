@@ -45,7 +45,7 @@ public class TrajectoryAnalysisTest {
 
         File file = new File(tempDir, TrajectoryAnalysis.MSD);
         List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.ISO_8859_1);
-        assertEquals("Time Step (s),Mean Square Displacement (µm^2)_0,Standard Deviation_0,N_0", lines.get(0));
+        assertEquals("time_step_s,mean_square_displacement_um2_0,standard_deviation_0,n_0", lines.get(0));
     }
 
     @Test
@@ -55,8 +55,8 @@ public class TrajectoryAnalysisTest {
 
         analysis.saveMeanVels(new double[][]{{1.5, 45.0, 0.9}}, tempDir);
 
-        File file = new File(tempDir, "Mean_Velocities.csv");
+        File file = new File(tempDir, "mean_velocities.csv");
         List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.ISO_8859_1);
-        assertEquals("Track ID,Mag (µm/s),Theta (°),Directionality", lines.get(0));
+        assertEquals("track_id,mag_um_per_s,theta_deg,directionality", lines.get(0));
     }
 }

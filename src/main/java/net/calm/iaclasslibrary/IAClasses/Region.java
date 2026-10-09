@@ -631,6 +631,9 @@ public class Region {
             by = bounds.y;
         }
         ImageProcessor mask = input.crop();
+        if (mask.getStatistics().histogram[MASK_FOREGROUND] == 0) {
+            return null;
+        }
         mask.invert();
         EDM edm = new EDM();
         edm.toEDM(mask);

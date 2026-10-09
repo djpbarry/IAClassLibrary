@@ -30,7 +30,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.22` (patch-bumped per commit; last release `2.0.21` / tag `v2.0.21`), declared license
+  `2.0.23` (patch-bumped per commit; last release `2.0.22` / tag `v2.0.22`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode

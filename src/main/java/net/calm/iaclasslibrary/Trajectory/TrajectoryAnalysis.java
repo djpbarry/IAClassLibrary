@@ -59,7 +59,7 @@ public class TrajectoryAnalysis implements PlugIn {
     private final String MIC_PER_SEC = String.format("%s/s", MIC);
     private LinkedHashMap<Integer, Integer> idIndexMap;
     private final boolean batch;
-    public static final String MSD = "Mean_Square_Displacements.csv";
+    public static final String MSD = "mean_square_displacements.csv";
     private boolean labelledData = false;
     private boolean openResultsDirectory = true;
 
@@ -151,11 +151,11 @@ public class TrajectoryAnalysis implements PlugIn {
             IJ.log("Generating spider plot data...");
             double[][] spiderPlotData = calcSpiderPlotData(smoothedData);
             IJ.log("Saving outputs...");
-            saveData(vels, "Instantaneous_Velocities.csv",
-                    new String[]{"Frame No.", String.format("X Vel (%s)", MIC_PER_SEC),
-                        String.format("Y Vel (%s)", MIC_PER_SEC), String.format("Mag (%s)", MIC_PER_SEC),
-                        String.format("Theta (%c)", IJ.degreeSymbol),
-                        "Time (frames)", "Track ID", "Distance", "Time (s)"}, parentOutputDirectory);
+            saveData(vels, "instantaneous_velocities.csv",
+                    new String[]{"frame_no", "x_vel_um_per_s",
+                        "y_vel_um_per_s", "mag_um_per_s",
+                        "theta_deg",
+                        "time_frames", "track_id", "distance", "time_s"}, parentOutputDirectory);
             saveMSDs(msds, parentOutputDirectory);
             saveMeanVels(meanVels, parentOutputDirectory);
             saveRunLengths(runLengths, parentOutputDirectory);
@@ -426,7 +426,7 @@ public class TrajectoryAnalysis implements PlugIn {
     }
 
     void saveMeanVels(double[][] meanVels, File dir) throws IOException {
-        File velData = new File(String.format("%s%s%s", dir, File.separator, "Mean_Velocities.csv"));
+        File velData = new File(String.format("%s%s%s", dir, File.separator, "mean_velocities.csv"));
         if (velData.exists()) {
             velData.delete();
         }
@@ -434,16 +434,16 @@ public class TrajectoryAnalysis implements PlugIn {
         for (int i = 0; i < meanVels.length; i++) {
             rowLabels[i] = String.valueOf(idIndexMap.get(i));
         }
-        DataWriter.saveValues(meanVels, velData, new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "Directionality"}, rowLabels, false);
+        DataWriter.saveValues(meanVels, velData, new String[]{"track_id", "mag_um_per_s", "theta_deg", "directionality"}, rowLabels, false);
     }
 
     void saveRunLengths(double[][][] runs, File dir) throws IOException {
-        File velData = new File(String.format("%s%s%s", dir, File.separator, "Run_Lengths.csv"));
+        File velData = new File(String.format("%s%s%s", dir, File.separator, "run_lengths.csv"));
         if (velData.exists()) {
             velData.delete();
         }
         try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velData), GenVariables.ISO), CSVFormat.EXCEL)) {
-            printer.printRecord(((Object[]) new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "Net Distance", "Cumulative Distance", "Duration (s)"}));
+            printer.printRecord(((Object[]) new String[]{"track_id", "mag_um_per_s", "theta_deg", "net_distance", "cumulative_distance", "duration_s"}));
         }
         for (int i = 0; i < runs.length; i++) {
             double[][] v = runs[i];
@@ -453,12 +453,12 @@ public class TrajectoryAnalysis implements PlugIn {
 
     void saveMSDs(double[][] msds, File parentOutputDirectory) throws IOException {
         String[] headings = new String[msds[0].length];
-        headings[0] = "Time Step (s)";
+        headings[0] = "time_step_s";
         for (int i = 1; i < msds[0].length; i += 3) {
             int j = (i - 1) / 3;
-            headings[i] = String.format("Mean Square Displacement (%s^2)_%d", MIC, j);
-            headings[i + 1] = String.format("Standard Deviation_%d", j);
-            headings[i + 2] = String.format("N_%d", j);
+            headings[i] = String.format("mean_square_displacement_um2_%d", j);
+            headings[i + 1] = String.format("standard_deviation_%d", j);
+            headings[i + 2] = String.format("n_%d", j);
         }
         saveData(new double[][][]{msds}, MSD,
                 headings, parentOutputDirectory);
@@ -466,11 +466,11 @@ public class TrajectoryAnalysis implements PlugIn {
 
     void saveSpiderPlotData(double[][] data, File parentOutputDirectory) throws IOException {
         String[] headings = new String[data[0].length];
-        headings[0] = String.format("X (%cm)", IJ.micronSymbol);
+        headings[0] = "x_um";
         for (int i = 1; i < data[0].length; i++) {
-            headings[i] = String.format("net.calm.iaclasslibrary.Particle %d Y", i);
+            headings[i] = String.format("particle_%d_y", i);
         }
-        File spiderData = new File(String.format("%s%s%s", parentOutputDirectory, File.separator, "Spider_Plot_Data.csv"));
+        File spiderData = new File(String.format("%s%s%s", parentOutputDirectory, File.separator, "spider_plot_data.csv"));
         if (spiderData.exists()) {
             spiderData.delete();
         }

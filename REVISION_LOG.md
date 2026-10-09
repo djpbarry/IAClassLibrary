@@ -829,3 +829,43 @@ After the `v2.0.21`/`v2.0.22` release work, a Javadoc gap was raised and planned
 
 **Lesson:** a `<` in a Javadoc comment (not just in `{@code}`-less prose) is HTML.
 `@author Name <email>` must escape the brackets or use `{@literal ...}`.
+
+---
+
+## 2026-10-09 — ADAPT-driven fixes: `Region.findSeed` NPE and snake_case outputs
+
+Two issues surfaced while modernising ADAPT (`djpbarry/Adapt`), fixed on
+`development`.
+
+### `Region.findSeed()` NPE on empty masks
+
+`findSeed()` crops the mask, inverts it, and calls `EDM.toEDM()` without checking
+for foreground. On an empty/degenerate mask (e.g. a cell that disappears in a
+frame), `EDM.toEDM` dereferences a null `FloatProcessor` and throws an NPE.
+
+- Guard added: after `input.crop()`, return `null` when
+  `mask.getStatistics().histogram[MASK_FOREGROUND] == 0` (no foreground pixels).
+- Callers already handle `null`: `getMaskOutline()` returns `null`, and
+  `morphFilter()` returns `false`.
+- Non-empty-mask behaviour unchanged.
+
+### `TrajectoryAnalysis` snake_case ASCII tables
+
+The five output tables were renamed to snake_case and their column headings
+normalised to snake_case ASCII. This is a **breaking filename change** for
+downstream consumers (ADAPT regenerates its output baseline):
+
+| Old filename | New filename |
+| --- | --- |
+| `Instantaneous_Velocities.csv` | `instantaneous_velocities.csv` |
+| `Mean_Square_Displacements.csv` | `mean_square_displacements.csv` |
+| `Mean_Velocities.csv` | `mean_velocities.csv` |
+| `Run_Lengths.csv` | `run_lengths.csv` |
+| `Spider_Plot_Data.csv` | `spider_plot_data.csv` |
+
+Headings: spaces/CamelCase → `_` and lowercased; `µm` → `um`, `°` → `deg`,
+`µm²` → `um2`. Also fixed the spider-plot heading that carried a stray
+`net.calm.iaclasslibrary.` package prefix (`"net.calm.iaclasslibrary.Particle %d Y"`
+→ `"particle_%d_y"`). `TrajectoryAnalysisTest` golden assertions updated to match.
+
+Version → `2.0.23`.
