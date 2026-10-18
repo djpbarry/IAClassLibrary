@@ -100,8 +100,7 @@ public class BioFormatsImg implements AutoCloseable {
     }
 
     public String getDimOrder(int series) {
-        reader.setSeries(series);
-        return reader.getDimensionOrder();
+        return String.valueOf(meta.getPixelsDimensionOrder(series).getValue());
     }
 
     public int getPixelType(int series) {
@@ -110,13 +109,11 @@ public class BioFormatsImg implements AutoCloseable {
     }
 
     public int getSizeC(int series) {
-        reader.setSeries(series);
-        return reader.getSizeC();
+        return meta.getPixelsSizeC(series).getValue();
     }
 
     public int getSizeZ(int series) {
-        reader.setSeries(series);
-        return reader.getSizeZ();
+        return meta.getPixelsSizeZ(series).getValue();
     }
 
     public Length getXYSpatialRes(int series) {
@@ -181,7 +178,7 @@ public class BioFormatsImg implements AutoCloseable {
     }
 
     public void loadPixelData(int series) {
-        loadPixelData(series, 0, this.getSizeC(series), reader.getDimensionOrder());
+        loadPixelData(series, 0, this.getSizeC(series), getDimOrder(series));
     }
 
     public void loadPixelData(int series, int cBegin, int cEnd, String dimOrder) {
@@ -257,18 +254,15 @@ public class BioFormatsImg implements AutoCloseable {
     }
 
     public int getSizeX(int series) {
-        reader.setSeries(series);
-        return reader.getSizeX();
+        return meta.getPixelsSizeX(series).getValue();
     }
 
     public int getSizeY(int series) {
-        reader.setSeries(series);
-        return reader.getSizeY();
+        return meta.getPixelsSizeY(series).getValue();
     }
 
     public int getSizeT(int series) {
-        reader.setSeries(series);
-        return reader.getSizeT();
+        return meta.getPixelsSizeT(series).getValue();
     }
 
     public String getSeriesName(int series) {

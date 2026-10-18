@@ -64,6 +64,22 @@ field-by-field mapping recorded in `DEVELOPMENT_PLAN.md` H1.
 
 No code change yet (planning/verification only).
 
+### 2026-10-18 — H1 done: `BioFormatsImg` metadata accessors are side-effect-free
+
+Re-pointed `getSizeX/Y/Z/C/T` and `getDimOrder` at the side-effect-free
+series-indexed `IMetadata` accessors (via the `meta` field), removing the hidden
+`reader.setSeries(series)` mutation these getters previously performed:
+
+- `getSizeX/Y/Z/C/T(series)` → `meta.getPixelsSizeX/Y/Z/C/T(series).getValue()`
+  (`PositiveInteger.getValue()` → `Integer`, auto-unboxed to `int`).
+- `getDimOrder(series)` → `meta.getPixelsDimensionOrder(series).getValue()`.
+- The inline `reader.getDimensionOrder()` in `loadPixelData(series)` →
+  `getDimOrder(series)` (same latent series-state bug, now side-effect-free).
+
+`getPixelType(series)` stays on `reader` (no side-effect-free `ImageReader`
+variant). `getSeriesName`/`getXYSpatialRes`/`getZSpatialRes` were already on
+`meta`. No public signatures changed; full suite green. Version → `2.0.25`.
+
 ### 2026-10-18 — `LocationAgnosticBioFormatsImg` deprecated
 
 The OMERO motivation for `LocationAgnosticBioFormatsImg` is gone — it now only

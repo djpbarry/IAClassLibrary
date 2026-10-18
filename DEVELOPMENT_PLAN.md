@@ -30,7 +30,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.24` (patch-bumped per commit; last release `2.0.23` / tag `v2.0.23`), declared license
+  `2.0.25` (patch-bumped per commit; last release `2.0.24` / tag `v2.0.24`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -849,14 +849,20 @@ pixel-loading path is incomplete and the time dimension is effectively
 unsupported. The class juggles three Bio-Formats abstractions (`ImageReader`,
 `IMetadata`, `ImporterOptions`/`BF`) inconsistently.
 
-### H1. Re-point the metadata accessors at `IMetadata`
+### H1. Re-point the metadata accessors at `IMetadata` — **done (2026-10-18)**
 
 `getSizeX/Y/Z/C/T`, `getDimOrder`, `getSeriesName`, `getXYSpatialRes`,
-`getZSpatialRes` currently go through `reader.setSeries(...)` + `reader.get*()`,
-which mutates the reader's current series as a hidden side effect. Replace with
-the side-effect-free, series-indexed `IMetadata` accessors. Keep `ImageReader`
-only for `setId`, `checkID`, `getFileList`, `getPixelType`, `getRGBChannelCount`,
-`close`.
+`getZSpatialRes` previously went through `reader.setSeries(...)` + `reader.get*()`,
+which mutated the reader's current series as a hidden side effect. They now read
+from the side-effect-free, series-indexed `IMetadata` accessors. `ImageReader` is
+kept only for `setId`, `checkID`, `getFileList`, `getPixelType`, `getRGBChannelCount`,
+`close` (plus `getSeriesCount`/`getSeries`).
+
+Implemented: `getSizeX/Y/Z/C/T` → `meta.getPixelsSize*(series).getValue()`;
+`getDimOrder` → `meta.getPixelsDimensionOrder(series).getValue()`; the inline
+`reader.getDimensionOrder()` in the `loadPixelData(series)` convenience overload →
+`getDimOrder(series)`. `getPixelType` remains on `reader`. Public signatures
+unchanged.
 
 **Verified API (2026-10-18).** `IMetadata` is `loci.formats.meta.IMetadata`,
 which extends `ome.xml.meta.IMetadata` / `MetadataRetrieve` (generated, in
