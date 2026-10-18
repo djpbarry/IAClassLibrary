@@ -15,6 +15,17 @@ dated narrative plus the "what not to do again" notes.
 
 ---
 
+## 2026-10-18 — Added `CITATION.cff`
+
+Added a `CITATION.cff` (CFF 1.2.0) so the library can be cited, matching the
+convention already used by the sibling repositories (ADAPT, GIANI, AnaMorf).
+Software-level citation only — IAClassLibrary itself has no associated
+publication (unlike ADAPT/GIANI/AnaMorf, which add a `preferred-citation`
+article), so there is no `preferred-citation` field. Author recorded as David J
+Barry (ORCID `0000-0003-2763-5244`, The Francis Crick Institute).
+
+---
+
 ## 2026-10-03 — G2: `RegionGrower` static mutable state eliminated
 
 Removed the highest-severity G2 item: `RegionGrower.terminal`/`intermediate`
