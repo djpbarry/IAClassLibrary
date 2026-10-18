@@ -15,6 +15,28 @@ dated narrative plus the "what not to do again" notes.
 
 ---
 
+## 2026-10-09 — Phase H planned: `BioFormatsImg` facade & time-dimension hardening
+
+Reviewed `IO.BioFormats.BioFormatsImg` against the Bio-Formats Java API. The
+pixel-loading path is incomplete and the time dimension is effectively
+unsupported. A new **Phase H** (milestone **M8**) is planned in
+`DEVELOPMENT_PLAN.md`:
+
+- **H1** — re-point the metadata accessors at side-effect-free `IMetadata`
+  (`getPixelsSize*/PhysicalSize*/DimensionOrder/ImageName`) instead of the
+  `reader.setSeries(...)`-mutating `ImageReader` getters.
+- **H2** — rewrite `loadPixelData` into one dimension-complete method
+  (C/Z/T begin/end/step + `setSpecifyRanges(true)` + `setInputOrder(dimOrder)`),
+  keeping the existing overloads as delegating conveniences.
+- **H3** — add `getTimeIncrement(series)` and include time in calibration.
+- **H4** — fix the `getZSpatialRes`/`toString`/`getInfo`/`getUnits`/`getCalibration`
+  NPE risks.
+- **H5** — clarify the `img`/`processedImage` ImageJ-caching split.
+
+No code change yet (planning only).
+
+---
+
 ## 2026-10-03 — G2: `RegionGrower` static mutable state eliminated
 
 Removed the highest-severity G2 item: `RegionGrower.terminal`/`intermediate`
