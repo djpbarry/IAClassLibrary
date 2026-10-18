@@ -6,6 +6,7 @@ import loci.plugins.in.DisplayHandler;
 import loci.plugins.in.ImagePlusReader;
 import loci.plugins.in.ImportProcess;
 import loci.plugins.in.Importer;
+import loci.plugins.in.ImporterOptions;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import ome.units.quantity.Length;
 import ome.xml.meta.IMetadata;
@@ -36,11 +37,13 @@ import java.io.IOException;
 public class LocationAgnosticBioFormatsImg extends BioFormatsImg {
     private final Importer importer = new Importer(null);
     private final IMetadata metadata;
+    private ImporterOptions io;
 
     public LocationAgnosticBioFormatsImg(String options) {
         super(null);
         ImportProcess temp = null;
         try {
+            this.io = new ImporterOptions();
             if (options != null) {
                 this.io = importer.parseOptions(options);
                 temp = new ImportProcess(this.io);

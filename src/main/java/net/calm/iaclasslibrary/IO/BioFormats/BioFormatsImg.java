@@ -32,6 +32,7 @@ import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.units.quantity.Time;
 import ome.units.unit.Unit;
+import ome.xml.model.enums.DimensionOrder;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
@@ -53,7 +54,6 @@ import java.io.IOException;
  */
 public class BioFormatsImg implements AutoCloseable {
 
-    protected ImporterOptions io;
     private final ImageReader reader;
     private IMetadata meta;
     protected String id;
@@ -71,7 +71,6 @@ public class BioFormatsImg implements AutoCloseable {
     public BioFormatsImg(String id) {
         reader = new ImageReader();
         try {
-            this.io = new ImporterOptions();
             ServiceFactory factory = new ServiceFactory();
             OMEXMLService service = factory.getInstance(OMEXMLService.class);
             this.meta = service.createOMEXMLMetadata();
@@ -110,7 +109,8 @@ public class BioFormatsImg implements AutoCloseable {
     }
 
     public String getDimOrder(int series) {
-        return String.valueOf(meta.getPixelsDimensionOrder(series).getValue());
+        DimensionOrder dimOrder = meta.getPixelsDimensionOrder(series);
+        return dimOrder != null ? dimOrder.getValue() : null;
     }
 
     public int getPixelType(int series) {
@@ -180,7 +180,6 @@ public class BioFormatsImg implements AutoCloseable {
 
     public void setId(String id) throws IOException, FormatException {
         this.id = id;
-        this.io.setId(id);
         this.reader.setId(id);
         this.validID = true;
     }

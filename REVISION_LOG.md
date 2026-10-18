@@ -155,6 +155,22 @@ for `setProcessedImage` (nullable manual cache slot), `getProcessedImage`
 No extraction — the split is small and the loader is the natural owner. Javadoc-
 only, no public signature change. Version → `2.0.29`.
 
+### 2026-10-18 — H6 done: `BioFormatsImg` post-phase cleanup
+
+Closed the two remaining review findings from the Bio-Formats API review:
+
+- `getDimOrder(series)` now null-guards `meta.getPixelsDimensionOrder(series)`,
+  returning `null` instead of NPE when the dimension order is absent. Callers
+  (`loadPixelData`) already pass `null` through safely.
+- Removed the parent `BioFormatsImg`'s `protected ImporterOptions io` field. It
+  was write-only in the parent (constructed in the constructor and `setId`'d, but
+  never read — `loadPixelData` builds a fresh `ImporterOptions`). The field now
+  lives in `LocationAgnosticBioFormatsImg`, its only consumer, as a `private`
+  field initialised in the constructor (preserving the non-null default).
+
+No public method signatures changed; the `io` field was `protected`, not public.
+Full suite green (37/37). Version → `2.0.30`.
+
 ---
 
 ## 2026-10-03 — G2: `RegionGrower` static mutable state eliminated

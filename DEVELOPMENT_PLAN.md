@@ -949,6 +949,18 @@ the two-image split up front, and `setProcessedImage`/`getProcessedImage`/
 `getLoadedImage`, and the `float[]`-slice assumption. No extraction needed — the
 split is small and the loader is the natural owner.
 
+### H6. Post-phase cleanup — **done (2026-10-18)**
+
+Two leftover review findings, closed after H1–H5:
+
+- `getDimOrder(series)` now null-guards `meta.getPixelsDimensionOrder(series)`
+  (returns `null` instead of NPE; callers already tolerate `null`).
+- Removed the parent `BioFormatsImg`'s write-only `protected ImporterOptions io`
+  field (constructed + `setId`'d but never read by the parent; `loadPixelData`
+  builds a fresh `ImporterOptions`). The field now lives in
+  `LocationAgnosticBioFormatsImg` (its only consumer) as a `private` field
+  initialised in the constructor.
+
 **Guardrail:** keep the existing public method signatures (consumers unaffected);
 the breaking rename/trim, if any, rides on the coordinated Decision-7 namespace
 hand-off, not this phase.
