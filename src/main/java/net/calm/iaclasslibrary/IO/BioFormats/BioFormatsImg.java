@@ -86,7 +86,8 @@ public class BioFormatsImg implements AutoCloseable {
     public String toString(int series) {
         Length xy = getXYSpatialRes(series);
         Length z = getZSpatialRes(series);
-        return String.format("%s\nXY Spatial Res (%s): %f\nZ Spatial Res (%s): %f\n", id, xy.unit().getSymbol(), xy.value().floatValue(), z.unit().getSymbol(), z.value().floatValue());
+        return String.format("%s\nXY Spatial Res (%s): %f\nZ Spatial Res (%s): %f\n",
+                id, lengthSymbol(xy), lengthValue(xy), lengthSymbol(z), lengthValue(z));
     }
 
     public int getSeriesCount() {
@@ -131,7 +132,9 @@ public class BioFormatsImg implements AutoCloseable {
         }
         Length zRes = meta.getPixelsPhysicalSizeZ(series);
         if (zRes == null && getSizeZ(series) > 1) {
-            zRes = new Length(1.0, getXYSpatialRes(series).unit());
+            Length xy = getXYSpatialRes(series);
+            Unit<Length> unit = xy != null ? xy.unit() : null;
+            zRes = unit != null ? new Length(1.0, unit) : null;
         }
         return zRes;
     }
@@ -243,8 +246,8 @@ public class BioFormatsImg implements AutoCloseable {
             return String.format("%s\n"
                             + "XY Spatial Res: %f\n"
                             + "Z Spatial Res: %f", getId(),
-                    getXYSpatialRes(s).value().floatValue(),
-                    getZSpatialRes(s).value().floatValue());
+                    lengthValue(getXYSpatialRes(s)),
+                    lengthValue(getZSpatialRes(s)));
         } else {
             return "Invalid image ID";
         }
@@ -287,9 +290,17 @@ public class BioFormatsImg implements AutoCloseable {
     }
 
     public double[] getCalibration(int series) {
-        return new double[]{getXYSpatialRes(series).value().doubleValue(),
-                getXYSpatialRes(series).value().doubleValue(),
-                getZSpatialRes(series).value().doubleValue()};
+        return new double[]{lengthValue(getXYSpatialRes(series)),
+                lengthValue(getXYSpatialRes(series)),
+                lengthValue(getZSpatialRes(series))};
+    }
+
+    private static double lengthValue(Length length) {
+        return (length != null && length.value() != null) ? length.value().doubleValue() : Double.NaN;
+    }
+
+    private static String lengthSymbol(Length length) {
+        return (length != null && length.unit() != null) ? length.unit().getSymbol() : "microns";
     }
 
     /**
@@ -345,8 +356,6 @@ public class BioFormatsImg implements AutoCloseable {
     }
 
     public String getUnits(int series) {
-        Unit<Length> u = getXYSpatialRes(series).unit();
-        if (u != null) return u.getSymbol();
-        else return "microns";
+        return lengthSymbol(getXYSpatialRes(series));
     }
 }

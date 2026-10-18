@@ -930,11 +930,14 @@ only.
   `getCalibration(series)` is **unchanged** (`{x, y, z}`) to avoid widening the
   public array and breaking consumers that expect 3 elements.
 
-### H4. Fix the NPE risks
+### H4. Fix the NPE risks — **done (2026-10-18)**
 
 `getZSpatialRes` (dereferences `getXYSpatialRes(...).unit()`), `toString`,
 `getInfo`, `getUnits`, and `getCalibration` all dereference possibly-null
-physical sizes. Add null-guards/defaults.
+physical sizes. Added null-guards/defaults via two private helpers
+(`lengthValue` → `Double.NaN`, `lengthSymbol` → `"microns"`); `getZSpatialRes`
+now returns `null` rather than constructing a fallback `Length` when the XY
+resolution is also absent.
 
 ### H5. Clarify the ImageJ caching split
 

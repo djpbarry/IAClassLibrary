@@ -129,6 +129,19 @@ Decision 5) rather than merging the two classes or deleting it outright.
 Removal/consolidation rides on the Decision-7 namespace hand-off. H1/H2 target
 the parent `BioFormatsImg` only. Version → `2.0.24`.
 
+### 2026-10-18 — H4 done: `BioFormatsImg` spatial-resolution NPEs fixed
+
+`toString(int)`, `getInfo(int)`, `getUnits(int)`, and `getCalibration(int)` all
+dereferenced possibly-null `Length` physical sizes, and `getZSpatialRes(int)`
+could NPE inside its XY-resolution fallback. Added two private static helpers —
+`lengthValue(Length)` (returns `Double.NaN` when null/valueless) and
+`lengthSymbol(Length)` (returns `"microns"` when null/unitless) — and routed the
+five methods through them. `getZSpatialRes` now returns `null` (instead of
+constructing a fallback `Length`) when the Z resolution and the XY resolution are
+both absent; callers already tolerate `null`/`NaN` after this change.
+
+No public signatures changed. Full suite green (37/37). Version → `2.0.28`.
+
 ---
 
 ## 2026-10-03 — G2: `RegionGrower` static mutable state eliminated
