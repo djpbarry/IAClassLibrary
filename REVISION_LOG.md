@@ -98,7 +98,9 @@ derivable from this repo, and would duplicate the GIANI label vocabulary. Instea
   GIANI's `PipelineBuilder`/`GianiDefaultParams`. Cross-repo; rides on the
   coordinated hand-off.
 
-No code yet — planning/decision only.
+No code yet — planning/decision only. A hand-off note for the GIANI team was
+written to `GIANI-process-params-note.md` (R2a/R2b rationale, the one thing needed
+from GIANI to land R2b).
 
 ---
 
