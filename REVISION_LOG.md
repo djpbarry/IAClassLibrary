@@ -142,6 +142,19 @@ both absent; callers already tolerate `null`/`NaN` after this change.
 
 No public signatures changed. Full suite green (37/37). Version → `2.0.28`.
 
+### 2026-10-18 — H5 done: `BioFormatsImg` ImageJ caching split documented
+
+Clarified the two-image split in `BioFormatsImg` Javadoc. The class-level
+Javadoc now states up front that the loader holds two independent `ImagePlus`
+references — the raw image from `loadPixelData` (`getLoadedImage`) and a separate
+processed result (`setProcessedImage`/`getProcessedImage`). Added method Javadoc
+for `setProcessedImage` (nullable manual cache slot), `getProcessedImage`
+(distinct from `getLoadedImage`), and `getProcessedStackPixels` (returns
+`float[][]` or `null`; assumes `float[]` slices, else `ClassCastException`).
+
+No extraction — the split is small and the loader is the natural owner. Javadoc-
+only, no public signature change. Version → `2.0.29`.
+
 ---
 
 ## 2026-10-03 — G2: `RegionGrower` static mutable state eliminated

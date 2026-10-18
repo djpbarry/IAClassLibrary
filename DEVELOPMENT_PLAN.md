@@ -939,12 +939,15 @@ physical sizes. Added null-guards/defaults via two private helpers
 now returns `null` rather than constructing a fallback `Length` when the XY
 resolution is also absent.
 
-### H5. Clarify the ImageJ caching split
+### H5. Clarify the ImageJ caching split — **done (2026-10-18)**
 
 `img` / `processedImage` (`getLoadedImage`, `getProcessedImage`,
 `getProcessedStackPixels`) are ImageJ caching/processing concerns, not
-Bio-Formats concerns. Document their contract, or extract them if they muddy the
-loader's responsibility.
+Bio-Formats concerns. Documented their contract in Javadoc: the class now states
+the two-image split up front, and `setProcessedImage`/`getProcessedImage`/
+`getProcessedStackPixels` document nullability, the distinction from
+`getLoadedImage`, and the `float[]`-slice assumption. No extraction needed — the
+split is small and the loader is the natural owner.
 
 **Guardrail:** keep the existing public method signatures (consumers unaffected);
 the breaking rename/trim, if any, rides on the coordinated Decision-7 namespace

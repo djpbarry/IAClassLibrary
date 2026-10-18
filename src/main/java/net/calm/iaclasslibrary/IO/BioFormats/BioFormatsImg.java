@@ -42,6 +42,13 @@ import java.io.IOException;
  * series and channel range into an ImageJ {@link ImagePlus}. See
  * {@link LocationAgnosticBioFormatsImg} for the location-agnostic alternative.
  *
+ * <p>The loader holds two independent {@link ImagePlus} references: the raw
+ * image produced by {@code loadPixelData} (returned by {@link #getLoadedImage()})
+ * and a separate processed result supplied by
+ * {@link #setProcessedImage(ImagePlus)} (returned by
+ * {@link #getProcessedImage()}). These are plain ImageJ caching/processing
+ * concerns, not Bio-Formats metadata; neither is derived from the other.
+ *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class BioFormatsImg implements AutoCloseable {
@@ -233,10 +240,25 @@ public class BioFormatsImg implements AutoCloseable {
         return originalFileName.replace(LABEL_SEP, REPLACEMENT_SEP).replace(SERIES_SEP, REPLACEMENT_SEP);
     }
 
+    /**
+     * Sets the processed (post-analysis) image. This is independent of the raw
+     * image loaded by {@link #loadPixelData(int)}; it is a manual cache slot for
+     * processing steps that produce a derived {@link ImagePlus}. May be
+     * {@code null} until a result is supplied.
+     *
+     * @param processedImage the processed image, or {@code null}
+     */
     public void setProcessedImage(ImagePlus processedImage) {
         this.processedImage = processedImage;
     }
 
+    /**
+     * Returns the processed image set by {@link #setProcessedImage(ImagePlus)},
+     * or {@code null} if none has been set. Distinct from
+     * {@link #getLoadedImage()}, which returns the raw loaded image.
+     *
+     * @return the processed {@link ImagePlus}, or {@code null}
+     */
     public ImagePlus getProcessedImage() {
         return processedImage;
     }
@@ -253,6 +275,16 @@ public class BioFormatsImg implements AutoCloseable {
         }
     }
 
+    /**
+     * Returns the slice arrays of the processed image's stack as a
+     * {@code float[][]}, or {@code null} when no processed image has been set
+     * (see {@link #setProcessedImage(ImagePlus)}). Each slice is assumed to be
+     * backed by a {@code float[]}; a slice of any other type will throw a
+     * {@link ClassCastException}.
+     *
+     * @return the processed stack pixels, or {@code null}
+     * @throws ClassCastException if a slice is not a {@code float[]}
+     */
     public float[][] getProcessedStackPixels() {
         if (processedImage == null) {
             return null;
