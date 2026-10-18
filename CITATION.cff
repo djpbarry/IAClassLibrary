@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use IAClassLibrary in your work, please cite the software as below."
+title: "IAClassLibrary: Image Analysis Class Library"
+abstract: >-
+  IAClassLibrary is a reusable Java library of image-processing and
+  analysis primitives for the ImageJ/Fiji ecosystem. It is consumed as a
+  dependency by ADAPT, TrackerLibrary, and AdaptDataProcessing, providing
+  cell and particle models, a multi-threaded processing pipeline,
+  Bio-Formats image loading, segmentation, and statistics/optimisation.
+type: software
+authors:
+  - family-names: Barry
+    given-names: David J
+    orcid: "https://orcid.org/0000-0003-2763-5244"
+    affiliation: "The Francis Crick Institute, London, UK"
+repository-code: "https://github.com/djpbarry/IAClassLibrary"
+url: "https://djpbarry.github.io/IAClassLibrary/"
+license: GPL-3.0-or-later
+keywords:
+  - image analysis
+  - microscopy
+  - ImageJ
+  - Fiji
+  - segmentation
+  - cell migration
+  - Bio-Formats

@@ -841,6 +841,63 @@ naive O(n²) double reference implementations.
 
 ---
 
+## Phase H — `BioFormatsImg` facade & time-dimension hardening
+
+**Status: planned (2026-10-09), not started.** `IO.BioFormats.BioFormatsImg` is
+the primary loader, but a review against the Bio-Formats Java API found the
+pixel-loading path is incomplete and the time dimension is effectively
+unsupported. The class juggles three Bio-Formats abstractions (`ImageReader`,
+`IMetadata`, `ImporterOptions`/`BF`) inconsistently.
+
+### H1. Re-point the metadata accessors at `IMetadata`
+
+`getSizeX/Y/Z/C/T`, `getDimOrder`, `getSeriesName`, `getXYSpatialRes`,
+`getZSpatialRes` currently go through `reader.setSeries(...)` + `reader.get*()`,
+which mutates the reader's current series as a hidden side effect. Replace with
+the side-effect-free, series-indexed `IMetadata` accessors
+(`getPixelsSizeX/Y/Z/C/T(series)`, `getPixelsPhysicalSizeX/Y/Z(series)`,
+`getPixelsDimensionOrder(series)`, `getImageName(series)`). Keep `ImageReader`
+only for what it is genuinely needed for: `setId`, `checkID`, `getFileList`,
+`getPixelType`, `getRGBChannelCount`, `close`.
+
+### H2. Rewrite `loadPixelData` as one dimension-complete method
+
+- Add `loadPixelData(series, cBegin, cEnd, zBegin, zEnd, tBegin, tEnd, dimOrder)`
+  that sets `setSpecifyRanges(true)` plus `setCBegin/CEnd/CStep`,
+  `setZBegin/ZEnd/ZStep`, `setTBegin/TEnd/TStep`, and
+  `setInputOrder(series, dimOrder)`.
+- Keep the existing `loadPixelData(series)` and
+  `loadPixelData(series, cBegin, cEnd, dimOrder)` as delegating conveniences
+  (no public-API break).
+- Fix the `cEnd` off-by-one (inclusive last index = `getSizeC(series) - 1`, or
+  leave unset = all) and stop ignoring the `dimOrder` parameter.
+
+### H3. Add time accessors
+
+- `getTimeIncrement(series)` from `IMetadata.getPixelsTimeIncrement(series)`
+  (`ome.units.quantity.Time`), plus a seconds convenience.
+- Extend `getCalibration(series)` to include time (e.g. `[xy, xy, z, t]`), or
+  add a dedicated `getTimeCalibration(series)`.
+
+### H4. Fix the NPE risks
+
+`getZSpatialRes` (dereferences `getXYSpatialRes(...).unit()`), `toString`,
+`getInfo`, `getUnits`, and `getCalibration` all dereference possibly-null
+physical sizes. Add null-guards/defaults.
+
+### H5. Clarify the ImageJ caching split
+
+`img` / `processedImage` (`getLoadedImage`, `getProcessedImage`,
+`getProcessedStackPixels`) are ImageJ caching/processing concerns, not
+Bio-Formats concerns. Document their contract, or extract them if they muddy the
+loader's responsibility.
+
+**Guardrail:** keep the existing public method signatures (consumers unaffected);
+the breaking rename/trim, if any, rides on the coordinated Decision-7 namespace
+hand-off, not this phase.
+
+---
+
 ## Resolved decisions
 
 Resolved with the maintainer on 2026-09-24. These supersede the open questions
@@ -921,6 +978,10 @@ in the phases above.
    static-state overhaul (G1–G2) once Phase C/D2 tests exist, then the remaining
    G8 items, the `RiemannianDistanceTransform` optimisation (G9), and the
    language-feature readability pass (G6). (Phase G)
+8. **M8 — `BioFormatsImg` facade & time hardening:** re-point metadata accessors
+   at `IMetadata` (H1), rewrite `loadPixelData` for full C/Z/T + `dimOrder` (H2),
+   add time accessors (H3), fix NPEs (H4), clarify the ImageJ caching split (H5).
+   (Phase H)
 
 Each milestone is independently shippable. M1 is the immediate next step and
 unblocks the ADAPT plan's M10 (upstream dependency hygiene).
