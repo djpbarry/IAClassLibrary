@@ -102,6 +102,34 @@ No code yet — planning/decision only. A hand-off note for the GIANI team was
 written to `GIANI-process-params-note.md` (R2a/R2b rationale, the one thing needed
 from GIANI to land R2b).
 
+### 2026-10-18 — GIANI response to the R2 note: R2a corrected, R2b reshaped
+
+GIANI accepted R2a and gave R2b a conditional yes (folded into their Phase I,
+after the Phase H timelapse work; recorded as *their* proposed decision 10, which
+is not our Decision 10). They set six hard conditions: a label→key alias layer for
+saved files, `forChannel(i)` indexed parameters, per-instance namespacing,
+consumer-owned vocabulary, a deprecated `Properties` setup kept for at least one
+release, and a label-based macro API. They also asked for every R2a release to be
+tagged.
+
+Outcome (see `DEVELOPMENT_PLAN.md` R2 and Decision 9):
+
+- **R2a corrected.** The plan said R2a keys would "reuse the label strings
+  verbatim" as library constants. That would have hard-coded GIANI labels into
+  the library and broken GIANI's two-instance Gaussian/Watershed stages. R2a
+  constants are now local slot names resolved through the consumer's
+  `propLabels` binding.
+- **R2b reshaped.** A library-wide labelled `Parameter` registry is replaced by
+  library-declared generic slots plus a consumer-owned per-instance binding,
+  indexed slots, and an alias table supplied by the consumer.
+- GIANI's Phase H1 blocker (`setTime`/8-arg load) already shipped in R1
+  (`2.0.31`). However, `v2.0.31` is **not tagged**, so GIANI cannot pin it yet.
+
+**Lesson:** before promising a downstream consumer "zero impact", check where the
+coupling data really lives. Here the labels were already supplied by the consumer
+per instance, so moving them into library constants would have been a regression,
+even though it looked like a simple rename.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`

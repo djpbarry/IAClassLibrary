@@ -1073,16 +1073,44 @@ vocabulary. Instead:
   facade over a `String → Object` map; add `getInt`/`getDouble`/`getBoolean`/
   `getString(key[, default])` to `MultiThreadedProcess` (parse once, centrally);
   replace the magic integer index constants (`SERIES_SELECT`, `N_PROP_LABELS`,
-  …) with named `String` key constants. The keys temporarily reuse the existing
-  GUI label strings verbatim (e.g. `"Preview Series"`) — the only choice that
-  does not break the current `label-text == map-key` GUI contract.
-- **R2b (coordinated with GIANI, later):** introduce a proper `Parameter`
-  registry with a *stable key* decoupled from the display label (each parameter
-  carries both `key()` and `label()`), remove the label duplication by having
-  the GUI reference the canonical `Parameter` instead of passing raw label
-  strings, and migrate `PropertyExtractor` / GIANI's `PipelineBuilder` /
-  `GianiDefaultParams` to it. This is a cross-repo change and rides on the
-  coordinated hand-off, not this phase.
+  …) with named `String` key constants. **Correction (2026-10-18, GIANI
+  review):** these constants are *local slot names* (e.g. `"radius"`), resolved
+  to the external map key through the consumer-supplied binding (today the
+  `propLabels` array). They must **not** hard-code GIANI label strings such as
+  `"Preview Series"`. The library holds no labels today: GIANI runs
+  `MultiThreadedGaussianFilter`/`MultiThreadedWatershed` twice per pipeline with
+  different labels (`NUC_FILT_RAD_LABEL` vs `CELL_FILT_RAD_LABEL`), so a
+  hard-coded label key would break that. Each R2a release is **tagged**, so
+  GIANI can run `PipelineBuilderTest`/`PipelineExecutorIntegrationTest` before
+  re-pinning.
+- **R2b (coordinated with GIANI, after GIANI Phase H; folded into GIANI Phase
+  I, recorded there as GIANI's proposed decision 10):** replace the positional
+  `String[] propLabels` binding with a named one. The originally proposed single
+  library-wide `Parameter` registry carrying GIANI labels was **dropped**,
+  because it fails GIANI's conditions 3 and 4 (see
+  `GIANI-process-params-note.md`). The revised design:
+  - *Library owns generic slots:* each process class declares its parameters
+    (local key, type, default, default label). Library-generic only, no GIANI
+    vocabulary.
+  - *Consumer owns the binding:* a per-instance binding maps slot → external
+    key (plus the consumer's label/tooltip). Two Gaussian instances bind
+    `radius` to different keys. All stages may bind `series` to one shared key.
+  - *Indexed slots:* `forChannel(i)` derives per-channel keys (e.g. spot
+    detection for channels 0–9).
+  - *Alias layer:* `ProcessParams` loading from `Properties` accepts a
+    consumer-supplied alias table (legacy label → key). GIANI feeds it its
+    current labels plus `DeprecatedProps`. Saved parameter files, CLI `-p`, HPC
+    job lists and the label-based macro API (`Ext.GIANI.setProperty`/
+    `getPropertyList`) all resolve through it.
+  - *Transition:* `setup(BioFormatsImg, Properties, String[])` stays as a
+    `@Deprecated` adapter (positional `propLabels` → named binding) for **at
+    least one release after R2b**.
+  - *Fallback:* if this proves too costly, R2a's label-keyed binding stays
+    indefinitely. GIANI has accepted this explicitly.
+
+  The time-selection work GIANI's Phase H1 needs (`setTime`, the 8-arg
+  `loadPixelData` via `loadPixels`) already shipped in R1 (`2.0.31`), so it does
+  not depend on R2.
 
 ### R3. Source/transform split + DAG cleanup — deprecation
 
@@ -1170,8 +1198,14 @@ in the phases above.
    duplicating the GIANI label vocabulary). Dimension selection
    (`series`/`channel`/`time`) stays on the base `MultiThreadedProcess` as
    execution context, not in `ProcessParams`. Implemented in two tiers: R2a
-   (in-repo, keys reuse existing label strings) and R2b (coordinated `Parameter`
-   registry with stable keys decoupled from labels, with GIANI).
+   (in-repo; named local slot constants resolved through the consumer-supplied
+   label binding, with no labels hard-coded in the library) and R2b (coordinated
+   with GIANI: library-declared generic slots + consumer-owned per-instance
+   binding, `forChannel(i)` indexed slots, a label→key alias layer for saved
+   files and the macro API, and the deprecated `Properties`/`String[]` setup kept
+   for ≥1 release). *(R2b reshaped 2026-10-18 after the GIANI response in
+   `GIANI-process-params-note.md`; a single library-wide labelled `Parameter`
+   registry was rejected.)*
 10. **R4 breaking change — independent of the namespace move.** *(2026-10-18)* The
     `extends Thread` → `Runnable`/`Callable` + shared-executor change (Phase R4)
     is breaking on its own and ships as a major version bump; it is not bundled
