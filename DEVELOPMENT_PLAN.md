@@ -965,6 +965,87 @@ Two leftover review findings, closed after H1–H5:
 the breaking rename/trim, if any, rides on the coordinated Decision-7 namespace
 hand-off, not this phase.
 
+## Phase R — Process pipeline refactor
+
+**Status: planned (2026-10-18).** `Process.MultiThreadedProcess` has accreted
+four unrelated responsibilities and is the main maintenance drag in the
+processing pipeline. This phase simplifies it into a typed, testable core,
+executed one sub-phase at a time (R1 → R4). R1–R3 are additive/deprecation-only;
+R4 is the only breaking change and is independent of the Decision-7 namespace
+move.
+
+### Current state (verified 2026-10-18)
+
+`MultiThreadedProcess` (`Process/MultiThreadedProcess.java:37`) is simultaneously
+a `Thread` (work in `run()`, started/joined manually by `getOutput()`
+`:133-145`), a `Callable<BioFormatsImg>` (`call()` just returns `img`, `:129`),
+a mutable pipeline node (`inputs`/`outputDests` + `duplicate()`/`updateInput`/
+`updateOutputDests`), and a stringly-typed config holder (`props` + `String[]
+propLabels`, parsed per subclass via `Integer.parseInt(props.getProperty(
+propLabels[N]))`).
+
+Thirteen subclasses fall into three kinds:
+
+- **Source** (loads raw pixels on `inputs == null`): `MultiThreadedMaximaFinder`,
+  `MultiThreadedGaussianFilter`, `MultiThreadedTopHatFilter`; plus
+  `MultiThreadedROIConstructor` re-loads raw pixels for measurement (`:173`).
+- **Transform** (reads `inputs`): `Watershed`, `RegionGrower`, `ROIConstructor`,
+  `Colocalise`, `MapPixels`, `ImageCalculator`, `SobelFilter`, `MeasureROI`,
+  `Hessian`.
+- **Outlier**: `MultiThreadedImageLoader` — empty `setup`, broken `duplicate()`
+  (`new MultiThreadedImageLoader(null, null, null)`), never sets `img`.
+
+The magic-index config (`MultiThreadedMaximaFinder.SERIES_SELECT = 7`,
+`N_PROP_LABELS = 28`) is the biggest tax; the `inputs == null` branch encodes
+"source vs transform" as a null check.
+
+### R1. Centralise dimensions & loading — additive
+
+Add `series`/`channel`/`time` (typed, defaulted) plus `setSeries`/`setChannel`/
+`setTime` and a `loadPixels(cBegin, cEnd)` helper to `MultiThreadedProcess` that
+owns the dimension → load mapping:
+
+```java
+protected void loadPixels(int cBegin, int cEnd) {
+    img.loadPixelData(series, cBegin, cEnd, 0, img.getSizeZ(series) - 1, time, time, null);
+}
+```
+
+Migrate the four raw-load sites (MaximaFinder, GaussianFilter, TopHatFilter, and
+the ROIConstructor measurement loop) to it, and delete their per-subclass
+`series`/`channel` parsing. This delivers the GIANI time feature as one coherent
+change and gives future Z-window / "all timepoints" support a single home.
+
+### R2. Typed parameters — deprecation
+
+Replace the `props`/`propLabels` stringly-typed config with **one shared typed
+`ProcessParams`** object (flat, typed getters/setters) — decision 9. Keep
+`setup(BioFormatsImg, Properties, String[])` as a `@Deprecated` adapter to the
+new `setup(BioFormatsImg, ProcessParams)`. Migrate subclasses one at a time;
+delete the `SERIES_SELECT`/`N_PROP_LABELS` magic constants. Dimension selection
+(`series`/`channel`/`time`) stays on the base class as execution context, not in
+`ProcessParams`.
+
+### R3. Source/transform split + DAG cleanup — deprecation
+
+Introduce `SourceProcess` (no `inputs`, owns `loadPixels`) and
+`TransformProcess` (requires `inputs`); remove the `inputs == null` branch.
+Replace the mutable `duplicate()`/`outputDests`/`updateInput` re-wiring with an
+immutable pipeline rebuild. `@Deprecated` `MultiThreadedImageLoader` (do not
+remove — public API, may be used externally) — decision 8.
+
+### R4. Drop the `Thread`/`Callable` duality — breaking
+
+Make `MultiThreadedProcess` a `Runnable`/`Callable` that produces output via a
+`Future`; remove `extends Thread` and the manual `start()`/`join()` in
+`getOutput()`. Run processes on a shared executor owned by the pipeline.
+Consolidate the per-subclass `Executors.newFixedThreadPool` into the base
+`runWorkers`, and convert worker classes (e.g. `RunnableHessianFilter extends
+Thread implements Callable<Void>`) into plain `Callable`s. **Breaking** —
+external code calls `.start()`/`.join()` directly (`MultiThreadedWatershed`
+`:108-110`, `RiemannianDistanceTransform`:141-143`), so it ships as a major
+version bump, independent of the Decision-7 namespace move — decision 10.
+
 ---
 
 ## Resolved decisions
@@ -1019,6 +1100,19 @@ in the phases above.
    breaking change shared across the whole suite (`TrackerLibrary`, `Adapt`,
    `AdaptDataProcessing` all use the `net.calm.*` umbrella), so it is executed in
    lockstep during the coordinated v2.0.1 hand-off (Phase F / M6), not solo.
+8. **`MultiThreadedImageLoader` — deprecate, do not remove.** *(2026-10-18)* It
+   is public API and may be used externally even though it is unreferenced in-repo
+   (empty `setup`, broken `duplicate()`). `@Deprecated` it in Phase R3; removal
+   only after a deprecation window and an external-usage check.
+9. **Process params — one shared typed `ProcessParams`.** *(2026-10-18)* Replace
+   the `props`/`propLabels` stringly-typed config with a single flat, typed
+   `ProcessParams` object (named getters/setters) rather than one params class per
+   process. Dimension selection (`series`/`channel`/`time`) stays on the base
+   `MultiThreadedProcess` as execution context, not in `ProcessParams`.
+10. **R4 breaking change — independent of the namespace move.** *(2026-10-18)* The
+    `extends Thread` → `Runnable`/`Callable` + shared-executor change (Phase R4)
+    is breaking on its own and ships as a major version bump; it is not bundled
+    with the Decision-7 `io.github.djpbarry` namespace move.
 
 ---
 
@@ -1051,6 +1145,9 @@ in the phases above.
    at `IMetadata` (H1), rewrite `loadPixelData` for full C/Z/T + `dimOrder` (H2),
    add time accessors (H3), fix NPEs (H4), clarify the ImageJ caching split (H5).
    (Phase H)
+9. **M9 — Process pipeline refactor:** centralise dimensions/loading (R1), typed
+   params (R2), source/transform split (R3), drop `Thread`/`Callable` duality
+   (R4). (Phase R)
 
 Each milestone is independently shippable. M1 is the immediate next step and
 unblocks the ADAPT plan's M10 (upstream dependency hygiene).

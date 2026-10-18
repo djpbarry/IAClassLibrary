@@ -15,6 +15,29 @@ dated narrative plus the "what not to do again" notes.
 
 ---
 
+## 2026-10-18 — Phase R planned: `MultiThreadedProcess` pipeline refactor
+
+Reviewed `Process.MultiThreadedProcess` (and its 13 subclasses) for the GIANI
+timelapse work and found the base class conflates four roles — a `Thread`, a
+`Callable`, a mutable pipeline node, and a stringly-typed `props`/`propLabels`
+config holder. A new **Phase R** (milestone **M9**) is planned in
+`DEVELOPMENT_PLAN.md`:
+
+- **R1** — centralise `series`/`channel`/`time` + a `loadPixels` helper in the
+  base (additive; also delivers GIANI's per-timepoint loading).
+- **R2** — replace `props`/`propLabels` with one shared typed `ProcessParams`
+  (deprecation; `setup(Properties)` kept as an adapter).
+- **R3** — split `SourceProcess`/`TransformProcess`, replace the mutable
+  `duplicate()`/`outputDests` re-wiring, deprecate `MultiThreadedImageLoader`.
+- **R4** — drop `extends Thread`/`Callable`, run on a shared executor via
+  `Future` (breaking; ships as a major bump, independent of Decision 7).
+
+Decisions recorded: one shared typed `ProcessParams` (dimensions stay on the
+base), `MultiThreadedImageLoader` deprecated (not removed), and R4 independent
+of the namespace move.
+
+---
+
 ## 2026-10-18 — Added `CITATION.cff`
 
 Added a `CITATION.cff` (CFF 1.2.0) so the library can be cited, matching the
