@@ -30,7 +30,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.23` (patch-bumped per commit; last release `2.0.22` / tag `v2.0.22`), declared license
+  `2.0.24` (patch-bumped per commit; last release `2.0.23` / tag `v2.0.23`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -854,11 +854,51 @@ unsupported. The class juggles three Bio-Formats abstractions (`ImageReader`,
 `getSizeX/Y/Z/C/T`, `getDimOrder`, `getSeriesName`, `getXYSpatialRes`,
 `getZSpatialRes` currently go through `reader.setSeries(...)` + `reader.get*()`,
 which mutates the reader's current series as a hidden side effect. Replace with
-the side-effect-free, series-indexed `IMetadata` accessors
-(`getPixelsSizeX/Y/Z/C/T(series)`, `getPixelsPhysicalSizeX/Y/Z(series)`,
-`getPixelsDimensionOrder(series)`, `getImageName(series)`). Keep `ImageReader`
-only for what it is genuinely needed for: `setId`, `checkID`, `getFileList`,
-`getPixelType`, `getRGBChannelCount`, `close`.
+the side-effect-free, series-indexed `IMetadata` accessors. Keep `ImageReader`
+only for `setId`, `checkID`, `getFileList`, `getPixelType`, `getRGBChannelCount`,
+`close`.
+
+**Verified API (2026-10-18).** `IMetadata` is `loci.formats.meta.IMetadata`,
+which extends `ome.xml.meta.IMetadata` / `MetadataRetrieve` (generated, in
+`ome-xml`/`specification`). The accessors and their actual return types:
+
+| `BioFormatsImg` method | Current | Replacement (`meta` = the `OMEXMLMetadata` field) |
+| --- | --- | --- |
+| `getSizeX/Y/Z/C/T(series)` | `reader.setSeries(series); reader.getSizeX()` | `meta.getPixelsSizeX(series).getValue()`, etc. (`PositiveInteger.getValue()` → `Integer`) |
+| `getDimOrder(series)` → `String` | `reader.getDimensionOrder()` | `meta.getPixelsDimensionOrder(series).getValue()` (`DimensionOrder` enum → `String`, e.g. `"XYZCT"`) |
+| `getSeriesName(series)` | *(already)* `meta.getImageName(series)` | unchanged |
+| `getXYSpatialRes(series)` → `Length` | `meta.getPixelsPhysicalSizeX(series)` (already side-effect-free) | unchanged |
+| `getZSpatialRes(series)` → `Length` | `meta.getPixelsPhysicalSizeZ(series)` + fallback | unchanged (H4 adds null-guard) |
+
+`getPixelType(series)` stays on `reader` (still `reader.setSeries(...)` +
+`reader.getPixelType()`) — H1 keeps it as-is for now; it is the only
+`reader`-mutating size/type getter left, and `ImageReader` has no side-effect-free
+`getPixelType(series)` variant.
+
+**Reference implementation already exists.** `LocationAgnosticBioFormatsImg`
+(currently `extends BioFormatsImg`) already reads dimensions/resolution from its
+own `IMetadata` field using exactly `metadata.getPixelsSizeX(series).getValue()`
+and `metadata.getPixelsPhysicalSizeX(series)`. H1 makes `BioFormatsImg` follow the
+same pattern via its `meta` field (populated by `createOMEXMLMetadata()` +
+`reader.setMetadataStore(meta)`), so both classes use one consistent, verified
+idiom. This is purely internal — no public signature changes, and the subclass's
+overrides are unaffected (it supplies its own `metadata` field).
+
+**Null/edge notes (defer to H4):** `getPixelsSize*` returns non-null
+`PositiveInteger` for valid series but `getPixelsPhysicalSize*` may return `null`
+when the file lacks calibration, so the existing `series >= getSeriesCount()`
+guards in `getXYSpatialRes`/`getZSpatialRes` are retained. Behaviour for valid
+series is unchanged; the only observable change is that `getSizeX/Y/Z/C/T` and
+`getDimOrder` no longer leave the `reader` on the queried series.
+
+**`LocationAgnosticBioFormatsImg` scope decision (2026-10-18):** the OMERO
+motivation for this subclass is gone (it now just drives Bio-Formats' generic
+`Importer`/`ImportProcess`/`ImporterOptions` API, and the parent already uses
+`ImporterOptions` via `BF.openImagePlus`). It is unreferenced in-repo. Rather than
+merge the two classes, it is now `@Deprecated` (kept for external
+source/binary compatibility per Decision 5), with removal/consolidation deferred
+to the Decision-7 namespace hand-off. H1/H2 target the parent `BioFormatsImg`
+only.
 
 ### H2. Rewrite `loadPixelData` as one dimension-complete method
 

@@ -46,6 +46,37 @@ unsupported. A new **Phase H** (milestone **M8**) is planned in
 
 No code change yet (planning only).
 
+### 2026-10-18 — H1 planning: verified the `IMetadata` accessor API
+
+Before implementing H1, confirmed the exact Bio-Formats API against the resolved
+dependency (`formats-api`/`ome-xml` 8.x in the local `~/.m2`): `IMetadata` is
+`loci.formats.meta.IMetadata` → `ome.xml.meta.IMetadata`/`MetadataRetrieve`, and
+the dimension/calibration accessors are `getPixelsSizeX/Y/Z/C/T(int)` →
+`PositiveInteger` (unwrap with `.getValue()`), `getPixelsDimensionOrder(int)` →
+`DimensionOrder` enum (`.getValue()` → `String`), `getPixelsPhysicalSizeX/Y/Z(int)`
+→ `Length`, `getPixelsTimeIncrement(int)` → `Time`, `getImageName(int)` → `String`.
+
+Key finding: `LocationAgnosticBioFormatsImg` **already** reads dimensions/resolution
+from `IMetadata` with exactly this idiom, so H1 just makes `BioFormatsImg` follow
+the same pattern via its `meta` field. `getPixelType(series)` has no
+side-effect-free `ImageReader` variant, so it stays on `reader` for now. Full
+field-by-field mapping recorded in `DEVELOPMENT_PLAN.md` H1.
+
+No code change yet (planning/verification only).
+
+### 2026-10-18 — `LocationAgnosticBioFormatsImg` deprecated
+
+The OMERO motivation for `LocationAgnosticBioFormatsImg` is gone — it now only
+drives Bio-Formats' generic `Importer`/`ImportProcess`/`ImporterOptions` API, and
+the parent `BioFormatsImg` already uses `ImporterOptions` via
+`BF.openImagePlus`. The subclass is unreferenced in-repo and its value is
+questionable (the OMERO API is flaky/underspecified).
+
+Decision: `@Deprecated` it (kept for external source/binary compatibility per
+Decision 5) rather than merging the two classes or deleting it outright.
+Removal/consolidation rides on the Decision-7 namespace hand-off. H1/H2 target
+the parent `BioFormatsImg` only. Version → `2.0.24`.
+
 ---
 
 ## 2026-10-03 — G2: `RegionGrower` static mutable state eliminated

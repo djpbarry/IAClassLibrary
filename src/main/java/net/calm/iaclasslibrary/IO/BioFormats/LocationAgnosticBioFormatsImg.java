@@ -22,7 +22,17 @@ import java.io.IOException;
  * suited to inputs that are not plain filesystem files. Pixel data is read via
  * {@code Importer.readPixels}; dimensions and spatial resolution are read from
  * {@code ome.xml.meta.IMetadata}. For a raw file id, prefer {@link BioFormatsImg}.
+ *
+ * @deprecated The OMERO/location-agnostic loading path is flaky and
+ *             underspecified; the generic {@code Importer}/{@code ImportProcess}
+ *             API no longer carries a meaningful advantage over
+ *             {@link BioFormatsImg}, which already drives {@code ImporterOptions}
+ *             via {@code BF.openImagePlus}. Retained only for source/binary
+ *             compatibility with external consumers; it is unreferenced in this
+ *             repository and slated for removal in a future major release. Use
+ *             {@link BioFormatsImg} for new code.
  */
+@Deprecated
 public class LocationAgnosticBioFormatsImg extends BioFormatsImg {
     private final Importer importer = new Importer(null);
     private final IMetadata metadata;
