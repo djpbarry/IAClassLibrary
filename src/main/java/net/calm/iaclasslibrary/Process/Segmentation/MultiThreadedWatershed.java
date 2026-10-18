@@ -53,7 +53,6 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     public static final int LAMBDA_LABEL = 4;
     public static final int N_PROP_LABELS = 5;
     private double[] calibration;
-    private int series;
     private final String objectName;
     private final boolean remap;
     private boolean volumeMarker;

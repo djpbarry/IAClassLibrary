@@ -53,6 +53,29 @@ Note: "resolved" here means the *scope questions* were settled — the R1 code
 **not** been written yet. The commit message ("Resolve R1") is misleading; it
 changed docs only.
 
+### 2026-10-18 — R1 implemented: centralise dimensions & loading
+
+R1 landed (additive; no public API removed):
+
+- `MultiThreadedProcess` gained `protected int series`/`channel`/`time` (default
+  `0`), `setSeries`/`setChannel`/`setTime`/`getTime`, and `loadPixels(cBegin,
+  cEnd)` mapping dimensions → `img.loadPixelData(series, cBegin, cEnd, 0,
+  getSizeZ-1, time, time, null)`.
+- The three source classes (`MultiThreadedMaximaFinder`, `MultiThreadedGaussianFilter`,
+  `MultiThreadedTopHatFilter`) now call `loadPixels(channel, channel)` and dropped
+  their shadowing `private int series`/`channel`.
+- `MultiThreadedROIConstructor.processObjectPop` gained a `time` overload (4-arg
+  delegates with `0`) and uses the 8-arg load; `run` and
+  `MultiThreadedColocalise.saveData` pass `time`.
+- `_T<t>` naming gated on `img.getSizeT(series) > 1`: added to `labelOutput` and
+  to `saveAllRois`/`saveAllMasks` (new `time` overloads). Single-T output names
+  unchanged, preserving `TrackerLibrary`/`AdaptDataProcessing` conventions.
+- Removed the shadowing `private int series` in `MultiThreadedWatershed` and
+  `MultiThreadedColocalise`.
+- Added `MultiThreadedProcessTest` cases for the dimension fields/accessors.
+
+Version → `2.0.31`. Full suite green.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`

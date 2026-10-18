@@ -30,7 +30,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.27` (patch-bumped per commit; last release `2.0.26` / tag `v2.0.26`), declared license
+  `2.0.31` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -967,15 +967,13 @@ hand-off, not this phase.
 
 ## Phase R — Process pipeline refactor
 
-**Status: planned (2026-10-18); none of R1–R4 implemented yet.** The R1 *scope*
-was agreed with the GIANI team (`GIANI-time-support-open-questions` discussion;
-default `time = 0`, 5 load sites, `_T<t>` naming), but no R1 code has landed —
-the "Resolve R1" commit only updated the plan/log. `Process.MultiThreadedProcess`
-has accreted four unrelated responsibilities and is the main maintenance drag in
-the processing pipeline. This phase simplifies it into a typed, testable core,
-executed one sub-phase at a time (R1 → R4). R1–R3 are additive/deprecation-only;
-R4 is the only breaking change and is independent of the Decision-7 namespace
-move.
+**Status: R1 implemented (2026-10-18); R2–R4 pending.** R1 (centralise
+`series`/`channel`/`time` + `loadPixels` + `_T<t>` naming) is done. R2–R4 remain.
+`Process.MultiThreadedProcess` has accreted four unrelated responsibilities and is
+the main maintenance drag in the processing pipeline. This phase simplifies it
+into a typed, testable core, executed one sub-phase at a time (R1 → R4). R1–R3 are
+additive/deprecation-only; R4 is the only breaking change and is independent of
+the Decision-7 namespace move.
 
 ### Current state (verified 2026-10-18)
 
@@ -1002,11 +1000,28 @@ The magic-index config (`MultiThreadedMaximaFinder.SERIES_SELECT = 7`,
 `N_PROP_LABELS = 28`) is the biggest tax; the `inputs == null` branch encodes
 "source vs transform" as a null check.
 
-### R1. Centralise dimensions & loading — **planned; scope agreed with GIANI (2026-10-18), not yet implemented**
+### R1. Centralise dimensions & loading — **done (2026-10-18)**
 
-Open questions resolved with the GIANI team (see `REVISION_LOG.md` 2026-10-18);
-the code is still to be written. Add `series`/`channel`/`time` (typed, default
-`time = 0`) plus `setSeries`/
+Implemented:
+
+- `MultiThreadedProcess` now owns `protected int series`, `channel`, `time` (default
+  `0`) with `setSeries`/`setChannel`/`setTime`/`getTime` and a `loadPixels(cBegin,
+  cEnd)` helper that maps dimensions → `img.loadPixelData(series, cBegin, cEnd, 0,
+  getSizeZ-1, time, time, null)`.
+- The three source classes (`MultiThreadedMaximaFinder`, `MultiThreadedGaussianFilter`,
+  `MultiThreadedTopHatFilter`) now call `loadPixels(channel, channel)`; their shadowing
+  `private int series`/`channel` fields were removed.
+- `MultiThreadedROIConstructor.processObjectPop` gained a `time` overload (4-arg form
+  delegates with `0`) and uses the 8-arg load; `MultiThreadedROIConstructor.run` and
+  `MultiThreadedColocalise.saveData` pass `time`.
+- `_T<t>` naming: `labelOutput` and `saveAllRois`/`saveAllMasks` (new `time` overloads)
+  append `_T<t>` gated on `img.getSizeT(series) > 1`; single-T output names unchanged.
+- Also removed the shadowing `private int series` in `MultiThreadedWatershed` and
+  `MultiThreadedColocalise`.
+
+The original scope (below) was agreed with the GIANI team:
+
+Add `series`/`channel`/`time` (typed, default `time = 0`) plus `setSeries`/
 `setChannel`/`setTime`/`getTime` and a `loadPixels(cBegin, cEnd)` helper to
 `MultiThreadedProcess` that owns the dimension → load mapping:
 

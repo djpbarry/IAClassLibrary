@@ -51,6 +51,25 @@ public class MultiThreadedProcessTest {
         }
     }
 
+    @Test
+    public void testDimensionsDefaultTimeToZero() {
+        TestProcess p = new TestProcess(null);
+        assertEquals(0, p.series);
+        assertEquals(0, p.channel);
+        assertEquals(0, p.time);
+    }
+
+    @Test
+    public void testDimensionAccessors() {
+        TestProcess p = new TestProcess(null);
+        p.setSeries(2);
+        p.setChannel(3);
+        p.setTime(4);
+        assertEquals(2, p.series);
+        assertEquals(3, p.channel);
+        assertEquals(4, p.getTime());
+    }
+
     private static class TestProcess extends MultiThreadedProcess {
         TestProcess(MultiThreadedProcess[] inputs) {
             super(inputs);

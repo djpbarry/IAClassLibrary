@@ -42,8 +42,6 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
     public static final int N_PROP_LABELS = 5;
 
     private double[] sigma;
-    private int channel;
-    private int series;
 
     public MultiThreadedTopHatFilter(MultiThreadedProcess[] inputs) {
         super(inputs);
@@ -73,7 +71,7 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
         if (inputs != null) {
             imp = inputs[0].getOutput();
         } else {
-            img.loadPixelData(series, channel, channel, null);
+            loadPixels(channel, channel);
             imp = img.getLoadedImage();
         }
 

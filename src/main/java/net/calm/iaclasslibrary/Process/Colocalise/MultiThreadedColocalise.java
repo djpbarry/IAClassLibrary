@@ -60,7 +60,6 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
     public static final int OUTPUT_LABEL = 2;
     public static final int N_PROP_LABELS = 3;
     private Objects3DPopulation cellPop;
-    private int series;
     private int selectedChannels;
     private int spotIndex;
     public static final String CELL_INDEX = "Cell_Index";
@@ -217,9 +216,9 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         String outputDir = props.getProperty(propLabels[OUTPUT_LABEL]);
         DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", outputDir, File.separator, "spot_summary_data.csv")), false, true);
         for (Objects3DPopulation pop : spotsPop) {
-            MultiThreadedROIConstructor.processObjectPop(pop, series, selectedChannels, img);
-            MultiThreadedROIConstructor.saveAllRois(outputDir, pop);
-            MultiThreadedROIConstructor.saveAllMasks(outputDir, pop, img, series);
+            MultiThreadedROIConstructor.processObjectPop(pop, series, selectedChannels, img, time);
+            MultiThreadedROIConstructor.saveAllRois(outputDir, pop, img, series, time);
+            MultiThreadedROIConstructor.saveAllMasks(outputDir, pop, img, series, time);
         }
     }
 

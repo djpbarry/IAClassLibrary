@@ -104,8 +104,6 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     private double[] calibration;
     private ImageStack stack;
     private float thresh;
-    private int series;
-    private int channel;
     public static final short BACKGROUND = 0;
     private Roi[] detectedObjectsOutline;
     private Objects3DPopulation detectedObjects;
@@ -165,7 +163,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         calibration = getCalibration(series);
         radii = getUncalibratedDoubleSigma(series, propLabels[BLOB_SIZE], propLabels[BLOB_SIZE], propLabels[BLOB_SIZE]);
         thresh = Float.parseFloat(props.getProperty(propLabels[BLOB_THRESH]));
-        img.loadPixelData(series, channel, channel, null);
+        loadPixels(channel, channel);
         ImagePlus imp = img.getLoadedImage();
         this.stack = imp.getImageStack();
         if (stack == null) {

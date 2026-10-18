@@ -44,6 +44,9 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     protected final LinkedList<MultiThreadedProcess> outputDests;
     protected ImagePlus output;
     public static final String OUTPUT_SEP = "_";
+    protected int series;
+    protected int channel;
+    protected int time;
 
     public MultiThreadedProcess(MultiThreadedProcess[] inputs) {
         this.inputs = inputs;
@@ -54,6 +57,31 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     public abstract void setup(BioFormatsImg img, Properties props, String[] propLabels);
 
     public abstract void run();
+
+    public void setSeries(int series) {
+        this.series = series;
+    }
+
+    public void setChannel(int channel) {
+        this.channel = channel;
+    }
+
+    public void setTime(int time) {
+        this.time = time;
+    }
+
+    public int getTime() {
+        return time;
+    }
+
+    /**
+     * Loads pixel data for the configured series/channel/time into the managed
+     * image, owning the dimension → load mapping. Equivalent to
+     * {@code img.loadPixelData(series, cBegin, cEnd, 0, img.getSizeZ(series) - 1, time, time, null)}.
+     */
+    protected void loadPixels(int cBegin, int cEnd) {
+        img.loadPixelData(series, cBegin, cEnd, 0, img.getSizeZ(series) - 1, time, time, null);
+    }
 
     public void terminate(String errorMessage) {
         exec.shutdown();
@@ -179,6 +207,9 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
             output = new ImagePlus();
         }
         output.setTitle(constructOutputName(basename, label));
+        if (img != null && img.getSizeT(series) > 1) {
+            output.setTitle(String.format("%s%sT%d", output.getTitle(), OUTPUT_SEP, time));
+        }
     }
 
     public static String constructOutputName(String basename, String label) {
