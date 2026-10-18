@@ -30,7 +30,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.25` (patch-bumped per commit; last release `2.0.24` / tag `v2.0.24`), declared license
+  `2.0.26` (patch-bumped per commit; last release `2.0.25` / tag `v2.0.25`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -906,17 +906,19 @@ source/binary compatibility per Decision 5), with removal/consolidation deferred
 to the Decision-7 namespace hand-off. H1/H2 target the parent `BioFormatsImg`
 only.
 
-### H2. Rewrite `loadPixelData` as one dimension-complete method
+### H2. Rewrite `loadPixelData` as one dimension-complete method — **done (2026-10-18)**
 
-- Add `loadPixelData(series, cBegin, cEnd, zBegin, zEnd, tBegin, tEnd, dimOrder)`
-  that sets `setSpecifyRanges(true)` plus `setCBegin/CEnd/CStep`,
-  `setZBegin/ZEnd/ZStep`, `setTBegin/TEnd/TStep`, and
-  `setInputOrder(series, dimOrder)`.
-- Keep the existing `loadPixelData(series)` and
-  `loadPixelData(series, cBegin, cEnd, dimOrder)` as delegating conveniences
-  (no public-API break).
-- Fix the `cEnd` off-by-one (inclusive last index = `getSizeC(series) - 1`, or
-  leave unset = all) and stop ignoring the `dimOrder` parameter.
+- Added `loadPixelData(series, cBegin, cEnd, zBegin, zEnd, tBegin, tEnd, dimOrder)`:
+  sets `setSpecifyRanges(true)` plus `setCBegin/CEnd/CStep`, `setZBegin/ZEnd/ZStep`,
+  `setTBegin/TEnd/TStep`, and `setInputOrder(series, dimOrder)` (only when `dimOrder`
+  is non-null). Retains the existing RGB channel-count clamp and title logic.
+- Kept `loadPixelData(series)` and `loadPixelData(series, cBegin, cEnd, dimOrder)`
+  as delegating conveniences (no public-API break).
+- Fixed the `cEnd` off-by-one: the inclusive last index is now `getSizeC(series) - 1`
+  (previously `getSizeC(series)`, one past the valid range), and the guard uses
+  inclusive-last-index semantics (`cEnd >= getSizeC(series)` rejects out-of-range).
+- Stopped ignoring `dimOrder`. In-repo callers pass `null` (Bio-Formats default
+  order), which is preserved.
 
 ### H3. Add time accessors
 

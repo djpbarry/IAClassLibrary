@@ -80,6 +80,24 @@ series-indexed `IMetadata` accessors (via the `meta` field), removing the hidden
 variant). `getSeriesName`/`getXYSpatialRes`/`getZSpatialRes` were already on
 `meta`. No public signatures changed; full suite green. Version → `2.0.25`.
 
+### 2026-10-18 — H2 done: dimension-complete `loadPixelData`
+
+Rewrote `loadPixelData` into a single dimension-complete method and made the
+existing overloads delegate to it:
+
+- New `loadPixelData(series, cBegin, cEnd, zBegin, zEnd, tBegin, tEnd, dimOrder)`
+  sets `setSpecifyRanges(true)` and C/Z/T begin/end/step plus
+  `setInputOrder(series, dimOrder)` (only when `dimOrder != null`).
+- `loadPixelData(series)` and `loadPixelData(series, cBegin, cEnd, dimOrder)`
+  now delegate with `zEnd = getSizeZ-1`, `tEnd = getSizeT-1`.
+- Fixed the `cEnd` off-by-one: inclusive last index is `getSizeC(series) - 1`
+  (was `getSizeC(series)`), and the guard now uses inclusive-last-index semantics.
+- `dimOrder` is no longer ignored; in-repo callers pass `null` (Bio-Formats
+  default order), which is preserved by guarding `setInputOrder` behind non-null.
+
+No public API removed; the new 8-arg method is additive. Full suite green.
+Version → `2.0.26`.
+
 ### 2026-10-18 — `LocationAgnosticBioFormatsImg` deprecated
 
 The OMERO motivation for `LocationAgnosticBioFormatsImg` is gone — it now only

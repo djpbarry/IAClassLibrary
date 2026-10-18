@@ -178,11 +178,15 @@ public class BioFormatsImg implements AutoCloseable {
     }
 
     public void loadPixelData(int series) {
-        loadPixelData(series, 0, this.getSizeC(series), getDimOrder(series));
+        loadPixelData(series, 0, getSizeC(series) - 1, getDimOrder(series));
     }
 
     public void loadPixelData(int series, int cBegin, int cEnd, String dimOrder) {
-        if (series >= getSeriesCount() || cBegin >= getSizeC(series) || cEnd > getSizeC(series)) {
+        loadPixelData(series, cBegin, cEnd, 0, getSizeZ(series) - 1, 0, getSizeT(series) - 1, dimOrder);
+    }
+
+    public void loadPixelData(int series, int cBegin, int cEnd, int zBegin, int zEnd, int tBegin, int tEnd, String dimOrder) {
+        if (series >= getSeriesCount() || cBegin < 0 || cEnd >= getSizeC(series) || cBegin > cEnd) {
             img = null;
             return;
         }
@@ -192,11 +196,22 @@ public class BioFormatsImg implements AutoCloseable {
                 cEnd = 1;
             }
             ImporterOptions options = new ImporterOptions();
-            options.setCBegin(series, cBegin);
-            options.setCEnd(series, cEnd);
             options.setId(id);
             options.clearSeries();
             options.setSeriesOn(series, true);
+            options.setSpecifyRanges(true);
+            options.setCBegin(series, cBegin);
+            options.setCEnd(series, cEnd);
+            options.setCStep(series, 1);
+            options.setZBegin(series, zBegin);
+            options.setZEnd(series, zEnd);
+            options.setZStep(series, 1);
+            options.setTBegin(series, tBegin);
+            options.setTEnd(series, tEnd);
+            options.setTStep(series, 1);
+            if (dimOrder != null) {
+                options.setInputOrder(series, dimOrder);
+            }
             ImagePlus stackImp = BF.openImagePlus(options)[0];
             img = stackImp;
             img.setTitle(String.format("%s-S%d_C%d", reformatFileName(FilenameUtils.getName(getId())), series, cBegin));
