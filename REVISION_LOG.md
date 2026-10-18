@@ -76,6 +76,30 @@ R1 landed (additive; no public API removed):
 
 Version → `2.0.31`. Full suite green.
 
+### 2026-10-18 — Decision 9 revised: `ProcessParams` is a typed key-value facade, not a flat field class
+
+Surveying GIANI's parameter vocabulary (the `PipelineBuilder`/`GianiDefaultParams`
+label strings, plus `PropertyExtractor`'s `props.put(label.getText(), value)`
+convention) showed that `props`/`propLabels` are already *two parallel views of one
+map* keyed by the GUI label strings — the integer index constants (`SERIES_SELECT =
+7`, `N_PROP_LABELS = 28`) are only array offsets used to recover those label
+strings.
+
+The original Decision 9 (one shared flat ~50-field `ProcessParams`) was revised
+because a flat named-field class would force inventing ~50 stable field names not
+derivable from this repo, and would duplicate the GIANI label vocabulary. Instead:
+
+- **R2a (in-repo, non-breaking):** `ProcessParams` = a typed facade over a
+  `String → Object` map; `getInt`/`getDouble`/`getBoolean`/`getString` on the base;
+  named `String` key constants replace the magic integers. Keys reuse the existing
+  label strings (only choice that preserves the `label-text == map-key` GUI contract).
+- **R2b (coordinated, later):** a proper `Parameter` registry with a stable key
+  decoupled from the display label, migrating `PropertyExtractor` and
+  GIANI's `PipelineBuilder`/`GianiDefaultParams`. Cross-repo; rides on the
+  coordinated hand-off.
+
+No code yet — planning/decision only.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`

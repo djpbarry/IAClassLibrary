@@ -1051,13 +1051,38 @@ safety only.
 
 ### R2. Typed parameters — deprecation
 
-Replace the `props`/`propLabels` stringly-typed config with **one shared typed
-`ProcessParams`** object (flat, typed getters/setters) — decision 9. Keep
+Replace the `props`/`propLabels` stringly-typed config with a **generic typed
+key-value facade** (`ProcessParams`) plus typed getters on the base class and
+named `String` key constants replacing the magic integer indices. Keep
 `setup(BioFormatsImg, Properties, String[])` as a `@Deprecated` adapter to the
-new `setup(BioFormatsImg, ProcessParams)`. Migrate subclasses one at a time;
-delete the `SERIES_SELECT`/`N_PROP_LABELS` magic constants. Dimension selection
+new `setup(BioFormatsImg, ProcessParams)`. Dimension selection
 (`series`/`channel`/`time`) stays on the base class as execution context, not in
 `ProcessParams`.
+
+**Note: Decision 9 revised (2026-10-18).** The original "one shared *flat*
+~50-field `ProcessParams`" was reconsidered once the GIANI parameter vocabulary
+was surveyed. The `props`/`propLabels` pair are already *two parallel views of one
+map* keyed by the GUI label strings (the `PropertyExtractor` writes
+`props.put(label.getText(), control.getText())`; the integer index constants such
+as `SERIES_SELECT = 7` are just array offsets into `propLabels` to recover those
+label strings). A flat named-field class would force inventing ~50 stable field
+names that are not derivable from this repo, and would duplicate the label
+vocabulary. Instead:
+
+- **R2a (in-repo, non-breaking):** introduce `ProcessParams` as a thin typed
+  facade over a `String → Object` map; add `getInt`/`getDouble`/`getBoolean`/
+  `getString(key[, default])` to `MultiThreadedProcess` (parse once, centrally);
+  replace the magic integer index constants (`SERIES_SELECT`, `N_PROP_LABELS`,
+  …) with named `String` key constants. The keys temporarily reuse the existing
+  GUI label strings verbatim (e.g. `"Preview Series"`) — the only choice that
+  does not break the current `label-text == map-key` GUI contract.
+- **R2b (coordinated with GIANI, later):** introduce a proper `Parameter`
+  registry with a *stable key* decoupled from the display label (each parameter
+  carries both `key()` and `label()`), remove the label duplication by having
+  the GUI reference the canonical `Parameter` instead of passing raw label
+  strings, and migrate `PropertyExtractor` / GIANI's `PipelineBuilder` /
+  `GianiDefaultParams` to it. This is a cross-repo change and rides on the
+  coordinated hand-off, not this phase.
 
 ### R3. Source/transform split + DAG cleanup — deprecation
 
@@ -1137,11 +1162,16 @@ in the phases above.
    is public API and may be used externally even though it is unreferenced in-repo
    (empty `setup`, broken `duplicate()`). `@Deprecated` it in Phase R3; removal
    only after a deprecation window and an external-usage check.
-9. **Process params — one shared typed `ProcessParams`.** *(2026-10-18)* Replace
-   the `props`/`propLabels` stringly-typed config with a single flat, typed
-   `ProcessParams` object (named getters/setters) rather than one params class per
-   process. Dimension selection (`series`/`channel`/`time`) stays on the base
-   `MultiThreadedProcess` as execution context, not in `ProcessParams`.
+9. **Process params — generic typed key-value facade (Decision 9 revised).**
+   *(2026-10-18; revised 2026-10-18)* Replace the `props`/`propLabels`
+   stringly-typed config with a `ProcessParams` typed facade over a `String →
+   Object` map plus typed getters on the base class and named `String` key
+   constants (not a flat ~50-field class, which would invent field names
+   duplicating the GIANI label vocabulary). Dimension selection
+   (`series`/`channel`/`time`) stays on the base `MultiThreadedProcess` as
+   execution context, not in `ProcessParams`. Implemented in two tiers: R2a
+   (in-repo, keys reuse existing label strings) and R2b (coordinated `Parameter`
+   registry with stable keys decoupled from labels, with GIANI).
 10. **R4 breaking change — independent of the namespace move.** *(2026-10-18)* The
     `extends Thread` → `Runnable`/`Callable` + shared-executor change (Phase R4)
     is breaking on its own and ships as a major version bump; it is not bundled
