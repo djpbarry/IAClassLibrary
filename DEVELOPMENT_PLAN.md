@@ -30,7 +30,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
   primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.26` (patch-bumped per commit; last release `2.0.25` / tag `v2.0.25`), declared license
+  `2.0.27` (patch-bumped per commit; last release `2.0.26` / tag `v2.0.26`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -920,12 +920,15 @@ only.
 - Stopped ignoring `dimOrder`. In-repo callers pass `null` (Bio-Formats default
   order), which is preserved.
 
-### H3. Add time accessors
+### H3. Add time accessors — **done (2026-10-18)**
 
-- `getTimeIncrement(series)` from `IMetadata.getPixelsTimeIncrement(series)`
-  (`ome.units.quantity.Time`), plus a seconds convenience.
-- Extend `getCalibration(series)` to include time (e.g. `[xy, xy, z, t]`), or
-  add a dedicated `getTimeCalibration(series)`.
+- `getTimeIncrement(series)` → `meta.getPixelsTimeIncrement(series)`
+  (`ome.units.quantity.Time`), null-guarded on `series >= getSeriesCount()`.
+- `getTimeIncrementSeconds(series)` → `double`, converting to seconds via
+  `UNITS.SECOND` (`Time.value(Unit<Time>)`), `Double.NaN` when absent/non-convertible.
+- `getTimeCalibration(series)` → `double` (seconds), a dedicated accessor.
+  `getCalibration(series)` is **unchanged** (`{x, y, z}`) to avoid widening the
+  public array and breaking consumers that expect 3 elements.
 
 ### H4. Fix the NPE risks
 

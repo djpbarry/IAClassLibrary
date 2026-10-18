@@ -28,7 +28,9 @@ import loci.formats.services.OMEXMLService;
 import loci.plugins.BF;
 import loci.plugins.in.ImporterOptions;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
+import ome.units.UNITS;
 import ome.units.quantity.Length;
+import ome.units.quantity.Time;
 import ome.units.unit.Unit;
 import org.apache.commons.io.FilenameUtils;
 
@@ -288,6 +290,49 @@ public class BioFormatsImg implements AutoCloseable {
         return new double[]{getXYSpatialRes(series).value().doubleValue(),
                 getXYSpatialRes(series).value().doubleValue(),
                 getZSpatialRes(series).value().doubleValue()};
+    }
+
+    /**
+     * Returns the time increment between consecutive timepoints for the given
+     * series, or {@code null} if the file does not carry time metadata.
+     *
+     * @param series the series index
+     * @return the {@link Time} increment, or {@code null}
+     */
+    public Time getTimeIncrement(int series) {
+        if (series >= getSeriesCount()) {
+            return null;
+        }
+        return meta.getPixelsTimeIncrement(series);
+    }
+
+    /**
+     * Returns the time increment in seconds, or {@link Double#NaN} when the
+     * time metadata is absent or not convertible to seconds.
+     *
+     * @param series the series index
+     * @return the time increment in seconds, or {@link Double#NaN}
+     */
+    public double getTimeIncrementSeconds(int series) {
+        Time t = getTimeIncrement(series);
+        if (t == null) {
+            return Double.NaN;
+        }
+        Number seconds = t.value(UNITS.SECOND);
+        return seconds != null ? seconds.doubleValue() : Double.NaN;
+    }
+
+    /**
+     * Returns the time calibration (increment between timepoints) in seconds,
+     * or {@link Double#NaN} when unavailable. Kept separate from
+     * {@link #getCalibration(int)} (which returns {@code [x, y, z]} only) so the
+     * spatial calibration's array shape is unchanged.
+     *
+     * @param series the series index
+     * @return the time increment in seconds, or {@link Double#NaN}
+     */
+    public double getTimeCalibration(int series) {
+        return getTimeIncrementSeconds(series);
     }
 
     public String[] getFileList() {

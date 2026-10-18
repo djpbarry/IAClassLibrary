@@ -98,6 +98,24 @@ existing overloads delegate to it:
 No public API removed; the new 8-arg method is additive. Full suite green.
 Version → `2.0.26`.
 
+### 2026-10-18 — H3 done: time accessors added to `BioFormatsImg`
+
+Added first-class time-dimension accessors, closing the "time is effectively
+unsupported" gap:
+
+- `getTimeIncrement(int)` → `ome.units.quantity.Time`
+  (`meta.getPixelsTimeIncrement(series)`), null-guarded on out-of-range series.
+- `getTimeIncrementSeconds(int)` → `double`, converting to seconds via
+  `UNITS.SECOND`; `Double.NaN` when the time metadata is absent or not
+  convertible (`Time.value(Unit)` returns `null` on non-conversion).
+- `getTimeCalibration(int)` → `double` (seconds) as the dedicated accessor.
+
+Deliberately left `getCalibration(int)` returning `{x, y, z}` (3 elements) rather
+than widening it to include time — changing the array length is a public-API break
+for any consumer iterating or expecting 3 elements. Time is exposed separately via
+`getTimeCalibration`/`getTimeIncrementSeconds`. `UNITS`/`Time` imports added. Full
+suite green. Version → `2.0.27`.
+
 ### 2026-10-18 — `LocationAgnosticBioFormatsImg` deprecated
 
 The OMERO motivation for `LocationAgnosticBioFormatsImg` is gone — it now only
