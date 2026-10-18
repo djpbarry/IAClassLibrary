@@ -36,6 +36,18 @@ Decisions recorded: one shared typed `ProcessParams` (dimensions stay on the
 base), `MultiThreadedImageLoader` deprecated (not removed), and R4 independent
 of the namespace move.
 
+### 2026-10-18 — R1 scope resolved with the GIANI team
+
+The GIANI developers answered the open time-support questions (see
+`GIANI-time-support-open-questions.md`): the ROI-constructor pixel-measurement
+loop **is** in the timelapse pipeline (and is also reached from
+`MultiThreadedColocalise` via the static `processObjectPop`), so R1 threads
+`time` through **5 load sites**. Default `time = 0`; `time` is exposed via a
+getter; per-timepoint output names append `_T<t>` gated on `getSizeT(series) > 1`
+(single-T names unchanged); and `time` is set after pipeline build before each
+run, so `duplicate()` does not propagate it. See `DEVELOPMENT_PLAN.md` R1 and
+decision 11.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`

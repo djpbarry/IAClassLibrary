@@ -999,11 +999,11 @@ The magic-index config (`MultiThreadedMaximaFinder.SERIES_SELECT = 7`,
 `N_PROP_LABELS = 28`) is the biggest tax; the `inputs == null` branch encodes
 "source vs transform" as a null check.
 
-### R1. Centralise dimensions & loading — additive
+### R1. Centralise dimensions & loading — **resolved with GIANI (2026-10-18)**
 
-Add `series`/`channel`/`time` (typed, defaulted) plus `setSeries`/`setChannel`/
-`setTime` and a `loadPixels(cBegin, cEnd)` helper to `MultiThreadedProcess` that
-owns the dimension → load mapping:
+Add `series`/`channel`/`time` (typed, default `time = 0`) plus `setSeries`/
+`setChannel`/`setTime`/`getTime` and a `loadPixels(cBegin, cEnd)` helper to
+`MultiThreadedProcess` that owns the dimension → load mapping:
 
 ```java
 protected void loadPixels(int cBegin, int cEnd) {
@@ -1011,10 +1011,23 @@ protected void loadPixels(int cBegin, int cEnd) {
 }
 ```
 
-Migrate the four raw-load sites (MaximaFinder, GaussianFilter, TopHatFilter, and
-the ROIConstructor measurement loop) to it, and delete their per-subclass
-`series`/`channel` parsing. This delivers the GIANI time feature as one coherent
-change and gives future Z-window / "all timepoints" support a single home.
+**Load sites (5, per the GIANI review).** The three source classes
+(`MultiThreadedMaximaFinder`, `MultiThreadedGaussianFilter`,
+`MultiThreadedTopHatFilter`) switch to `loadPixels(channel, channel)`. The
+`MultiThreadedROIConstructor.processObjectPop` pixel-measurement loop uses the
+8-arg load; `processObjectPop` is `public static` and is also reached from
+`MultiThreadedColocalise.saveData()`, so it gains a `time` overload (the 4-arg
+form delegates with `0`) and both callers pass `time`.
+
+**Naming.** Expose `time` (`getTime()`); append `_T<t>` to `labelOutput` titles
+and to the `saveAllRois`/`saveAllMasks` zip/mask names, gated on
+`img.getSizeT(series) > 1` so single-T output names are unchanged (preserves
+`TrackerLibrary`/`AdaptDataProcessing` output names).
+
+**`duplicate()`.** Unchanged — GIANI's headless executor sets `time` after the
+pipeline is built and before each run (never before `duplicate()`), so no
+propagation is required. Propagating it through `duplicate()` is optional GUI
+safety only.
 
 ### R2. Typed parameters — deprecation
 
@@ -1113,6 +1126,12 @@ in the phases above.
     `extends Thread` → `Runnable`/`Callable` + shared-executor change (Phase R4)
     is breaking on its own and ships as a major version bump; it is not bundled
     with the Decision-7 `io.github.djpbarry` namespace move.
+11. **Time selection & naming (GIANI timelapse).** *(2026-10-18)*
+    `MultiThreadedProcess` gains `series`/`channel`/`time` (default `time = 0`)
+    with setters and a `getTime()` getter. Per-timepoint output names append
+    `_T<t>` gated on `img.getSizeT(series) > 1` (single-T names unchanged). The
+    executor sets `time` after pipeline build and before each run, so
+    `duplicate()` does not propagate it.
 
 ---
 
