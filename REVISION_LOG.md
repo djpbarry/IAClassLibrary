@@ -36,7 +36,7 @@ Decisions recorded: one shared typed `ProcessParams` (dimensions stay on the
 base), `MultiThreadedImageLoader` deprecated (not removed), and R4 independent
 of the namespace move.
 
-### 2026-10-18 — R1 scope resolved with the GIANI team
+### 2026-10-18 — R1 scope resolved with the GIANI team (implementation still outstanding)
 
 The GIANI developers answered the open time-support questions (see
 `GIANI-time-support-open-questions.md`): the ROI-constructor pixel-measurement
@@ -47,6 +47,11 @@ getter; per-timepoint output names append `_T<t>` gated on `getSizeT(series) > 1
 (single-T names unchanged); and `time` is set after pipeline build before each
 run, so `duplicate()` does not propagate it. See `DEVELOPMENT_PLAN.md` R1 and
 decision 11.
+
+Note: "resolved" here means the *scope questions* were settled — the R1 code
+(`series`/`channel`/`time` fields, `loadPixels`, `getTime`, `_T<t>` naming) has
+**not** been written yet. The commit message ("Resolve R1") is misleading; it
+changed docs only.
 
 ---
 

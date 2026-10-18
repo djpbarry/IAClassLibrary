@@ -967,9 +967,12 @@ hand-off, not this phase.
 
 ## Phase R — Process pipeline refactor
 
-**Status: planned (2026-10-18).** `Process.MultiThreadedProcess` has accreted
-four unrelated responsibilities and is the main maintenance drag in the
-processing pipeline. This phase simplifies it into a typed, testable core,
+**Status: planned (2026-10-18); none of R1–R4 implemented yet.** The R1 *scope*
+was agreed with the GIANI team (`GIANI-time-support-open-questions` discussion;
+default `time = 0`, 5 load sites, `_T<t>` naming), but no R1 code has landed —
+the "Resolve R1" commit only updated the plan/log. `Process.MultiThreadedProcess`
+has accreted four unrelated responsibilities and is the main maintenance drag in
+the processing pipeline. This phase simplifies it into a typed, testable core,
 executed one sub-phase at a time (R1 → R4). R1–R3 are additive/deprecation-only;
 R4 is the only breaking change and is independent of the Decision-7 namespace
 move.
@@ -999,9 +1002,11 @@ The magic-index config (`MultiThreadedMaximaFinder.SERIES_SELECT = 7`,
 `N_PROP_LABELS = 28`) is the biggest tax; the `inputs == null` branch encodes
 "source vs transform" as a null check.
 
-### R1. Centralise dimensions & loading — **resolved with GIANI (2026-10-18)**
+### R1. Centralise dimensions & loading — **planned; scope agreed with GIANI (2026-10-18), not yet implemented**
 
-Add `series`/`channel`/`time` (typed, default `time = 0`) plus `setSeries`/
+Open questions resolved with the GIANI team (see `REVISION_LOG.md` 2026-10-18);
+the code is still to be written. Add `series`/`channel`/`time` (typed, default
+`time = 0`) plus `setSeries`/
 `setChannel`/`setTime`/`getTime` and a `loadPixels(cBegin, cEnd)` helper to
 `MultiThreadedProcess` that owns the dimension → load mapping:
 
