@@ -18,6 +18,7 @@ package net.calm.iaclasslibrary.Process.Calculate;
 
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.TransformProcess;
 import net.calm.iaclasslibrary.Process.ProcessParams;
 import ij.plugin.ImageCalculator;
 
@@ -25,7 +26,7 @@ import ij.plugin.ImageCalculator;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class MultiThreadedImageCalculator extends MultiThreadedProcess {
+public class MultiThreadedImageCalculator extends TransformProcess {
 
     private final String outputName;
     private final String operation;
@@ -46,9 +47,8 @@ public class MultiThreadedImageCalculator extends MultiThreadedProcess {
         labelOutput(inputs[0].getOutput().getTitle(), outputName);
     }
 
-    public MultiThreadedImageCalculator duplicate() {
-        MultiThreadedImageCalculator newProcess = new MultiThreadedImageCalculator(inputs, outputName, operation);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MultiThreadedImageCalculator(inputs, outputName, operation);
     }
 }

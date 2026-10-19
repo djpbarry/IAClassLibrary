@@ -110,10 +110,9 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
         this.output = new ImagePlus("Result of Hessian Filtering", outStack);
     }
 
-    public MultiThreadedHessian duplicate() {
-        MultiThreadedHessian newProcess = new MultiThreadedHessian(inputs, input);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MultiThreadedHessian(inputs, input);
     }
 
     private class RunnableHessianFilter extends Thread implements Callable<Void> {

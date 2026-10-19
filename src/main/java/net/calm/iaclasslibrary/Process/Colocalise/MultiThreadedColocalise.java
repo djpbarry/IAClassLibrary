@@ -37,6 +37,7 @@ import net.calm.iaclasslibrary.IAClasses.Utils;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.IO.DataWriter;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.TransformProcess;
 import net.calm.iaclasslibrary.Process.Parameter;
 import net.calm.iaclasslibrary.Process.ProcessParams;
 import net.calm.iaclasslibrary.Process.ROI.MultiThreadedROIConstructor;
@@ -55,7 +56,7 @@ import java.util.concurrent.Executors;
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class MultiThreadedColocalise extends MultiThreadedProcess {
+public class MultiThreadedColocalise extends TransformProcess {
 
     @Deprecated
     public static final int SERIES_LABEL = 0;
@@ -114,10 +115,9 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         }
     }
 
-    public MultiThreadedColocalise duplicate() {
-        MultiThreadedColocalise newProcess = new MultiThreadedColocalise(inputs, cellPop);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MultiThreadedColocalise(inputs, cellPop);
     }
 
     void assignParticlesToCells(List<Spot3D> spots, ImagePlus cellLabelImage, ImagePlus nucLabelImage) {

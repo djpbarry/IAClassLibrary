@@ -30,6 +30,7 @@ import mcib3d.image3d.ImageInt;
 import net.calm.iaclasslibrary.Cell3D.*;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.TransformProcess;
 import net.calm.iaclasslibrary.Process.Parameter;
 import net.calm.iaclasslibrary.Process.ProcessParams;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
@@ -46,7 +47,7 @@ import java.util.Map.Entry;
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class MultiThreadedROIConstructor extends MultiThreadedProcess {
+public class MultiThreadedROIConstructor extends TransformProcess {
 
     @Deprecated
     public static final int SERIES_LABEL = 0;
@@ -213,10 +214,9 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         return cells;
     }
 
-    public MultiThreadedROIConstructor duplicate() {
-        MultiThreadedROIConstructor newProcess = new MultiThreadedROIConstructor(inputs, cells);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MultiThreadedROIConstructor(inputs, cells);
     }
 
     public static void saveAllRois(String path, Objects3DPopulation cells) {

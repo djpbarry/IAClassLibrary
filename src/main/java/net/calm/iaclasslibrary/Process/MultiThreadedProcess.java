@@ -42,6 +42,11 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     protected String[] propLabels;
     protected ProcessParams params;
     protected MultiThreadedProcess[] inputs;
+    /**
+     * @deprecated the mutable downstream wiring is superseded by
+     * {@link ProcessPipeline#rebuild()}.
+     */
+    @Deprecated
     protected final LinkedList<MultiThreadedProcess> outputDests;
     protected ImagePlus output;
     public static final String OUTPUT_SEP = "_";
@@ -116,15 +121,6 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
      */
     protected Parameter[] getParamSlots() {
         return new Parameter[0];
-    }
-
-    /**
-     * Loads pixel data for the configured series/channel/time into the managed
-     * image, owning the dimension → load mapping. Equivalent to
-     * {@code img.loadPixelData(series, cBegin, cEnd, 0, img.getSizeZ(series) - 1, time, time, null)}.
-     */
-    protected void loadPixels(int cBegin, int cEnd) {
-        img.loadPixelData(series, cBegin, cEnd, 0, img.getSizeZ(series) - 1, time, time, null);
     }
 
     public void terminate(String errorMessage) {
@@ -238,7 +234,23 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
         return dup;
     }
 
-    public abstract MultiThreadedProcess duplicate();
+    /**
+     * Creates a fresh instance with the same configuration, without re-wiring
+     * downstream. Used by {@link ProcessPipeline#rebuild()} to build a fresh
+     * pipeline.
+     */
+    protected abstract MultiThreadedProcess copy();
+
+    /**
+     * @deprecated use {@link ProcessPipeline#rebuild()}. Clones this process and
+     * rewires its downstream processes to point at the clone.
+     */
+    @Deprecated
+    public MultiThreadedProcess duplicate() {
+        MultiThreadedProcess newProcess = copy();
+        updateOutputDests(newProcess);
+        return newProcess;
+    }
 
     final protected void updateInputsWithOutput() {
         if (inputs == null) {
@@ -249,16 +261,19 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
         }
     }
 
+    @Deprecated
     final public void updateOutputDests(MultiThreadedProcess newProcess) {
         for (MultiThreadedProcess outputDest : outputDests) {
             outputDest.updateInput(this, newProcess);
         }
     }
 
+    @Deprecated
     final protected void addOutputDest(MultiThreadedProcess output) {
         this.outputDests.add(output);
     }
 
+    @Deprecated
     final protected void updateInput(MultiThreadedProcess oldProcess, MultiThreadedProcess newProcess) {
         for (int i = 0; i < inputs.length; i++) {
             if (inputs[i].equals(oldProcess)) {

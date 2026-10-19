@@ -48,9 +48,8 @@ public class MultiThreadedMeasureROI extends MultiThreadedProcess {
 
     }
 
-    public MultiThreadedMeasureROI duplicate() {
-        MultiThreadedMeasureROI newProcess = new MultiThreadedMeasureROI(allRois, measurements, props);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MultiThreadedMeasureROI(allRois, measurements, props);
     }
 }

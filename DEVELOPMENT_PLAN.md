@@ -31,7 +31,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   primitives consumed by ADAPT, `TrackerLibrary`, `AdaptDataProcessing`, and
   GIANI (the main consumer of the `Process` pipeline).
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.1.1` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
+  `2.2.0` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -971,17 +971,13 @@ hand-off, not this phase.
 ## Phase R — Process pipeline refactor
 
 **Status: R1 implemented (2026-10-18, `2.0.31`); R2 implemented (R2a `2.0.32`,
-R2b `2.1.0`); R3 design signed off with GIANI (2026-10-19, ready to implement);
-R4 pending.** R1 (centralise `series`/`channel`/`time` + `loadPixels` + `_T<t>`
-naming) and R2 (typed `ProcessParams` facade, then the `Parameter`/`ParamBinding`
-named-binding model) are done. R2b keeps `setup(img, Properties, String[])` as a
-`@Deprecated` adapter for GIANI's incremental Phase-I migration. R3a resolves to
-per-class: MaximaFinder/GaussianFilter → `SourceProcess`, TopHatFilter →
-`TransformProcess`; R3b is a per-pipeline `rebuild()` (GIANI never uses
-`duplicate()`); R3c `@Deprecated` `MultiThreadedImageLoader`.
-**Next actions:** tag `v2.0.31`/`v2.1.0`/`v2.1.1` (GIANI's Phase H1 needs
-`v2.0.31`; their re-pin target is `v2.1.0`; `v2.1.1` carries the null-guard fix),
-then implement R3.
+R2b `2.1.0`); R3 implemented (2026-10-19, `2.2.0`); R4 pending.** R1 (centralise
+`series`/`channel`/`time` + `loadPixels` + `_T<t>` naming), R2 (typed
+`ProcessParams` facade, then the `Parameter`/`ParamBinding` named-binding model),
+and R3 (`SourceProcess`/`TransformProcess` split + per-pipeline `rebuild()` +
+`@Deprecated MultiThreadedImageLoader`) are done.
+**Next actions:** tag `v2.0.31`/`v2.1.0`/`v2.2.0` (GIANI's Phase H1 needs
+`v2.0.31`; their re-pin target is `v2.1.0`), then R4.
 `Process.MultiThreadedProcess` has accreted four unrelated responsibilities and is
 the main maintenance drag in the processing pipeline. This phase simplifies it
 into a typed, testable core, executed one sub-phase at a time (R1 → R4). R1–R3 are
@@ -1140,9 +1136,9 @@ vocabulary. Instead:
   `loadPixelData` via `loadPixels`) already shipped in R1 (`2.0.31`), so it does
   not depend on R2.
 
-### R3. Source/transform split + DAG cleanup — deprecation
+### R3. Source/transform split + DAG cleanup — **done (2026-10-19, `2.2.0`)**
 
-Introduce `SourceProcess` (no `inputs`, owns `loadPixels`) and
+Introduced `SourceProcess` (no `inputs`, owns `loadPixels`) and
 `TransformProcess` (requires `inputs`); remove the `inputs == null` branch.
 Replace the mutable `duplicate()`/`outputDests`/`updateInput` re-wiring with an
 immutable pipeline rebuild. `@Deprecated` `MultiThreadedImageLoader` (do not
@@ -1308,8 +1304,8 @@ in the phases above.
    (Phase H) *Status (2026-10-18): complete, tagged `v2.0.30`.*
 9. **M9 — Process pipeline refactor:** centralise dimensions/loading (R1), typed
    params (R2), source/transform split (R3), drop `Thread`/`Callable` duality
-   (R4). (Phase R) *Status (2026-10-19): R1 + R2 done (`2.0.31`/`2.1.0`/`2.1.1`,
-   tags pending); R3 signed off with GIANI, next; R4 pending.*
+   (R4). (Phase R) *Status (2026-10-19): R1 + R2 + R3 done (`2.0.31`/`2.1.0`/
+   `2.2.0`, tags pending); R4 next.*
 
 Each milestone is independently shippable. M1–M8 are complete. The immediate
 next steps are tagging `v2.0.31` (unblocks GIANI's Phase H1) and then R2a, with

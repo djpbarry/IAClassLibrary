@@ -27,13 +27,14 @@ import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.Process.Parameter;
 import net.calm.iaclasslibrary.Process.ProcessParams;
+import net.calm.iaclasslibrary.Process.TransformProcess;
 
 import java.util.concurrent.Executors;
 
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
+public class MultiThreadedTopHatFilter extends TransformProcess {
 
     @Deprecated
     public static final int SERIES_LABEL = 0;
@@ -75,16 +76,9 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
     public void run() {
         this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         this.series = getInt(SERIES);
-        this.channel = getInt(CHANNEL);
         sigma = getCalibratedDoubleSigma(series, RADIUS, RADIUS, RADIUS);
 
-        ImagePlus imp;
-        if (inputs != null) {
-            imp = inputs[0].getOutput();
-        } else {
-            loadPixels(channel, channel);
-            imp = img.getLoadedImage();
-        }
+        ImagePlus imp = inputs[0].getOutput();
 
         if (getBoolean(ENABLE_FILTER)) {
 
@@ -111,9 +105,8 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
         img.clearImageData();
     }
 
-    public MultiThreadedTopHatFilter duplicate() {
-        MultiThreadedTopHatFilter newProcess = new MultiThreadedTopHatFilter(inputs);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MultiThreadedTopHatFilter(inputs);
     }
 }

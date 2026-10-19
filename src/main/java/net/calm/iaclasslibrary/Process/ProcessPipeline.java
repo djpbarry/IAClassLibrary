@@ -16,8 +16,10 @@
  */
 package net.calm.iaclasslibrary.Process;
 
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 
 /**
  *
@@ -59,5 +61,34 @@ public class ProcessPipeline implements Iterable<MultiThreadedProcess> {
 
     public Iterator<MultiThreadedProcess> iterator() {
         return pipeline.iterator();
+    }
+
+    /**
+     * Builds a fresh pipeline from this one, copying each process and re-linking
+     * {@code inputs} through an old→new map. The original pipeline is left
+     * untouched for the new pipeline's purposes; its internal wiring should be
+     * considered spent once rebuilt (a copied node's constructor still registers
+     * against the old inputs before re-linking).
+     */
+    public ProcessPipeline rebuild() {
+        ProcessPipeline rebuilt = new ProcessPipeline();
+        Map<MultiThreadedProcess, MultiThreadedProcess> oldToNew = new IdentityHashMap<>();
+        for (MultiThreadedProcess process : pipeline) {
+            MultiThreadedProcess copy = process.copy();
+            oldToNew.put(process, copy);
+            rebuilt.addProcess(copy);
+        }
+        for (MultiThreadedProcess oldProcess : pipeline) {
+            MultiThreadedProcess newProcess = oldToNew.get(oldProcess);
+            if (newProcess.inputs != null) {
+                for (int i = 0; i < newProcess.inputs.length; i++) {
+                    newProcess.inputs[i] = oldToNew.get(newProcess.inputs[i]);
+                }
+            }
+        }
+        for (MultiThreadedProcess newProcess : rebuilt) {
+            newProcess.updateInputsWithOutput();
+        }
+        return rebuilt;
     }
 }

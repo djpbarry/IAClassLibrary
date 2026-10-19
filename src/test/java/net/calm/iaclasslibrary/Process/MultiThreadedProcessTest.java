@@ -10,6 +10,8 @@ import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MultiThreadedProcessTest {
@@ -90,6 +92,25 @@ public class MultiThreadedProcessTest {
         assertTrue(p.getBoolean(enabled));
     }
 
+    @Test
+    public void testRebuildProducesFreshPipeline() {
+        TestProcess source = new TestProcess(null);
+        TestProcess transform = new TestProcess(new TestProcess[]{source});
+        ProcessPipeline pipeline = new ProcessPipeline();
+        pipeline.addProcess(source);
+        pipeline.addProcess(transform);
+        ProcessPipeline rebuilt = pipeline.rebuild();
+        assertEquals(2, rebuilt.getSize());
+        assertNotSame(source, rebuilt.getProcess(0));
+        assertNotSame(transform, rebuilt.getProcess(1));
+        assertSame(rebuilt.getProcess(0), rebuilt.getProcess(1).inputs[0]);
+    }
+
+    @Test
+    public void testTransformProcessRejectsNullInputs() {
+        assertThrows(NullPointerException.class, () -> new TestTransform(null));
+    }
+
     private static class TestProcess extends MultiThreadedProcess {
         TestProcess(MultiThreadedProcess[] inputs) {
             super(inputs);
@@ -105,10 +126,27 @@ public class MultiThreadedProcessTest {
         }
 
         @Override
-        public MultiThreadedProcess duplicate() {
-            TestProcess p = new TestProcess(inputs);
-            updateOutputDests(p);
-            return p;
+        protected MultiThreadedProcess copy() {
+            return new TestProcess(inputs);
+        }
+    }
+
+    private static class TestTransform extends TransformProcess {
+        TestTransform(MultiThreadedProcess[] inputs) {
+            super(inputs);
+        }
+
+        @Override
+        public void setup(BioFormatsImg img, ProcessParams params) {
+        }
+
+        @Override
+        public void run() {
+        }
+
+        @Override
+        protected MultiThreadedProcess copy() {
+            return new TestTransform(inputs);
         }
     }
 }

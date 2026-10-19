@@ -93,9 +93,8 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
         terminate("Error detecting cells.");
     }
 
-    public MultiThreadedRegionGrower duplicate() {
-        MultiThreadedRegionGrower newProcess = new MultiThreadedRegionGrower(regionImage, inputImage, singleImageRegions, threshold, props);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MultiThreadedRegionGrower(regionImage, inputImage, singleImageRegions, threshold, props);
     }
 }

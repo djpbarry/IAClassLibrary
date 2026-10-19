@@ -46,6 +46,7 @@ import net.calm.iaclasslibrary.Process.Filtering.MultiThreadedHessian;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.Process.Parameter;
 import net.calm.iaclasslibrary.Process.ProcessParams;
+import net.calm.iaclasslibrary.Process.SourceProcess;
 import net.calm.iaclasslibrary.Stacks.StackMath;
 import net.calm.iaclasslibrary.Stacks.StackThresholder;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
@@ -66,7 +67,7 @@ import java.util.List;
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
+public class MultiThreadedMaximaFinder extends SourceProcess {
 
     public static final int BLOB_DETECT = 6;
     public static final int HESSIAN_START_SCALE = 4;
@@ -152,12 +153,20 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     private Roi[] detectedObjectsOutline;
     private Objects3DPopulation detectedObjects;
 
+    public MultiThreadedMaximaFinder() {
+        super();
+    }
+
+    /**
+     * @deprecated a source has no inputs; use {@link #MultiThreadedMaximaFinder()}.
+     */
+    @Deprecated
     public MultiThreadedMaximaFinder(MultiThreadedProcess[] inputs) {
-        super(inputs);
+        super();
     }
 
     public MultiThreadedMaximaFinder(double[] radii, float thresh) {
-        super(null);
+        super();
         this.radii = radii;
         this.thresh = thresh;
         this.maxima = new ArrayList<>();
@@ -595,10 +604,9 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         }
     }
 
-    public MultiThreadedMaximaFinder duplicate() {
-        MultiThreadedMaximaFinder newProcess = new MultiThreadedMaximaFinder(inputs);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MultiThreadedMaximaFinder();
     }
 
 }

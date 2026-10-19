@@ -18,6 +18,7 @@ package net.calm.iaclasslibrary.Process.Mapping;
 
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.TransformProcess;
 import net.calm.iaclasslibrary.Process.ProcessParams;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -28,7 +29,7 @@ import java.util.LinkedHashMap;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class MapPixels extends MultiThreadedProcess {
+public class MapPixels extends TransformProcess {
 
     private final LinkedHashMap<Integer, Integer> map;
 
@@ -75,9 +76,8 @@ public class MapPixels extends MultiThreadedProcess {
         output = imp2;
     }
 
-    public MapPixels duplicate() {
-        MapPixels newProcess = new MapPixels(inputs);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MapPixels(inputs);
     }
 }

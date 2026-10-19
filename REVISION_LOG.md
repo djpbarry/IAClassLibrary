@@ -228,6 +228,31 @@ R2b issues flagged in the same review, fixed or noted:
 
 Version → `2.1.1` (null-guard fix). Full suite green.
 
+### 2026-10-19 — R3 implemented: `SourceProcess`/`TransformProcess` split + `rebuild()`
+
+R3 landed (minor bump `2.2.0`), per GIANI's per-class sign-off:
+
+- New `Process.SourceProcess` (no `inputs`, owns `loadPixels`) and
+  `Process.TransformProcess` (constructor rejects null `inputs`).
+- `MultiThreadedMaximaFinder` and `MultiThreadedGaussianFilter` are now pure
+  sources; `MultiThreadedTopHatFilter`, `MultiThreadedWatershed`,
+  `MultiThreadedROIConstructor`, `MapPixels`, `MultiThreadedColocalise`, and
+  `MultiThreadedImageCalculator` are `TransformProcess`s. The
+  `inputs == null`/`!= null` branches were removed.
+- `MultiThreadedProcess` gained `copy()` (fresh instance, no re-wiring) and
+  `duplicate()` is now a `@Deprecated` concrete method (`copy()` +
+  `updateOutputDests`). `outputDests`/`updateInput`/`updateOutputDests`/
+  `addOutputDest` are `@Deprecated`.
+- `ProcessPipeline.rebuild()` copies each process and re-links `inputs` through
+  an old→new map, producing a fresh pipeline.
+- `MultiThreadedImageLoader` is `@Deprecated` (decision 8).
+
+The standalone classes (`MultiThreadedHessian`, `MultiThreadedRegionGrower`,
+`MultiThreadedMeasureROI`, `MultiThreadedSobelFilter`) stay on
+`MultiThreadedProcess` — they consume constructor-passed data, not `inputs`.
+
+Added `rebuild()`/null-input tests. Version → `2.2.0`. Full suite green.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`

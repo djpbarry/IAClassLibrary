@@ -28,7 +28,10 @@ import loci.formats.ImageReader;
 /**
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
+ * @deprecated unreferenced and broken (empty {@code setup}, null-arg
+ * {@code duplicate()}); use {@code BioFormatsImg} for raw pixel loading.
  */
+@Deprecated
 public class MultiThreadedImageLoader extends MultiThreadedProcess {
 
     private final int[] limits;
@@ -65,9 +68,8 @@ public class MultiThreadedImageLoader extends MultiThreadedProcess {
         runWorkers(loaders, "Error loading image.");
     }
 
-    public MultiThreadedImageLoader duplicate() {
-        MultiThreadedImageLoader newProcess = new MultiThreadedImageLoader(null, null, null);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MultiThreadedImageLoader(null, null, null);
     }
 }

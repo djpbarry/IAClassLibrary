@@ -20,6 +20,7 @@ import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.Process.Parameter;
 import net.calm.iaclasslibrary.Process.ProcessParams;
+import net.calm.iaclasslibrary.Process.SourceProcess;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.GaussianBlur3D;
@@ -30,7 +31,7 @@ import java.util.concurrent.Executors;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
+public class MultiThreadedGaussianFilter extends SourceProcess {
 
     /**
      * @deprecated legacy positional index; superseded by {@link #SERIES}.
@@ -61,8 +62,16 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
 
     private double[] sigma;
 
+    public MultiThreadedGaussianFilter() {
+        super();
+    }
+
+    /**
+     * @deprecated a source has no inputs; use {@link #MultiThreadedGaussianFilter()}.
+     */
+    @Deprecated
     public MultiThreadedGaussianFilter(MultiThreadedProcess[] inputs) {
-        super(inputs);
+        super();
     }
 
     @Override
@@ -77,13 +86,8 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         this.series = getInt(SERIES);
         this.channel = getInt(CHANNEL);
         sigma = getCalibratedDoubleSigma(series, RADIUS, RADIUS, RADIUS);
-        ImagePlus imp;
-        if (inputs != null) {
-            imp = inputs[0].getOutput();
-        } else {
-            loadPixels(channel, channel);
-            imp = img.getLoadedImage();
-        }
+        loadPixels(channel, channel);
+        ImagePlus imp = img.getLoadedImage();
         (new StackConverter(imp)).convertToGray32();
         IJ.log(String.format("Filtering \"%s\" with a sigma of %f pixels in XY and %f in Z.", imp.getTitle(), sigma[0], sigma[2]));
         GaussianBlur3D.blur(imp, sigma[0], sigma[1], sigma[2]);
@@ -93,9 +97,8 @@ public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
         img.clearImageData();
     }
 
-    public MultiThreadedGaussianFilter duplicate() {
-        MultiThreadedGaussianFilter newProcess = new MultiThreadedGaussianFilter(inputs);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MultiThreadedGaussianFilter();
     }
 }

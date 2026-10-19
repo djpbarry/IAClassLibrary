@@ -64,10 +64,9 @@ public class MultiThreadedSobelFilter extends MultiThreadedProcess {
         this.output = result.getImagePlus();
     }
 
-    public MultiThreadedSobelFilter duplicate() {
-        MultiThreadedSobelFilter newProcess = new MultiThreadedSobelFilter(inputs, input);
-        this.updateOutputDests(newProcess);
-        return newProcess;
+    @Override
+    protected MultiThreadedProcess copy() {
+        return new MultiThreadedSobelFilter(inputs, input);
     }
 
     private class RunnableSobelFilter extends RunnableProcess {
