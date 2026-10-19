@@ -73,11 +73,10 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
-        this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
-        this.selectedChannels = Integer.parseInt(props.getProperty(propLabels[CHANNELS_LABEL]));
-        this.outputPath = props.getProperty(propLabels[OUTPUT_LABEL]);
+        initParams(props, propLabels);
+        this.series = getInt(SERIES_LABEL);
+        this.selectedChannels = getInt(CHANNELS_LABEL);
+        this.outputPath = getString(OUTPUT_LABEL);
     }
 
     @Override

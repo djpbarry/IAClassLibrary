@@ -75,10 +75,9 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
-        this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
-        this.selectedChannels = Integer.parseInt(props.getProperty(propLabels[CHANNELS_LABEL]));
+        initParams(props, propLabels);
+        this.series = getInt(SERIES_LABEL);
+        this.selectedChannels = getInt(CHANNELS_LABEL);
     }
 
     public void run() {
@@ -213,7 +212,7 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                 }
             }
         }
-        String outputDir = props.getProperty(propLabels[OUTPUT_LABEL]);
+        String outputDir = getString(OUTPUT_LABEL);
         DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", outputDir, File.separator, "spot_summary_data.csv")), false, true);
         for (Objects3DPopulation pop : spotsPop) {
             MultiThreadedROIConstructor.processObjectPop(pop, series, selectedChannels, img, time);

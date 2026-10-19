@@ -130,6 +130,29 @@ coupling data really lives. Here the labels were already supplied by the consume
 per instance, so moving them into library constants would have been a regression,
 even though it looked like a simple rename.
 
+### 2026-10-19 — R2a implemented: typed `ProcessParams` facade
+
+R2a landed (non-breaking; `setup(img, Properties, String[])` and
+`getPropLabels()` unchanged):
+
+- New `Process` `ProcessParams` — a thin typed facade over the existing
+  `Properties` + `String[] propLabels` pair, with `getInt`/`getDouble`/
+  `getFloat`/`getBoolean`/`getString(slot[, default])` and `has(slot)`. Parsing
+  now lives in one place, with defaults; the no-default numeric getters keep the
+  prior `NumberFormatException`-on-missing behaviour.
+- `MultiThreadedProcess` gained `initParams(props, propLabels)` plus the typed
+  getters; ~40 `props.getProperty(propLabels[N])` sites across 8 classes
+  (`MultiThreadedMaximaFinder`, GaussianFilter, TopHatFilter, Watershed,
+  Colocalise, ROIConstructor, Hessian, OverlayDrawer) migrated to the getters.
+- The magic-index constants were **kept as `int`** rather than converted to
+  `String` slot-name keys: they are already named, the raw value is just the
+  position into `propLabels`, and the `String` name → position binding is R2b's
+  job. This was the agreed interpretation — no GIANI label string is
+  hard-coded into the library.
+
+Added `ProcessParamsTest` (14 cases) and a base-getter test; total 54 tests.
+Version → `2.0.32`. Full suite green.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`

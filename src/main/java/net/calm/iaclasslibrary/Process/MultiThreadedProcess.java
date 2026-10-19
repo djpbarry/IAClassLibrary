@@ -40,6 +40,7 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     protected BioFormatsImg img;
     protected Properties props;
     protected String[] propLabels;
+    protected ProcessParams params;
     protected MultiThreadedProcess[] inputs;
     protected final LinkedList<MultiThreadedProcess> outputDests;
     protected ImagePlus output;
@@ -72,6 +73,17 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
 
     public int getTime() {
         return time;
+    }
+
+    /**
+     * Stores the legacy configuration pair and builds the typed facade over it.
+     * Subclasses call this from {@code setup} instead of assigning
+     * {@code props}/{@code propLabels} directly.
+     */
+    protected void initParams(Properties props, String[] propLabels) {
+        this.props = props;
+        this.propLabels = propLabels;
+        this.params = new ProcessParams(props, propLabels);
     }
 
     /**
@@ -152,6 +164,50 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
 
     public String[] getPropLabels() {
         return propLabels;
+    }
+
+    protected String getString(int slot) {
+        return params.getString(slot);
+    }
+
+    protected String getString(int slot, String defaultValue) {
+        return params.getString(slot, defaultValue);
+    }
+
+    protected int getInt(int slot) {
+        return params.getInt(slot);
+    }
+
+    protected int getInt(int slot, int defaultValue) {
+        return params.getInt(slot, defaultValue);
+    }
+
+    protected double getDouble(int slot) {
+        return params.getDouble(slot);
+    }
+
+    protected double getDouble(int slot, double defaultValue) {
+        return params.getDouble(slot, defaultValue);
+    }
+
+    protected float getFloat(int slot) {
+        return params.getFloat(slot);
+    }
+
+    protected float getFloat(int slot, float defaultValue) {
+        return params.getFloat(slot, defaultValue);
+    }
+
+    protected boolean getBoolean(int slot) {
+        return params.getBoolean(slot);
+    }
+
+    protected boolean getBoolean(int slot, boolean defaultValue) {
+        return params.getBoolean(slot, defaultValue);
+    }
+
+    protected boolean has(int slot) {
+        return params.has(slot);
     }
 
     public BioFormatsImg call() {

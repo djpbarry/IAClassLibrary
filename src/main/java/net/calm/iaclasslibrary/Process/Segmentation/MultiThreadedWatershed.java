@@ -79,11 +79,10 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
-        this.volumeMarker = Boolean.parseBoolean(props.getProperty(propLabels[VOL_MARKER_LABEL]));
-        this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
-        this.lambda = Float.parseFloat(props.getProperty(propLabels[LAMBDA_LABEL]));
+        initParams(props, propLabels);
+        this.volumeMarker = getBoolean(VOL_MARKER_LABEL);
+        this.series = getInt(SERIES_LABEL);
+        this.lambda = getFloat(LAMBDA_LABEL);
         calibration = getCalibration(series);
     }
 
@@ -184,7 +183,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     @Deprecated
     private int getThreshold() {
         return BinaryMaker.getThreshold(inputs[1].getOutput(),
-                AutoThresholder.Method.valueOf(props.getProperty(propLabels[MultiThreadedWatershed.THRESHOLD_LABEL])));
+                AutoThresholder.Method.valueOf(getString(THRESHOLD_LABEL)));
     }
 
     public MultiThreadedWatershed duplicate() {

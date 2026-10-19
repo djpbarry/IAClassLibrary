@@ -55,16 +55,15 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
      */
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
+        initParams(props, propLabels);
 //        ImagePlus image = img.getLoadedImage();
 //        (new StackConverter(img.getProcessedImage())).convertToGray32();
     }
 
     public void run() {
         this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
-        this.channel = Integer.parseInt(props.getProperty(propLabels[CHANNEL_LABEL]));
+        this.series = getInt(SERIES_LABEL);
+        this.channel = getInt(CHANNEL_LABEL);
         sigma = getCalibratedDoubleSigma(series, propLabels[FILT_RAD_LABEL], propLabels[FILT_RAD_LABEL], propLabels[FILT_RAD_LABEL]);
 
         ImagePlus imp;
@@ -75,11 +74,11 @@ public class MultiThreadedTopHatFilter extends MultiThreadedProcess {
             imp = img.getLoadedImage();
         }
 
-        if (Boolean.parseBoolean(props.getProperty(propLabels[ENABLE_FILTER_LABEL]))) {
+        if (getBoolean(ENABLE_FILTER_LABEL)) {
 
             ImageStack stack = imp.getImageStack();
 
-            int resizeFactor = (int) Math.round(Double.parseDouble(props.getProperty(propLabels[RESIZE_FACTOR_LABEL])));
+            int resizeFactor = (int) Math.round(getDouble(RESIZE_FACTOR_LABEL));
 
             ImageStack smallStack = (new StackProcessor(stack.duplicate())).resize(stack.getWidth() / resizeFactor, stack.getHeight() / resizeFactor, true);
 

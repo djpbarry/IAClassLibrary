@@ -70,6 +70,19 @@ public class MultiThreadedProcessTest {
         assertEquals(4, p.getTime());
     }
 
+    @Test
+    public void testTypedGettersResolveThroughPropLabels() {
+        TestProcess p = new TestProcess(null);
+        Properties props = new Properties();
+        props.setProperty("series", "3");
+        props.setProperty("radius", "2.5");
+        props.setProperty("enabled", "true");
+        p.initParams(props, new String[]{"series", "radius", "enabled"});
+        assertEquals(3, p.getInt(0));
+        assertEquals(2.5, p.getDouble(1), 1e-9);
+        assertTrue(p.getBoolean(2));
+    }
+
     private static class TestProcess extends MultiThreadedProcess {
         TestProcess(MultiThreadedProcess[] inputs) {
             super(inputs);

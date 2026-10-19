@@ -51,11 +51,10 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
-        this.startScale = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_START_SCALE]));
-        this.abs = Boolean.parseBoolean(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_ABS]));
-//        this.series = Integer.parseInt(props.getProperty(propLabels[MultiThreadedMaximaFinder.SERIES_SELECT]));
+        initParams(props, propLabels);
+        this.startScale = getDouble(MultiThreadedMaximaFinder.HESSIAN_START_SCALE);
+        this.abs = getBoolean(MultiThreadedMaximaFinder.HESSIAN_ABS);
+//        this.series = getInt(MultiThreadedMaximaFinder.SERIES_SELECT);
     }
 
     public void run() {

@@ -31,15 +31,16 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   primitives consumed by ADAPT, `TrackerLibrary`, `AdaptDataProcessing`, and
   GIANI (the main consumer of the `Process` pipeline).
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.31` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
+  `2.0.32` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
   --update-snapshots verify` on **JDK 21** with the `setup-java` Maven cache.
   *(Updated 2026-09-27.)*
-- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 16 classes,
-  39 tests as of 2026-10-19 (incl. FFT/Fitter/Utils/RegionGrower/MultiThreadedProcess/
-  RiemannianDistanceTransform tests; R1 added the `MultiThreadedProcess` dimension cases). No lint/format tooling. (Phase C done for now.)
+- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 17 classes,
+  54 tests as of 2026-10-19 (incl. FFT/Fitter/Utils/RegionGrower/MultiThreadedProcess/
+  RiemannianDistanceTransform tests; R1 added the `MultiThreadedProcess` dimension
+  cases, R2a added `ProcessParamsTest`). No lint/format tooling. (Phase C done for now.)
 - **License:** a GPL-3.0-or-later `LICENSE` file now exists and `pom.xml` is
   corrected from BSD-2 to GPL-3. Source headers remain inconsistent (roughly
   half GPL-3, roughly a third NetBeans "change this header" stubs); header
@@ -969,10 +970,12 @@ hand-off, not this phase.
 
 ## Phase R — Process pipeline refactor
 
-**Status: R1 implemented (2026-10-18, `2.0.31`, not yet tagged); R2 design
-agreed with GIANI (R2a next, R2b scheduled with GIANI's Phase I); R3–R4 pending.**
-R1 (centralise `series`/`channel`/`time` + `loadPixels` + `_T<t>` naming) is done.
-**Next action:** tag `v2.0.31`. GIANI's Phase H1 is blocked on pinning it.
+**Status: R1 implemented (2026-10-18, `2.0.31`); R2a implemented (2026-10-19,
+`2.0.32`); R2b design agreed with GIANI (scheduled with GIANI's Phase I);
+R3–R4 pending.** R1 (centralise `series`/`channel`/`time` + `loadPixels` +
+`_T<t>` naming) and R2a (typed `ProcessParams` facade + base getters) are done.
+**Next actions:** tag `v2.0.31`/`v2.0.32` (GIANI's Phase H1 needs `v2.0.31`;
+each R2a release must be tagged before GIANI re-pins), then R3.
 `Process.MultiThreadedProcess` has accreted four unrelated responsibilities and is
 the main maintenance drag in the processing pipeline. This phase simplifies it
 into a typed, testable core, executed one sub-phase at a time (R1 → R4). R1–R3 are
@@ -1063,6 +1066,10 @@ new `setup(BioFormatsImg, ProcessParams)`. Dimension selection
 (`series`/`channel`/`time`) stays on the base class as execution context, not in
 `ProcessParams`.
 
+**R2a status: done (2026-10-19, `2.0.32`).** `ProcessParams` + the typed base
+getters landed and all ~40 read sites migrated (see the R2a bullet below). R2b
+remains pending and rides on the coordinated GIANI hand-off.
+
 **Note: Decision 9 revised (2026-10-18).** The original "one shared *flat*
 ~50-field `ProcessParams`" was reconsidered once the GIANI parameter vocabulary
 was surveyed. The `props`/`propLabels` pair are already *two parallel views of one
@@ -1073,20 +1080,22 @@ label strings). A flat named-field class would force inventing ~50 stable field
 names that are not derivable from this repo, and would duplicate the label
 vocabulary. Instead:
 
-- **R2a (in-repo, non-breaking):** introduce `ProcessParams` as a thin typed
-  facade over a `String → Object` map; add `getInt`/`getDouble`/`getBoolean`/
-  `getString(key[, default])` to `MultiThreadedProcess` (parse once, centrally);
-  replace the magic integer index constants (`SERIES_SELECT`, `N_PROP_LABELS`,
-  …) with named `String` key constants. **Correction (2026-10-18, GIANI
-  review):** these constants are *local slot names* (e.g. `"radius"`), resolved
-  to the external map key through the consumer-supplied binding (today the
-  `propLabels` array). They must **not** hard-code GIANI label strings such as
-  `"Preview Series"`. The library holds no labels today: GIANI runs
-  `MultiThreadedGaussianFilter`/`MultiThreadedWatershed` twice per pipeline with
-  different labels (`NUC_FILT_RAD_LABEL` vs `CELL_FILT_RAD_LABEL`), so a
-  hard-coded label key would break that. Each R2a release is **tagged**, so
-  GIANI can run `PipelineBuilderTest`/`PipelineExecutorIntegrationTest` before
-  re-pinning.
+- **R2a (in-repo, non-breaking) — done (2026-10-19, `2.0.32`):** introduced
+  `ProcessParams`, a thin typed facade over the existing `Properties` +
+  `String[] propLabels` pair, and added `getInt`/`getDouble`/`getFloat`/
+  `getBoolean`/`getString(slot[, default])` plus `has(slot)` to
+  `MultiThreadedProcess` (parse once, centrally, with defaults). All ~40
+  `props.getProperty(propLabels[N])` read sites across the 8 param-consuming
+  classes migrated to the getters. **Slot identifiers:** the existing `int`
+  constants (e.g. `SERIES_SELECT = 7`) were **kept**, not replaced with
+  `String` keys — they are already named, the raw value is only the position
+  into `propLabels`, and the `String` slot-name → position binding is R2b's
+  job. This satisfies the GIANI-review correction without hard-coding any label
+  string in the library (the binding is still the consumer-supplied
+  `propLabels`, so the two-instance Gaussian/Watershed stages are unaffected).
+  `setup(img, Properties, String[])` and `getPropLabels()` are unchanged. Each
+  R2a release is **tagged** so GIANI can run `PipelineBuilderTest`/
+  `PipelineExecutorIntegrationTest` before re-pinning.
 - **R2b (coordinated with GIANI, after GIANI Phase H; folded into GIANI Phase
   I, recorded there as GIANI's proposed decision 10):** replace the positional
   `String[] propLabels` binding with a named one. The originally proposed single
@@ -1264,8 +1273,8 @@ in the phases above.
    (Phase H) *Status (2026-10-18): complete, tagged `v2.0.30`.*
 9. **M9 — Process pipeline refactor:** centralise dimensions/loading (R1), typed
    params (R2), source/transform split (R3), drop `Thread`/`Callable` duality
-   (R4). (Phase R) *Status (2026-10-19): R1 done (`2.0.31`, tag pending); R2
-   design agreed with GIANI; R2a next.*
+   (R4). (Phase R) *Status (2026-10-19): R1 + R2a done (`2.0.31`/`2.0.32`, tags
+   pending); R2b scheduled with GIANI; R3 next.*
 
 Each milestone is independently shippable. M1–M8 are complete. The immediate
 next steps are tagging `v2.0.31` (unblocks GIANI's Phase H1) and then R2a, with

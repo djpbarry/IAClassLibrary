@@ -121,12 +121,11 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
         this.img = img;
-        this.propLabels = propLabels;
-        this.props = props;
+        initParams(props, propLabels);
     }
 
     public ImagePlus makeLocalMaximaImage(short background, int radius) {
-        if (propLabels[STARDIST_DETECT] != null && Boolean.parseBoolean(props.getProperty(propLabels[STARDIST_DETECT]))) {
+        if (has(STARDIST_DETECT) && getBoolean(STARDIST_DETECT)) {
             return output;
         }
         ImagePlus imp = img.getLoadedImage();
@@ -139,7 +138,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             sp.fill();
             output.addSlice(sp);
         }
-        if (!Boolean.parseBoolean(props.getProperty(propLabels[BLOB_DETECT])) && detectedObjects != null) {
+        if (!getBoolean(BLOB_DETECT) && detectedObjects != null) {
             for (int i = 0; i < detectedObjects.getNbObjects(); i++) {
                 detectedObjects.getObject(i).draw(output, i + 1);
             }
@@ -158,24 +157,24 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public void run() {
         maxima = new ArrayList<>();
         spotMaxima = new ArrayList<>();
-        series = Integer.parseInt(props.getProperty(propLabels[SERIES_SELECT]));
-        channel = Integer.parseInt(props.getProperty(propLabels[CHANNEL_SELECT]));
+        series = getInt(SERIES_SELECT);
+        channel = getInt(CHANNEL_SELECT);
         calibration = getCalibration(series);
         radii = getUncalibratedDoubleSigma(series, propLabels[BLOB_SIZE], propLabels[BLOB_SIZE], propLabels[BLOB_SIZE]);
-        thresh = Float.parseFloat(props.getProperty(propLabels[BLOB_THRESH]));
+        thresh = getFloat(BLOB_THRESH);
         loadPixels(channel, channel);
         ImagePlus imp = img.getLoadedImage();
         this.stack = imp.getImageStack();
         if (stack == null) {
             return;
         }
-        if (Boolean.parseBoolean(props.getProperty(propLabels[THRESH_DETECT]))) {
+        if (getBoolean(THRESH_DETECT)) {
             thresholdDetection(imp);
-        } else if (Boolean.parseBoolean(props.getProperty(propLabels[HESSIAN_DETECT]))) {
+        } else if (getBoolean(HESSIAN_DETECT)) {
             hessianDetection(imp);
-        } else if (propLabels[STARDIST_DETECT] != null && Boolean.parseBoolean(props.getProperty(propLabels[STARDIST_DETECT], "false"))) {
+        } else if (has(STARDIST_DETECT) && getBoolean(STARDIST_DETECT)) {
             runStarDist(imp);
-        } else if (propLabels[ILASTIK_DETECT] != null && Boolean.parseBoolean(props.getProperty(propLabels[ILASTIK_DETECT], "false"))) {
+        } else if (has(ILASTIK_DETECT) && getBoolean(ILASTIK_DETECT)) {
             runIlastik(imp);
         } else {
             IJ.log(String.format("Searching for blobs %.1f pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0] / calibration[0]), thresh, imp.getTitle()));
@@ -226,7 +225,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 //        double[] maxRadii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE]);
 //        double[] sigma = getCalibratedDoubleSigma(series, propLabels[EDM_FILTER], propLabels[EDM_FILTER], propLabels[EDM_FILTER]);
         IJ.log(String.format("Searching for objects %.1f pixels in diameter in \"%s\"...", (
-                Double.parseDouble(props.getProperty(propLabels[HESSIAN_START_SCALE])) / calibration[0]), image.getTitle()));
+                getDouble(HESSIAN_START_SCALE) / calibration[0]), image.getTitle()));
 
         if (image.getStackSize() > 1) {
             nEigenValues = 3;
@@ -253,7 +252,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         int inputStackSize = image.getImageStackSize();
         int nScales = hessianOutputs.getImageStackSize() / (nEigenValues * inputStackSize);
         ImagePlus[] blobImps = new ImagePlus[nScales];
-        double hessianThresh = Double.parseDouble(props.getProperty(propLabels[HESSIAN_THRESH]));
+        double hessianThresh = getDouble(HESSIAN_THRESH);
         for (int s = 0; s < nScales; s++) {
             int index = s * nEigenValues * inputStackSize + 1;
             blobImps[s] = ssm.makeSubstack(hessianOutputs, String.format("%d-%d", index, index + inputStackSize - 1));
@@ -271,7 +270,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public void thresholdDetection(ImagePlus image) {
         int thresh = BinaryMaker.getThreshold(image,
-                AutoThresholder.Method.valueOf(props.getProperty(propLabels[MultiThreadedMaximaFinder.THRESH_METHOD])));
+                AutoThresholder.Method.valueOf(getString(MultiThreadedMaximaFinder.THRESH_METHOD)));
         IJ.log(String.format("Segmenting \"%s\" with a threshold of %d...", image.getTitle(), thresh));
         ImagePlus mask = image.duplicate();
         StackThresholder.thresholdStack(mask, thresh);
@@ -399,7 +398,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             cmd.add("cmd.exe");
             cmd.add("/C");
             cmd.add("cd");
-            cmd.add(String.format("%s%svenv%sScripts", props.getProperty(propLabels[STARDIST_DIR]), File.separator, File.separator));
+            cmd.add(String.format("%s%svenv%sScripts", getString(STARDIST_DIR), File.separator, File.separator));
             cmd.add("&");
             cmd.add("activate.bat");
             cmd.add("&");
@@ -409,23 +408,23 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             cmd.add("python");
             cmd.add("stardist/scripts/predict3d.py");
         } else if (IJ.isLinux() || IJ.isMacOSX()) {
-            cmd.add(String.format("%s/bin/python", props.getProperty(propLabels[STARDIST_DIR])));
-            cmd.add(String.format("%s/stardist/scripts/predict3d.py", props.getProperty(propLabels[STARDIST_DIR])));
+            cmd.add(String.format("%s/bin/python", getString(STARDIST_DIR)));
+            cmd.add(String.format("%s/stardist/scripts/predict3d.py", getString(STARDIST_DIR)));
         }
         cmd.add("-i");
         cmd.add((new File(stardistTempDir, tempImage).getAbsolutePath()));
         cmd.add("-m");
-        cmd.add(props.getProperty(propLabels[STARDIST_MODEL]));
+        cmd.add(getString(STARDIST_MODEL));
         cmd.add("-o");
         cmd.add(stardistTempDir.getAbsolutePath());
         cmd.add("--prob_thresh");
-        cmd.add(props.getProperty(propLabels[STARDIST_PROB]));
+        cmd.add(getString(STARDIST_PROB));
         cmd.add("--nms_thresh");
-        cmd.add(props.getProperty(propLabels[STARDIST_OVERLAP]));
+        cmd.add(getString(STARDIST_OVERLAP));
         cmd.add("--n_tiles");
-        cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
-        cmd.add(props.getProperty(propLabels[STARDIST_TILE_XY]));
-        cmd.add(props.getProperty(propLabels[STARDIST_TILE_Z]));
+        cmd.add(getString(STARDIST_TILE_XY));
+        cmd.add(getString(STARDIST_TILE_XY));
+        cmd.add(getString(STARDIST_TILE_Z));
 
         IJ.log(cmd.toString().replace(",", ""));
 
@@ -472,21 +471,21 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         String ilastikOutput = FilenameUtils.getBaseName(tempImage) + ".ilastik." + FilenameUtils.getExtension(tempImage);
 //        ImagePlus imp = img.getLoadedImage();
         IJ.saveAs(imp, "TIF", (new File(ilastikTempDir, tempImage).getAbsolutePath()));
-        File copyOfProjectFile = new File(ilastikTempDir, FilenameUtils.getName(props.getProperty(propLabels[ILASTIK_FILE])));
+        File copyOfProjectFile = new File(ilastikTempDir, FilenameUtils.getName(getString(ILASTIK_FILE)));
         Process p = null;
         try {
-            FileUtils.copyFile(new File(props.getProperty(propLabels[ILASTIK_FILE])), copyOfProjectFile);
+            FileUtils.copyFile(new File(getString(ILASTIK_FILE)), copyOfProjectFile);
 
             List<String> cmd = new ArrayList<>();
             if (IJ.isWindows()) {
                 cmd.add("cmd.exe");
                 cmd.add("/C");
                 cmd.add("cd");
-                cmd.add(props.getProperty(propLabels[ILASTIK_DIR]));
+                cmd.add(getString(ILASTIK_DIR));
                 cmd.add("&");
                 cmd.add("ilastik.exe");
             } else if (IJ.isLinux() || IJ.isMacOSX()) {
-                cmd.add(String.format("%s/run_ilastik.sh", props.getProperty(propLabels[ILASTIK_DIR])));
+                cmd.add(String.format("%s/run_ilastik.sh", getString(ILASTIK_DIR)));
             }
             cmd.add("--headless");
             cmd.add(String.format("--project=\"%s\"", copyOfProjectFile));
@@ -528,8 +527,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
                 IJ.log("ilastik finished");
             }
             ImporterOptions io = new ImporterOptions();
-            io.setCBegin(0, Integer.parseInt(props.getProperty(propLabels[ILASTIK_CHANNEL])));
-            io.setCEnd(0, Integer.parseInt(props.getProperty(propLabels[ILASTIK_CHANNEL])));
+            io.setCBegin(0, getInt(ILASTIK_CHANNEL));
+            io.setCEnd(0, getInt(ILASTIK_CHANNEL));
             io.setCStep(0, 1);
             io.setSpecifyRanges(true);
             io.setId(new File(ilastikTempDir, ilastikOutput).getAbsolutePath());
@@ -539,11 +538,11 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             if (p != null) p.destroyForcibly();
             IJ.log("Error: ilastik detection failed.");
         }
-        if (Double.parseDouble(props.getProperty(propLabels[ILASTIK_SMOOTHING])) > 0.0) {
+        if (getDouble(ILASTIK_SMOOTHING) > 0.0) {
             double[] sigma = getCalibratedDoubleSigma(series, propLabels[ILASTIK_SMOOTHING], propLabels[ILASTIK_SMOOTHING], propLabels[ILASTIK_SMOOTHING]);
             GaussianBlur3D.blur(ilastikProbMap, sigma[0], sigma[1], sigma[2]);
         }
-        StackThresholder.thresholdStack(ilastikProbMap, 65535 * Double.parseDouble(props.getProperty(propLabels[ILASTIK_THRESH])));
+        StackThresholder.thresholdStack(ilastikProbMap, 65535 * getDouble(ILASTIK_THRESH));
         (new StackProcessor(ilastikProbMap.getImageStack())).invert();
         processThresholdedObjects(ilastikProbMap);
         output = ilastikProbMap;
