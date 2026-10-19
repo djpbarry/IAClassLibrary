@@ -1171,20 +1171,29 @@ re-linking `inputs` through an old→new map), not a per-node duplicate. Per-nod
 needed for GIANI. Notify GIANI in the same way as R2, and schedule around their
 feature freeze (after Phase H/I).
 
-### R4. Drop the `Thread`/`Callable` duality — breaking
+### R4. Drop the `Thread`/`Callable` duality — R4a non-breaking, R4b breaking
 
-Make `MultiThreadedProcess` a `Runnable`/`Callable` that produces output via a
-`Future`; remove `extends Thread` and the manual `start()`/`join()` in
-`getOutput()`. Run processes on a shared executor owned by the pipeline.
-Consolidate the per-subclass `Executors.newFixedThreadPool` into the base
-`runWorkers`, and convert worker classes (e.g. `RunnableHessianFilter extends
-Thread implements Callable<Void>`) into plain `Callable`s. **Breaking**: code
-calls `.start()`/`.join()` on processes directly, both in-repo
-(`MultiThreadedWatershed:108-109`/`:118-119`,
-`RiemannianDistanceTransform:141-143`) and potentially downstream (GIANI's
-executor must be checked before scheduling). It ships as a major version bump,
-independent of the Decision-7 namespace move (decision 10). *Not to be confused
-with GIANI's own "proposed decision 10" (R2b).*
+GIANI's R4 sign-off (`GIANI-r4-design-note.md`, 2026-10-19) confirmed R4 is
+breaking for them in two places: the headless `PipelineExecutor` submits each
+process as a `Runnable` (`exec.submit(process, img)`), and the five preview
+panels call `.start()`/`.join()`/`.getOutput()` directly. They are willing, but
+on their Phase-I schedule, and recommend splitting:
+
+- **R4a (non-breaking, `2.x`) — executor consolidation.** Convert the worker
+  classes (`RunnableHessianFilter`, `RunnablePixelLoader`, `RunnableSobelFilter`,
+  `RunnableRegionGrower`, `SpotNucDistanceCalc`, `SpotSpotDistanceCalc`) from
+  `extends Thread` to plain `Runnable`/`Callable`, and consolidate the
+  per-subclass `Executors.newFixedThreadPool(...)` calls into the base
+  `runWorkers(...)`. GIANI references none of these, so no shims are needed.
+- **R4b (breaking, `3.0.0`) — drop `extends Thread`.** Make
+  `MultiThreadedProcess` a `Runnable`/`Callable` whose output is obtained via a
+  `Future`; remove the manual `start()`/`join()` in `getOutput()`; have
+  `ProcessPipeline` own a shared executor. Breaking because GIANI's preview
+  panels call `.start()`/`.join()` and the headless path relies on
+  `submit(process, img)` resolving via `Runnable`. Ships as a major bump,
+  independent of the Decision-7 namespace move (decision 10); GIANI stays on the
+  latest `2.x` until Phase-I migrates those paths. *Not to be confused with
+  GIANI's own "proposed decision 10" (R2b).*
 
 ---
 

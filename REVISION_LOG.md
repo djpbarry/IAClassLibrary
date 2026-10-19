@@ -253,6 +253,28 @@ The standalone classes (`MultiThreadedHessian`, `MultiThreadedRegionGrower`,
 
 Added `rebuild()`/null-input tests. Version → `2.2.0`. Full suite green.
 
+### 2026-10-19 — R4 sign-off (GIANI): split into non-breaking R4a + breaking R4b
+
+GIANI answered the R4 questions in `GIANI-r4-design-note.md`:
+
+- **R4 is breaking for GIANI, not transparent.** Headless `PipelineExecutor`
+  submits each process as a `Runnable` (`exec.submit(process, img)`, which
+  resolves via `extends Thread`); the five preview panels call
+  `.start()`/`.join()`/`.getOutput()` directly.
+- **Recommendation.** Land the non-breaking executor consolidation now (`2.x`);
+  land the `Thread`-drop as `3.0.0` whenever suits, but GIANI stays on the
+  latest `2.x` until Phase-I migrates the preview panels and the `submit` call.
+- **Worker classes.** GIANI references none of them; convert freely, no shims.
+
+R3 `v2.2.0` review flags (all confirmed, no code change):
+
+- `MultiThreadedHessian` intentionally unsplit (constructed with `null` inputs —
+  would NPE as a `TransformProcess`).
+- `TopHatFilter.CHANNEL` is unused by `run()` but load-bearing in
+  `getParamSlots()` (positional alignment with the deprecated adapter).
+- `rebuild()`'s "spent wiring" wrinkle is acknowledged and acceptable.
+- No `v2.1.1` tag — the null-guard commit ships inside `v2.2.0`.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`
