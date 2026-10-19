@@ -28,7 +28,8 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
 
 - IAClassLibrary (`net.calm.iaclasslibrary`) is a **Java library** (not a
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
-  primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
+  primitives consumed by ADAPT, `TrackerLibrary`, `AdaptDataProcessing`, and
+  GIANI (the main consumer of the `Process` pipeline).
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
   `2.0.31` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
@@ -37,8 +38,8 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   --update-snapshots verify` on **JDK 21** with the `setup-java` Maven cache.
   *(Updated 2026-09-27.)*
 - **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 16 classes,
-  37 tests as of 2026-10-03 (incl. FFT/Fitter/Utils/RegionGrower/MultiThreadedProcess/
-  RiemannianDistanceTransform tests). No lint/format tooling. (Phase C done for now.)
+  39 tests as of 2026-10-19 (incl. FFT/Fitter/Utils/RegionGrower/MultiThreadedProcess/
+  RiemannianDistanceTransform tests; R1 added the `MultiThreadedProcess` dimension cases). No lint/format tooling. (Phase C done for now.)
 - **License:** a GPL-3.0-or-later `LICENSE` file now exists and `pom.xml` is
   corrected from BSD-2 to GPL-3. Source headers remain inconsistent (roughly
   half GPL-3, roughly a third NetBeans "change this header" stubs); header
@@ -843,7 +844,8 @@ naive O(n²) double reference implementations.
 
 ## Phase H — `BioFormatsImg` facade & time-dimension hardening
 
-**Status: planned (2026-10-09), not started.** `IO.BioFormats.BioFormatsImg` is
+**Status: done (2026-10-18).** H1–H6 complete, released in `2.0.26`–`2.0.30`
+(tag `v2.0.30`). `IO.BioFormats.BioFormatsImg` is
 the primary loader, but a review against the Bio-Formats Java API found the
 pixel-loading path is incomplete and the time dimension is effectively
 unsupported. The class juggles three Bio-Formats abstractions (`ImageReader`,
@@ -967,19 +969,21 @@ hand-off, not this phase.
 
 ## Phase R — Process pipeline refactor
 
-**Status: R1 implemented (2026-10-18); R2–R4 pending.** R1 (centralise
-`series`/`channel`/`time` + `loadPixels` + `_T<t>` naming) is done. R2–R4 remain.
+**Status: R1 implemented (2026-10-18, `2.0.31`, not yet tagged); R2 design
+agreed with GIANI (R2a next, R2b scheduled with GIANI's Phase I); R3–R4 pending.**
+R1 (centralise `series`/`channel`/`time` + `loadPixels` + `_T<t>` naming) is done.
+**Next action:** tag `v2.0.31`. GIANI's Phase H1 is blocked on pinning it.
 `Process.MultiThreadedProcess` has accreted four unrelated responsibilities and is
 the main maintenance drag in the processing pipeline. This phase simplifies it
 into a typed, testable core, executed one sub-phase at a time (R1 → R4). R1–R3 are
 additive/deprecation-only; R4 is the only breaking change and is independent of
 the Decision-7 namespace move.
 
-### Current state (verified 2026-10-18)
+### Current state (verified 2026-10-18; line refs updated 2026-10-19, post-R1)
 
 `MultiThreadedProcess` (`Process/MultiThreadedProcess.java:37`) is simultaneously
 a `Thread` (work in `run()`, started/joined manually by `getOutput()`
-`:133-145`), a `Callable<BioFormatsImg>` (`call()` just returns `img`, `:129`),
+`:161-173`), a `Callable<BioFormatsImg>` (`call()` just returns `img`, `:157`),
 a mutable pipeline node (`inputs`/`outputDests` + `duplicate()`/`updateInput`/
 `updateOutputDests`), and a stringly-typed config holder (`props` + `String[]
 propLabels`, parsed per subclass via `Integer.parseInt(props.getProperty(
@@ -989,7 +993,7 @@ Thirteen subclasses fall into three kinds:
 
 - **Source** (loads raw pixels on `inputs == null`): `MultiThreadedMaximaFinder`,
   `MultiThreadedGaussianFilter`, `MultiThreadedTopHatFilter`; plus
-  `MultiThreadedROIConstructor` re-loads raw pixels for measurement (`:173`).
+  `MultiThreadedROIConstructor` re-loads raw pixels for measurement (`:176`).
 - **Transform** (reads `inputs`): `Watershed`, `RegionGrower`, `ROIConstructor`,
   `Colocalise`, `MapPixels`, `ImageCalculator`, `SobelFilter`, `MeasureROI`,
   `Hessian`.
@@ -1104,7 +1108,8 @@ vocabulary. Instead:
     `getPropertyList`) all resolve through it.
   - *Transition:* `setup(BioFormatsImg, Properties, String[])` stays as a
     `@Deprecated` adapter (positional `propLabels` → named binding) for **at
-    least one release after R2b**.
+    least one release after R2b**. `getPropLabels()` must survive for the same
+    window, because GIANI's `PipelineExecutor` reads it back to call `setup()`.
   - *Fallback:* if this proves too costly, R2a's label-keyed binding stays
     indefinitely. GIANI has accepted this explicitly.
 
@@ -1120,6 +1125,12 @@ Replace the mutable `duplicate()`/`outputDests`/`updateInput` re-wiring with an
 immutable pipeline rebuild. `@Deprecated` `MultiThreadedImageLoader` (do not
 remove — public API, may be used externally) — decision 8.
 
+**GIANI impact.** GIANI's `PipelineBuilder`/`PipelineExecutor` build pipelines
+through `inputs`, `duplicate()` and `setup()`, and set `time` after build. The
+old re-wiring path must therefore stay working (deprecated) alongside the
+immutable rebuild. Notify GIANI in the same way as R2, and schedule around
+their feature freeze (after Phase H/I).
+
 ### R4. Drop the `Thread`/`Callable` duality — breaking
 
 Make `MultiThreadedProcess` a `Runnable`/`Callable` that produces output via a
@@ -1127,10 +1138,13 @@ Make `MultiThreadedProcess` a `Runnable`/`Callable` that produces output via a
 `getOutput()`. Run processes on a shared executor owned by the pipeline.
 Consolidate the per-subclass `Executors.newFixedThreadPool` into the base
 `runWorkers`, and convert worker classes (e.g. `RunnableHessianFilter extends
-Thread implements Callable<Void>`) into plain `Callable`s. **Breaking** —
-external code calls `.start()`/`.join()` directly (`MultiThreadedWatershed`
-`:108-110`, `RiemannianDistanceTransform`:141-143`), so it ships as a major
-version bump, independent of the Decision-7 namespace move — decision 10.
+Thread implements Callable<Void>`) into plain `Callable`s. **Breaking**: code
+calls `.start()`/`.join()` on processes directly, both in-repo
+(`MultiThreadedWatershed:108-109`/`:118-119`,
+`RiemannianDistanceTransform:141-143`) and potentially downstream (GIANI's
+executor must be checked before scheduling). It ships as a major version bump,
+independent of the Decision-7 namespace move (decision 10). *Not to be confused
+with GIANI's own "proposed decision 10" (R2b).*
 
 ---
 
@@ -1247,10 +1261,12 @@ in the phases above.
 8. **M8 — `BioFormatsImg` facade & time hardening:** re-point metadata accessors
    at `IMetadata` (H1), rewrite `loadPixelData` for full C/Z/T + `dimOrder` (H2),
    add time accessors (H3), fix NPEs (H4), clarify the ImageJ caching split (H5).
-   (Phase H)
+   (Phase H) *Status (2026-10-18): complete, tagged `v2.0.30`.*
 9. **M9 — Process pipeline refactor:** centralise dimensions/loading (R1), typed
    params (R2), source/transform split (R3), drop `Thread`/`Callable` duality
-   (R4). (Phase R)
+   (R4). (Phase R) *Status (2026-10-19): R1 done (`2.0.31`, tag pending); R2
+   design agreed with GIANI; R2a next.*
 
-Each milestone is independently shippable. M1 is the immediate next step and
-unblocks the ADAPT plan's M10 (upstream dependency hygiene).
+Each milestone is independently shippable. M1–M8 are complete. The immediate
+next steps are tagging `v2.0.31` (unblocks GIANI's Phase H1) and then R2a, with
+each R2a release tagged.
