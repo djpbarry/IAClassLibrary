@@ -21,6 +21,7 @@ import net.calm.iaclasslibrary.Binary.EDMMaker;
 import net.calm.iaclasslibrary.IAClasses.Region;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
 import java.util.ArrayList;
@@ -56,7 +57,8 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
         this.threshold = threshold;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
 
     }
 

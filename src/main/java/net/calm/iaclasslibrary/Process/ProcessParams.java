@@ -16,103 +16,107 @@
  */
 package net.calm.iaclasslibrary.Process;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
- * Typed facade over the legacy {@code Properties} + {@code String[] propLabels}
- * configuration pair. The external contract is unchanged: values are keyed by
- * the label strings in {@code propLabels}, and a parameter is addressed by its
- * positional slot (the named {@code int} constants on each process class).
- * Parsing happens in one place here instead of at every read site.
+ * Resolved parameter values, keyed by {@link Parameter} slot name. Built from a
+ * consumer's raw {@link Properties} through a {@link ParamBinding} (slot →
+ * external key) and an optional alias table (legacy label → current key) so
+ * saved files remain loadable.
+ *
+ * <p>Value precedence (per the GIANI agreement):</p>
+ * <ul>
+ *   <li>bound + present → the consumer's value (an empty string is a value);</li>
+ *   <li>bound + missing ({@code null}) → fail loudly;</li>
+ *   <li>unbound → the {@link Parameter#defaultValue() library default}.</li>
+ * </ul>
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class ProcessParams {
+public final class ProcessParams {
 
-    private final Properties props;
-    private final String[] propLabels;
+    private final Map<String, String> values;
+    private final Set<String> bound;
 
-    public ProcessParams(Properties props, String[] propLabels) {
-        this.props = props;
-        this.propLabels = propLabels;
-    }
-
-    public String getString(int slot) {
-        return getString(slot, null);
-    }
-
-    public String getString(int slot, String defaultValue) {
-        String value = getRaw(slot);
-        return value != null ? value : defaultValue;
-    }
-
-    public int getInt(int slot) {
-        return Integer.parseInt(getRaw(slot));
-    }
-
-    public int getInt(int slot, int defaultValue) {
-        String value = getRaw(slot);
-        if (value == null || value.isEmpty()) {
-            return defaultValue;
-        }
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
-
-    public double getDouble(int slot) {
-        return Double.parseDouble(getRaw(slot));
-    }
-
-    public double getDouble(int slot, double defaultValue) {
-        String value = getRaw(slot);
-        if (value == null || value.isEmpty()) {
-            return defaultValue;
-        }
-        try {
-            return Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
-
-    public float getFloat(int slot) {
-        return Float.parseFloat(getRaw(slot));
-    }
-
-    public float getFloat(int slot, float defaultValue) {
-        String value = getRaw(slot);
-        if (value == null || value.isEmpty()) {
-            return defaultValue;
-        }
-        try {
-            return Float.parseFloat(value);
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
-
-    public boolean getBoolean(int slot) {
-        return Boolean.parseBoolean(getRaw(slot));
-    }
-
-    public boolean getBoolean(int slot, boolean defaultValue) {
-        String value = getRaw(slot);
-        return value != null ? Boolean.parseBoolean(value) : defaultValue;
+    private ProcessParams(Map<String, String> values, Set<String> bound) {
+        this.values = values;
+        this.bound = bound;
     }
 
     /**
-     * Reports whether the slot is present in the label array, i.e. the consumer
-     * supplied a label for it. Optional parameters (e.g. StarDist / ilastik)
-     * are declared but left {@code null} in {@code propLabels} when unused.
+     * Resolves values for every bound slot. {@code aliasTable} maps a legacy
+     * label to the current external key; when a slot's current key is absent
+     * from {@code props}, the legacy labels mapping to that key are tried.
      */
-    public boolean has(int slot) {
-        return slot >= 0 && slot < propLabels.length && propLabels[slot] != null;
+    public static ProcessParams fromProperties(Properties props, ParamBinding binding,
+            Map<String, String> aliasTable) {
+        Map<String, String> values = new HashMap<>();
+        Set<String> bound = new HashSet<>();
+        Map<String, List<String>> legacyByKey = new HashMap<>();
+        if (aliasTable != null) {
+            for (Map.Entry<String, String> alias : aliasTable.entrySet()) {
+                legacyByKey.computeIfAbsent(alias.getValue(), k -> new ArrayList<>()).add(alias.getKey());
+            }
+        }
+        for (ParamBinding.Entry entry : binding.entriesBySlotName().values()) {
+            bound.add(entry.slotName());
+            String value = props.getProperty(entry.key());
+            if (value == null) {
+                for (String legacy : legacyByKey.getOrDefault(entry.key(), List.of())) {
+                    value = props.getProperty(legacy);
+                    if (value != null) {
+                        break;
+                    }
+                }
+            }
+            values.put(entry.slotName(), value);
+        }
+        return new ProcessParams(values, bound);
     }
 
-    private String getRaw(int slot) {
-        return props.getProperty(propLabels[slot]);
+    public boolean has(Parameter slot) {
+        return bound.contains(slot.name());
+    }
+
+    public String getString(Parameter slot) {
+        String value = raw(slot);
+        return value != null ? value : (String) slot.defaultValue();
+    }
+
+    public int getInt(Parameter slot) {
+        String value = raw(slot);
+        return value != null ? Integer.parseInt(value) : ((Number) slot.defaultValue()).intValue();
+    }
+
+    public double getDouble(Parameter slot) {
+        String value = raw(slot);
+        return value != null ? Double.parseDouble(value) : ((Number) slot.defaultValue()).doubleValue();
+    }
+
+    public float getFloat(Parameter slot) {
+        String value = raw(slot);
+        return value != null ? Float.parseFloat(value) : ((Number) slot.defaultValue()).floatValue();
+    }
+
+    public boolean getBoolean(Parameter slot) {
+        String value = raw(slot);
+        return value != null ? Boolean.parseBoolean(value) : (Boolean) slot.defaultValue();
+    }
+
+    private String raw(Parameter slot) {
+        if (!bound.contains(slot.name())) {
+            return null;
+        }
+        String value = values.get(slot.name());
+        if (value == null) {
+            throw new IllegalStateException("Missing value for bound parameter '" + slot.name() + "'");
+        }
+        return value;
     }
 }

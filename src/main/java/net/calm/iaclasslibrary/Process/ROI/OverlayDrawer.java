@@ -22,7 +22,6 @@ import ij.gui.Roi;
 import mcib3d.geom.Voxel3D;
 import net.calm.iaclasslibrary.Extrema.MultiThreadedMaximaFinder;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
-import net.calm.iaclasslibrary.Process.ProcessParams;
 import ome.units.quantity.Length;
 
 import java.awt.*;
@@ -49,9 +48,8 @@ public class OverlayDrawer {
             xySpatRes = xyLength.value().doubleValue();
         }
         if (edm) {
-            ProcessParams params = new ProcessParams(props, propLabels);
-            maxXYRadiusMic = params.getDouble(MultiThreadedMaximaFinder.HESSIAN_START_SCALE);
-            maxZRadiusMic = params.getDouble(MultiThreadedMaximaFinder.HESSIAN_START_SCALE);
+            maxXYRadiusMic = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_START_SCALE]));
+            maxZRadiusMic = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_START_SCALE]));
         }
         double maxZRadiusMic2 = Math.pow(maxZRadiusMic, 2.0);
         double maxXYRadiusMic2 = Math.pow(maxXYRadiusMic, 2.0);

@@ -30,6 +30,8 @@ import mcib3d.image3d.ImageInt;
 import net.calm.iaclasslibrary.Cell3D.*;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.Parameter;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import org.apache.commons.math3.linear.ArrayRealVector;
 
@@ -40,18 +42,33 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 
+    @Deprecated
     public static final int SERIES_LABEL = 0;
+    @Deprecated
     public static final int CHANNELS_LABEL = 1;
+    @Deprecated
     public static final int OUTPUT_LABEL = 2;
+    @Deprecated
     public static final int LOCALISE_LABEL = 3;
+    @Deprecated
     public static final int N_PROP_LABELS = 4;
+
+    public static final Parameter SERIES = new Parameter("series", Parameter.Type.INT, 0, "Series");
+    public static final Parameter CHANNELS = new Parameter("channels", Parameter.Type.INT, 0, "Channels");
+    public static final Parameter OUTPUT = new Parameter("output", Parameter.Type.STRING, "", "Output directory");
+    public static final Parameter LOCALISE = new Parameter("localise", Parameter.Type.BOOLEAN, false, "Localise");
+
+    @Override
+    protected Parameter[] getParamSlots() {
+        return new Parameter[]{SERIES, CHANNELS, OUTPUT, LOCALISE};
+    }
+
     private final Objects3DPopulation cells;
     int selectedChannels;
     private String outputPath;
@@ -71,12 +88,12 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         this.cells = cells;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
-        this.img = img;
-        initParams(props, propLabels);
-        this.series = getInt(SERIES_LABEL);
-        this.selectedChannels = getInt(CHANNELS_LABEL);
-        this.outputPath = getString(OUTPUT_LABEL);
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
+        initParams(img, params);
+        this.series = getInt(SERIES);
+        this.selectedChannels = getInt(CHANNELS);
+        this.outputPath = getString(OUTPUT);
     }
 
     @Override

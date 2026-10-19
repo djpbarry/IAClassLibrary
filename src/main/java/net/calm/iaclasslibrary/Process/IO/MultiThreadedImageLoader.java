@@ -18,9 +18,9 @@ package net.calm.iaclasslibrary.Process.IO;
 
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import ij.ImageStack;
 
-import java.util.Properties;
 import java.util.concurrent.Executors;
 
 import loci.formats.ImageReader;
@@ -42,7 +42,8 @@ public class MultiThreadedImageLoader extends MultiThreadedProcess {
         this.stack = stack;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
 
     }
 

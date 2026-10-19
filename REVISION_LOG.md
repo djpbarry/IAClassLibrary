@@ -153,6 +153,40 @@ R2a landed (non-breaking; `setup(img, Properties, String[])` and
 Added `ProcessParamsTest` (14 cases) and a base-getter test; total 54 tests.
 Version → `2.0.32`. Full suite green.
 
+### 2026-10-19 — R2b implemented: `Parameter`/`ParamBinding` named-binding model
+
+R2b landed (design signed off by GIANI in `GIANI-r2b-design-note.md`; minor
+bump `2.1.0`). The positional `String[] propLabels` binding is replaced by a
+named, consumer-owned binding, with the legacy path kept as a `@Deprecated`
+adapter:
+
+- New `Process.Parameter` — a library-declared slot (name, type, default,
+  default label) plus `forChannel(i)` for 0-based per-channel slots.
+- New `Process.ParamBinding` — `bind(slot, key, label, tooltip)`,
+  `bindShared(slot, key, ...)`, and `merge(base)` so a shared `series` key is
+  looked up by name across stages rather than copied.
+- `ProcessParams` reworked to key by slot name; `fromProperties(props, binding,
+  aliasTable)` resolves values (legacy label → current key alias), and typed
+  getters implement the agreed precedence: bound+present → value (empty string
+  is a value), bound+missing → fail loudly, unbound → library default.
+- `MultiThreadedProcess` gained `setup(img, ProcessParams)` + `getParamSlots()`;
+  the old `setup(img, Properties, String[])` is now a concrete `@Deprecated`
+  adapter that builds a positional binding from `getParamSlots()`. `getPropLabels()`
+  survives for GIANI's `PipelineExecutor`.
+- All 8 param-consuming classes declare `Parameter` slots (shared `series`/
+  `channel` names; MaximaFinder-specific slots use a `_PARAM` suffix to avoid
+  clashing with the legacy `int` constants, which stay for GIANI's old
+  `PipelineBuilder`). Hessian reuses `MultiThreadedMaximaFinder.PARAMS`.
+
+GIANI sign-off specifics honoured: `forChannel` is 0-based; `bindShared` +
+`merge` for shared slots; empty string is a value; fail-loudly on bound+missing;
+`feat` minor bump (`2.1.0`); series key remains GIANI's `"Preview Series"`;
+`CHAN_FOR_MEASURE` stays GIANI-owned. `OverlayDrawer` (a legacy static utility)
+reverted to reading `props`/`propLabels` directly.
+
+Tests: `ProcessParamsTest` rewritten for `fromProperties`/alias/defaults/
+`forChannel`; 48 tests. Version → `2.1.0`. Full suite green.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`

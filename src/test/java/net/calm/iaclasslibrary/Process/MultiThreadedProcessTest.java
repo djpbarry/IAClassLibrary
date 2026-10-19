@@ -71,16 +71,23 @@ public class MultiThreadedProcessTest {
     }
 
     @Test
-    public void testTypedGettersResolveThroughPropLabels() {
+    public void testTypedGettersResolveThroughParams() {
         TestProcess p = new TestProcess(null);
+        Parameter series = new Parameter("series", Parameter.Type.INT, 0, "Series");
+        Parameter radius = new Parameter("radius", Parameter.Type.DOUBLE, 1.0, "Radius");
+        Parameter enabled = new Parameter("enabled", Parameter.Type.BOOLEAN, false, "Enabled");
+        ParamBinding binding = new ParamBinding()
+                .bind(series, "series")
+                .bind(radius, "radius")
+                .bind(enabled, "enabled");
         Properties props = new Properties();
         props.setProperty("series", "3");
         props.setProperty("radius", "2.5");
         props.setProperty("enabled", "true");
-        p.initParams(props, new String[]{"series", "radius", "enabled"});
-        assertEquals(3, p.getInt(0));
-        assertEquals(2.5, p.getDouble(1), 1e-9);
-        assertTrue(p.getBoolean(2));
+        p.initParams(null, ProcessParams.fromProperties(props, binding, null));
+        assertEquals(3, p.getInt(series));
+        assertEquals(2.5, p.getDouble(radius), 1e-9);
+        assertTrue(p.getBoolean(enabled));
     }
 
     private static class TestProcess extends MultiThreadedProcess {
@@ -89,7 +96,7 @@ public class MultiThreadedProcessTest {
         }
 
         @Override
-        public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+        public void setup(BioFormatsImg img, ProcessParams params) {
         }
 
         @Override

@@ -18,8 +18,8 @@ package net.calm.iaclasslibrary.Process.Filtering;
 
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import net.calm.iaclasslibrary.Process.RunnableProcess;
-import java.util.Properties;
 import java.util.concurrent.Executors;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.utils.ArrayUtil;
@@ -41,10 +41,9 @@ public class MultiThreadedSobelFilter extends MultiThreadedProcess {
         this.input = input;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
-        this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
+        initParams(img, params);
 //        ImagePlus image = img.getLoadedImage();
 //        (new StackConverter(img.getProcessedImage())).convertToGray32();
     }

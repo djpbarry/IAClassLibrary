@@ -55,7 +55,32 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
         updateInputsWithOutput();
     }
 
-    public abstract void setup(BioFormatsImg img, Properties props, String[] propLabels);
+    /**
+     * Configures this process from already-resolved {@link ProcessParams}.
+     * Subclasses read their slots via the typed getters during {@code setup} or
+     * {@code run()}.
+     */
+    public abstract void setup(BioFormatsImg img, ProcessParams params);
+
+    /**
+     * @deprecated use {@link #setup(BioFormatsImg, ProcessParams)}. Kept so
+     * downstream consumers can migrate incrementally. Builds a positional
+     * {@link ParamBinding} from {@code propLabels} (matching the order of
+     * {@link #getParamSlots()}) and resolves values through it.
+     */
+    @Deprecated
+    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+        this.props = props;
+        this.propLabels = propLabels;
+        ParamBinding binding = new ParamBinding();
+        Parameter[] slots = getParamSlots();
+        for (int i = 0; i < slots.length; i++) {
+            if (propLabels != null && i < propLabels.length && propLabels[i] != null) {
+                binding.bind(slots[i], propLabels[i]);
+            }
+        }
+        setup(img, ProcessParams.fromProperties(props, binding, null));
+    }
 
     public abstract void run();
 
@@ -76,14 +101,21 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
     }
 
     /**
-     * Stores the legacy configuration pair and builds the typed facade over it.
-     * Subclasses call this from {@code setup} instead of assigning
-     * {@code props}/{@code propLabels} directly.
+     * Stores the resolved parameters. Subclasses call this from
+     * {@link #setup(BioFormatsImg, ProcessParams)}.
      */
-    protected void initParams(Properties props, String[] propLabels) {
-        this.props = props;
-        this.propLabels = propLabels;
-        this.params = new ProcessParams(props, propLabels);
+    protected void initParams(BioFormatsImg img, ProcessParams params) {
+        this.img = img;
+        this.params = params;
+    }
+
+    /**
+     * The parameters this process consumes, in the order the legacy
+     * {@code propLabels} array supplied them. Subclasses that read parameters
+     * override this; the default is an empty array.
+     */
+    protected Parameter[] getParamSlots() {
+        return new Parameter[0];
     }
 
     /**
@@ -116,8 +148,8 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
         terminate(errorMessage);
     }
 
-    protected int[] getCalibratedIntSigma(int series, String xLabel, String yLabel, String zLabel) {
-        double[] sigma = getCalibratedDoubleSigma(series, xLabel, yLabel, zLabel);
+    protected int[] getCalibratedIntSigma(int series, Parameter x, Parameter y, Parameter z) {
+        double[] sigma = getCalibratedDoubleSigma(series, x, y, z);
         return new int[]{(int) Math.round(sigma[0]),
             (int) Math.round(sigma[1]),
             (int) Math.round(sigma[2])};
@@ -129,26 +161,24 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
             sigmas[1] / calibration[1],
             sigmas[2] / calibration[2]};
     }
-    
-    protected double[] getCalibratedDoubleSigma(int series, String xLabel, String yLabel, String zLabel) {
+
+    protected double[] getCalibratedDoubleSigma(int series, Parameter x, Parameter y, Parameter z) {
         double[] calibration = getCalibration(series);
-        double[] sigma = getUncalibratedDoubleSigma(series, xLabel, yLabel, zLabel);
+        double[] sigma = getUncalibratedDoubleSigma(series, x, y, z);
         return new double[]{sigma[0] / calibration[0],
             sigma[1] / calibration[1],
             sigma[2] / calibration[2]};
     }
 
-    protected int[] getUncalibratedIntSigma(int series, String xLabel, String yLabel, String zLabel) {
-        double[] sigma = getUncalibratedDoubleSigma(series, xLabel, yLabel, zLabel);
+    protected int[] getUncalibratedIntSigma(int series, Parameter x, Parameter y, Parameter z) {
+        double[] sigma = getUncalibratedDoubleSigma(series, x, y, z);
         return new int[]{(int) Math.round(sigma[0]),
             (int) Math.round(sigma[1]),
             (int) Math.round(sigma[2])};
     }
 
-    protected double[] getUncalibratedDoubleSigma(int series, String xLabel, String yLabel, String zLabel) {
-        return new double[]{Double.parseDouble(props.getProperty(xLabel)),
-            Double.parseDouble(props.getProperty(yLabel)),
-            Double.parseDouble(props.getProperty(zLabel))};
+    protected double[] getUncalibratedDoubleSigma(int series, Parameter x, Parameter y, Parameter z) {
+        return new double[]{getDouble(x), getDouble(y), getDouble(z)};
     }
 
     protected double[] getCalibration(int series) {
@@ -166,47 +196,27 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
         return propLabels;
     }
 
-    protected String getString(int slot) {
+    protected String getString(Parameter slot) {
         return params.getString(slot);
     }
 
-    protected String getString(int slot, String defaultValue) {
-        return params.getString(slot, defaultValue);
-    }
-
-    protected int getInt(int slot) {
+    protected int getInt(Parameter slot) {
         return params.getInt(slot);
     }
 
-    protected int getInt(int slot, int defaultValue) {
-        return params.getInt(slot, defaultValue);
-    }
-
-    protected double getDouble(int slot) {
+    protected double getDouble(Parameter slot) {
         return params.getDouble(slot);
     }
 
-    protected double getDouble(int slot, double defaultValue) {
-        return params.getDouble(slot, defaultValue);
-    }
-
-    protected float getFloat(int slot) {
+    protected float getFloat(Parameter slot) {
         return params.getFloat(slot);
     }
 
-    protected float getFloat(int slot, float defaultValue) {
-        return params.getFloat(slot, defaultValue);
-    }
-
-    protected boolean getBoolean(int slot) {
+    protected boolean getBoolean(Parameter slot) {
         return params.getBoolean(slot);
     }
 
-    protected boolean getBoolean(int slot, boolean defaultValue) {
-        return params.getBoolean(slot, defaultValue);
-    }
-
-    protected boolean has(int slot) {
+    protected boolean has(Parameter slot) {
         return params.has(slot);
     }
 

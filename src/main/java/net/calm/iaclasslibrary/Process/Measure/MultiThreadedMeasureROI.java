@@ -18,6 +18,7 @@ package net.calm.iaclasslibrary.Process.Measure;
 
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import ij.gui.Roi;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -37,7 +38,8 @@ public class MultiThreadedMeasureROI extends MultiThreadedProcess {
         this.measurements = measurements;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
 
     }
 

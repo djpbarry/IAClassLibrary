@@ -44,6 +44,8 @@ import net.calm.iaclasslibrary.IAClasses.Utils;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.Filtering.MultiThreadedHessian;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.Parameter;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import net.calm.iaclasslibrary.Stacks.StackMath;
 import net.calm.iaclasslibrary.Stacks.StackThresholder;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
@@ -60,7 +62,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
@@ -98,6 +99,49 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public static final int THRESH_DETECT = 27;
     public static final int N_PROP_LABELS = 28;
 
+    // Canonical Parameter slots (supersede the legacy int indices above).
+    public static final Parameter SERIES = new Parameter("series", Parameter.Type.INT, 0, "Series");
+    public static final Parameter CHANNEL = new Parameter("channel", Parameter.Type.INT, 0, "Channel");
+    public static final Parameter BLOB_SIZE_PARAM = new Parameter("blob_size", Parameter.Type.DOUBLE, 1.0, "Blob size");
+    public static final Parameter BLOB_THRESH_PARAM = new Parameter("blob_thresh", Parameter.Type.FLOAT, 0.0f, "Blob threshold");
+    public static final Parameter BLOB_DETECT_PARAM = new Parameter("blob_detect", Parameter.Type.BOOLEAN, false, "Detect blobs");
+    public static final Parameter HESSIAN_START_SCALE_PARAM = new Parameter("hessian_start_scale", Parameter.Type.DOUBLE, 1.0, "Hessian start scale");
+    public static final Parameter HESSIAN_DETECT_PARAM = new Parameter("hessian_detect", Parameter.Type.BOOLEAN, false, "Detect with Hessian");
+    public static final Parameter METHOD_PARAM = new Parameter("method", Parameter.Type.STRING, "", "Method");
+    public static final Parameter HESSIAN_ABS_PARAM = new Parameter("hessian_abs", Parameter.Type.BOOLEAN, false, "Hessian absolute");
+    public static final Parameter HESSIAN_THRESH_PARAM = new Parameter("hessian_thresh", Parameter.Type.DOUBLE, 0.0, "Hessian threshold");
+    public static final Parameter STARDIST_DETECT_PARAM = new Parameter("stardist_detect", Parameter.Type.BOOLEAN, false, "Detect with StarDist");
+    public static final Parameter STARDIST_PROB_PARAM = new Parameter("stardist_prob", Parameter.Type.STRING, "", "StarDist probability threshold");
+    public static final Parameter STARDIST_OVERLAP_PARAM = new Parameter("stardist_overlap", Parameter.Type.STRING, "", "StarDist NMS threshold");
+    public static final Parameter STARDIST_DIR_PARAM = new Parameter("stardist_dir", Parameter.Type.STRING, "", "StarDist directory");
+    public static final Parameter STARDIST_MODEL_PARAM = new Parameter("stardist_model", Parameter.Type.STRING, "", "StarDist model");
+    public static final Parameter STARDIST_TILE_XY_PARAM = new Parameter("stardist_tile_xy", Parameter.Type.STRING, "", "StarDist XY tiles");
+    public static final Parameter STARDIST_TILE_Z_PARAM = new Parameter("stardist_tile_z", Parameter.Type.STRING, "", "StarDist Z tiles");
+    public static final Parameter ILASTIK_DETECT_PARAM = new Parameter("ilastik_detect", Parameter.Type.BOOLEAN, false, "Detect with ilastik");
+    public static final Parameter ILASTIK_FILE_PARAM = new Parameter("ilastik_file", Parameter.Type.STRING, "", "ilastik project file");
+    public static final Parameter ILASTIK_CHANNEL_PARAM = new Parameter("ilastik_channel", Parameter.Type.INT, 0, "ilastik channel");
+    public static final Parameter ILASTIK_DIR_PARAM = new Parameter("ilastik_dir", Parameter.Type.STRING, "", "ilastik directory");
+    public static final Parameter ILASTIK_THRESH_PARAM = new Parameter("ilastik_thresh", Parameter.Type.DOUBLE, 0.0, "ilastik threshold");
+    public static final Parameter ILASTIK_SMOOTHING_PARAM = new Parameter("ilastik_smoothing", Parameter.Type.DOUBLE, 0.0, "ilastik smoothing");
+    public static final Parameter THRESH_METHOD_PARAM = new Parameter("thresh_method", Parameter.Type.STRING, "Default", "Threshold method");
+    public static final Parameter THRESH_DETECT_PARAM = new Parameter("thresh_detect", Parameter.Type.BOOLEAN, false, "Detect by threshold");
+
+    /** Ordered to match the legacy {@code propLabels} layout (null = removed slot). */
+    public static final Parameter[] PARAMS = {
+        CHANNEL, BLOB_SIZE_PARAM, BLOB_THRESH_PARAM, null, HESSIAN_START_SCALE_PARAM, null,
+        BLOB_DETECT_PARAM, SERIES, HESSIAN_DETECT_PARAM, METHOD_PARAM, null,
+        HESSIAN_ABS_PARAM, HESSIAN_THRESH_PARAM, STARDIST_DETECT_PARAM, STARDIST_PROB_PARAM,
+        STARDIST_OVERLAP_PARAM, STARDIST_DIR_PARAM, STARDIST_MODEL_PARAM, STARDIST_TILE_XY_PARAM,
+        STARDIST_TILE_Z_PARAM, ILASTIK_DETECT_PARAM, ILASTIK_FILE_PARAM, ILASTIK_CHANNEL_PARAM,
+        ILASTIK_DIR_PARAM, ILASTIK_THRESH_PARAM, ILASTIK_SMOOTHING_PARAM, THRESH_METHOD_PARAM,
+        THRESH_DETECT_PARAM
+    };
+
+    @Override
+    protected Parameter[] getParamSlots() {
+        return PARAMS;
+    }
+
     private ArrayList<int[]> maxima;
     private ArrayList<Spot3D> spotMaxima;
     private double[] radii;
@@ -119,13 +163,13 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         this.maxima = new ArrayList<>();
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
-        this.img = img;
-        initParams(props, propLabels);
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
+        initParams(img, params);
     }
 
     public ImagePlus makeLocalMaximaImage(short background, int radius) {
-        if (has(STARDIST_DETECT) && getBoolean(STARDIST_DETECT)) {
+        if (has(STARDIST_DETECT_PARAM) && getBoolean(STARDIST_DETECT_PARAM)) {
             return output;
         }
         ImagePlus imp = img.getLoadedImage();
@@ -138,7 +182,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             sp.fill();
             output.addSlice(sp);
         }
-        if (!getBoolean(BLOB_DETECT) && detectedObjects != null) {
+        if (!getBoolean(BLOB_DETECT_PARAM) && detectedObjects != null) {
             for (int i = 0; i < detectedObjects.getNbObjects(); i++) {
                 detectedObjects.getObject(i).draw(output, i + 1);
             }
@@ -157,24 +201,24 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
     public void run() {
         maxima = new ArrayList<>();
         spotMaxima = new ArrayList<>();
-        series = getInt(SERIES_SELECT);
-        channel = getInt(CHANNEL_SELECT);
+        series = getInt(SERIES);
+        channel = getInt(CHANNEL);
         calibration = getCalibration(series);
-        radii = getUncalibratedDoubleSigma(series, propLabels[BLOB_SIZE], propLabels[BLOB_SIZE], propLabels[BLOB_SIZE]);
-        thresh = getFloat(BLOB_THRESH);
+        radii = getUncalibratedDoubleSigma(series, BLOB_SIZE_PARAM, BLOB_SIZE_PARAM, BLOB_SIZE_PARAM);
+        thresh = getFloat(BLOB_THRESH_PARAM);
         loadPixels(channel, channel);
         ImagePlus imp = img.getLoadedImage();
         this.stack = imp.getImageStack();
         if (stack == null) {
             return;
         }
-        if (getBoolean(THRESH_DETECT)) {
+        if (getBoolean(THRESH_DETECT_PARAM)) {
             thresholdDetection(imp);
-        } else if (getBoolean(HESSIAN_DETECT)) {
+        } else if (getBoolean(HESSIAN_DETECT_PARAM)) {
             hessianDetection(imp);
-        } else if (has(STARDIST_DETECT) && getBoolean(STARDIST_DETECT)) {
+        } else if (has(STARDIST_DETECT_PARAM) && getBoolean(STARDIST_DETECT_PARAM)) {
             runStarDist(imp);
-        } else if (has(ILASTIK_DETECT) && getBoolean(ILASTIK_DETECT)) {
+        } else if (has(ILASTIK_DETECT_PARAM) && getBoolean(ILASTIK_DETECT_PARAM)) {
             runIlastik(imp);
         } else {
             IJ.log(String.format("Searching for blobs %.1f pixels in diameter above a threshold of %.0f in \"%s\"...", (2 * radii[0] / calibration[0]), thresh, imp.getTitle()));
@@ -225,7 +269,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 //        double[] maxRadii = getUncalibratedDoubleSigma(series, propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE], propLabels[HESSIAN_STOP_SCALE]);
 //        double[] sigma = getCalibratedDoubleSigma(series, propLabels[EDM_FILTER], propLabels[EDM_FILTER], propLabels[EDM_FILTER]);
         IJ.log(String.format("Searching for objects %.1f pixels in diameter in \"%s\"...", (
-                getDouble(HESSIAN_START_SCALE) / calibration[0]), image.getTitle()));
+                getDouble(HESSIAN_START_SCALE_PARAM) / calibration[0]), image.getTitle()));
 
         if (image.getStackSize() > 1) {
             nEigenValues = 3;
@@ -239,7 +283,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         convertedImage.aspects(a);
 
         MultiThreadedHessian hessian = new MultiThreadedHessian(inputs, convertedImage);
-        hessian.setup(img, props, propLabels);
+        hessian.setup(img, params);
         hessian.start();
         try {
             hessian.join();
@@ -252,7 +296,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         int inputStackSize = image.getImageStackSize();
         int nScales = hessianOutputs.getImageStackSize() / (nEigenValues * inputStackSize);
         ImagePlus[] blobImps = new ImagePlus[nScales];
-        double hessianThresh = getDouble(HESSIAN_THRESH);
+        double hessianThresh = getDouble(HESSIAN_THRESH_PARAM);
         for (int s = 0; s < nScales; s++) {
             int index = s * nEigenValues * inputStackSize + 1;
             blobImps[s] = ssm.makeSubstack(hessianOutputs, String.format("%d-%d", index, index + inputStackSize - 1));
@@ -270,7 +314,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
 
     public void thresholdDetection(ImagePlus image) {
         int thresh = BinaryMaker.getThreshold(image,
-                AutoThresholder.Method.valueOf(getString(MultiThreadedMaximaFinder.THRESH_METHOD)));
+                AutoThresholder.Method.valueOf(getString(THRESH_METHOD_PARAM)));
         IJ.log(String.format("Segmenting \"%s\" with a threshold of %d...", image.getTitle(), thresh));
         ImagePlus mask = image.duplicate();
         StackThresholder.thresholdStack(mask, thresh);
@@ -398,7 +442,7 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             cmd.add("cmd.exe");
             cmd.add("/C");
             cmd.add("cd");
-            cmd.add(String.format("%s%svenv%sScripts", getString(STARDIST_DIR), File.separator, File.separator));
+            cmd.add(String.format("%s%svenv%sScripts", getString(STARDIST_DIR_PARAM), File.separator, File.separator));
             cmd.add("&");
             cmd.add("activate.bat");
             cmd.add("&");
@@ -408,23 +452,23 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             cmd.add("python");
             cmd.add("stardist/scripts/predict3d.py");
         } else if (IJ.isLinux() || IJ.isMacOSX()) {
-            cmd.add(String.format("%s/bin/python", getString(STARDIST_DIR)));
-            cmd.add(String.format("%s/stardist/scripts/predict3d.py", getString(STARDIST_DIR)));
+            cmd.add(String.format("%s/bin/python", getString(STARDIST_DIR_PARAM)));
+            cmd.add(String.format("%s/stardist/scripts/predict3d.py", getString(STARDIST_DIR_PARAM)));
         }
         cmd.add("-i");
         cmd.add((new File(stardistTempDir, tempImage).getAbsolutePath()));
         cmd.add("-m");
-        cmd.add(getString(STARDIST_MODEL));
+        cmd.add(getString(STARDIST_MODEL_PARAM));
         cmd.add("-o");
         cmd.add(stardistTempDir.getAbsolutePath());
         cmd.add("--prob_thresh");
-        cmd.add(getString(STARDIST_PROB));
+        cmd.add(getString(STARDIST_PROB_PARAM));
         cmd.add("--nms_thresh");
-        cmd.add(getString(STARDIST_OVERLAP));
+        cmd.add(getString(STARDIST_OVERLAP_PARAM));
         cmd.add("--n_tiles");
-        cmd.add(getString(STARDIST_TILE_XY));
-        cmd.add(getString(STARDIST_TILE_XY));
-        cmd.add(getString(STARDIST_TILE_Z));
+        cmd.add(getString(STARDIST_TILE_XY_PARAM));
+        cmd.add(getString(STARDIST_TILE_XY_PARAM));
+        cmd.add(getString(STARDIST_TILE_Z_PARAM));
 
         IJ.log(cmd.toString().replace(",", ""));
 
@@ -471,21 +515,21 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
         String ilastikOutput = FilenameUtils.getBaseName(tempImage) + ".ilastik." + FilenameUtils.getExtension(tempImage);
 //        ImagePlus imp = img.getLoadedImage();
         IJ.saveAs(imp, "TIF", (new File(ilastikTempDir, tempImage).getAbsolutePath()));
-        File copyOfProjectFile = new File(ilastikTempDir, FilenameUtils.getName(getString(ILASTIK_FILE)));
+        File copyOfProjectFile = new File(ilastikTempDir, FilenameUtils.getName(getString(ILASTIK_FILE_PARAM)));
         Process p = null;
         try {
-            FileUtils.copyFile(new File(getString(ILASTIK_FILE)), copyOfProjectFile);
+            FileUtils.copyFile(new File(getString(ILASTIK_FILE_PARAM)), copyOfProjectFile);
 
             List<String> cmd = new ArrayList<>();
             if (IJ.isWindows()) {
                 cmd.add("cmd.exe");
                 cmd.add("/C");
                 cmd.add("cd");
-                cmd.add(getString(ILASTIK_DIR));
+                cmd.add(getString(ILASTIK_DIR_PARAM));
                 cmd.add("&");
                 cmd.add("ilastik.exe");
             } else if (IJ.isLinux() || IJ.isMacOSX()) {
-                cmd.add(String.format("%s/run_ilastik.sh", getString(ILASTIK_DIR)));
+                cmd.add(String.format("%s/run_ilastik.sh", getString(ILASTIK_DIR_PARAM)));
             }
             cmd.add("--headless");
             cmd.add(String.format("--project=\"%s\"", copyOfProjectFile));
@@ -527,8 +571,8 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
                 IJ.log("ilastik finished");
             }
             ImporterOptions io = new ImporterOptions();
-            io.setCBegin(0, getInt(ILASTIK_CHANNEL));
-            io.setCEnd(0, getInt(ILASTIK_CHANNEL));
+            io.setCBegin(0, getInt(ILASTIK_CHANNEL_PARAM));
+            io.setCEnd(0, getInt(ILASTIK_CHANNEL_PARAM));
             io.setCStep(0, 1);
             io.setSpecifyRanges(true);
             io.setId(new File(ilastikTempDir, ilastikOutput).getAbsolutePath());
@@ -538,11 +582,11 @@ public class MultiThreadedMaximaFinder extends MultiThreadedProcess {
             if (p != null) p.destroyForcibly();
             IJ.log("Error: ilastik detection failed.");
         }
-        if (getDouble(ILASTIK_SMOOTHING) > 0.0) {
-            double[] sigma = getCalibratedDoubleSigma(series, propLabels[ILASTIK_SMOOTHING], propLabels[ILASTIK_SMOOTHING], propLabels[ILASTIK_SMOOTHING]);
+        if (getDouble(ILASTIK_SMOOTHING_PARAM) > 0.0) {
+            double[] sigma = getCalibratedDoubleSigma(series, ILASTIK_SMOOTHING_PARAM, ILASTIK_SMOOTHING_PARAM, ILASTIK_SMOOTHING_PARAM);
             GaussianBlur3D.blur(ilastikProbMap, sigma[0], sigma[1], sigma[2]);
         }
-        StackThresholder.thresholdStack(ilastikProbMap, 65535 * getDouble(ILASTIK_THRESH));
+        StackThresholder.thresholdStack(ilastikProbMap, 65535 * getDouble(ILASTIK_THRESH_PARAM));
         (new StackProcessor(ilastikProbMap.getImageStack())).invert();
         processThresholdedObjects(ilastikProbMap);
         output = ilastikProbMap;
