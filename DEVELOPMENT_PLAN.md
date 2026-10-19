@@ -1029,15 +1029,27 @@ pipeline is built and before each run (never before `duplicate()`), so no
 propagation is required. Propagating it through `duplicate()` is optional GUI
 safety only.
 
+**Headless-first.** `setTime` is decoupled from GIANI's GUI/parameter work: the
+timelapse loop (`TRACK_TIMELAPSE`/`TIME_SELECT`) ships via a properties file with
+no panel, and maps `TIME_SELECT` to `process.setTime(t)`. No IAClassLibrary
+prop-label or GUI wiring is involved.
+
 ### R2. Typed parameters — deprecation
 
 Replace the `props`/`propLabels` stringly-typed config with **one shared typed
-`ProcessParams`** object (flat, typed getters/setters) — decision 9. Keep
+`ProcessParams`** object — decision 9. Keep
 `setup(BioFormatsImg, Properties, String[])` as a `@Deprecated` adapter to the
 new `setup(BioFormatsImg, ProcessParams)`. Migrate subclasses one at a time;
 delete the `SERIES_SELECT`/`N_PROP_LABELS` magic constants. Dimension selection
 (`series`/`channel`/`time`) stays on the base class as execution context, not in
 `ProcessParams`.
+
+**Per-instance namespacing.** `ProcessParams` must be keyed per instance, not
+flat per-class: GIANI runs two instances of the same class (nuclear vs cell
+`MultiThreadedGaussianFilter`/`MultiThreadedWatershed`) distinguished by label
+mapping, each with different values. So the shared type carries (instance,
+parameter) keys — e.g. `nuclear.filtRadXy` vs `cell.filtRadXy` — rather than a
+single `filtRadXy` field.
 
 ### R3. Source/transform split + DAG cleanup — deprecation
 
@@ -1046,6 +1058,11 @@ Introduce `SourceProcess` (no `inputs`, owns `loadPixels`) and
 Replace the mutable `duplicate()`/`outputDests`/`updateInput` re-wiring with an
 immutable pipeline rebuild. `@Deprecated` `MultiThreadedImageLoader` (do not
 remove — public API, may be used externally) — decision 8.
+
+**`duplicate()` removal.** GIANI confirmed `duplicate()` is GUI-only (their Swing
+wizard) and is being reworked/removed in the wizard simplification, so the
+`duplicate()`/`outputDests` re-wiring can be deprecated and removed here rather
+than merely replaced.
 
 ### R4. Drop the `Thread`/`Callable` duality — breaking
 
@@ -1117,11 +1134,13 @@ in the phases above.
    is public API and may be used externally even though it is unreferenced in-repo
    (empty `setup`, broken `duplicate()`). `@Deprecated` it in Phase R3; removal
    only after a deprecation window and an external-usage check.
-9. **Process params — one shared typed `ProcessParams`.** *(2026-10-18)* Replace
-   the `props`/`propLabels` stringly-typed config with a single flat, typed
-   `ProcessParams` object (named getters/setters) rather than one params class per
-   process. Dimension selection (`series`/`channel`/`time`) stays on the base
-   `MultiThreadedProcess` as execution context, not in `ProcessParams`.
+9. **Process params — one shared typed `ProcessParams`, per-instance keyed.** *(2026-10-18)*
+   Replace the `props`/`propLabels` stringly-typed config with a single typed
+   `ProcessParams` type (rather than one params class per process), keyed per
+   instance (e.g. `nuclear.filtRadXy` vs `cell.filtRadXy`) because GIANI runs
+   multiple instances of the same process class. Dimension selection
+   (`series`/`channel`/`time`) stays on the base `MultiThreadedProcess` as
+   execution context, not in `ProcessParams`.
 10. **R4 breaking change — independent of the namespace move.** *(2026-10-18)* The
     `extends Thread` → `Runnable`/`Callable` + shared-executor change (Phase R4)
     is breaking on its own and ships as a major version bump; it is not bundled

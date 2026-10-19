@@ -48,6 +48,18 @@ getter; per-timepoint output names append `_T<t>` gated on `getSizeT(series) > 1
 run, so `duplicate()` does not propagate it. See `DEVELOPMENT_PLAN.md` R1 and
 decision 11.
 
+### 2026-10-18 — GIANI GUI/wizard decisions refine R2 and R3
+
+GIANI's wizard simplification (its Phase I1) has three consequences for this
+repo: (1) `setTime` is headless-first — the timelapse loop ships via a properties
+file (`TRACK_TIMELAPSE`/`TIME_SELECT`) with no panel, mapping `TIME_SELECT` to
+`process.setTime(t)`, so R1 stays decoupled from GUI/parameter work; (2) the
+typed `ProcessParams` (R2) must be **per-instance keyed**, because GIANI runs two
+instances of the same class (nuclear vs cell Gaussian filter/watershed) with
+different values; and (3) `duplicate()` is GUI-only and being removed in the
+wizard rework, so R3 can deprecate/remove it rather than merely replace it. See
+`DEVELOPMENT_PLAN.md` R2, R3, and decision 9.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`
