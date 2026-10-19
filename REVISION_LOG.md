@@ -199,6 +199,35 @@ reverted to reading `props`/`propLabels` directly.
 Tests: `ProcessParamsTest` rewritten for `fromProperties`/alias/defaults/
 `forChannel`; 48 tests. Version → `2.1.0`. Full suite green.
 
+### 2026-10-19 — R3 sign-off (GIANI) + R2b null-guard fix
+
+GIANI answered the R3 questions in `GIANI-r3-design-note.md`:
+
+- **Source/transform (per class).** `MultiThreadedMaximaFinder` and
+  `MultiThreadedGaussianFilter` are always sources for GIANI (→ `SourceProcess`);
+  `MultiThreadedTopHatFilter` is always a transform (its only construction
+  passes the nuclear Gaussian filter as `inputs[0]`). The nuclear branch has two
+  independent sources (maxima + Gaussian each `loadPixels` raw pixels).
+- **Re-run.** GIANI never calls `duplicate()`; headless re-runs each process in
+  place, the GUI builds incrementally. So R3b should be a per-pipeline
+  `rebuild()`, not a per-node duplicate API.
+- **R3c.** GIANI never references `MultiThreadedImageLoader`; safe to
+  `@Deprecated`.
+
+R2b issues flagged in the same review, fixed or noted:
+
+- **Null-guard gap (fixed).** The deprecated `setup(img, Properties, String[])`
+  adapter checked `propLabels[i] != null` but not `slots[i] != null`, so a
+  removed slot (e.g. MaximaFinder indices 3/5/10) with a non-null `propLabels`
+  entry would NPE in `bind(null, ...)`. Added the `slots[i] != null` guard.
+- **Tagging.** No `v2.0.32` tag exists (R2a folded into `v2.1.0`); GIANI's
+  re-pin target is `v2.1.0`.
+- **`forChannel`.** GIANI's per-channel foci params are separate process
+  instances bound per-instance, not `forChannel`. `forChannel` stays as a general
+  mechanism; GIANI's migration keys off per-instance bindings.
+
+Version → `2.1.1` (null-guard fix). Full suite green.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`

@@ -31,7 +31,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   primitives consumed by ADAPT, `TrackerLibrary`, `AdaptDataProcessing`, and
   GIANI (the main consumer of the `Process` pipeline).
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.1.0` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
+  `2.1.1` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -971,13 +971,17 @@ hand-off, not this phase.
 ## Phase R — Process pipeline refactor
 
 **Status: R1 implemented (2026-10-18, `2.0.31`); R2 implemented (R2a `2.0.32`,
-R2b `2.1.0`); R3–R4 pending.** R1 (centralise `series`/`channel`/`time` +
-`loadPixels` + `_T<t>` naming) and R2 (typed `ProcessParams` facade, then the
-`Parameter`/`ParamBinding` named-binding model) are done. R2b keeps
-`setup(img, Properties, String[])` as a `@Deprecated` adapter for GIANI's
-incremental Phase-I migration.
-**Next actions:** tag `v2.0.31`/`v2.0.32`/`v2.1.0` (GIANI's Phase H1 needs
-`v2.0.31`; each R2 release must be tagged before GIANI re-pins), then R3.
+R2b `2.1.0`); R3 design signed off with GIANI (2026-10-19, ready to implement);
+R4 pending.** R1 (centralise `series`/`channel`/`time` + `loadPixels` + `_T<t>`
+naming) and R2 (typed `ProcessParams` facade, then the `Parameter`/`ParamBinding`
+named-binding model) are done. R2b keeps `setup(img, Properties, String[])` as a
+`@Deprecated` adapter for GIANI's incremental Phase-I migration. R3a resolves to
+per-class: MaximaFinder/GaussianFilter → `SourceProcess`, TopHatFilter →
+`TransformProcess`; R3b is a per-pipeline `rebuild()` (GIANI never uses
+`duplicate()`); R3c `@Deprecated` `MultiThreadedImageLoader`.
+**Next actions:** tag `v2.0.31`/`v2.1.0`/`v2.1.1` (GIANI's Phase H1 needs
+`v2.0.31`; their re-pin target is `v2.1.0`; `v2.1.1` carries the null-guard fix),
+then implement R3.
 `Process.MultiThreadedProcess` has accreted four unrelated responsibilities and is
 the main maintenance drag in the processing pipeline. This phase simplifies it
 into a typed, testable core, executed one sub-phase at a time (R1 → R4). R1–R3 are
@@ -1144,11 +1148,32 @@ Replace the mutable `duplicate()`/`outputDests`/`updateInput` re-wiring with an
 immutable pipeline rebuild. `@Deprecated` `MultiThreadedImageLoader` (do not
 remove — public API, may be used externally) — decision 8.
 
-**`duplicate()` removal.** GIANI confirmed `duplicate()` is GUI-only (their Swing
-wizard, not the headless `PipelineExecutor`) and is being removed in the wizard
-simplification, so the `duplicate()`/`outputDests` re-wiring can be deprecated and
-removed here rather than merely replaced. Notify GIANI in the same way as R2, and
-schedule around their feature freeze (after Phase H/I).
+**GIANI sign-off (2026-10-19, `GIANI-r3-design-note.md`).** The source/transform
+answer is per-class, not a single "never/sometimes":
+
+- `MultiThreadedMaximaFinder` → **pure `SourceProcess`** (GIANI constructs it
+  with `inputs == null` only).
+- `MultiThreadedGaussianFilter` → **pure `SourceProcess`** (same).
+- `MultiThreadedTopHatFilter` → **`TransformProcess`** (GIANI's only construction
+  passes the nuclear Gaussian filter as `inputs[0]`; its source branch is dead
+  for GIANI).
+
+The nuclear branch has **two independent sources** — the maxima finder (stage 0)
+and the Gaussian filter (stage 1) each `loadPixels` raw pixels; the Gaussian
+filter does not chain off the maxima finder. Top-hat then chains off the
+Gaussian filter. Multiple sources are expected, not an error.
+
+**`duplicate()` removal.** GIANI confirmed `duplicate()` is GUI-only and is never
+called anywhere in their code (grep-verified): headless `PipelineExecutor` builds
+the pipeline once and re-runs each process **in place** (`setup(...)` then run,
+no re-linking); the GUI builds incrementally via `addProcess()`/`removeProcess()`
+with one `updateOutputDests(...)` for the StarDist case. So the
+`duplicate()`/`outputDests` re-wiring can be deprecated and removed, and the
+useful new API is a **per-pipeline `rebuild()`** (fresh pipeline from config,
+re-linking `inputs` through an old→new map), not a per-node duplicate. Per-node
+`duplicate()` is a `LayerPanel` concern GIANI doesn't touch; no per-node API is
+needed for GIANI. Notify GIANI in the same way as R2, and schedule around their
+feature freeze (after Phase H/I).
 
 ### R4. Drop the `Thread`/`Callable` duality — breaking
 
@@ -1283,8 +1308,8 @@ in the phases above.
    (Phase H) *Status (2026-10-18): complete, tagged `v2.0.30`.*
 9. **M9 — Process pipeline refactor:** centralise dimensions/loading (R1), typed
    params (R2), source/transform split (R3), drop `Thread`/`Callable` duality
-   (R4). (Phase R) *Status (2026-10-19): R1 + R2 done (`2.0.31`/`2.0.32`/`2.1.0`,
-   tags pending); R3 next.*
+   (R4). (Phase R) *Status (2026-10-19): R1 + R2 done (`2.0.31`/`2.1.0`/`2.1.1`,
+   tags pending); R3 signed off with GIANI, next; R4 pending.*
 
 Each milestone is independently shippable. M1–M8 are complete. The immediate
 next steps are tagging `v2.0.31` (unblocks GIANI's Phase H1) and then R2a, with

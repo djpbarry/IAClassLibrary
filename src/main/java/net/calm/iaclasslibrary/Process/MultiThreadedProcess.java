@@ -75,7 +75,7 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
         ParamBinding binding = new ParamBinding();
         Parameter[] slots = getParamSlots();
         for (int i = 0; i < slots.length; i++) {
-            if (propLabels != null && i < propLabels.length && propLabels[i] != null) {
+            if (propLabels != null && i < propLabels.length && propLabels[i] != null && slots[i] != null) {
                 binding.bind(slots[i], propLabels[i]);
             }
         }
