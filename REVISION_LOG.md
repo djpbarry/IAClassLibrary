@@ -297,6 +297,22 @@ GIANI's Phase-I.
 
 Version → `2.2.1`. Full suite green.
 
+### 2026-10-19 — R5 (GIANI request): `Time`/`Series` measurement columns
+
+GIANI asked (`GIANI-r5-request-note.md`) for two extra columns in
+`MultiThreadedROIConstructor.processObjectPop`'s measurement output, so timelapse
+(and multi-series) rows are distinguishable:
+
+- `Time` — the timepoint index (`getTime()`).
+- `Series` — the series index (already read in `setup()`).
+
+Both values are already on the process instance; the change is purely additive.
+The two columns are **appended** after the existing measurements (not prepended),
+so existing column order/indices are unchanged. `Time` is emitted first, then
+`Series`. No new parameters, slots, or bindings.
+
+Version → `2.3.0` (`feat`). Full suite green.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`

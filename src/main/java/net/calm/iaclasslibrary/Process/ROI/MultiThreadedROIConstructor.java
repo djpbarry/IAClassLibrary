@@ -79,6 +79,8 @@ public class MultiThreadedROIConstructor extends TransformProcess {
     public static final String X_CENTROID = "Centroid_X";
     public static final String Y_CENTROID = "Centroid_Y";
     public static final String Z_CENTROID = "Centroid_Z";
+    public static final String TIME_HEADING = "Time";
+    public static final String SERIES_HEADING = "Series";
 
     public MultiThreadedROIConstructor(MultiThreadedProcess[] inputs) {
         this(inputs, null);
@@ -206,6 +208,11 @@ public class MultiThreadedROIConstructor extends TransformProcess {
                     }
                 }
             }
+        }
+        for (int i = 0; i < cells.getNbObjects(); i++) {
+            int row = firstRow + i;
+            rt.setValue(TIME_HEADING, row, time);
+            rt.setValue(SERIES_HEADING, row, series);
         }
         img.clearImageData();
     }

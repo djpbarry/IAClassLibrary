@@ -31,7 +31,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   primitives consumed by ADAPT, `TrackerLibrary`, `AdaptDataProcessing`, and
   GIANI (the main consumer of the `Process` pipeline).
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.2.1` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
+  `2.3.0` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
