@@ -37,6 +37,8 @@ import net.calm.iaclasslibrary.IAClasses.Utils;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.IO.DataWriter;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.Parameter;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import net.calm.iaclasslibrary.Process.ROI.MultiThreadedROIConstructor;
 import net.calm.iaclasslibrary.Process.ROI.OverlayDrawer;
 import net.calm.iaclasslibrary.Stacks.StackThresholder;
@@ -55,12 +57,25 @@ import java.util.concurrent.Executors;
  */
 public class MultiThreadedColocalise extends MultiThreadedProcess {
 
+    @Deprecated
     public static final int SERIES_LABEL = 0;
+    @Deprecated
     public static final int CHANNELS_LABEL = 1;
+    @Deprecated
     public static final int OUTPUT_LABEL = 2;
+    @Deprecated
     public static final int N_PROP_LABELS = 3;
+
+    public static final Parameter SERIES = new Parameter("series", Parameter.Type.INT, 0, "Series");
+    public static final Parameter CHANNELS = new Parameter("channels", Parameter.Type.INT, 0, "Channels");
+    public static final Parameter OUTPUT = new Parameter("output", Parameter.Type.STRING, "", "Output directory");
+
+    @Override
+    protected Parameter[] getParamSlots() {
+        return new Parameter[]{SERIES, CHANNELS, OUTPUT};
+    }
+
     private Objects3DPopulation cellPop;
-    private int series;
     private int selectedChannels;
     private int spotIndex;
     public static final String CELL_INDEX = "Cell_Index";
@@ -74,12 +89,11 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
         this.cellPop = cellPop;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
-        this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
-        this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
-        this.selectedChannels = Integer.parseInt(props.getProperty(propLabels[CHANNELS_LABEL]));
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
+        initParams(img, params);
+        this.series = getInt(SERIES);
+        this.selectedChannels = getInt(CHANNELS);
     }
 
     public void run() {
@@ -214,12 +228,12 @@ public class MultiThreadedColocalise extends MultiThreadedProcess {
                 }
             }
         }
-        String outputDir = props.getProperty(propLabels[OUTPUT_LABEL]);
+        String outputDir = getString(OUTPUT);
         DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", outputDir, File.separator, "spot_summary_data.csv")), false, true);
         for (Objects3DPopulation pop : spotsPop) {
-            MultiThreadedROIConstructor.processObjectPop(pop, series, selectedChannels, img);
-            MultiThreadedROIConstructor.saveAllRois(outputDir, pop);
-            MultiThreadedROIConstructor.saveAllMasks(outputDir, pop, img, series);
+            MultiThreadedROIConstructor.processObjectPop(pop, series, selectedChannels, img, time);
+            MultiThreadedROIConstructor.saveAllRois(outputDir, pop, img, series, time);
+            MultiThreadedROIConstructor.saveAllMasks(outputDir, pop, img, series, time);
         }
     }
 

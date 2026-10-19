@@ -18,11 +18,12 @@ package net.calm.iaclasslibrary.Process.Filtering;
 
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.Parameter;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.GaussianBlur3D;
 import ij.process.StackConverter;
-import java.util.Properties;
 import java.util.concurrent.Executors;
 
 /**
@@ -31,44 +32,56 @@ import java.util.concurrent.Executors;
  */
 public class MultiThreadedGaussianFilter extends MultiThreadedProcess {
 
+    /**
+     * @deprecated legacy positional index; superseded by {@link #SERIES}.
+     */
+    @Deprecated
     public static final int SERIES_LABEL = 0;
+    /**
+     * @deprecated legacy positional index; superseded by {@link #CHANNEL}.
+     */
+    @Deprecated
     public static final int CHANNEL_LABEL = 1;
+    /**
+     * @deprecated legacy positional index; superseded by {@link #RADIUS}.
+     */
+    @Deprecated
     public static final int FILT_RAD_LABEL = 2;
+    @Deprecated
     public static final int N_PROP_LABELS = 3;
 
+    public static final Parameter SERIES = new Parameter("series", Parameter.Type.INT, 0, "Series");
+    public static final Parameter CHANNEL = new Parameter("channel", Parameter.Type.INT, 0, "Channel");
+    public static final Parameter RADIUS = new Parameter("radius", Parameter.Type.DOUBLE, 1.0, "Radius");
+
+    @Override
+    protected Parameter[] getParamSlots() {
+        return new Parameter[]{SERIES, CHANNEL, RADIUS};
+    }
+
     private double[] sigma;
-    private int channel;
-    private int series;
 
     public MultiThreadedGaussianFilter(MultiThreadedProcess[] inputs) {
         super(inputs);
     }
 
-    /**
-     *
-     * @param img
-     * @param props
-     * @param propLabels SERIES_SELECT_LABEL, CHANNEL_SELECT_LABEL,
-     * FILT_RAD_XY_LABEL, FILT_RAD_XY_LABEL, FILT_RAD_Z_LABEL.
-     */
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
-        this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
+        initParams(img, params);
 //        ImagePlus image = img.getLoadedImage();
 //        (new StackConverter(img.getProcessedImage())).convertToGray32();
     }
 
     public void run() {
         this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
-        this.channel = Integer.parseInt(props.getProperty(propLabels[CHANNEL_LABEL]));
-        sigma = getCalibratedDoubleSigma(series, propLabels[FILT_RAD_LABEL], propLabels[FILT_RAD_LABEL], propLabels[FILT_RAD_LABEL]);
+        this.series = getInt(SERIES);
+        this.channel = getInt(CHANNEL);
+        sigma = getCalibratedDoubleSigma(series, RADIUS, RADIUS, RADIUS);
         ImagePlus imp;
         if (inputs != null) {
             imp = inputs[0].getOutput();
         } else {
-            img.loadPixelData(series, channel, channel, null);
+            loadPixels(channel, channel);
             imp = img.getLoadedImage();
         }
         (new StackConverter(imp)).convertToGray32();

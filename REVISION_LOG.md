@@ -36,7 +36,7 @@ Decisions recorded: one shared typed `ProcessParams` (dimensions stay on the
 base), `MultiThreadedImageLoader` deprecated (not removed), and R4 independent
 of the namespace move.
 
-### 2026-10-18 — R1 scope resolved with the GIANI team
+### 2026-10-18 — R1 scope resolved with the GIANI team (implementation still outstanding)
 
 The GIANI developers answered the open time-support questions (see
 `GIANI-time-support-open-questions.md`): the ROI-constructor pixel-measurement
@@ -59,6 +59,145 @@ instances of the same class (nuclear vs cell Gaussian filter/watershed) with
 different values; and (3) `duplicate()` is GUI-only and being removed in the
 wizard rework, so R3 can deprecate/remove it rather than merely replace it. See
 `DEVELOPMENT_PLAN.md` R2, R3, and decision 9.
+
+Note: "resolved" here means the *scope questions* were settled — the R1 code
+(`series`/`channel`/`time` fields, `loadPixels`, `getTime`, `_T<t>` naming) has
+**not** been written yet. The commit message ("Resolve R1") is misleading; it
+changed docs only.
+
+### 2026-10-18 — R1 implemented: centralise dimensions & loading
+
+R1 landed (additive; no public API removed):
+
+- `MultiThreadedProcess` gained `protected int series`/`channel`/`time` (default
+  `0`), `setSeries`/`setChannel`/`setTime`/`getTime`, and `loadPixels(cBegin,
+  cEnd)` mapping dimensions → `img.loadPixelData(series, cBegin, cEnd, 0,
+  getSizeZ-1, time, time, null)`.
+- The three source classes (`MultiThreadedMaximaFinder`, `MultiThreadedGaussianFilter`,
+  `MultiThreadedTopHatFilter`) now call `loadPixels(channel, channel)` and dropped
+  their shadowing `private int series`/`channel`.
+- `MultiThreadedROIConstructor.processObjectPop` gained a `time` overload (4-arg
+  delegates with `0`) and uses the 8-arg load; `run` and
+  `MultiThreadedColocalise.saveData` pass `time`.
+- `_T<t>` naming gated on `img.getSizeT(series) > 1`: added to `labelOutput` and
+  to `saveAllRois`/`saveAllMasks` (new `time` overloads). Single-T output names
+  unchanged, preserving `TrackerLibrary`/`AdaptDataProcessing` conventions.
+- Removed the shadowing `private int series` in `MultiThreadedWatershed` and
+  `MultiThreadedColocalise`.
+- Added `MultiThreadedProcessTest` cases for the dimension fields/accessors.
+
+Version → `2.0.31`. Full suite green.
+
+### 2026-10-18 — Decision 9 revised: `ProcessParams` is a typed key-value facade, not a flat field class
+
+Surveying GIANI's parameter vocabulary (the `PipelineBuilder`/`GianiDefaultParams`
+label strings, plus `PropertyExtractor`'s `props.put(label.getText(), value)`
+convention) showed that `props`/`propLabels` are already *two parallel views of one
+map* keyed by the GUI label strings — the integer index constants (`SERIES_SELECT =
+7`, `N_PROP_LABELS = 28`) are only array offsets used to recover those label
+strings.
+
+The original Decision 9 (one shared flat ~50-field `ProcessParams`) was revised
+because a flat named-field class would force inventing ~50 stable field names not
+derivable from this repo, and would duplicate the GIANI label vocabulary. Instead:
+
+- **R2a (in-repo, non-breaking):** `ProcessParams` = a typed facade over a
+  `String → Object` map; `getInt`/`getDouble`/`getBoolean`/`getString` on the base;
+  named `String` key constants replace the magic integers. Keys reuse the existing
+  label strings (only choice that preserves the `label-text == map-key` GUI contract).
+- **R2b (coordinated, later):** a proper `Parameter` registry with a stable key
+  decoupled from the display label, migrating `PropertyExtractor` and
+  GIANI's `PipelineBuilder`/`GianiDefaultParams`. Cross-repo; rides on the
+  coordinated hand-off.
+
+No code yet — planning/decision only. A hand-off note for the GIANI team was
+written to `GIANI-process-params-note.md` (R2a/R2b rationale, the one thing needed
+from GIANI to land R2b).
+
+### 2026-10-18 — GIANI response to the R2 note: R2a corrected, R2b reshaped
+
+GIANI accepted R2a and gave R2b a conditional yes (folded into their Phase I,
+after the Phase H timelapse work; recorded as *their* proposed decision 10, which
+is not our Decision 10). They set six hard conditions: a label→key alias layer for
+saved files, `forChannel(i)` indexed parameters, per-instance namespacing,
+consumer-owned vocabulary, a deprecated `Properties` setup kept for at least one
+release, and a label-based macro API. They also asked for every R2a release to be
+tagged.
+
+Outcome (see `DEVELOPMENT_PLAN.md` R2 and Decision 9):
+
+- **R2a corrected.** The plan said R2a keys would "reuse the label strings
+  verbatim" as library constants. That would have hard-coded GIANI labels into
+  the library and broken GIANI's two-instance Gaussian/Watershed stages. R2a
+  constants are now local slot names resolved through the consumer's
+  `propLabels` binding.
+- **R2b reshaped.** A library-wide labelled `Parameter` registry is replaced by
+  library-declared generic slots plus a consumer-owned per-instance binding,
+  indexed slots, and an alias table supplied by the consumer.
+- GIANI's Phase H1 blocker (`setTime`/8-arg load) already shipped in R1
+  (`2.0.31`). However, `v2.0.31` is **not tagged**, so GIANI cannot pin it yet.
+
+**Lesson:** before promising a downstream consumer "zero impact", check where the
+coupling data really lives. Here the labels were already supplied by the consumer
+per instance, so moving them into library constants would have been a regression,
+even though it looked like a simple rename.
+
+### 2026-10-19 — R2a implemented: typed `ProcessParams` facade
+
+R2a landed (non-breaking; `setup(img, Properties, String[])` and
+`getPropLabels()` unchanged):
+
+- New `Process` `ProcessParams` — a thin typed facade over the existing
+  `Properties` + `String[] propLabels` pair, with `getInt`/`getDouble`/
+  `getFloat`/`getBoolean`/`getString(slot[, default])` and `has(slot)`. Parsing
+  now lives in one place, with defaults; the no-default numeric getters keep the
+  prior `NumberFormatException`-on-missing behaviour.
+- `MultiThreadedProcess` gained `initParams(props, propLabels)` plus the typed
+  getters; ~40 `props.getProperty(propLabels[N])` sites across 8 classes
+  (`MultiThreadedMaximaFinder`, GaussianFilter, TopHatFilter, Watershed,
+  Colocalise, ROIConstructor, Hessian, OverlayDrawer) migrated to the getters.
+- The magic-index constants were **kept as `int`** rather than converted to
+  `String` slot-name keys: they are already named, the raw value is just the
+  position into `propLabels`, and the `String` name → position binding is R2b's
+  job. This was the agreed interpretation — no GIANI label string is
+  hard-coded into the library.
+
+Added `ProcessParamsTest` (14 cases) and a base-getter test; total 54 tests.
+Version → `2.0.32`. Full suite green.
+
+### 2026-10-19 — R2b implemented: `Parameter`/`ParamBinding` named-binding model
+
+R2b landed (design signed off by GIANI in `GIANI-r2b-design-note.md`; minor
+bump `2.1.0`). The positional `String[] propLabels` binding is replaced by a
+named, consumer-owned binding, with the legacy path kept as a `@Deprecated`
+adapter:
+
+- New `Process.Parameter` — a library-declared slot (name, type, default,
+  default label) plus `forChannel(i)` for 0-based per-channel slots.
+- New `Process.ParamBinding` — `bind(slot, key, label, tooltip)`,
+  `bindShared(slot, key, ...)`, and `merge(base)` so a shared `series` key is
+  looked up by name across stages rather than copied.
+- `ProcessParams` reworked to key by slot name; `fromProperties(props, binding,
+  aliasTable)` resolves values (legacy label → current key alias), and typed
+  getters implement the agreed precedence: bound+present → value (empty string
+  is a value), bound+missing → fail loudly, unbound → library default.
+- `MultiThreadedProcess` gained `setup(img, ProcessParams)` + `getParamSlots()`;
+  the old `setup(img, Properties, String[])` is now a concrete `@Deprecated`
+  adapter that builds a positional binding from `getParamSlots()`. `getPropLabels()`
+  survives for GIANI's `PipelineExecutor`.
+- All 8 param-consuming classes declare `Parameter` slots (shared `series`/
+  `channel` names; MaximaFinder-specific slots use a `_PARAM` suffix to avoid
+  clashing with the legacy `int` constants, which stay for GIANI's old
+  `PipelineBuilder`). Hessian reuses `MultiThreadedMaximaFinder.PARAMS`.
+
+GIANI sign-off specifics honoured: `forChannel` is 0-based; `bindShared` +
+`merge` for shared slots; empty string is a value; fail-loudly on bound+missing;
+`feat` minor bump (`2.1.0`); series key remains GIANI's `"Preview Series"`;
+`CHAN_FOR_MEASURE` stays GIANI-owned. `OverlayDrawer` (a legacy static utility)
+reverted to reading `props`/`propLabels` directly.
+
+Tests: `ProcessParamsTest` rewritten for `fromProperties`/alias/defaults/
+`forChannel`; 48 tests. Version → `2.1.0`. Full suite green.
 
 ---
 

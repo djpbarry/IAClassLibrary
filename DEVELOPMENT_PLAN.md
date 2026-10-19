@@ -28,17 +28,19 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
 
 - IAClassLibrary (`net.calm.iaclasslibrary`) is a **Java library** (not a
   runnable plugin) in the ImageJ/Fiji ecosystem, providing image-analysis
-  primitives consumed by ADAPT, `TrackerLibrary`, and `AdaptDataProcessing`.
+  primitives consumed by ADAPT, `TrackerLibrary`, `AdaptDataProcessing`, and
+  GIANI (the main consumer of the `Process` pipeline).
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.0.27` (patch-bumped per commit; last release `2.0.26` / tag `v2.0.26`), declared license
+  `2.1.0` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
   --update-snapshots verify` on **JDK 21** with the `setup-java` Maven cache.
   *(Updated 2026-09-27.)*
-- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 16 classes,
-  37 tests as of 2026-10-03 (incl. FFT/Fitter/Utils/RegionGrower/MultiThreadedProcess/
-  RiemannianDistanceTransform tests). No lint/format tooling. (Phase C done for now.)
+- **Tests:** JUnit 5 (Jupiter) harness added — `src/test/java`, 17 classes,
+  48 tests as of 2026-10-19 (incl. FFT/Fitter/Utils/RegionGrower/MultiThreadedProcess/
+  RiemannianDistanceTransform tests; R1 added the `MultiThreadedProcess` dimension
+  cases, R2a added `ProcessParamsTest`). No lint/format tooling. (Phase C done for now.)
 - **License:** a GPL-3.0-or-later `LICENSE` file now exists and `pom.xml` is
   corrected from BSD-2 to GPL-3. Source headers remain inconsistent (roughly
   half GPL-3, roughly a third NetBeans "change this header" stubs); header
@@ -843,7 +845,8 @@ naive O(n²) double reference implementations.
 
 ## Phase H — `BioFormatsImg` facade & time-dimension hardening
 
-**Status: planned (2026-10-09), not started.** `IO.BioFormats.BioFormatsImg` is
+**Status: done (2026-10-18).** H1–H6 complete, released in `2.0.26`–`2.0.30`
+(tag `v2.0.30`). `IO.BioFormats.BioFormatsImg` is
 the primary loader, but a review against the Bio-Formats Java API found the
 pixel-loading path is incomplete and the time dimension is effectively
 unsupported. The class juggles three Bio-Formats abstractions (`ImageReader`,
@@ -967,18 +970,25 @@ hand-off, not this phase.
 
 ## Phase R — Process pipeline refactor
 
-**Status: planned (2026-10-18).** `Process.MultiThreadedProcess` has accreted
-four unrelated responsibilities and is the main maintenance drag in the
-processing pipeline. This phase simplifies it into a typed, testable core,
-executed one sub-phase at a time (R1 → R4). R1–R3 are additive/deprecation-only;
-R4 is the only breaking change and is independent of the Decision-7 namespace
-move.
+**Status: R1 implemented (2026-10-18, `2.0.31`); R2 implemented (R2a `2.0.32`,
+R2b `2.1.0`); R3–R4 pending.** R1 (centralise `series`/`channel`/`time` +
+`loadPixels` + `_T<t>` naming) and R2 (typed `ProcessParams` facade, then the
+`Parameter`/`ParamBinding` named-binding model) are done. R2b keeps
+`setup(img, Properties, String[])` as a `@Deprecated` adapter for GIANI's
+incremental Phase-I migration.
+**Next actions:** tag `v2.0.31`/`v2.0.32`/`v2.1.0` (GIANI's Phase H1 needs
+`v2.0.31`; each R2 release must be tagged before GIANI re-pins), then R3.
+`Process.MultiThreadedProcess` has accreted four unrelated responsibilities and is
+the main maintenance drag in the processing pipeline. This phase simplifies it
+into a typed, testable core, executed one sub-phase at a time (R1 → R4). R1–R3 are
+additive/deprecation-only; R4 is the only breaking change and is independent of
+the Decision-7 namespace move.
 
-### Current state (verified 2026-10-18)
+### Current state (verified 2026-10-18; line refs updated 2026-10-19, post-R1)
 
 `MultiThreadedProcess` (`Process/MultiThreadedProcess.java:37`) is simultaneously
 a `Thread` (work in `run()`, started/joined manually by `getOutput()`
-`:133-145`), a `Callable<BioFormatsImg>` (`call()` just returns `img`, `:129`),
+`:161-173`), a `Callable<BioFormatsImg>` (`call()` just returns `img`, `:157`),
 a mutable pipeline node (`inputs`/`outputDests` + `duplicate()`/`updateInput`/
 `updateOutputDests`), and a stringly-typed config holder (`props` + `String[]
 propLabels`, parsed per subclass via `Integer.parseInt(props.getProperty(
@@ -988,7 +998,7 @@ Thirteen subclasses fall into three kinds:
 
 - **Source** (loads raw pixels on `inputs == null`): `MultiThreadedMaximaFinder`,
   `MultiThreadedGaussianFilter`, `MultiThreadedTopHatFilter`; plus
-  `MultiThreadedROIConstructor` re-loads raw pixels for measurement (`:173`).
+  `MultiThreadedROIConstructor` re-loads raw pixels for measurement (`:176`).
 - **Transform** (reads `inputs`): `Watershed`, `RegionGrower`, `ROIConstructor`,
   `Colocalise`, `MapPixels`, `ImageCalculator`, `SobelFilter`, `MeasureROI`,
   `Hessian`.
@@ -999,7 +1009,26 @@ The magic-index config (`MultiThreadedMaximaFinder.SERIES_SELECT = 7`,
 `N_PROP_LABELS = 28`) is the biggest tax; the `inputs == null` branch encodes
 "source vs transform" as a null check.
 
-### R1. Centralise dimensions & loading — **resolved with GIANI (2026-10-18)**
+### R1. Centralise dimensions & loading — **done (2026-10-18)**
+
+Implemented:
+
+- `MultiThreadedProcess` now owns `protected int series`, `channel`, `time` (default
+  `0`) with `setSeries`/`setChannel`/`setTime`/`getTime` and a `loadPixels(cBegin,
+  cEnd)` helper that maps dimensions → `img.loadPixelData(series, cBegin, cEnd, 0,
+  getSizeZ-1, time, time, null)`.
+- The three source classes (`MultiThreadedMaximaFinder`, `MultiThreadedGaussianFilter`,
+  `MultiThreadedTopHatFilter`) now call `loadPixels(channel, channel)`; their shadowing
+  `private int series`/`channel` fields were removed.
+- `MultiThreadedROIConstructor.processObjectPop` gained a `time` overload (4-arg form
+  delegates with `0`) and uses the 8-arg load; `MultiThreadedROIConstructor.run` and
+  `MultiThreadedColocalise.saveData` pass `time`.
+- `_T<t>` naming: `labelOutput` and `saveAllRois`/`saveAllMasks` (new `time` overloads)
+  append `_T<t>` gated on `img.getSizeT(series) > 1`; single-T output names unchanged.
+- Also removed the shadowing `private int series` in `MultiThreadedWatershed` and
+  `MultiThreadedColocalise`.
+
+The original scope (below) was agreed with the GIANI team:
 
 Add `series`/`channel`/`time` (typed, default `time = 0`) plus `setSeries`/
 `setChannel`/`setTime`/`getTime` and a `loadPixels(cBegin, cEnd)` helper to
@@ -1036,20 +1065,76 @@ prop-label or GUI wiring is involved.
 
 ### R2. Typed parameters — deprecation
 
-Replace the `props`/`propLabels` stringly-typed config with **one shared typed
-`ProcessParams`** object — decision 9. Keep
+Replace the `props`/`propLabels` stringly-typed config with a **generic typed
+key-value facade** (`ProcessParams`) plus typed getters on the base class and
+named `String` key constants replacing the magic integer indices. Keep
 `setup(BioFormatsImg, Properties, String[])` as a `@Deprecated` adapter to the
-new `setup(BioFormatsImg, ProcessParams)`. Migrate subclasses one at a time;
-delete the `SERIES_SELECT`/`N_PROP_LABELS` magic constants. Dimension selection
+new `setup(BioFormatsImg, ProcessParams)`. Dimension selection
 (`series`/`channel`/`time`) stays on the base class as execution context, not in
 `ProcessParams`.
 
-**Per-instance namespacing.** `ProcessParams` must be keyed per instance, not
-flat per-class: GIANI runs two instances of the same class (nuclear vs cell
-`MultiThreadedGaussianFilter`/`MultiThreadedWatershed`) distinguished by label
-mapping, each with different values. So the shared type carries (instance,
-parameter) keys — e.g. `nuclear.filtRadXy` vs `cell.filtRadXy` — rather than a
-single `filtRadXy` field.
+**R2 status: done.** R2a (`2.0.32`) introduced `ProcessParams` + typed base
+getters and migrated ~40 read sites. R2b (`2.1.0`) landed the named-binding
+model below (`Parameter`, `ParamBinding`, name-keyed `ProcessParams`,
+`fromProperties` + alias table, `forChannel`), behind the deprecated
+`setup(img, Properties, String[])` adapter. GIANI's Phase-I migration is the
+remaining consumer-side work; it does not block R3.
+
+**Note: Decision 9 revised (2026-10-18).** The original "one shared *flat*
+~50-field `ProcessParams`" was reconsidered once the GIANI parameter vocabulary
+was surveyed. The `props`/`propLabels` pair are already *two parallel views of one
+map* keyed by the GUI label strings (the `PropertyExtractor` writes
+`props.put(label.getText(), control.getText())`; the integer index constants such
+as `SERIES_SELECT = 7` are just array offsets into `propLabels` to recover those
+label strings). A flat named-field class would force inventing ~50 stable field
+names that are not derivable from this repo, and would duplicate the label
+vocabulary. Instead:
+
+- **R2a (in-repo, non-breaking) — done (2026-10-19, `2.0.32`):** introduced
+  `ProcessParams`, a thin typed facade over the existing `Properties` +
+  `String[] propLabels` pair, and added `getInt`/`getDouble`/`getFloat`/
+  `getBoolean`/`getString(slot[, default])` plus `has(slot)` to
+  `MultiThreadedProcess` (parse once, centrally, with defaults). All ~40
+  `props.getProperty(propLabels[N])` read sites across the 8 param-consuming
+  classes migrated to the getters. **Slot identifiers:** the existing `int`
+  constants (e.g. `SERIES_SELECT = 7`) were **kept**, not replaced with
+  `String` keys — they are already named, the raw value is only the position
+  into `propLabels`, and the `String` slot-name → position binding is R2b's
+  job. This satisfies the GIANI-review correction without hard-coding any label
+  string in the library (the binding is still the consumer-supplied
+  `propLabels`, so the two-instance Gaussian/Watershed stages are unaffected).
+  `setup(img, Properties, String[])` and `getPropLabels()` are unchanged. Each
+  R2a release is **tagged** so GIANI can run `PipelineBuilderTest`/
+  `PipelineExecutorIntegrationTest` before re-pinning.
+- **R2b — done (2026-10-19, `2.1.0`, after GIANI's design sign-off in
+  `GIANI-r2b-design-note.md`):** replaced the positional `String[] propLabels`
+  binding with a named one. The originally proposed single library-wide
+  `Parameter` registry carrying GIANI labels was **dropped**, because it fails
+  GIANI's conditions 3 and 4 (see `GIANI-process-params-note.md`). Implemented
+  per the signed-off design:
+  - *Library owns generic slots:* each process class declares its parameters
+    (local key, type, default, default label). Library-generic only, no GIANI
+    vocabulary.
+  - *Consumer owns the binding:* a per-instance binding maps slot → external
+    key (plus the consumer's label/tooltip). Two Gaussian instances bind
+    `radius` to different keys. All stages may bind `series` to one shared key.
+  - *Indexed slots:* `forChannel(i)` derives per-channel keys (e.g. spot
+    detection for channels 0–9).
+  - *Alias layer:* `ProcessParams` loading from `Properties` accepts a
+    consumer-supplied alias table (legacy label → key). GIANI feeds it its
+    current labels plus `DeprecatedProps`. Saved parameter files, CLI `-p`, HPC
+    job lists and the label-based macro API (`Ext.GIANI.setProperty`/
+    `getPropertyList`) all resolve through it.
+  - *Transition:* `setup(BioFormatsImg, Properties, String[])` stays as a
+    `@Deprecated` adapter (positional `propLabels` → named binding) for **at
+    least one release after R2b**. `getPropLabels()` must survive for the same
+    window, because GIANI's `PipelineExecutor` reads it back to call `setup()`.
+  - *Fallback:* if this proves too costly, R2a's label-keyed binding stays
+    indefinitely. GIANI has accepted this explicitly.
+
+  The time-selection work GIANI's Phase H1 needs (`setTime`, the 8-arg
+  `loadPixelData` via `loadPixels`) already shipped in R1 (`2.0.31`), so it does
+  not depend on R2.
 
 ### R3. Source/transform split + DAG cleanup — deprecation
 
@@ -1060,9 +1145,10 @@ immutable pipeline rebuild. `@Deprecated` `MultiThreadedImageLoader` (do not
 remove — public API, may be used externally) — decision 8.
 
 **`duplicate()` removal.** GIANI confirmed `duplicate()` is GUI-only (their Swing
-wizard) and is being reworked/removed in the wizard simplification, so the
-`duplicate()`/`outputDests` re-wiring can be deprecated and removed here rather
-than merely replaced.
+wizard, not the headless `PipelineExecutor`) and is being removed in the wizard
+simplification, so the `duplicate()`/`outputDests` re-wiring can be deprecated and
+removed here rather than merely replaced. Notify GIANI in the same way as R2, and
+schedule around their feature freeze (after Phase H/I).
 
 ### R4. Drop the `Thread`/`Callable` duality — breaking
 
@@ -1071,10 +1157,13 @@ Make `MultiThreadedProcess` a `Runnable`/`Callable` that produces output via a
 `getOutput()`. Run processes on a shared executor owned by the pipeline.
 Consolidate the per-subclass `Executors.newFixedThreadPool` into the base
 `runWorkers`, and convert worker classes (e.g. `RunnableHessianFilter extends
-Thread implements Callable<Void>`) into plain `Callable`s. **Breaking** —
-external code calls `.start()`/`.join()` directly (`MultiThreadedWatershed`
-`:108-110`, `RiemannianDistanceTransform`:141-143`), so it ships as a major
-version bump, independent of the Decision-7 namespace move — decision 10.
+Thread implements Callable<Void>`) into plain `Callable`s. **Breaking**: code
+calls `.start()`/`.join()` on processes directly, both in-repo
+(`MultiThreadedWatershed:108-109`/`:118-119`,
+`RiemannianDistanceTransform:141-143`) and potentially downstream (GIANI's
+executor must be checked before scheduling). It ships as a major version bump,
+independent of the Decision-7 namespace move (decision 10). *Not to be confused
+with GIANI's own "proposed decision 10" (R2b).*
 
 ---
 
@@ -1134,13 +1223,22 @@ in the phases above.
    is public API and may be used externally even though it is unreferenced in-repo
    (empty `setup`, broken `duplicate()`). `@Deprecated` it in Phase R3; removal
    only after a deprecation window and an external-usage check.
-9. **Process params — one shared typed `ProcessParams`, per-instance keyed.** *(2026-10-18)*
-   Replace the `props`/`propLabels` stringly-typed config with a single typed
-   `ProcessParams` type (rather than one params class per process), keyed per
-   instance (e.g. `nuclear.filtRadXy` vs `cell.filtRadXy`) because GIANI runs
-   multiple instances of the same process class. Dimension selection
+9. **Process params — generic typed key-value facade (Decision 9 revised).**
+   *(2026-10-18; revised 2026-10-18)* Replace the `props`/`propLabels`
+   stringly-typed config with a `ProcessParams` typed facade over a `String →
+   Object` map plus typed getters on the base class and named `String` key
+   constants (not a flat ~50-field class, which would invent field names
+   duplicating the GIANI label vocabulary). Dimension selection
    (`series`/`channel`/`time`) stays on the base `MultiThreadedProcess` as
-   execution context, not in `ProcessParams`.
+   execution context, not in `ProcessParams`. Implemented in two tiers: R2a
+   (in-repo; named local slot constants resolved through the consumer-supplied
+   label binding, with no labels hard-coded in the library) and R2b (coordinated
+   with GIANI: library-declared generic slots + consumer-owned per-instance
+   binding, `forChannel(i)` indexed slots, a label→key alias layer for saved
+   files and the macro API, and the deprecated `Properties`/`String[]` setup kept
+   for ≥1 release). *(R2b reshaped 2026-10-18 after the GIANI response in
+   `GIANI-process-params-note.md`; a single library-wide labelled `Parameter`
+   registry was rejected.)*
 10. **R4 breaking change — independent of the namespace move.** *(2026-10-18)* The
     `extends Thread` → `Runnable`/`Callable` + shared-executor change (Phase R4)
     is breaking on its own and ships as a major version bump; it is not bundled
@@ -1182,10 +1280,12 @@ in the phases above.
 8. **M8 — `BioFormatsImg` facade & time hardening:** re-point metadata accessors
    at `IMetadata` (H1), rewrite `loadPixelData` for full C/Z/T + `dimOrder` (H2),
    add time accessors (H3), fix NPEs (H4), clarify the ImageJ caching split (H5).
-   (Phase H)
+   (Phase H) *Status (2026-10-18): complete, tagged `v2.0.30`.*
 9. **M9 — Process pipeline refactor:** centralise dimensions/loading (R1), typed
    params (R2), source/transform split (R3), drop `Thread`/`Callable` duality
-   (R4). (Phase R)
+   (R4). (Phase R) *Status (2026-10-19): R1 + R2 done (`2.0.31`/`2.0.32`/`2.1.0`,
+   tags pending); R3 next.*
 
-Each milestone is independently shippable. M1 is the immediate next step and
-unblocks the ADAPT plan's M10 (upstream dependency hygiene).
+Each milestone is independently shippable. M1–M8 are complete. The immediate
+next steps are tagging `v2.0.31` (unblocks GIANI's Phase H1) and then R2a, with
+each R2a release tagged.

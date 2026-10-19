@@ -51,13 +51,52 @@ public class MultiThreadedProcessTest {
         }
     }
 
+    @Test
+    public void testDimensionsDefaultTimeToZero() {
+        TestProcess p = new TestProcess(null);
+        assertEquals(0, p.series);
+        assertEquals(0, p.channel);
+        assertEquals(0, p.time);
+    }
+
+    @Test
+    public void testDimensionAccessors() {
+        TestProcess p = new TestProcess(null);
+        p.setSeries(2);
+        p.setChannel(3);
+        p.setTime(4);
+        assertEquals(2, p.series);
+        assertEquals(3, p.channel);
+        assertEquals(4, p.getTime());
+    }
+
+    @Test
+    public void testTypedGettersResolveThroughParams() {
+        TestProcess p = new TestProcess(null);
+        Parameter series = new Parameter("series", Parameter.Type.INT, 0, "Series");
+        Parameter radius = new Parameter("radius", Parameter.Type.DOUBLE, 1.0, "Radius");
+        Parameter enabled = new Parameter("enabled", Parameter.Type.BOOLEAN, false, "Enabled");
+        ParamBinding binding = new ParamBinding()
+                .bind(series, "series")
+                .bind(radius, "radius")
+                .bind(enabled, "enabled");
+        Properties props = new Properties();
+        props.setProperty("series", "3");
+        props.setProperty("radius", "2.5");
+        props.setProperty("enabled", "true");
+        p.initParams(null, ProcessParams.fromProperties(props, binding, null));
+        assertEquals(3, p.getInt(series));
+        assertEquals(2.5, p.getDouble(radius), 1e-9);
+        assertTrue(p.getBoolean(enabled));
+    }
+
     private static class TestProcess extends MultiThreadedProcess {
         TestProcess(MultiThreadedProcess[] inputs) {
             super(inputs);
         }
 
         @Override
-        public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+        public void setup(BioFormatsImg img, ProcessParams params) {
         }
 
         @Override

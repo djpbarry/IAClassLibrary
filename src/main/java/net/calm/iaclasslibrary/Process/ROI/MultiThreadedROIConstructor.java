@@ -30,6 +30,8 @@ import mcib3d.image3d.ImageInt;
 import net.calm.iaclasslibrary.Cell3D.*;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.Parameter;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import org.apache.commons.math3.linear.ArrayRealVector;
 
@@ -40,21 +42,35 @@ import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 
+    @Deprecated
     public static final int SERIES_LABEL = 0;
+    @Deprecated
     public static final int CHANNELS_LABEL = 1;
+    @Deprecated
     public static final int OUTPUT_LABEL = 2;
+    @Deprecated
     public static final int LOCALISE_LABEL = 3;
+    @Deprecated
     public static final int N_PROP_LABELS = 4;
+
+    public static final Parameter SERIES = new Parameter("series", Parameter.Type.INT, 0, "Series");
+    public static final Parameter CHANNELS = new Parameter("channels", Parameter.Type.INT, 0, "Channels");
+    public static final Parameter OUTPUT = new Parameter("output", Parameter.Type.STRING, "", "Output directory");
+    public static final Parameter LOCALISE = new Parameter("localise", Parameter.Type.BOOLEAN, false, "Localise");
+
+    @Override
+    protected Parameter[] getParamSlots() {
+        return new Parameter[]{SERIES, CHANNELS, OUTPUT, LOCALISE};
+    }
+
     private final Objects3DPopulation cells;
     int selectedChannels;
-    int series;
     private String outputPath;
     public static final String[] PIX_HEADINGS = {"Channel", "Cell_Index", "Mean_Pixel_Value",
             "Pixel_Standard_Deviation", "Min_Pixel_Value", "Max_Pixel_Value", "Integrated_Density"};
@@ -72,13 +88,12 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         this.cells = cells;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
-        this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
-        this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
-        this.selectedChannels = Integer.parseInt(props.getProperty(propLabels[CHANNELS_LABEL]));
-        this.outputPath = props.getProperty(propLabels[OUTPUT_LABEL]);
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
+        initParams(img, params);
+        this.series = getInt(SERIES);
+        this.selectedChannels = getInt(CHANNELS);
+        this.outputPath = getString(OUTPUT);
     }
 
     @Override
@@ -114,9 +129,9 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
 //            }
         }
         for (Objects3DPopulation pop : subPops) {
-            processObjectPop(pop, series, selectedChannels, img);
-            saveAllRois(outputPath, pop);
-            saveAllMasks(outputPath, pop, img, series);
+            processObjectPop(pop, series, selectedChannels, img, time);
+            saveAllRois(outputPath, pop, img, series, time);
+            saveAllMasks(outputPath, pop, img, series, time);
             for (int c = 0; c < pop.getNbObjects(); c++) {
                 pop.getObject(c).setComment("");
             }
@@ -124,6 +139,10 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     }
 
     public static void processObjectPop(Objects3DPopulation cells, int series, int selectedChannels, BioFormatsImg img) {
+        processObjectPop(cells, series, selectedChannels, img, 0);
+    }
+
+    public static void processObjectPop(Objects3DPopulation cells, int series, int selectedChannels, BioFormatsImg img, int time) {
         if (cells.getNbObjects() < 1) {
             return;
         }
@@ -170,7 +189,7 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
         int nChan = img.getSizeC(series);
         for (int c = 0; c < nChan; c++) {
             if (((int) Math.pow(2, c) & selectedChannels) != 0) {
-                img.loadPixelData(series, c, c, null);
+                img.loadPixelData(series, c, c, 0, img.getSizeZ(series) - 1, time, time, null);
                 ImagePlus imp = img.getLoadedImage();
                 IJ.log(String.format("Measuring %s defined by %s.", imp.getTitle(), cells.getObject(0).getName()));
                 List<Double[]> pixMeasures = cells.getMeasuresStats(imp.getImageStack());
@@ -201,18 +220,28 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
     }
 
     public static void saveAllRois(String path, Objects3DPopulation cells) {
+        saveAllRois(path, cells, null, -1, 0);
+    }
+
+    public static void saveAllRois(String path, Objects3DPopulation cells, BioFormatsImg img, int series, int time) {
         if (path == null || !new File(path).exists() || cells.getNbObjects() < 1) {
             return;
         }
         String outputName = constructOutputName(cells.getObject(0).getName(), cells.getObject(0).getComment());
+        outputName = appendTimeSuffix(outputName, img, series, time);
         cells.saveObjects(String.format("%s%s%s.zip", path, File.separator, outputName));
     }
 
     public static void saveAllMasks(String path, Objects3DPopulation cells, BioFormatsImg img, int series) {
+        saveAllMasks(path, cells, img, series, 0);
+    }
+
+    public static void saveAllMasks(String path, Objects3DPopulation cells, BioFormatsImg img, int series, int time) {
         if (path == null || !new File(path).exists() || cells.getNbObjects() < 1) {
             return;
         }
         String outputName = constructOutputName(cells.getObject(0).getName(), cells.getObject(0).getComment());
+        outputName = appendTimeSuffix(outputName, img, series, time);
         ImageInt imInt = cells.drawPopulation(img.getSizeX(series), img.getSizeY(series), img.getSizeZ(series));
         Path maskDir = Paths.get(path, String.format("%s_masks", outputName));
         try {
@@ -228,6 +257,13 @@ public class MultiThreadedROIConstructor extends MultiThreadedProcess {
             GenUtils.logError(e, String.format("Failed to save mask images in %s", maskDir.toFile().getAbsolutePath()));
             return;
         }
+    }
+
+    private static String appendTimeSuffix(String name, BioFormatsImg img, int series, int time) {
+        if (img != null && series >= 0 && img.getSizeT(series) > 1) {
+            return String.format("%s%sT%d", name, OUTPUT_SEP, time);
+        }
+        return name;
     }
 
     public static String[] getGeomHeadings(String calUnit) {

@@ -19,13 +19,14 @@ package net.calm.iaclasslibrary.Process.Filtering;
 import net.calm.iaclasslibrary.Extrema.MultiThreadedMaximaFinder;
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.Parameter;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 import ij.ImagePlus;
 import ij.ImageStack;
 import imagescience.feature.Hessian;
 import imagescience.image.Image;
 import java.util.ArrayList;
-import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -49,13 +50,17 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
         this.input = input;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
-        this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
-        this.startScale = Double.parseDouble(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_START_SCALE]));
-        this.abs = Boolean.parseBoolean(props.getProperty(propLabels[MultiThreadedMaximaFinder.HESSIAN_ABS]));
-//        this.series = Integer.parseInt(props.getProperty(propLabels[MultiThreadedMaximaFinder.SERIES_SELECT]));
+    @Override
+    protected Parameter[] getParamSlots() {
+        return MultiThreadedMaximaFinder.PARAMS;
+    }
+
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
+        initParams(img, params);
+        this.startScale = getDouble(MultiThreadedMaximaFinder.HESSIAN_START_SCALE_PARAM);
+        this.abs = getBoolean(MultiThreadedMaximaFinder.HESSIAN_ABS_PARAM);
+//        this.series = getInt(MultiThreadedMaximaFinder.SERIES);
     }
 
     public void run() {

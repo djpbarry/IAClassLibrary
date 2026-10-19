@@ -35,25 +35,43 @@ import net.calm.iaclasslibrary.Process.Calculate.MultiThreadedImageCalculator;
 import net.calm.iaclasslibrary.Process.DistanceTransform.RiemannianDistanceTransform;
 import net.calm.iaclasslibrary.Process.Mapping.MapPixels;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.Parameter;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import net.calm.iaclasslibrary.Stacks.StackThresholder;
 import net.calm.iaclasslibrary.UtilClasses.GenUtils;
 
 import java.util.List;
-import java.util.Properties;
 
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class MultiThreadedWatershed extends MultiThreadedProcess {
 
+    @Deprecated
     public static final int SERIES_LABEL = 0;
+    @Deprecated
     public static final int THRESHOLD_LABEL = 1;
+    @Deprecated
     public static final int VOL_MARKER_LABEL = 2;
+    @Deprecated
     public static final int MEMB_MARKER_LABEL = 3;
+    @Deprecated
     public static final int LAMBDA_LABEL = 4;
+    @Deprecated
     public static final int N_PROP_LABELS = 5;
+
+    public static final Parameter SERIES = new Parameter("series", Parameter.Type.INT, 0, "Series");
+    public static final Parameter THRESHOLD = new Parameter("threshold", Parameter.Type.STRING, "Default", "Threshold method");
+    public static final Parameter VOL_MARKER = new Parameter("volume_marker", Parameter.Type.BOOLEAN, false, "Use volume marker");
+    public static final Parameter MEMB_MARKER = new Parameter("membrane_marker", Parameter.Type.BOOLEAN, false, "Use membrane marker");
+    public static final Parameter LAMBDA = new Parameter("lambda", Parameter.Type.FLOAT, 0.0f, "Lambda");
+
+    @Override
+    protected Parameter[] getParamSlots() {
+        return new Parameter[]{SERIES, THRESHOLD, VOL_MARKER, MEMB_MARKER, LAMBDA};
+    }
+
     private double[] calibration;
-    private int series;
     private final String objectName;
     private final boolean remap;
     private boolean volumeMarker;
@@ -78,13 +96,12 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
         this.segmentationType = segmentationType;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
-        this.img = img;
-        this.props = props;
-        this.propLabels = propLabels;
-        this.volumeMarker = Boolean.parseBoolean(props.getProperty(propLabels[VOL_MARKER_LABEL]));
-        this.series = Integer.parseInt(props.getProperty(propLabels[SERIES_LABEL]));
-        this.lambda = Float.parseFloat(props.getProperty(propLabels[LAMBDA_LABEL]));
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
+        initParams(img, params);
+        this.volumeMarker = getBoolean(VOL_MARKER);
+        this.series = getInt(SERIES);
+        this.lambda = getFloat(LAMBDA);
         calibration = getCalibration(series);
     }
 
@@ -185,7 +202,7 @@ public class MultiThreadedWatershed extends MultiThreadedProcess {
     @Deprecated
     private int getThreshold() {
         return BinaryMaker.getThreshold(inputs[1].getOutput(),
-                AutoThresholder.Method.valueOf(props.getProperty(propLabels[MultiThreadedWatershed.THRESHOLD_LABEL])));
+                AutoThresholder.Method.valueOf(getString(THRESHOLD)));
     }
 
     public MultiThreadedWatershed duplicate() {

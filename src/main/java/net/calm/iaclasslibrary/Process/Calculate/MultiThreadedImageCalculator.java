@@ -18,8 +18,8 @@ package net.calm.iaclasslibrary.Process.Calculate;
 
 import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
+import net.calm.iaclasslibrary.Process.ProcessParams;
 import ij.plugin.ImageCalculator;
-import java.util.Properties;
 
 /**
  *
@@ -36,7 +36,8 @@ public class MultiThreadedImageCalculator extends MultiThreadedProcess {
         this.operation = operation;
     }
 
-    public void setup(BioFormatsImg img, Properties props, String[] propLabels) {
+    @Override
+    public void setup(BioFormatsImg img, ProcessParams params) {
 
     }
 
