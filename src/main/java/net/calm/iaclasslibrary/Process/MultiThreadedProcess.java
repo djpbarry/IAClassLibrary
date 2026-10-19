@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import ome.units.quantity.Length;
 import org.apache.commons.lang3.StringUtils;
@@ -142,6 +143,14 @@ public abstract class MultiThreadedProcess extends Thread implements Callable<Bi
             exec.execute(worker);
         }
         terminate(errorMessage);
+    }
+
+    /**
+     * Creates the worker pool for this process. Subclasses call this from
+     * {@code run()} instead of assigning {@code exec} directly.
+     */
+    protected void initExec(int nThreads) {
+        this.exec = Executors.newFixedThreadPool(nThreads);
     }
 
     protected int[] getCalibratedIntSigma(int series, Parameter x, Parameter y, Parameter z) {

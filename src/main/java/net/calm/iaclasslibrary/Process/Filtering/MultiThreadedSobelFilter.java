@@ -20,7 +20,6 @@ import net.calm.iaclasslibrary.IO.BioFormats.BioFormatsImg;
 import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.Process.ProcessParams;
 import net.calm.iaclasslibrary.Process.RunnableProcess;
-import java.util.concurrent.Executors;
 import mcib3d.image3d.ImageFloat;
 import mcib3d.utils.ArrayUtil;
 
@@ -55,7 +54,7 @@ public class MultiThreadedSobelFilter extends MultiThreadedProcess {
      */
     public void run() {
         int nThreads = Runtime.getRuntime().availableProcessors();
-        this.exec = Executors.newFixedThreadPool(nThreads);
+        initExec(nThreads);
         result = input.duplicate();
         for (int t = 0; t < nThreads; t++) {
             exec.submit(new RunnableSobelFilter(t, nThreads, result, input));

@@ -25,7 +25,6 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.GaussianBlur3D;
 import ij.process.StackConverter;
-import java.util.concurrent.Executors;
 
 /**
  *
@@ -82,7 +81,7 @@ public class MultiThreadedGaussianFilter extends SourceProcess {
     }
 
     public void run() {
-        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        initExec(Runtime.getRuntime().availableProcessors());
         this.series = getInt(SERIES);
         this.channel = getInt(CHANNEL);
         sigma = getCalibratedDoubleSigma(series, RADIUS, RADIUS, RADIUS);

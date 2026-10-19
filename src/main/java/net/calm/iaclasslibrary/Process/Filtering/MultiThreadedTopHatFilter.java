@@ -29,8 +29,6 @@ import net.calm.iaclasslibrary.Process.Parameter;
 import net.calm.iaclasslibrary.Process.ProcessParams;
 import net.calm.iaclasslibrary.Process.TransformProcess;
 
-import java.util.concurrent.Executors;
-
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
@@ -74,7 +72,7 @@ public class MultiThreadedTopHatFilter extends TransformProcess {
     }
 
     public void run() {
-        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        initExec(Runtime.getRuntime().availableProcessors());
         this.series = getInt(SERIES);
         sigma = getCalibratedDoubleSigma(series, RADIUS, RADIUS, RADIUS);
 

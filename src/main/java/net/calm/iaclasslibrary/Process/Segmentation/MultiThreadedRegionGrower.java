@@ -27,7 +27,6 @@ import ij.process.ShortProcessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.concurrent.Executors;
 
 /**
  * Multi-threaded execution of region-growing segmentation
@@ -64,7 +63,7 @@ public class MultiThreadedRegionGrower extends MultiThreadedProcess {
 
     @Override
     public void run() {
-        this.exec = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        initExec(Runtime.getRuntime().availableProcessors());
         int width = regionImage.getWidth();
         int height = regionImage.getHeight();
         int widthheight = width * height;

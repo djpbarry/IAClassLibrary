@@ -51,7 +51,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.Executors;
 
 /**
  * @author David Barry <david.barry at crick dot ac dot uk>
@@ -170,7 +169,7 @@ public class MultiThreadedColocalise extends TransformProcess {
         for (int thread = 0; thread < nThreads; thread++) {
             distanceCalcs[thread] = new SpotNucDistanceCalc(cells, thread, nThreads, distanceMap);
         }
-        this.exec = Executors.newFixedThreadPool(nThreads);
+        initExec(nThreads);
         runWorkers(distanceCalcs, "Problem encountered calculating cell-spot distances.");
     }
 
@@ -181,7 +180,7 @@ public class MultiThreadedColocalise extends TransformProcess {
         for (int thread = 0; thread < nThreads; thread++) {
             distanceCalcs[thread] = new SpotSpotDistanceCalc(cells, thread, nThreads);
         }
-        this.exec = Executors.newFixedThreadPool(nThreads);
+        initExec(nThreads);
         runWorkers(distanceCalcs, "Problem encountered calculating spot-spot distances.");
     }
 
@@ -248,7 +247,7 @@ public class MultiThreadedColocalise extends TransformProcess {
         return edtOuter.getImagePlus();
     }
 
-    class SpotNucDistanceCalc extends Thread {
+    class SpotNucDistanceCalc implements Runnable {
 
         private final List<Object3D> cells;
         private final int thread;
@@ -292,7 +291,7 @@ public class MultiThreadedColocalise extends TransformProcess {
         }
     }
 
-    class SpotSpotDistanceCalc extends Thread {
+    class SpotSpotDistanceCalc implements Runnable {
 
         private final List<Object3D> cells;
         private final int thread;

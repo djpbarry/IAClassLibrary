@@ -21,8 +21,6 @@ import net.calm.iaclasslibrary.Process.MultiThreadedProcess;
 import net.calm.iaclasslibrary.Process.ProcessParams;
 import ij.ImageStack;
 
-import java.util.concurrent.Executors;
-
 import loci.formats.ImageReader;
 
 /**
@@ -53,7 +51,7 @@ public class MultiThreadedImageLoader extends MultiThreadedProcess {
     @Override
     public void run() {
         int nThreads = 1;
-        this.exec = Executors.newFixedThreadPool(nThreads);
+        initExec(nThreads);
         int[] incs = new int[3];
         int kdiff = limits[7] - limits[6];
         int jdiff = limits[4] - limits[3];

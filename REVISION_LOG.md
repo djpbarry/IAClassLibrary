@@ -275,6 +275,28 @@ R3 `v2.2.0` review flags (all confirmed, no code change):
 - `rebuild()`'s "spent wiring" wrinkle is acknowledged and acceptable.
 - No `v2.1.1` tag — the null-guard commit ships inside `v2.2.0`.
 
+### 2026-10-19 — R4a implemented: worker classes + executor consolidation
+
+R4a landed (non-breaking, patch `2.2.1`):
+
+- `RunnableProcess` changed from `extends Thread` to `implements Runnable`, so
+  its subclasses (`RunnableSobelFilter`, `RunnableRegionGrower`,
+  `RunnablePixelLoader`, `RunnableRoiConstructor`, `RunnableMaximaFinder`,
+  `RunnableMeasureROI`, `RunnableColocalise`) are now plain `Runnable`s.
+- `RunnableHessianFilter` changed from `extends Thread implements Callable<Void>`
+  to `implements Runnable` (its `call()` was dead — it was submitted via
+  `submit(Runnable, T)`).
+- `SpotNucDistanceCalc` / `SpotSpotDistanceCalc` changed from `extends Thread`
+  to `implements Runnable`.
+- Added `MultiThreadedProcess.initExec(int nThreads)` and replaced the eight
+  per-subclass `Executors.newFixedThreadPool(...)` assignments with it.
+
+No GIANI impact (they reference none of these worker classes). R4b (dropping
+`extends Thread` from `MultiThreadedProcess` itself, `3.0.0`) remains gated on
+GIANI's Phase-I.
+
+Version → `2.2.1`. Full suite green.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`

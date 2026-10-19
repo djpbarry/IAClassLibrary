@@ -31,7 +31,7 @@ more maintainable design and preserving a legacy API, prefer the cleaner design.
   primitives consumed by ADAPT, `TrackerLibrary`, `AdaptDataProcessing`, and
   GIANI (the main consumer of the `Process` pipeline).
 - **Build:** Maven, parent `org.scijava:pom-scijava:45.1.0`, version
-  `2.2.0` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
+  `2.2.1` (patch-bumped per commit; last release `2.0.30` / tag `v2.0.30`), declared license
   **GPL-3.0-or-later** (`license.licenseName=gpl_v3`). *(Reconciled 2026-09-24;
   released 2026-09-27.)*
 - **CI:** `.github/workflows/maven.yml` runs `./mvnw --batch-mode
@@ -971,13 +971,16 @@ hand-off, not this phase.
 ## Phase R — Process pipeline refactor
 
 **Status: R1 implemented (2026-10-18, `2.0.31`); R2 implemented (R2a `2.0.32`,
-R2b `2.1.0`); R3 implemented (2026-10-19, `2.2.0`); R4 pending.** R1 (centralise
-`series`/`channel`/`time` + `loadPixels` + `_T<t>` naming), R2 (typed
-`ProcessParams` facade, then the `Parameter`/`ParamBinding` named-binding model),
-and R3 (`SourceProcess`/`TransformProcess` split + per-pipeline `rebuild()` +
-`@Deprecated MultiThreadedImageLoader`) are done.
-**Next actions:** tag `v2.0.31`/`v2.1.0`/`v2.2.0` (GIANI's Phase H1 needs
-`v2.0.31`; their re-pin target is `v2.1.0`), then R4.
+R2b `2.1.0`); R3 implemented (2026-10-19, `2.2.0`); R4a implemented (2026-10-19,
+`2.2.1`); R4b pending (`3.0.0`).** R1 (centralise `series`/`channel`/`time` +
+`loadPixels` + `_T<t>` naming), R2 (typed `ProcessParams` facade, then the
+`Parameter`/`ParamBinding` named-binding model), R3 (`SourceProcess`/
+`TransformProcess` split + per-pipeline `rebuild()` + `@Deprecated
+MultiThreadedImageLoader`), and R4a (worker classes → plain `Runnable`/`Callable`,
+executor consolidation) are done.
+**Next actions:** tag `v2.0.31`/`v2.1.0`/`v2.2.0`/`v2.2.1` (GIANI's Phase H1 needs
+`v2.0.31`; their re-pin target is the latest `2.x`), then R4b when GIANI's Phase-I
+migrates the preview panels and the headless `submit` call.
 `Process.MultiThreadedProcess` has accreted four unrelated responsibilities and is
 the main maintenance drag in the processing pipeline. This phase simplifies it
 into a typed, testable core, executed one sub-phase at a time (R1 → R4). R1–R3 are
@@ -1179,12 +1182,14 @@ process as a `Runnable` (`exec.submit(process, img)`), and the five preview
 panels call `.start()`/`.join()`/`.getOutput()` directly. They are willing, but
 on their Phase-I schedule, and recommend splitting:
 
-- **R4a (non-breaking, `2.x`) — executor consolidation.** Convert the worker
-  classes (`RunnableHessianFilter`, `RunnablePixelLoader`, `RunnableSobelFilter`,
-  `RunnableRegionGrower`, `SpotNucDistanceCalc`, `SpotSpotDistanceCalc`) from
-  `extends Thread` to plain `Runnable`/`Callable`, and consolidate the
-  per-subclass `Executors.newFixedThreadPool(...)` calls into the base
-  `runWorkers(...)`. GIANI references none of these, so no shims are needed.
+- **R4a (non-breaking, `2.x`) — executor consolidation — done (2026-10-19,
+  `2.2.1`).** Converted the worker classes (`RunnableHessianFilter`,
+  `RunnablePixelLoader`, `RunnableSobelFilter`, `RunnableRegionGrower`,
+  `SpotNucDistanceCalc`, `SpotSpotDistanceCalc` — and their base
+  `RunnableProcess`) from `extends Thread` to plain `Runnable`/`Callable`, and
+  consolidated the per-subclass `Executors.newFixedThreadPool(...)` calls into a
+  base `initExec(nThreads)` helper. GIANI references none of these, so no shims
+  were needed.
 - **R4b (breaking, `3.0.0`) — drop `extends Thread`.** Make
   `MultiThreadedProcess` a `Runnable`/`Callable` whose output is obtained via a
   `Future`; remove the manual `start()`/`join()` in `getOutput()`; have
@@ -1313,8 +1318,9 @@ in the phases above.
    (Phase H) *Status (2026-10-18): complete, tagged `v2.0.30`.*
 9. **M9 — Process pipeline refactor:** centralise dimensions/loading (R1), typed
    params (R2), source/transform split (R3), drop `Thread`/`Callable` duality
-   (R4). (Phase R) *Status (2026-10-19): R1 + R2 + R3 done (`2.0.31`/`2.1.0`/
-   `2.2.0`, tags pending); R4 next.*
+   (R4). (Phase R) *Status (2026-10-19): R1 + R2 + R3 + R4a done (`2.0.31`/
+   `2.1.0`/`2.2.0`/`2.2.1`, tags pending); R4b (breaking `3.0.0`) next, gated on
+   GIANI's Phase-I.*
 
 Each milestone is independently shippable. M1–M8 are complete. The immediate
 next steps are tagging `v2.0.31` (unblocks GIANI's Phase H1) and then R2a, with

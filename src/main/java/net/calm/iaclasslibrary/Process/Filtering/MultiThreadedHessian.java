@@ -28,9 +28,7 @@ import imagescience.feature.Hessian;
 import imagescience.image.Image;
 import java.util.ArrayList;
 import java.util.Vector;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
@@ -74,7 +72,7 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
 
         int nProcesses = Math.min(nThreads, nScales);
 
-        this.exec = Executors.newFixedThreadPool(nProcesses);
+        initExec(nProcesses);
 
         final ArrayList< Future< Void>> futures = new ArrayList<>();
 
@@ -115,7 +113,7 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
         return new MultiThreadedHessian(inputs, input);
     }
 
-    private class RunnableHessianFilter extends Thread implements Callable<Void> {
+    private class RunnableHessianFilter implements Runnable {
 
         private final Image[][] results;
         private final Image input;
@@ -140,10 +138,6 @@ public class MultiThreadedHessian extends MultiThreadedProcess {
                     results[t][e] = eigenimages.get(e);
                 }
             }
-        }
-
-        public Void call() {
-            return null;
         }
     }
 }

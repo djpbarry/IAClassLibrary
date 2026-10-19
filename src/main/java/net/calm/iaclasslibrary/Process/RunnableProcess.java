@@ -20,7 +20,7 @@ package net.calm.iaclasslibrary.Process;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public abstract class RunnableProcess extends Thread {
+public abstract class RunnableProcess implements Runnable {
 
     protected final String name;
 
