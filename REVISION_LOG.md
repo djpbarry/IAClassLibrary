@@ -313,6 +313,24 @@ so existing column order/indices are unchanged. `Time` is emitted first, then
 
 Version → `2.3.0` (`feat`). Full suite green.
 
+### 2026-10-21 — GIANI output cleanup (ROI masks)
+
+GIANI (re-pinned to `v2.3.0`) requested three output changes to
+`MultiThreadedROIConstructor` in `IAClassLibrary-output-cleanup-note.md`:
+
+- **Drop `*.zip` exports.** Removed the `saveAllRois(...)` call from `run()` — the
+  `Objects3DPopulation` zips were dead output for GIANI's retired results browser.
+  The public static `saveAllRois` is kept (still referenced by
+  `MultiThreadedColocalise`).
+- **Consolidate mask PNGs.** `saveAllMasks` now writes one folder per object type
+  (`<base>_<objectType>_masks/`, no time suffix) and encodes time and Z in the
+  filename (`<base>_<objectType>_T{time}_Z{z:04d}.png`).
+- **Idempotent directory creation.** `Files.createDirectory` →
+  `Files.createDirectories` (fixes `FileAlreadyExistsException` on re-runs into the
+  same directory).
+
+Version → `2.4.0` (`feat`). Full suite green (50 tests).
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`

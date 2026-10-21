@@ -133,7 +133,6 @@ public class MultiThreadedROIConstructor extends TransformProcess {
         }
         for (Objects3DPopulation pop : subPops) {
             processObjectPop(pop, series, selectedChannels, img, time);
-            saveAllRois(outputPath, pop, img, series, time);
             saveAllMasks(outputPath, pop, img, series, time);
             for (int c = 0; c < pop.getNbObjects(); c++) {
                 pop.getObject(c).setComment("");
@@ -247,17 +246,17 @@ public class MultiThreadedROIConstructor extends TransformProcess {
         if (path == null || !new File(path).exists() || cells.getNbObjects() < 1) {
             return;
         }
-        String outputName = constructOutputName(cells.getObject(0).getName(), cells.getObject(0).getComment());
-        outputName = appendTimeSuffix(outputName, img, series, time);
+        String baseName = constructOutputName(cells.getObject(0).getName(), cells.getObject(0).getComment());
+        String timeName = appendTimeSuffix(baseName, img, series, time);
         ImageInt imInt = cells.drawPopulation(img.getSizeX(series), img.getSizeY(series), img.getSizeZ(series));
-        Path maskDir = Paths.get(path, String.format("%s_masks", outputName));
+        Path maskDir = Paths.get(path, String.format("%s_masks", baseName));
         try {
-            Files.createDirectory(maskDir);
+            Files.createDirectories(maskDir);
             ImageStack stack = imInt.getImageStack();
             PNG_Writer pngWriter = new PNG_Writer();
             for (int z = 1; z <= stack.getSize(); z++) {
                 ImagePlus mask = new ImagePlus(String.valueOf(z), stack.getProcessor(z));
-                String maskPath = String.format("%s%s%s_%04d.png", maskDir.toFile().getAbsolutePath(), File.separator, outputName, z);
+                String maskPath = String.format("%s%s%s_Z%04d.png", maskDir.toFile().getAbsolutePath(), File.separator, timeName, z);
                 pngWriter.writeImage(mask, maskPath, 0);
             }
         } catch (Exception e) {
