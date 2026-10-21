@@ -318,10 +318,12 @@ Version → `2.3.0` (`feat`). Full suite green.
 GIANI (re-pinned to `v2.3.0`) requested three output changes to
 `MultiThreadedROIConstructor` in `IAClassLibrary-output-cleanup-note.md`:
 
-- **Drop `*.zip` exports.** Removed the `saveAllRois(...)` call from `run()` — the
-  `Objects3DPopulation` zips were dead output for GIANI's retired results browser.
-  The public static `saveAllRois` is kept (still referenced by
-  `MultiThreadedColocalise`).
+- **Drop `*.zip` exports.** Removed the `saveAllRois(...)` calls from
+  `MultiThreadedROIConstructor.run()` (`2.4.0`) and — as a follow-up —
+  `MultiThreadedColocalise.saveData()` (`2.4.1`); the `Objects3DPopulation` zips
+  were dead output for GIANI's retired results browser. The public static
+  `saveAllRois` overloads are kept (now unreferenced in-repo, retained for
+  external API compatibility per Decision 0).
 - **Consolidate mask PNGs.** `saveAllMasks` now writes one folder per object type
   (`<base>_<objectType>_masks/`, no time suffix) and encodes time and Z in the
   filename (`<base>_<objectType>_T{time}_Z{z:04d}.png`).
@@ -329,7 +331,7 @@ GIANI (re-pinned to `v2.3.0`) requested three output changes to
   `Files.createDirectories` (fixes `FileAlreadyExistsException` on re-runs into the
   same directory).
 
-Version → `2.4.0` (`feat`). Full suite green (50 tests).
+Version → `2.4.1` (`fix`). Full suite green (50 tests).
 
 ---
 

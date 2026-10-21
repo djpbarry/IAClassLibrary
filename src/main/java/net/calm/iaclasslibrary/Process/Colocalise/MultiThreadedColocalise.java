@@ -231,7 +231,6 @@ public class MultiThreadedColocalise extends TransformProcess {
         DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", outputDir, File.separator, "spot_summary_data.csv")), false, true);
         for (Objects3DPopulation pop : spotsPop) {
             MultiThreadedROIConstructor.processObjectPop(pop, series, selectedChannels, img, time);
-            MultiThreadedROIConstructor.saveAllRois(outputDir, pop, img, series, time);
             MultiThreadedROIConstructor.saveAllMasks(outputDir, pop, img, series, time);
         }
     }
