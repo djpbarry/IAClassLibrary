@@ -226,9 +226,12 @@ public class MultiThreadedColocalise extends TransformProcess {
                     }
                 }
             }
+            rt.setValue(MultiThreadedROIConstructor.TIME_HEADING, row, time);
+            rt.setValue(MultiThreadedROIConstructor.SERIES_HEADING, row, series);
         }
         String outputDir = getString(OUTPUT);
-        DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", outputDir, File.separator, "spot_summary_data.csv")), false, true);
+        boolean append = time > 0;
+        DataWriter.saveResultsTable(rt, new File(String.format("%s%s%s", outputDir, File.separator, "spot_summary_data.csv")), append, !append);
         for (Objects3DPopulation pop : spotsPop) {
             MultiThreadedROIConstructor.processObjectPop(pop, series, selectedChannels, img, time);
             MultiThreadedROIConstructor.saveAllMasks(outputDir, pop, img, series, time);

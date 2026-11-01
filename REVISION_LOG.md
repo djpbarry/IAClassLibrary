@@ -333,6 +333,28 @@ GIANI (re-pinned to `v2.3.0`) requested three output changes to
 
 Version → `2.4.1` (`fix`). Full suite green (50 tests).
 
+### 2026-10-21 — spot summary: `Time`/`Series` columns + accumulate across timepoints
+
+GIANI flagged (`spot_summary_data.csv` note) that `MultiThreadedColocalise.saveData()`
+had two gaps for 4D (3D + time) runs:
+
+- no `Time`/`Series` column, so rows from different timepoints were
+  indistinguishable;
+- the file was **overwritten** on every timepoint (only the last frame's rows
+  survived — 9 of 10 frames silently discarded).
+
+Fixed:
+
+- each cell row now writes `Time` (from `this.time`) and `Series` (from
+  `this.series`), reusing `MultiThreadedROIConstructor.TIME_HEADING`/
+  `SERIES_HEADING` — appended after the spot-summary columns, so existing column
+  order is unchanged;
+- the write now appends for `time > 0` (`saveResultsTable(..., append, !append)`),
+  so rows accumulate across timepoints with the header emitted once on the first
+  frame.
+
+Version → `2.5.0` (`feat`). Full suite green.
+
 ---
 
 ## 2026-10-18 — Added `CITATION.cff`
